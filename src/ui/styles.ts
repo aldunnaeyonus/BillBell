@@ -1,4 +1,5 @@
 import { Theme } from "./theme";
+import type { TextStyle } from "react-native";
 
 export function screen(theme: Theme) {
   return { flex: 1, padding: 16, backgroundColor: theme.colors.bg };
@@ -35,5 +36,10 @@ export function button(theme: Theme, variant: "primary" | "ghost" | "danger" = "
 
 export function buttonText(theme: Theme, variant: "primary" | "ghost" | "danger" = "primary") {
   const color = variant === "ghost" ? theme.colors.text : "#FFFFFF";
-  return { color, textAlign: "center", fontWeight: "700" as const };
+
+  return {
+    color,
+    textAlign: "center" as TextStyle["textAlign"],
+    fontWeight: "700" as TextStyle["fontWeight"],
+  } satisfies TextStyle;
 }

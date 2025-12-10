@@ -28,6 +28,8 @@ async function request(path: string, opts: RequestInit = {}) {
 export const api = {
   authApple: (payload: any) => request("/auth/apple", { method: "POST", body: JSON.stringify(payload) }),
   authGoogle: (payload: any) => request("/auth/google", { method: "POST", body: JSON.stringify(payload) }),
+  createImportCode: (ttl_minutes: number = 15) =>
+  request("/import-code/create", { method: "POST", body: JSON.stringify({ ttl_minutes }) }),
 
   familyCreate: () => request("/family/create", { method: "POST", body: JSON.stringify({}) }),
   familyJoin: (family_code: string) => request("/family/join", { method: "POST", body: JSON.stringify({ family_code }) }),

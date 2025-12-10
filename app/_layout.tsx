@@ -18,6 +18,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: theme.colors.bg },
         }}
       >
+        <Stack.Screen name="(app)/import" options={{ title: "Bulk Upload" }} />
         <Stack.Screen name="index" options={{ title: "Bills" }} />
         <Stack.Screen name="(auth)/login" options={{ title: "Sign in" }} />
         <Stack.Screen name="(app)/family" options={{ title: "Family" }} />
