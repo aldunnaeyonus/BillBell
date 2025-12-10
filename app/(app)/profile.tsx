@@ -5,7 +5,7 @@ import { api } from "../../src/api/client";
 import { clearToken } from "../../src/auth/session";
 import { useTheme } from "../../src/ui/useTheme";
 import { screen, card, button, buttonText } from "../../src/ui/styles";
-import * as WebBrowser from "expo-web-browser";
+import { openLink } from "../../src/ui/openLink";
 import { notifyImportCode } from "../../src/notifications/importCode";
 import { copyToClipboard } from "../../src/ui/copy";
 
@@ -94,8 +94,8 @@ export default function Profile() {
         </Pressable>
 
         <Pressable
-          onPress={() =>
-            WebBrowser.openBrowserAsync("https://YOURDOMAIN.com/import.html")
+          onPress={async () =>
+            await openLink("https://YOURDOMAIN.com/import.html")
           }
           style={button(theme, "ghost")}
         >
@@ -125,9 +125,13 @@ export default function Profile() {
                     },
                   },
                   {
-                    text: "Open Upload Page",
-                    onPress: () => WebBrowser.openBrowserAsync(IMPORT_URL),
-                  },
+  text: "Open Upload Page",
+  onPress: () =>
+    router.push({
+      pathname: "/(app)/browser",
+      params: { url: encodeURIComponent(IMPORT_URL) }
+    })
+},
                   { text: "OK", style: "cancel" },
                 ]
               );

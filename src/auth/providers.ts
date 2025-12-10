@@ -1,8 +1,5 @@
 import * as AppleAuthentication from "expo-apple-authentication";
-import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
-
-WebBrowser.maybeCompleteAuthSession();
 
 const googleDiscovery = {
   authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
@@ -26,7 +23,7 @@ export async function signInWithAppleTokens() {
 
 export function useGoogleRequest() {
   const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID!;
-  const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
+  const redirectUri = AuthSession.makeRedirectUri();
 
   return AuthSession.useAuthRequest(
     {

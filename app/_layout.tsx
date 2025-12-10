@@ -18,6 +18,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: theme.colors.bg },
         }}
       >
+        <Stack.Screen name="(app)/browser" options={{ title: "Browser" }} />
         <Stack.Screen name="(app)/import" options={{ title: "Bulk Upload" }} />
         <Stack.Screen name="index" options={{ title: "Bills" }} />
         <Stack.Screen name="(auth)/login" options={{ title: "Sign in" }} />
@@ -25,7 +26,10 @@ export default function RootLayout() {
         <Stack.Screen name="(app)/bills" options={{ title: "Bills" }} />
         <Stack.Screen name="(app)/bill-edit" options={{ title: "Edit bill" }} />
         <Stack.Screen name="(app)/profile" options={{ title: "Profile" }} />
-        <Stack.Screen name="(app)/family-settings" options={{ title: "Family Settings" }} />
+        <Stack.Screen
+          name="(app)/family-settings"
+          options={{ title: "Family Settings" }}
+        />
       </Stack>
     </>
   );

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { View, Text, TextInput, Pressable, Alert } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
+import { openLink } from "../../src/ui/openLink";
+import { router } from "expo-router";
 
 import { api } from "../../src/api/client";
 import { notifyImportCode } from "../../src/notifications/importCode";
@@ -56,7 +57,11 @@ export default function ImportScreen() {
         [
           {
             text: "Open Upload Page",
-            onPress: () => WebBrowser.openBrowserAsync(importUrlWithPrefill),
+            onPress: async () =>
+              router.push({
+                pathname: "/(app)/browser",
+                params: { url: encodeURIComponent(importUrlWithPrefill) },
+              }),
           },
           { text: "OK", style: "cancel" },
         ]
@@ -128,7 +133,7 @@ export default function ImportScreen() {
         </Pressable>
 
         <Pressable
-          onPress={() => WebBrowser.openBrowserAsync(importUrlWithPrefill)}
+          onPress={async () => await openLink(importUrlWithPrefill)}
           style={button(theme, "ghost")}
         >
           <Text style={buttonText(theme, "ghost")}>Open Upload Page</Text>

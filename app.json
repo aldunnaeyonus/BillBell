@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#F7F9FC"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dunn.carabali.billbell"
@@ -34,7 +36,7 @@
           "mode": "production"
         }
       ]
-    ],
+        ],
     "extra": {
       "eas": {
         "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
