@@ -54,7 +54,7 @@ class ImportController {
 
     // --- payload parsing ---
     $bills = $data["bills"] ?? null;
-    if (!is_array($bills)) Utils::json(["error" => "bills must be an array"], 422);
+    if (!is_array($bills)) Utils::json(["error" => "Debts must be an array"], 422);
 
     // --- import ---
     // Adjust table/columns to match YOUR schema. This is a sane, explicit default.

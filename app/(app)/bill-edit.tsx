@@ -25,7 +25,10 @@ export default function BillEdit() {
   const [offsetDays, setOffsetDays] = useState("1");
   const [reminderTime, setReminderTime] = useState("09:00:00");
 
-  const amountCents = useMemo(() => Math.round(parseFloat(amount || "0") * 100), [amount]);
+  const amountCents = useMemo(
+    () => Math.round(parseFloat(amount || "0") * 100),
+    [amount]
+  );
 
   useEffect(() => {
     (async () => {
@@ -55,8 +58,10 @@ export default function BillEdit() {
 
   async function save() {
     try {
-      if (!creditor.trim()) return Alert.alert("Validation", "Creditor is required");
-      if (amountCents <= 0) return Alert.alert("Validation", "Amount must be > 0");
+      if (!creditor.trim())
+        return Alert.alert("Validation", "Creditor is required");
+      if (amountCents <= 0)
+        return Alert.alert("Validation", "Amount must be > 0");
 
       const payload = {
         creditor: creditor.trim(),
@@ -77,42 +82,91 @@ export default function BillEdit() {
   }
 
   const inputStyle = {
-    borderWidth: 1, borderColor: theme.colors.border,
-    padding: 12, borderRadius: 12,
-    color: theme.colors.text, backgroundColor: theme.colors.bg
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 12,
+    borderRadius: 12,
+    color: theme.colors.text,
+    backgroundColor: theme.colors.bg,
   };
 
   return (
     <View style={screen(theme)}>
       <View style={[card(theme), { gap: 10 }]}>
-        <Text style={{ fontSize: 20, fontWeight: "900", color: theme.colors.text }}>
-          {id ? "Edit bill" : "Add bill"}
+        <Text
+          style={{ fontSize: 20, fontWeight: "900", color: theme.colors.text }}
+        >
+          {id ? "Edit Debts" : "Add Debts"}
         </Text>
 
         <Text style={{ color: theme.colors.subtext }}>Creditor</Text>
-        <TextInput value={creditor} onChangeText={setCreditor} style={inputStyle} placeholderTextColor={theme.colors.subtext} />
+        <TextInput
+          value={creditor}
+          onChangeText={setCreditor}
+          style={inputStyle}
+          placeholderTextColor={theme.colors.subtext}
+        />
 
         <Text style={{ color: theme.colors.subtext }}>Amount (USD)</Text>
-        <TextInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" style={inputStyle} placeholderTextColor={theme.colors.subtext} />
+        <TextInput
+          value={amount}
+          onChangeText={setAmount}
+          keyboardType="decimal-pad"
+          style={inputStyle}
+          placeholderTextColor={theme.colors.subtext}
+        />
 
-        <Text style={{ color: theme.colors.subtext }}>Due Date (YYYY-MM-DD)</Text>
-        <TextInput value={dueDate} onChangeText={setDueDate} style={inputStyle} placeholderTextColor={theme.colors.subtext} />
-
+        <Text style={{ color: theme.colors.subtext }}>
+          Due Date (YYYY-MM-DD)
+        </Text>
+        <TextInput
+          value={dueDate}
+          onChangeText={setDueDate}
+          style={inputStyle}
+          placeholderTextColor={theme.colors.subtext}
+        />
         <Text style={{ color: theme.colors.subtext }}>Recurring</Text>
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <Pressable onPress={() => setRecurrence("none")} style={[button(theme, "ghost"), { flex: 1, opacity: recurrence==="none" ? 1 : 0.75 }]}>
+          <Pressable
+            onPress={() => setRecurrence("none")}
+            style={[
+              button(theme, "ghost"),
+              { flex: 1, opacity: recurrence === "none" ? 1 : 0.75, borderColor: recurrence === "none" ? theme.colors.accent : theme.colors.border },
+            ]}
+          >
             <Text style={buttonText(theme, "ghost")}>None</Text>
           </Pressable>
-          <Pressable onPress={() => setRecurrence("monthly")} style={[button(theme, "ghost"), { flex: 1, opacity: recurrence==="monthly" ? 1 : 0.75 }]}>
+          <Pressable
+            onPress={() => setRecurrence("monthly")}
+            style={[
+              button(theme, "ghost"),
+              { flex: 1, opacity: recurrence === "monthly" ? 1 : 0.75, borderColor: recurrence === "monthly" ? theme.colors.accent : theme.colors.border },
+            ]}
+          >
             <Text style={buttonText(theme, "ghost")}>Monthly</Text>
           </Pressable>
         </View>
 
-        <Text style={{ color: theme.colors.subtext }}>Reminder Offset Days (0..3)</Text>
-        <TextInput value={offsetDays} onChangeText={setOffsetDays} keyboardType="number-pad" style={inputStyle} placeholderTextColor={theme.colors.subtext} />
+        <Text style={{ color: theme.colors.subtext }}>
+          Reminder Offset Days (0..3)
+        </Text>
+        <TextInput
+          value={offsetDays}
+          onChangeText={setOffsetDays}
+          keyboardType="number-pad"
+          style={inputStyle}
+          placeholderTextColor={theme.colors.subtext}
+        />
 
-        <Text style={{ color: theme.colors.subtext }}>Reminder Time Local (HH:MM:SS)</Text>
-        <TextInput value={reminderTime} onChangeText={setReminderTime} style={inputStyle} placeholderTextColor={theme.colors.subtext} />
+        <Text style={{ color: theme.colors.subtext }}>
+          Reminder Time Local (HH:MM:SS)
+        </Text>
+        <TextInput
+          value={reminderTime}
+          onChangeText={setReminderTime}
+          style={inputStyle}
+          placeholderTextColor={theme.colors.subtext}
+        />
 
         <Pressable onPress={save} style={button(theme, "primary")}>
           <Text style={buttonText(theme, "primary")}>Save</Text>

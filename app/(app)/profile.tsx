@@ -5,7 +5,6 @@ import { api } from "../../src/api/client";
 import { clearToken } from "../../src/auth/session";
 import { useTheme } from "../../src/ui/useTheme";
 import { screen, card, button, buttonText } from "../../src/ui/styles";
-import { openLink } from "../../src/ui/openLink";
 import { notifyImportCode } from "../../src/notifications/importCode";
 import { copyToClipboard } from "../../src/ui/copy";
 import { googleSignOut } from "../../src/auth/providers";
@@ -18,7 +17,6 @@ export default function Profile() {
     string | null
   >(null);
 
-  const IMPORT_URL = "https://YOURDOMAIN.com/import.html"; // change this
   useEffect(() => {
     api
       .familyMembers()
@@ -96,8 +94,7 @@ export default function Profile() {
 
         <Pressable
           onPress={async () =>
-            await openLink("https://YOURDOMAIN.com/import.html")
-          }
+            router.push("(app)/bulk-import")}
           style={button(theme, "ghost")}
         >
           <Text style={buttonText(theme, "ghost")}>Bulk Upload (CSV/XLSX)</Text>
@@ -127,11 +124,7 @@ export default function Profile() {
                   },
                   {
                     text: "Open Upload Page",
-                    onPress: () =>
-                      router.push({
-                        pathname: "/(app)/browser",
-                        params: { url: encodeURIComponent(IMPORT_URL) },
-                      }),
+                    onPress: () =>router.push("(app)/bulk-import"),
                   },
                   { text: "OK", style: "cancel" },
                 ]

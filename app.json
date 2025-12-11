@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "BillBell",
-    "slug": "billbell",
-    "scheme": "billbell",
+    "name": "DueView",
+    "slug": "dueview",
+    "scheme": "dueview",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",

@@ -8,7 +8,13 @@ import {
 } from "./notificationStore";
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({ shouldShowAlert: true, shouldPlaySound: true, shouldSetBadge: false }),
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true, // Required: shows the drop-down banner
+    shouldShowList: true,   // Required: shows in the notification center
+  }),
 });
 
 export async function ensureNotificationPermissions() {
@@ -72,12 +78,15 @@ export async function scheduleBillReminderLocal(bill: {
   const amount = (bill.amount_cents / 100).toFixed(2);
   const notificationId = await Notifications.scheduleNotificationAsync({
     content: {
-      title: "Bill reminder",
+      title: "Bill reminder: ",
       body: `${bill.creditor} – $${amount} due ${bill.due_date}`,
       data: { bill_id: bill.id },
       sound: "default",
     },
-    trigger: fireAt,
+    trigger: {
+      date: fireAt,
+      channelId: 'bill_reminder',
+    },
   });
 
   await setNotificationIdForBill(bill.id, notificationId);

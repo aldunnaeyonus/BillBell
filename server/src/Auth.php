@@ -11,15 +11,28 @@ class Auth {
   }
 
   public static function requireUserId(): int {
-    $hdr = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/Bearer\s+(.*)$/i', $hdr, $m)) Utils::json(["error" => "Missing Authorization header"], 401);
-    try {
-      $decoded = JWT::decode($m[1], new Key(Config::jwtSecret(), 'HS256'));
-      return (int)$decoded->sub;
-    } catch (\Throwable $e) {
-      Utils::json(["error" => "Invalid token"], 401);
-    }
+  // Try multiple places for the Authorization header
+  $headers = function_exists('getallheaders') ? getallheaders() : [];
+
+  $authHeader =
+      ($headers['Authorization'] ?? null) ??
+      ($headers['authorization'] ?? null) ??
+      ($_SERVER['HTTP_AUTHORIZATION'] ?? null) ??
+      ($_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? null);
+
+  if (!$authHeader || !preg_match('/^Bearer\s+(.+)/i', $authHeader, $m)) {
+    Utils::json(["error" => "Missing Authorization header"], 401);
   }
+
+  $token = $m[1];
+
+  $userId = self::verifyToken($token);
+  if (!$userId) {
+    Utils::json(["error" => "Invalid token"], 401);
+  }
+
+  return $userId;
 }
+
 
 ?>

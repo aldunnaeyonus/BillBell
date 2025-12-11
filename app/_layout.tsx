@@ -19,13 +19,17 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(app)/browser" options={{ title: "Browser" }} />
-        <Stack.Screen name="(app)/import" options={{ title: "Bulk Upload" }} />
-        <Stack.Screen name="index" options={{ title: "Bills" }} />
+        <Stack.Screen name="(app)/bulk-import" options={{ title: "Bulk Upload" }} />
+        <Stack.Screen name="index" options={{ title: "Debts" }} />
         <Stack.Screen name="(auth)/login" options={{ title: "Sign in" }} />
         <Stack.Screen name="(app)/family" options={{ title: "Family" }} />
-        <Stack.Screen name="(app)/bills" options={{ title: "Bills" }} />
-        <Stack.Screen name="(app)/bill-edit" options={{ title: "Edit bill" }} />
+        <Stack.Screen name="(app)/bills" options={{ title: "DueView App" }} />
+        <Stack.Screen
+          name="(app)/bill-edit"
+          options={{ title: "Edit Debts" }}
+        />
         <Stack.Screen name="(app)/profile" options={{ title: "Profile" }} />
+
         <Stack.Screen
           name="(app)/family-settings"
           options={{ title: "Family Settings" }}

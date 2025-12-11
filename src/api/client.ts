@@ -14,6 +14,9 @@ async function request(path: string, opts: RequestInit = {}) {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
+  console.log("API request", path, "token:", token);
+  console.log("API headers", headers);
+
   const res = await fetch(`${API_URL}${path}`, { ...opts, headers });
   const text = await res.text();
   const json = text ? JSON.parse(text) : null;
@@ -37,9 +40,8 @@ export const api = {
   familyMembers: () => request("/family/members"),
 
   familySettingsGet: () => request("/family/settings"),
-  familySettingsUpdate: (payload: { default_reminder_offset_days: number; default_reminder_time_local: string }) =>
-    request("/family/settings", { method: "PUT", body: JSON.stringify(payload) }),
-
+  familySettingsUpdate: (payload: { default_reminder_offset_days: number; default_reminder_time_local: string }) => request("/family/settings", { method: "PUT", body: JSON.stringify(payload) }),
+  importBills: (import_code: string, bills: any[]) => request("/import/bills", {method: "POST", body: JSON.stringify({ import_code, bills }),}),
   billsList: () => request("/bills"),
   billsCreate: (bill: any) => request("/bills", { method: "POST", body: JSON.stringify(bill) }),
   billsUpdate: (id: number, bill: any) => request(`/bills/${id}`, { method: "PUT", body: JSON.stringify(bill) }),
