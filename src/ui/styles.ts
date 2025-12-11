@@ -11,7 +11,7 @@ export function card(theme: Theme) {
     borderColor: theme.colors.border,
     borderWidth: 1,
     borderRadius: 16,
-    padding: 14
+    padding: 14,
   };
 }
 

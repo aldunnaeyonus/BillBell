@@ -62,7 +62,7 @@ export default function Login() {
         source={require("../../assets/black_logo.png")}
         style={{ width: 200, height: 200, resizeMode: "contain" }}
       />
-      <View style={[card(theme)]}>
+      <View style={[card(theme), {width:'90%'}]}>
         <View
           style={{
             flexDirection: "row",
@@ -86,11 +86,11 @@ export default function Login() {
               color: theme.colors.text,
             }}
           >
-            Bill Bell
+           Notification vibes.
           </Text>
         </View>
         <Text style={{ color: theme.colors.subtext }}>
-          Wallet + bell vibes. Never miss a due date.
+           Never miss a due date again.
         </Text>
 
         <View style={{ height: 14 }} />
