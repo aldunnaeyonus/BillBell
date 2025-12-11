@@ -8,11 +8,13 @@ import {
 } from "../../src/notifications/notifications";
 import { useTheme } from "../../src/ui/useTheme";
 import { screen, card, button, buttonText } from "../../src/ui/styles";
+import { useTranslation } from "react-i18next";
 
 export default function Bills() {
   const [bills, setBills] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const theme = useTheme();
+  const { t } = useTranslation();
 
   // 🔹 Pending / Paid tab state
   const [tab, setTab] = useState<"pending" | "paid">("pending");
@@ -77,7 +79,7 @@ export default function Bills() {
               color: theme.colors.text,
             }}
           >
-            Debts
+            {t("Debts")}
           </Text>
         </View>
         <View style={{ flexDirection: "row", gap: 10 }}>
@@ -85,13 +87,13 @@ export default function Bills() {
             onPress={() => router.push("/(app)/profile")}
             style={button(theme, "ghost")}
           >
-            <Text style={buttonText(theme, "ghost")}>Profile</Text>
+            <Text style={buttonText(theme, "ghost")}>{t("Profile")}</Text>
           </Pressable>
           <Pressable
             onPress={() => router.push("/(app)/bill-edit")}
             style={button(theme, "primary")}
           >
-            <Text style={buttonText(theme, "primary")}>+ Add</Text>
+            <Text style={buttonText(theme, "primary")}>{t("+ Add")}</Text>
           </Pressable>
         </View>
       </View>
@@ -124,7 +126,7 @@ export default function Bills() {
               fontWeight: "600",
             }}
           >
-            Pending ({pendingBills.length})
+            {t("Pending", { pendingBills: pendingBills.length } )}
           </Text>
         </Pressable>
 
@@ -147,7 +149,7 @@ export default function Bills() {
               fontWeight: "600",
             }}
           >
-            Paid ({paidBills.length})
+           {t("Paid", { paidBills: paidBills.length } )}
           </Text>
         </Pressable>
       </View>
@@ -168,8 +170,8 @@ export default function Bills() {
             }}
           >
             {tab === "pending"
-              ? "No pending debts 🎉"
-              : "No paid debts."}
+              ? t("No pending debts")
+              : t("No paid debts")}
           </Text>
         }
         renderItem={({ item }) => {
@@ -190,7 +192,7 @@ export default function Bills() {
                 {item.creditor} {isPaid ? "✅" : ""}
               </Text>
               <Text style={{ color: theme.colors.subtext }}>
-                ${amt} • Due {item.due_date}
+                ${amt} • {t("Due")} {item.due_date}
               </Text>
 
               <View
@@ -209,7 +211,7 @@ export default function Bills() {
                   }
                   style={button(theme, "ghost")}
                 >
-                  <Text style={buttonText(theme, "ghost")}>Edit</Text>
+                  <Text style={buttonText(theme, "ghost")}>{t("Edit")}</Text>
                 </Pressable>
 
                 {!isPaid && (
@@ -220,13 +222,13 @@ export default function Bills() {
                         await cancelBillReminderLocal(item.id);
                         await load();
                       } catch (e: any) {
-                        Alert.alert("Error", e.message);
+                        Alert.alert(t("Error"), e.message);
                       }
                     }}
                     style={button(theme, "primary")}
                   >
                     <Text style={buttonText(theme, "primary")}>
-                      Mark Paid
+                      {t("Mark Paid")}
                     </Text>
                   </Pressable>
                 )}
@@ -238,12 +240,12 @@ export default function Bills() {
                       await cancelBillReminderLocal(item.id);
                       await load();
                     } catch (e: any) {
-                      Alert.alert("Error", e.message);
+                      Alert.alert(t("Error"), e.message);
                     }
                   }}
                   style={button(theme, "danger")}
                 >
-                  <Text style={buttonText(theme, "danger")}>Delete</Text>
+                  <Text style={buttonText(theme, "danger")}>{t("Delete")}</Text>
                 </Pressable>
               </View>
             </View>

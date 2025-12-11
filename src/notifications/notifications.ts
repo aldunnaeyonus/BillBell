@@ -6,6 +6,9 @@ import {
   removeNotificationIdForBill,
   getAllBillNotificationPairs,
 } from "./notificationStore";
+import { useTranslation } from 'react-i18next';
+
+const { t } = useTranslation();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -27,10 +30,11 @@ export async function ensureNotificationPermissions() {
 }
 
 export async function registerNotificationCategories() {
+
   await Notifications.setNotificationCategoryAsync("bill-due-actions", [
     {
       identifier: "mark_paid",
-      buttonTitle: "Mark as Paid",
+      buttonTitle: t("Mark as Paid"),
       options: {
         opensAppToForeground: true, // Set to false if you want it to happen in background (requires extra config)
       },
@@ -94,7 +98,7 @@ export async function scheduleBillReminderLocal(bill: {
   const amount = (bill.amount_cents / 100).toFixed(2);
   const notificationId = await Notifications.scheduleNotificationAsync({
     content: {
-      title: "Bill reminder: ",
+      title: t("Bill reminder"),
       body: `${bill.creditor} – $${amount} due ${bill.due_date}`,
       data: { bill_id: bill.id },
       sound: "default",

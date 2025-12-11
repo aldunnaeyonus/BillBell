@@ -15,6 +15,7 @@ import { useTheme } from "../../src/ui/useTheme";
 import { screen, card, button, buttonText } from "../../src/ui/styles";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Slider from "@react-native-community/slider";
+import { useTranslation } from 'react-i18next';
 
 function todayISO() {
   const d = new Date();
@@ -34,13 +35,14 @@ export default function BillEdit() {
   const [offsetDays, setOffsetDays] = useState("0");
   const reminderDateObj = useMemo(() => {
     const d = new Date(dueDate);
-    d.setDate(d.getDate() - parseInt(offsetDays || "0"));
+    d.setDate(d.getDate());
     return d;
-  }, [dueDate, offsetDays]);
+  }, [dueDate]);
   // Updated type definition
   const [recurrence, setRecurrence] = useState<
-    "none" | "weekly" | "bi-weekly" | "monthly"
+    "none" | "weekly" | "bi-weekly" | "monthly" | "annually"
   >("none");
+  const { t } = useTranslation();
 
   const [showReminderDatePicker, setShowReminderDatePicker] = useState(false);
 
@@ -75,9 +77,9 @@ export default function BillEdit() {
   async function save() {
     try {
       if (!creditor.trim())
-        return Alert.alert("Validation", "Creditor is required");
+        return Alert.alert(t("Validation"), t("Creditor is required"));
       if (amountCents <= 0)
-        return Alert.alert("Validation", "Amount must be > 0");
+        return Alert.alert(t("Validation"), t("Amount must be > 0"));
 
       const payload = {
         creditor: creditor.trim(),
@@ -93,7 +95,7 @@ export default function BillEdit() {
 
       router.back();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      Alert.alert(t("Error"), e.message);
     }
   }
 
@@ -106,13 +108,9 @@ export default function BillEdit() {
     backgroundColor: theme.colors.bg,
   };
 
-  const inputSliderStyle = {
-    width: "95%",
-    color: theme.colors.text,
-  };
   // Helper to render recurrence buttons cleanly
   const renderRecurrenceBtn = (
-    value: "none" | "weekly" | "bi-weekly" | "monthly",
+    value: "none" | "weekly" | "bi-weekly" | "monthly" | "annually",
     label: string
   ) => (
     <Pressable
@@ -159,10 +157,10 @@ export default function BillEdit() {
                 color: theme.colors.text,
               }}
             >
-              {id ? "Edit Debts" : "Add Debts"}
+              {id ? t("Edit Debts") : t("Add Debts")}
             </Text>
 
-            <Text style={{ color: theme.colors.subtext }}>Creditor</Text>
+            <Text style={{ color: theme.colors.subtext }}>{t("Creditor")}</Text>
             <TextInput
               value={creditor}
               onChangeText={setCreditor}
@@ -170,7 +168,7 @@ export default function BillEdit() {
               placeholderTextColor={theme.colors.subtext}
             />
 
-            <Text style={{ color: theme.colors.subtext }}>Amount (USD)</Text>
+            <Text style={{ color: theme.colors.subtext }}>{t("Amount")}</Text>
             <TextInput
               value={amount}
               onChangeText={setAmount}
@@ -180,7 +178,7 @@ export default function BillEdit() {
             />
 
             <Text style={{ color: theme.colors.subtext }}>
-              Due Date ({reminderDateObj.toDateString()})
+              {t("Due Date")} ({reminderDateObj.toDateString()})
             </Text>
             <Pressable
               onPress={() => setShowReminderDatePicker(true)}
@@ -199,17 +197,18 @@ export default function BillEdit() {
                 onChange={onReminderDateChange}
               />
             )}
-            <Text style={{ color: theme.colors.subtext }}>Recurring</Text>
+            <Text style={{ color: theme.colors.subtext }}>{t("Recurring")}</Text>
             {/* Added flexWrap to handle 4 buttons gracefully */}
             <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
-              {renderRecurrenceBtn("none", "None")}
-              {renderRecurrenceBtn("weekly", "Weekly")}
-              {renderRecurrenceBtn("bi-weekly", "Bi-Weekly")}
-              {renderRecurrenceBtn("monthly", "Monthly")}
+              {renderRecurrenceBtn("none", t("None"))}
+              {renderRecurrenceBtn("weekly", t("Weekly"))}
+              {renderRecurrenceBtn("bi-weekly", t("Bi-Weekly"))}
+              {renderRecurrenceBtn("monthly", t("Monthly"))}
+              {renderRecurrenceBtn("annually", t("Annually"))}
             </View>
 
             <Text style={{ color: theme.colors.subtext }}>
-              Reminder Offset Days ({offsetDays})
+              {t('Remind me', {days: offsetDays})}
             </Text>
 
             <Slider
@@ -228,7 +227,7 @@ export default function BillEdit() {
               onValueChange={(val) => setOffsetDays(String(val))}
             />
             <Pressable onPress={save} style={button(theme, "primary")}>
-              <Text style={buttonText(theme, "primary")}>Save</Text>
+              <Text style={buttonText(theme, "primary")}>{t("Save")}</Text>
             </Pressable>
           </View>
         </ScrollView>

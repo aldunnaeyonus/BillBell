@@ -11,6 +11,7 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import { api } from "../../src/api/client";
 import { useTheme } from "../../src/ui/useTheme";
+import { useTranslation } from "react-i18next";
 
 export default function BulkImport() {
   const theme = useTheme?.() ?? {
@@ -21,6 +22,7 @@ export default function BulkImport() {
       subtext: "#666",
     },
   };
+  const { t } = useTranslation();
 
   const [importCode, setImportCode] = useState("");
   const [csvName, setCsvName] = useState<string | null>(null);
@@ -56,15 +58,15 @@ export default function BulkImport() {
       const parsed = parseCsvToBills(content);
 
       if (!parsed || !parsed.length) {
-        Alert.alert("Import", "No valid rows found in CSV.");
+        Alert.alert(t("Import"), t("No valid rows found in CSV."));
         return;
       }
 
       setBills(parsed);
-      Alert.alert("Import", `Parsed ${parsed.length} bill(s) from CSV.`);
+      Alert.alert(t("Import"), t("ParsedCSV",  { bills: parsed.length }));
     } catch (e: any) {
       console.error(e);
-      Alert.alert("Import error", e.message ?? "Failed to read CSV");
+      Alert.alert(t("Import error"), e.message ?? t("Failed to read CSV"));
     }
   }
 
@@ -127,21 +129,21 @@ export default function BulkImport() {
 
   async function doImport() {
     if (!importCode.trim()) {
-      Alert.alert("Import", "Please enter an import code.");
+      Alert.alert(t("Import"), t("Please enter an import code."));
       return;
     }
     if (!bills.length) {
-      Alert.alert("Import", "Please pick a CSV and parse some bills first.");
+      Alert.alert(t("Import"), t("Please pick a CSV otr XLSX and parse some bills first."));
       return;
     }
 
     try {
       setLoading(true);
       await api.importBills(importCode.trim().toUpperCase(), bills);
-      Alert.alert("Import", "Bills imported successfully!");
+      Alert.alert(t("Import"), t("Bills imported successfully!"));
     } catch (e: any) {
       console.error(e);
-      Alert.alert("Import failed", e.message ?? "Unknown error");
+      Alert.alert(t("Import failed"), e.message ?? t("Unknown error"));
     } finally {
       setLoading(false);
     }
@@ -160,12 +162,11 @@ export default function BulkImport() {
           marginBottom: 12,
         }}
       >
-        Import Bills
+        {t("Import Bills")}
       </Text>
 
       <Text style={{ color: theme.colors.subtext, marginBottom: 4 }}>
-        Paste the import code you generated (or received), then pick a CSV file
-        with your bills. Upload a CSV or XLSX with columns:
+        {t("Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:")}
         <Text
           style={{
             color: theme.colors.subtext,
@@ -173,8 +174,7 @@ export default function BulkImport() {
             fontWeight: "bold",
           }}
         >
-          {`\n\n`}Creditor, Amount, Due Date. Recurrence, Reminder Offset Days,
-          Reminder Time
+          {`\n\n`}{t("Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time")}
         </Text>
         {/* Updated line below using backticks for template literals */}
         {`\n\n(i.e.) Creditor.com, 29.00, ${deviceDate}. Monthly, 3, ${deviceTime}`}
@@ -183,7 +183,7 @@ export default function BulkImport() {
       <Text
         style={{ marginTop: 16, marginBottom: 4, color: theme.colors.text }}
       >
-        Import code (Generated in Profile)
+        {t("Import code (Generated in Profile)")}
       </Text>
       <TextInput
         value={importCode}
@@ -216,19 +216,19 @@ export default function BulkImport() {
         disabled={loading}
       >
         <Text style={{ color: theme.colors.accent, fontWeight: "600" }}>
-          {csvName ? "Pick another CSV" : "Pick CSV file"}
+          {csvName ? t("Pick another  or XLSX") : t("Pick CSV or XLSX file")}
         </Text>
       </Pressable>
 
       {csvName && (
         <Text style={{ marginTop: 8, color: theme.colors.subtext }}>
-          Selected: {csvName}
+          {t("Selected:")} {csvName}
         </Text>
       )}
 
       {bills.length > 0 && (
         <Text style={{ marginTop: 8, color: theme.colors.subtext }}>
-          Parsed {bills.length} bill(s)
+          {t("Parsed",  { bills: bills.length })}
         </Text>
       )}
 
@@ -248,7 +248,7 @@ export default function BulkImport() {
         }}
       >
         <Text style={{ color: "#fff", fontWeight: "700" }}>
-          {loading ? "Importing..." : "Import"}
+          {loading ? t("Importing...") : t("Import")}
         </Text>
       </Pressable>
     </ScrollView>

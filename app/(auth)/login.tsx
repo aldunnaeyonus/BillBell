@@ -12,10 +12,12 @@ import {
 import { getExpoPushTokenSafe } from "../../src/notifications/notifications";
 import { useTheme } from "../../src/ui/useTheme";
 import { screen, card, button, buttonText } from "../../src/ui/styles";
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
+  const { t } = useTranslation();
 
   useEffect(() => {
     try {
@@ -50,7 +52,7 @@ export default function Login() {
       await setToken(res.token);
       await postLoginSetup();
     } catch (e: any) {
-      Alert.alert("Login failed", e.message);
+      Alert.alert(t("Login failed"), e.message);
     } finally {
       setLoading(false);
     }
@@ -86,11 +88,11 @@ export default function Login() {
               color: theme.colors.text,
             }}
           >
-           Notification vibes.
+           {t("Notification vibes.")}"
           </Text>
         </View>
         <Text style={{ color: theme.colors.subtext }}>
-           Never miss a due date again.
+           {t("Never miss a due date again.")}"
         </Text>
 
         <View style={{ height: 14 }} />
@@ -102,12 +104,12 @@ export default function Login() {
               const payload = await signInWithAppleTokens();
               await loginToBackend("apple", payload);
             } catch (e: any) {
-              Alert.alert("Apple sign-in", e?.message ?? "Cancelled");
+              Alert.alert(t("Apple sign-in"), e?.message ?? t("Cancelled"));
             }
           }}
           style={[button(theme, "primary"), { marginBottom: 10 }]}
         >
-          <Text style={buttonText(theme, "primary")}>Continue with Apple</Text>
+          <Text style={buttonText(theme, "primary")}>{t("Continue with Apple")}</Text>
         </Pressable>
 
         <Pressable
@@ -118,14 +120,14 @@ export default function Login() {
               const payload = await signInWithGoogleIdToken(); // returns { id_token }
               await loginToBackend("google", payload);
             } catch (e: any) {
-              Alert.alert("Google sign-in", e?.message ?? "Cancelled");
+              Alert.alert(t("Google sign-in"), e?.message ?? t("Cancelled"));
             } finally {
               setLoading(false);
             }
           }}
           style={[button(theme, "ghost")]}
         >
-          <Text style={[buttonText(theme, "ghost")]}>Continue with Google</Text>
+          <Text style={[buttonText(theme, "ghost")]}>{t("Continue with Google")}</Text>
         </Pressable>
       </View>
     </View>

@@ -4,13 +4,8 @@ import { router } from "expo-router";
 import { api } from "../../src/api/client";
 import { useTheme } from "../../src/ui/useTheme";
 import { screen, card, button, buttonText } from "../../src/ui/styles";
-
-const OFFSETS = [
-  { label: "Same day", value: 0 },
-  { label: "1 day before", value: 1 },
-  { label: "2 days before", value: 2 },
-  { label: "3 days before", value: 3 },
-];
+import { useTranslation } from "react-i18next";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function FamilySettings() {
   const [offset, setOffset] = useState<number>(1);
@@ -18,6 +13,20 @@ export default function FamilySettings() {
   const [editable, setEditable] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
+  const { t } = useTranslation();
+  const [showReminderDatePicker, setShowReminderDatePicker] = useState(false);
+  const [reminderDateObj, setReminderDateObj] = useState(() => {
+  const d = new Date();
+  d.setHours(9, 0, 0, 0); // Default to 9:00 AM
+  return d;
+});
+  
+  const OFFSETS = [
+    { label: t("Same day"), value: 0 },
+    { label: t("1 day before"), value: 1 },
+    { label: t("2 days before"), value: 2 },
+    { label: t("3 days before"), value: 3 },
+  ];
 
   useEffect(() => {
     (async () => {
@@ -26,7 +35,9 @@ export default function FamilySettings() {
         setOffset(Number(s.default_reminder_offset_days ?? 1));
         setTime(String(s.default_reminder_time_local ?? "09:00:00"));
         setEditable(Boolean(s.editable));
-      } catch (e: any) { Alert.alert("Error", e.message); }
+      } catch (e: any) {
+        Alert.alert(t("Error"), e.message);
+      }
     })();
   }, []);
 
@@ -35,38 +46,79 @@ export default function FamilySettings() {
     return t;
   }
 
+  const onReminderDateChange = (event: any, selectedDate: any) => {
+  // If the user cancels (Android), selectedDate is undefined.
+  // The '||' operator ensures we keep the old value in that case.
+  const currentDate = selectedDate || reminderDateObj;
+
+  // Note: If you are on Android, you typically set the picker visibility to false here.
+  setShowReminderDatePicker(false)
+
+  setReminderDateObj(currentDate);
+};
+
   async function save() {
-    if (!editable) return Alert.alert("Not allowed", "Only a admin can change shared settings.");
+    if (!editable)
+      return Alert.alert(
+        t("Not allowed"),
+        t("Only a admin can change shared settings.")
+      );
+
     try {
       setLoading(true);
-      const t = normalizeTime(time.trim());
-      if (!/^\d{2}:\d{2}:\d{2}$/.test(t)) return Alert.alert("Validation", "Time must be HH:MM or HH:MM:SS");
-      if (offset < 0 || offset > 3) return Alert.alert("Validation", "Offset must be 0..3");
+      // CHANGE: Rename 't' to 'formattedTime' to avoid conflict
+      const formattedTime = normalizeTime(time.trim());
 
-      await api.familySettingsUpdate({ default_reminder_offset_days: offset, default_reminder_time_local: t });
-      Alert.alert("Saved", "Share defaults updated.");
+      // Update references below to use 'formattedTime'
+      if (!/^\d{2}:\d{2}:\d{2}$/.test(formattedTime)) {
+        return Alert.alert(
+          t("Validation"),
+          t("Time must be HH:MM or HH:MM:SS")
+        );
+      }
+
+      if (offset < 0 || offset > 3) {
+        return Alert.alert(t("Validation"), t("Offset must be 0, 1, 2, or 3"));
+      }
+
+      await api.familySettingsUpdate({
+        default_reminder_offset_days: offset,
+        default_reminder_time_local: formattedTime,
+      });
+
+      Alert.alert(t("Saved"), t("Share defaults updated."));
       router.back();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      Alert.alert(t("Error"), e.message);
     } finally {
       setLoading(false);
     }
   }
 
   const inputStyle = {
-    borderWidth: 1, borderColor: theme.colors.border,
-    padding: 12, borderRadius: 12,
-    color: theme.colors.text, backgroundColor: theme.colors.bg,
-    opacity: editable ? 1 : 0.6
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 12,
+    borderRadius: 12,
+    color: theme.colors.text,
+    backgroundColor: theme.colors.bg,
   };
 
   return (
     <View style={screen(theme)}>
       <View style={[card(theme), { gap: 12 }]}>
-        <Text style={{ fontSize: 20, fontWeight: "900", color: theme.colors.text }}>Share Settings</Text>
-        <Text style={{ color: theme.colors.subtext }}>Shared reminder defaults for the whole group.</Text>
+        <Text
+          style={{ fontSize: 20, fontWeight: "900", color: theme.colors.text }}
+        >
+          {t("Share Settings")}
+        </Text>
+        <Text style={{ color: theme.colors.subtext }}>
+          {t("Shared reminder defaults for the whole group.")}
+        </Text>
 
-        <Text style={{ fontWeight: "800", color: theme.colors.text }}>Default offset</Text>
+        <Text style={{ fontWeight: "800", color: theme.colors.text }}>
+          {t("Default offset")}
+        </Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
           {OFFSETS.map((o) => (
             <Pressable
@@ -74,21 +126,48 @@ export default function FamilySettings() {
               onPress={() => editable && setOffset(o.value)}
               style={[
                 button(theme, "ghost"),
-                { opacity: editable ? 1 : 0.6, borderColor: offset === o.value ? theme.colors.accent : theme.colors.border }
+                {
+                  opacity: editable ? 1 : 0.6,
+                  borderColor:
+                    offset === o.value
+                      ? theme.colors.accent
+                      : theme.colors.border,
+                },
               ]}
             >
               <Text style={buttonText(theme, "ghost")}>{o.label}</Text>
             </Pressable>
           ))}
         </View>
+        <Text style={{ fontWeight: "800", color: theme.colors.text }}>
+          {t("Default time (local)")}
+        </Text>
+        <Pressable onPress={() => {setShowReminderDatePicker(true)}} style={inputStyle}>
+          <Text style={{ color: theme.colors.text }}>{reminderDateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</Text>
+        </Pressable>
+        {showReminderDatePicker && (
+          <DateTimePicker
+            value={reminderDateObj}
+            mode="time" // Correct: Shows clock wheel/input
+            display="default"
+            onChange={onReminderDateChange}
+          />
+        )}
+        {!editable && (
+          <Text style={{ color: theme.colors.subtext }}>
+            {t("Ask a family admin to change these.")}
+          </Text>
+        )}
 
-        <Text style={{ fontWeight: "800", color: theme.colors.text }}>Default time (local)</Text>
-        <TextInput editable={editable} value={time} onChangeText={setTime} style={inputStyle} placeholderTextColor={theme.colors.subtext} />
-
-        {!editable && <Text style={{ color: theme.colors.subtext }}>Ask a family admin to change these.</Text>}
-
-        <Pressable disabled={!editable || loading} onPress={save} style={[button(theme, "primary"), { opacity: (!editable || loading) ? 0.5 : 1 }]}>
-          <Text style={buttonText(theme, "primary")}>Save</Text>
+        <Pressable
+          disabled={!editable || loading}
+          onPress={save}
+          style={[
+            button(theme, "primary"),
+            { opacity: !editable || loading ? 0.5 : 1 },
+          ]}
+        >
+          <Text style={buttonText(theme, "primary")}>{t("Save")}</Text>
         </Pressable>
       </View>
     </View>

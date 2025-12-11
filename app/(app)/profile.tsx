@@ -8,6 +8,7 @@ import { screen, card, button, buttonText } from "../../src/ui/styles";
 import { notifyImportCode } from "../../src/notifications/importCode";
 import { copyToClipboard } from "../../src/ui/copy";
 import { googleSignOut } from "../../src/auth/providers";
+import { useTranslation } from "react-i18next";
 
 export default function Profile() {
   const [data, setData] = useState<any>(null);
@@ -16,7 +17,7 @@ export default function Profile() {
   const [latestImportExpiresAt, setLatestImportExpiresAt] = useState<
     string | null
   >(null);
-
+  const { t } = useTranslation();
   useEffect(() => {
     api
       .familyMembers()
@@ -30,16 +31,23 @@ export default function Profile() {
         <Text
           style={{ fontSize: 20, fontWeight: "900", color: theme.colors.text }}
         >
-          Profile
+          {t("Profile")}
         </Text>
 
         {data && (
           <>
             <Text style={{ fontWeight: "800", color: theme.colors.text }}>
-              Share ID
+              {t("Share ID")}
             </Text>
             <Text style={{ color: theme.colors.subtext }}>
               {data.family_code}
+            </Text>
+
+            <Text style={{ fontWeight: "800", color: theme.colors.text }}>
+              {t("Import Codes & Epiration Date")}
+            </Text>
+            <Text style={{ color: theme.colors.subtext }}>
+              {latestImportCode || t("Touch Generate Import Code")} {latestImportExpiresAt || ""}
             </Text>
 
             <Text
@@ -49,7 +57,7 @@ export default function Profile() {
                 marginTop: 8,
               }}
             >
-              Members
+              {t("Members")}
             </Text>
             <FlatList
               data={data.members}
@@ -72,70 +80,56 @@ export default function Profile() {
           onPress={() => router.push("/(app)/family-settings")}
           style={button(theme, "ghost")}
         >
-          <Text style={buttonText(theme, "ghost")}>Settings</Text>
+          <Text style={buttonText(theme, "ghost")}>{t("Settings")}</Text>
         </Pressable>
-        <Pressable
-          onPress={async () => {
-            try {
-              const res = await api.createImportCode(15);
-              await notifyImportCode(res.code, res.expires_at);
-              Alert.alert(
-                "Import Code",
-                `Code: ${res.code}\nExpires: ${res.expires_at}`
-              );
-            } catch (e: any) {
-              Alert.alert("Error", e.message);
-            }
-          }}
-          style={button(theme, "ghost")}
-        >
-          <Text style={buttonText(theme, "ghost")}>Generate Import Code</Text>
-        </Pressable>
-
+      
         <Pressable
           onPress={async () =>
             router.push("(app)/bulk-import")}
           style={button(theme, "ghost")}
         >
-          <Text style={buttonText(theme, "ghost")}>Bulk Upload (CSV/XLSX)</Text>
+          <Text style={buttonText(theme, "ghost")}>{t("Bulk Upload (CSV/XLSX)")}</Text>
         </Pressable>
 
         <Pressable
           onPress={async () => {
             try {
               const res = await api.createImportCode(15);
+              const notifTitle = t('Import Code');
+              const notifBody = t('CodeExpires', { code: res.code, expiresAt: res.expires_at.toLocaleString() });
+
               setLatestImportCode(res.code);
               await copyToClipboard(res.code);
 
               setLatestImportExpiresAt(res.expires_at);
 
-              await notifyImportCode(res.code, res.expires_at);
-
+            await notifyImportCode(notifTitle, notifBody);
               Alert.alert(
-                "Import Code Generated",
-                `Code: ${res.code}\nExpires: ${res.expires_at}`,
+                t("Import Code Generated"),
+                t("CodeExpires", {code: res.code, expiresAt: res.expires_at}),
+
                 [
                   {
-                    text: "Copy Code",
+                    text: t("Copy Code"),
                     onPress: async () => {
                       await copyToClipboard(res.code);
-                      Alert.alert("Copied", "Import code copied to clipboard.");
+                      Alert.alert(t("Copied"), t("Import code copied to clipboard."));
                     },
                   },
                   {
-                    text: "Open Upload Page",
+                    text: t("Open Upload Page"),
                     onPress: () =>router.push("(app)/bulk-import"),
                   },
-                  { text: "OK", style: "cancel" },
+                  { text: t("OK"), style: "cancel" },
                 ]
               );
             } catch (e: any) {
-              Alert.alert("Error", e.message);
+              Alert.alert(t("Error"), e.message);
             }
           }}
           style={button(theme, "ghost")}
         >
-          <Text style={buttonText(theme, "ghost")}>Generate Import Code</Text>
+          <Text style={buttonText(theme, "ghost")}>{t("Generate Import Code")}</Text>
         </Pressable>
 
         <Pressable
@@ -147,7 +141,7 @@ export default function Profile() {
           }}
           style={button(theme, "danger")}
         >
-          <Text style={buttonText(theme, "danger")}>Logout</Text>
+          <Text style={buttonText(theme, "danger")}>{t("Logout")}</Text>
         </Pressable>
       </View>
     </View>
