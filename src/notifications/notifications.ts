@@ -12,7 +12,6 @@ const { t } = useTranslation();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
     shouldShowBanner: true, // Required: shows the drop-down banner
