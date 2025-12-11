@@ -51,6 +51,7 @@ function AppStack() {
           contentStyle: { backgroundColor: theme.colors.bg },
         }}
       >
+        <Stack.Screen name="(app)/feedback" options={{ title: t("Feedback & Bugs") }} />
         <Stack.Screen name="(app)/faq" options={{ title: t("FAQ") }} />
         <Stack.Screen name="(app)/browser" options={{ title: t("Browser") }} />
         <Stack.Screen name="(app)/bulk-import" options={{ title: t("Bulk Upload") }} />

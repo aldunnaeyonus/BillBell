@@ -154,4 +154,21 @@
       ]
     }
   ]
+  ,
+  "Feedback & Bugs": "フィードバックとバグ",
+  "Found a bug or have a suggestion? Let us know!": "バグや提案がありますか？お知らせください！",
+  "Feedback": "フィードバック",
+  "Bug Report": "バグ報告",
+  "Your Email (Optional)": "メールアドレス (任意)",
+  "so we can reply...": "返信できるように...",
+  "Describe the Bug": "バグの説明",
+  "Your Feedback": "フィードバック内容",
+  "What happened? Steps to reproduce?": "何が起きましたか？再現手順は？",
+  "How can we improve the app?": "アプリをどう改善できますか？",
+  "Submit": "送信",
+  "Thank You!": "ありがとうございます！",
+  "We appreciate you catching that bug. We will look into it.": "バグ報告ありがとうございます。調査いたします。",
+  "Thanks for the feedback! We read every message.": "フィードバックありがとうございます！全て読んでいます。",
+  "Please enter some details first.": "詳細を入力してください。",
+  "Failed to send feedback. Please try again later.": "送信に失敗しました。後で再試行してください。"
 }

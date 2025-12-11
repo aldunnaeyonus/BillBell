@@ -147,4 +147,21 @@
       ]
     }
   ]
+  ,
+  "Feedback & Bugs": "反馈与错误",
+  "Found a bug or have a suggestion? Let us know!": "发现错误或有建议？请告诉我们！",
+  "Feedback": "反馈",
+  "Bug Report": "错误报告",
+  "Your Email (Optional)": "您的邮箱 (选填)",
+  "so we can reply...": "以便我们可以回复...",
+  "Describe the Bug": "描述错误",
+  "Your Feedback": "您的反馈",
+  "What happened? Steps to reproduce?": "发生了什么？重现步骤？",
+  "How can we improve the app?": "我们要如何改进应用？",
+  "Submit": "提交",
+  "Thank You!": "谢谢！",
+  "We appreciate you catching that bug. We will look into it.": "感谢您发现此错误。我们将进行调查。",
+  "Thanks for the feedback! We read every message.": "感谢您的反馈！我们会阅读每条信息。",
+  "Please enter some details first.": "请先输入一些详情。",
+  "Failed to send feedback. Please try again later.": "发送反馈失败。请稍后再试。"
 }

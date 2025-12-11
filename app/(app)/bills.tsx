@@ -87,13 +87,13 @@ export default function Bills() {
             onPress={() => router.push("/(app)/profile")}
             style={button(theme, "ghost")}
           >
-            <Text style={buttonText(theme, "ghost")}>{t("Profile")}</Text>
+            <Text style={buttonText(theme, "ghost")}>⛭ {t("Profile")}</Text>
           </Pressable>
           <Pressable
             onPress={() => router.push("/(app)/bill-edit")}
-            style={button(theme, "primary")}
+            style={button(theme, "ghost")}
           >
-            <Text style={buttonText(theme, "primary")}>{t("+ Add")}</Text>
+            <Text style={buttonText(theme, "primary")}>+ {t("Add")}</Text>
           </Pressable>
         </View>
       </View>

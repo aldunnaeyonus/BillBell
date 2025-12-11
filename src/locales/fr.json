@@ -171,4 +171,21 @@
       ]
     }
   ]
+  ,
+  "Feedback & Bugs": "Avis et Bugs",
+  "Found a bug or have a suggestion? Let us know!": "Un bug ou une suggestion ? Dites-le-nous !",
+  "Feedback": "Avis",
+  "Bug Report": "Signaler un Bug",
+  "Your Email (Optional)": "Votre Email (Optionnel)",
+  "so we can reply...": "pour qu'on puisse répondre...",
+  "Describe the Bug": "Décrivez le bug",
+  "Your Feedback": "Votre avis",
+  "What happened? Steps to reproduce?": "Que s'est-il passé ? Étapes pour reproduire ?",
+  "How can we improve the app?": "Comment améliorer l'app ?",
+  "Submit": "Envoyer",
+  "Thank You!": "Merci !",
+  "We appreciate you catching that bug. We will look into it.": "Merci d'avoir trouvé ce bug. Nous allons regarder.",
+  "Thanks for the feedback! We read every message.": "Merci pour vos retours ! Nous lisons tout.",
+  "Please enter some details first.": "Veuillez entrer des détails d'abord.",
+  "Failed to send feedback. Please try again later.": "Échec de l'envoi. Réessayez plus tard."
 }

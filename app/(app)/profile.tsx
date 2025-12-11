@@ -47,7 +47,8 @@ export default function Profile() {
               {t("Import Codes & Epiration Date")}
             </Text>
             <Text style={{ color: theme.colors.subtext }}>
-              {latestImportCode || t("Touch Generate Import Code")} {latestImportExpiresAt || ""}
+              {latestImportCode || t("Touch Generate Import Code")}{" "}
+              {latestImportExpiresAt || ""}
             </Text>
 
             <Text
@@ -82,43 +83,50 @@ export default function Profile() {
         >
           <Text style={buttonText(theme, "ghost")}>{t("Settings")}</Text>
         </Pressable>
-      
+
         <Pressable
-          onPress={async () =>
-            router.push("(app)/bulk-import")}
+          onPress={async () => router.push("(app)/bulk-import")}
           style={button(theme, "ghost")}
         >
-          <Text style={buttonText(theme, "ghost")}>{t("Bulk Upload (CSV/XLSX)")}</Text>
+          <Text style={buttonText(theme, "ghost")}>
+            {t("Bulk Upload (CSV/XLSX)")}
+          </Text>
         </Pressable>
 
         <Pressable
           onPress={async () => {
             try {
               const res = await api.createImportCode(15);
-              const notifTitle = t('Import Code');
-              const notifBody = t('CodeExpires', { code: res.code, expiresAt: res.expires_at.toLocaleString() });
+              const notifTitle = t("Import Code");
+              const notifBody = t("CodeExpires", {
+                code: res.code,
+                expiresAt: res.expires_at.toLocaleString(),
+              });
 
               setLatestImportCode(res.code);
               await copyToClipboard(res.code);
 
               setLatestImportExpiresAt(res.expires_at);
 
-            await notifyImportCode(notifTitle, notifBody);
+              await notifyImportCode(notifTitle, notifBody);
               Alert.alert(
                 t("Import Code Generated"),
-                t("CodeExpires", {code: res.code, expiresAt: res.expires_at}),
+                t("CodeExpires", { code: res.code, expiresAt: res.expires_at }),
 
                 [
                   {
                     text: t("Copy Code"),
                     onPress: async () => {
                       await copyToClipboard(res.code);
-                      Alert.alert(t("Copied"), t("Import code copied to clipboard."));
+                      Alert.alert(
+                        t("Copied"),
+                        t("Import code copied to clipboard.")
+                      );
                     },
                   },
                   {
                     text: t("Open Upload Page"),
-                    onPress: () =>router.push("(app)/bulk-import"),
+                    onPress: () => router.push("(app)/bulk-import"),
                   },
                   { text: t("OK"), style: "cancel" },
                 ]
@@ -129,13 +137,21 @@ export default function Profile() {
           }}
           style={button(theme, "ghost")}
         >
-          <Text style={buttonText(theme, "ghost")}>{t("Generate Import Code")}</Text>
+          <Text style={buttonText(theme, "ghost")}>
+            {t("Generate Import Code")}
+          </Text>
         </Pressable>
         <Pressable
           onPress={() => router.push("/(app)/faq")}
           style={button(theme, "ghost")}
         >
           <Text style={buttonText(theme, "ghost")}>{t("FAQ & Help")}</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => router.push("/(app)/feedback")}
+          style={button(theme, "ghost")}
+        >
+          <Text style={buttonText(theme, "ghost")}>{t("Feedback & Bugs")}</Text>
         </Pressable>
         <Pressable
           onPress={async () => {
