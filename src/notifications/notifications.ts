@@ -26,10 +26,26 @@ export async function ensureNotificationPermissions() {
   return true;
 }
 
+export async function registerNotificationCategories() {
+  await Notifications.setNotificationCategoryAsync("bill-due-actions", [
+    {
+      identifier: "mark_paid",
+      buttonTitle: "Mark as Paid",
+      options: {
+        opensAppToForeground: true, // Set to false if you want it to happen in background (requires extra config)
+      },
+    },
+  ]);
+}
+
 export async function getExpoPushTokenSafe() {
   if (!Device.isDevice) return null;
   const ok = await ensureNotificationPermissions();
   if (!ok) return null;
+
+  // Register the categories when we get the token
+  await registerNotificationCategories();
+
   const token = await Notifications.getExpoPushTokenAsync();
   return token.data;
 }
@@ -82,10 +98,11 @@ export async function scheduleBillReminderLocal(bill: {
       body: `${bill.creditor} – $${amount} due ${bill.due_date}`,
       data: { bill_id: bill.id },
       sound: "default",
+      categoryIdentifier: "bill-due-actions", // <--- ADD THIS
     },
     trigger: {
       date: fireAt,
-      channelId: 'bill_reminder',
+      channelId: 'bill-due-actions',
     },
   });
 

@@ -1,9 +1,41 @@
+import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import * as Notifications from "expo-notifications";
 import { useTheme } from "../src/ui/useTheme";
+import { api } from "../src/api/client";
+import { 
+  cancelBillReminderLocal, 
+  registerNotificationCategories // <--- Import this
+} from "../src/notifications/notifications";
 
 export default function RootLayout() {
   const theme = useTheme();
+
+  useEffect(() => {
+    // 1. Register the "Mark Paid" category immediately on launch
+    registerNotificationCategories(); 
+
+    // 2. Listen for user interaction with notifications
+    const subscription = Notifications.addNotificationResponseReceivedListener(async (response) => {
+      const actionId = response.actionIdentifier;
+      const billId = response.notification.request.content.data.bill_id;
+
+      if (actionId === "mark_paid" && billId) {
+        try {
+          await api.billsMarkPaid(Number(billId));
+          await cancelBillReminderLocal(Number(billId));
+          // Optional: Refresh data if on the bills screen, or show feedback
+          alert("Bill marked as paid! ✅");
+        } catch (error) {
+          console.error("Failed to mark paid from notification:", error);
+          alert("Error marking bill as paid.");
+        }
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   return (
     <>
