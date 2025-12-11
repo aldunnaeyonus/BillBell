@@ -169,7 +169,7 @@ export default function Bills() {
           >
             {tab === "pending"
               ? "No pending debts 🎉"
-              : "No paid debts yet."}
+              : "No paid debts."}
           </Text>
         }
         renderItem={({ item }) => {

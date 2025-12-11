@@ -36,7 +36,7 @@ export default function FamilySettings() {
   }
 
   async function save() {
-    if (!editable) return Alert.alert("Not allowed", "Only a family admin can change shared settings.");
+    if (!editable) return Alert.alert("Not allowed", "Only a admin can change shared settings.");
     try {
       setLoading(true);
       const t = normalizeTime(time.trim());
@@ -44,7 +44,7 @@ export default function FamilySettings() {
       if (offset < 0 || offset > 3) return Alert.alert("Validation", "Offset must be 0..3");
 
       await api.familySettingsUpdate({ default_reminder_offset_days: offset, default_reminder_time_local: t });
-      Alert.alert("Saved", "Family defaults updated.");
+      Alert.alert("Saved", "Share defaults updated.");
       router.back();
     } catch (e: any) {
       Alert.alert("Error", e.message);
@@ -63,8 +63,8 @@ export default function FamilySettings() {
   return (
     <View style={screen(theme)}>
       <View style={[card(theme), { gap: 12 }]}>
-        <Text style={{ fontSize: 20, fontWeight: "900", color: theme.colors.text }}>Family Settings</Text>
-        <Text style={{ color: theme.colors.subtext }}>Shared reminder defaults for the whole family.</Text>
+        <Text style={{ fontSize: 20, fontWeight: "900", color: theme.colors.text }}>Share Settings</Text>
+        <Text style={{ color: theme.colors.subtext }}>Shared reminder defaults for the whole group.</Text>
 
         <Text style={{ fontWeight: "800", color: theme.colors.text }}>Default offset</Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>

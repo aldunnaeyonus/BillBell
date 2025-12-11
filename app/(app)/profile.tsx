@@ -36,7 +36,7 @@ export default function Profile() {
         {data && (
           <>
             <Text style={{ fontWeight: "800", color: theme.colors.text }}>
-              Family ID
+              Share ID
             </Text>
             <Text style={{ color: theme.colors.subtext }}>
               {data.family_code}
@@ -72,7 +72,7 @@ export default function Profile() {
           onPress={() => router.push("/(app)/family-settings")}
           style={button(theme, "ghost")}
         >
-          <Text style={buttonText(theme, "ghost")}>Family Settings</Text>
+          <Text style={buttonText(theme, "ghost")}>Settings</Text>
         </Pressable>
         <Pressable
           onPress={async () => {
@@ -136,28 +136,6 @@ export default function Profile() {
           style={button(theme, "ghost")}
         >
           <Text style={buttonText(theme, "ghost")}>Generate Import Code</Text>
-        </Pressable>
-
-        <Pressable
-          disabled={!latestImportCode}
-          onPress={async () => {
-            if (!latestImportCode) return;
-            await copyToClipboard(latestImportCode);
-            Alert.alert(
-              "Copied",
-              latestImportExpiresAt
-                ? `Import code copied.\nExpires: ${latestImportExpiresAt}`
-                : "Import code copied."
-            );
-          }}
-          style={[
-            button(theme, "ghost"),
-            { opacity: latestImportCode ? 1 : 0.5 },
-          ]}
-        >
-          <Text style={buttonText(theme, "ghost")}>
-            Copy Latest Import Code
-          </Text>
         </Pressable>
 
         <Pressable

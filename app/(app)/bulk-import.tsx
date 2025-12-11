@@ -1,50 +1,72 @@
 // app/src/screens/ImportBillsScreen.tsx
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, Alert, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Alert,
+  ScrollView,
+} from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { api } from "../../src/api/client";
 import { useTheme } from "../../src/ui/useTheme";
 
 export default function BulkImport() {
   const theme = useTheme?.() ?? {
-    colors: { background: "#fff", text: "#000", accent: "#007aff", subtext: "#666" },
+    colors: {
+      background: "#fff",
+      text: "#000",
+      accent: "#007aff",
+      subtext: "#666",
+    },
   };
 
   const [importCode, setImportCode] = useState("");
   const [csvName, setCsvName] = useState<string | null>(null);
   const [bills, setBills] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const deviceDate = new Date().toLocaleDateString();
+  const deviceTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   async function pickCsv() {
-  try {
-    const res = await DocumentPicker.getDocumentAsync({
-      // Added generic csv MIME type for better Android support
-      type: ["text/csv", "text/plain", "application/vnd.ms-excel", "text/comma-separated-values"],
-      copyToCacheDirectory: true,
-    });
+    try {
+      const res = await DocumentPicker.getDocumentAsync({
+        // Added generic csv MIME type for better Android support
+        type: [
+          "text/csv",
+          "text/plain",
+          "application/vnd.ms-excel",
+          "text/comma-separated-values",
+        ],
+        copyToCacheDirectory: true,
+      });
 
-    if (res.canceled) return;
+      if (res.canceled) return;
 
-    const file = res.assets[0];
-    setCsvName(file.name);
+      const file = res.assets[0];
+      setCsvName(file.name);
 
-    // FIX: Read the string data from the URI provided by the picker
-    const response = await fetch(file.uri);
-    const content = await response.text();
-    const parsed = parseCsvToBills(content);
-    
-    if (!parsed || !parsed.length) {
-      Alert.alert("Import", "No valid rows found in CSV.");
-      return;
+      // FIX: Read the string data from the URI provided by the picker
+      const response = await fetch(file.uri);
+      const content = await response.text();
+      const parsed = parseCsvToBills(content);
+
+      if (!parsed || !parsed.length) {
+        Alert.alert("Import", "No valid rows found in CSV.");
+        return;
+      }
+
+      setBills(parsed);
+      Alert.alert("Import", `Parsed ${parsed.length} bill(s) from CSV.`);
+    } catch (e: any) {
+      console.error(e);
+      Alert.alert("Import error", e.message ?? "Failed to read CSV");
     }
-
-    setBills(parsed);
-    Alert.alert("Import", `Parsed ${parsed.length} bill(s) from CSV.`);
-  } catch (e: any) {
-    console.error(e);
-    Alert.alert("Import error", e.message ?? "Failed to read CSV");
   }
-}
 
   function parseCsvToBills(csv: string): any[] {
     const lines = csv
@@ -142,11 +164,26 @@ export default function BulkImport() {
       </Text>
 
       <Text style={{ color: theme.colors.subtext, marginBottom: 4 }}>
-        Paste the import code you generated (or received), then pick a CSV file with your bills.
+        Paste the import code you generated (or received), then pick a CSV file
+        with your bills. Upload a CSV or XLSX with columns:
+        <Text
+          style={{
+            color: theme.colors.subtext,
+            marginBottom: 4,
+            fontWeight: "bold",
+          }}
+        >
+          {`\n\n`}Creditor, Amount, Due Date. Recurrence, Reminder Offset Days,
+          Reminder Time
+        </Text>
+        {/* Updated line below using backticks for template literals */}
+        {`\n\n(i.e.) Creditor.com, 29.00, ${deviceDate}. Monthly, 3, ${deviceTime}`}
       </Text>
 
-      <Text style={{ marginTop: 16, marginBottom: 4, color: theme.colors.text }}>
-        Import code
+      <Text
+        style={{ marginTop: 16, marginBottom: 4, color: theme.colors.text }}
+      >
+        Import code (Generated in Profile)
       </Text>
       <TextInput
         value={importCode}
@@ -202,14 +239,16 @@ export default function BulkImport() {
         disabled={loading || !importCode || !bills.length}
         style={{
           backgroundColor:
-            loading || !importCode || !bills.length ? "#ccc" : theme.colors.accent,
+            loading || !importCode || !bills.length
+              ? "#ccc"
+              : theme.colors.accent,
           borderRadius: 999,
           paddingVertical: 12,
           alignItems: "center",
         }}
       >
         <Text style={{ color: "#fff", fontWeight: "700" }}>
-          {loading ? "Importing..." : "Import bills"}
+          {loading ? "Importing..." : "Import"}
         </Text>
       </Pressable>
     </ScrollView>

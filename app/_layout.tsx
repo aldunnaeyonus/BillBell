@@ -54,7 +54,7 @@ export default function RootLayout() {
         <Stack.Screen name="(app)/bulk-import" options={{ title: "Bulk Upload" }} />
         <Stack.Screen name="index" options={{ title: "Debts" }} />
         <Stack.Screen name="(auth)/login" options={{ title: "Sign in" }} />
-        <Stack.Screen name="(app)/family" options={{ title: "Family" }} />
+        <Stack.Screen name="(app)/family" options={{ title: "Shared Group" }} />
         <Stack.Screen name="(app)/bills" options={{ title: "DueView App" }} />
         <Stack.Screen
           name="(app)/bill-edit"
@@ -64,7 +64,7 @@ export default function RootLayout() {
 
         <Stack.Screen
           name="(app)/family-settings"
-          options={{ title: "Family Settings" }}
+          options={{ title: "Shared Settings" }}
         />
       </Stack>
     </>
