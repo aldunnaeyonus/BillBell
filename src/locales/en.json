@@ -7,7 +7,7 @@
 "Debts":"Debts",
 "Sign in":"Sign in",
 "Shared Group":"Shared Group",
-"DueView App":"DueView App",
+"DueView App":"Dashboard",
 "Edit Debts":"Edit Debts",
 "Profile":"Profile",
 "Shared Settings":"Shared Settings",
@@ -101,5 +101,8 @@
 "`Your Family ID":"Your Family ID: {{family_code}}",
 "Create a new Family":"Create a new Family",
 "Or join with Family ID":"Or join with Family ID",
-"Join Family":"Join Family"
+"Join Family":"Join Family",
+"FAQ":"FAQ's",
+"Frequently Asked Questions":"Frequently Asked Questions"
+
 }

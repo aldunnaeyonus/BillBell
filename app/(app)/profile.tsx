@@ -131,7 +131,12 @@ export default function Profile() {
         >
           <Text style={buttonText(theme, "ghost")}>{t("Generate Import Code")}</Text>
         </Pressable>
-
+        <Pressable
+          onPress={() => router.push("/(app)/faq")}
+          style={button(theme, "ghost")}
+        >
+          <Text style={buttonText(theme, "ghost")}>{t("FAQ & Help")}</Text>
+        </Pressable>
         <Pressable
           onPress={async () => {
             await googleSignOut();
