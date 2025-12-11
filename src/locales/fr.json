@@ -1,0 +1,174 @@
+{
+  "markedPaid": "Facture marquée comme payée ! ✅",
+  "Failed to mark paid from notification": "Échec du marquage comme payé depuis la notification :",
+  "Error marking bill as paid": "Erreur lors du marquage de la facture.",
+  "Browser": "Navigateur",
+  "Bulk Upload": "Importation en masse",
+  "Debts": "Dettes",
+  "Sign in": "Se connecter",
+  "Shared Group": "Groupe Partagé",
+  "DueView App": "Tableau de bord",
+  "Edit Debts": "Modifier Dettes",
+  "Profile": "Profil",
+  "Shared Settings": "Paramètres Partagés",
+  "Import Code": "Code d'Importation (Sécurité CSV & XLSX)",
+  "CodeExpires": "Code : {{code}} (expire le {{expiresAt}})",
+  "Mark as Paid": "Marquer comme Payé",
+  "Bill reminder": "Rappel de facture : ",
+  "Can't open link": "Impossible d'ouvrir le lien",
+  "Login failed": "Échec de connexion",
+  "Notification vibes.": "Vibes de notification.",
+  "Never miss a due date again.": "Ne manquez plus jamais une échéance.",
+  "Apple sign-in": "Connexion Apple",
+  "Continue with Apple": "Continuer avec Apple",
+  "Continue with Google": "Continuer avec Google",
+  "Cancelled": "Annulé",
+  "Validation": "Validation",
+  "Creditor is required": "Le créancier est requis",
+  "Amount must be > 0": "Le montant doit être > 0",
+  "Error": "Erreur",
+  "Add Debts": "Ajouter Dettes",
+  "Creditor": "Créancier",
+  "Amount": "Montant",
+  "Due Date": "Date d'échéance",
+  "Recurring": "Récurrent",
+  "Remind me": "Rappelez-moi {{days}} jours avant",
+  "Save": "Enregistrer",
+  "None": "Aucun",
+  "Weekly": "Hebdomadaire",
+  "Bi-Weekly": "Bi-hebdomadaire",
+  "Monthly": "Mensuel",
+  "Annually": "Annuel",
+  "Logout": "Déconnexion",
+  "Generate Import Code": "Générer Code d'Importation",
+  "OK": "OK",
+  "Open Upload Page": "Ouvrir Page d'Upload",
+  "Copied": "Copié",
+  "Import code copied to clipboard.": "Code d'importation copié.",
+  "Copy Code": "Copier Code",
+  "Import Code Generated": "Code généré",
+  "Bulk Upload (CSV/XLSX)": "Upload en masse (CSV/XLSX)",
+  "Import Codes": "Codes d'Importation",
+  "Settings": "Paramètres",
+  "Members": "Membres",
+  "Import Codes & Epiration Date": "Code de Sécurité et Expiration",
+  "Touch Generate Import Code": "Touchez \"Générer Code\" ci-dessous.",
+  "Share ID": "Mon ID de Partage",
+  "+ Add": "+ Ajouter",
+  "Pending": "En attente ({{pendingBills}})",
+  "Paid": "Payé ({{paidBills}})",
+  "No pending debts": "Aucune dette en attente 🎉",
+  "No paid debts.": "Aucune dette payée.",
+  "Due": "Dû",
+  "Edit": "Modifier",
+  "Mark Paid": "Marquer Payé",
+  "Delete": "Supprimer",
+  "Import": "Importer",
+  "No valid rows found in CSV.": "Aucune ligne valide trouvée dans le CSV.",
+  "Import error": "Erreur d'importation",
+  "Failed to read CSV": "Échec de lecture CSV",
+  "Please enter an import code.": "Veuillez entrer un code d'importation.",
+  "Please pick a CSV otr XLSX and parse some bills first.": "Veuillez choisir un fichier et analyser les factures d'abord.",
+  "Bills imported successfully!": "Factures importées avec succès !",
+  "Unknown error": "Erreur inconnue",
+  "Import failed": "Échec de l'importation",
+  "Import Bills": "Importer Factures",
+  "Import code (Generated in Profile)": "Code d'importation (Généré dans Profil)",
+  "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time": "Créancier, Montant, Date. Récurrence, Jours avant rappel, Heure",
+  "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:": "Collez le code, puis choisissez un fichier. CSV ou XLSX avec colonnes :",
+  "Pick another  or XLSX": "Choisir un autre CSV ou XLSX",
+  "Pick CSV or XLSX file": "Choisir fichier CSV ou XLSX",
+  "Selected:": "Sélectionné : ",
+  "Parsed": "{{bills}} facture(s) analysée(s)",
+  "ParsedCSV": "{{bills}} facture(s) analysée(s) du fichier.",
+  "Importing...": "Importation...",
+  "Same day": "Le jour même",
+  "1 day before": "1 jour avant",
+  "2 day before": "2 jours avant",
+  "3 day before": "3 jours avant",
+  "Not allowed": "Non autorisé",
+  "Only a admin can change shared settings.": "Seul un admin peut changer les réglages partagés.",
+  "Time must be HH:MM or HH:MM:SS": "L'heure doit être HH:MM ou HH:MM:SS",
+  "Offset must be 0, 1, 2, ou 3": "Le décalage doit être 0, 1, 2 ou 3",
+  "Saved": "Enregistré",
+  "Share defaults updated.": "Paramètres de partage mis à jour.",
+  "Share Settings": "Paramètres de Partage",
+  "Shared reminder defaults for the whole group.": "Rappels par défaut pour le groupe.",
+  "Default offset": "Décalage par défaut",
+  "Default time (local)": "Heure d'alerte par défaut",
+  "Ask a family admin to change these.": "Demandez à un admin de changer ceci.",
+  "Family created": "Famille créée",
+  "Your Family ID": "Votre ID Famille : {{family_code}}",
+  "Create a new Family": "Créer une nouvelle Famille",
+  "Or join with Family ID": "Ou rejoindre avec ID Famille",
+  "Join Family": "Rejoindre Famille",
+  "FAQ": "FAQ",
+  "Frequently Asked Questions": "Foire Aux Questions",
+  "faqSections": [
+    {
+      "title": "Ajout et Gestion",
+      "items": [
+        { "q": "Comment ajouter une dette ?", "a": "Allez dans Dettes et touchez '+ Ajouter'." },
+        { "q": "Comment modifier ?", "a": "Touchez une dette dans la liste pour l'éditer." },
+        { "q": "Comment supprimer ?", "a": "Sélectionnez une dette et touchez 'Supprimer'." },
+        { "q": "Que se passe-t-il si je marque comme payé ?", "a": "Elle passe dans la section Payé et les rappels s'arrêtent." }
+      ]
+    },
+    {
+      "title": "Notifications",
+      "items": [
+        { "q": "Quand recevrai-je des rappels ?", "a": "Un jour avant l'échéance, selon les réglages de la famille." },
+        { "q": "Pourquoi pas de notifications ?", "a": "Vérifiez les paramètres de votre appareil." },
+        { "q": "Les rappels se synchronisent-ils ?", "a": "Oui. Toute la famille reçoit les rappels." }
+      ]
+    },
+    {
+      "title": "Familles et Partage",
+      "items": [
+        { "q": "Puis-je partager mon compte ?", "a": "Oui. Partagez votre ID Famille." },
+        { "q": "Comment inviter quelqu'un ?", "a": "Trouvez votre ID Famille dans le Profil et donnez-le." },
+        { "q": "Plusieurs personnes peuvent gérer ?", "a": "Absolument. Tout le monde peut gérer les dettes partagées." },
+        { "q": "Puis-je quitter une famille ?", "a": "Oui, depuis les paramètres Famille." }
+      ]
+    },
+    {
+      "title": "Importation",
+      "items": [
+        { "q": "Comment fonctionne le code ?", "a": "Les admins génèrent un code pour l'upload en masse." },
+        { "q": "Quel type de fichier ?", "a": "CSV avec : name, amount, due_date, notes, autopay." },
+        { "q": "Importer plusieurs dettes ?", "a": "Oui, utilisez l'Importation en masse." },
+        { "q": "Pourquoi l'échec ?", "a": "Vérifiez le format CSV et la validité du code." }
+      ]
+    },
+    {
+      "title": "Compte et Sécurité",
+      "items": [
+        { "q": "Comment se connecter ?", "a": "Via Apple Sign-In ou Google Sign-In." },
+        { "q": "Mes données sont-elles sûres ?", "a": "Oui. Protégées par des jetons chiffrés." },
+        { "q": "Synchronisation ?", "a": "Oui, si vous utilisez le même compte Apple/Google." }
+      ]
+    },
+    {
+      "title": "Paramètres",
+      "items": [
+        { "q": "Mode Sombre ?", "a": "Oui. S'adapte à votre appareil." },
+        { "q": "Changer rappels ?", "a": "Les admins peuvent changer les heures par défaut." },
+        { "q": "Changer ID Famille ?", "a": "Non. C'est un identifiant système unique." }
+      ]
+    },
+    {
+      "title": "Facturation",
+      "items": [
+        { "q": "Format des montants ?", "a": "Montant complet sans symboles (ex: '150.25')." },
+        { "q": "Paiement auto ?", "a": "Oui. Marquez comme auto-pay lors de la création." }
+      ]
+    },
+    {
+      "title": "Dépannage",
+      "items": [
+        { "q": "Pas de mise à jour ?", "a": "Vérifiez la Famille. Tirez la liste vers le bas pour rafraîchir." },
+        { "q": "Restaurer une suppression ?", "a": "Non. C'est définitif." }
+      ]
+    }
+  ]
+}

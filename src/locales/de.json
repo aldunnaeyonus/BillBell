@@ -1,0 +1,174 @@
+{
+  "markedPaid": "Rechnung als bezahlt markiert! ✅",
+  "Failed to mark paid from notification": "Fehler beim Markieren als bezahlt aus Benachrichtigung:",
+  "Error marking bill as paid": "Fehler beim Markieren der Rechnung als bezahlt.",
+  "Browser": "Browser",
+  "Bulk Upload": "Massen-Upload",
+  "Debts": "Schulden",
+  "Sign in": "Anmelden",
+  "Shared Group": "Geteilte Gruppe",
+  "DueView App": "Dashboard",
+  "Edit Debts": "Schulden bearbeiten",
+  "Profile": "Profil",
+  "Shared Settings": "Geteilte Einstellungen",
+  "Import Code": "Import-Code (CSV & XLSX Sicherheitscode)",
+  "CodeExpires": "Code: {{code}} (läuft ab am {{expiresAt}})",
+  "Mark as Paid": "Als bezahlt markieren",
+  "Bill reminder": "Rechnungserinnerung: ",
+  "Can't open link": "Link kann nicht geöffnet werden",
+  "Login failed": "Anmeldung fehlgeschlagen",
+  "Notification vibes.": "Benachrichtigungs-Vibes.",
+  "Never miss a due date again.": "Nie wieder ein Fälligkeitsdatum verpassen.",
+  "Apple sign-in": "Mit Apple anmelden",
+  "Continue with Apple": "Weiter mit Apple",
+  "Continue with Google": "Weiter mit Google",
+  "Cancelled": "Abgebrochen",
+  "Validation": "Validierung",
+  "Creditor is required": "Gläubiger ist erforderlich",
+  "Amount must be > 0": "Betrag muss > 0 sein",
+  "Error": "Fehler",
+  "Add Debts": "Schulden hinzufügen",
+  "Creditor": "Gläubiger",
+  "Amount": "Betrag",
+  "Due Date": "Fälligkeitsdatum",
+  "Recurring": "Wiederkehrend",
+  "Remind me": "Erinnere mich {{days}} Tage vor Fälligkeit",
+  "Save": "Speichern",
+  "None": "Keine",
+  "Weekly": "Wöchentlich",
+  "Bi-Weekly": "Zweiwöchentlich",
+  "Monthly": "Monatlich",
+  "Annually": "Jährlich",
+  "Logout": "Abmelden",
+  "Generate Import Code": "Import-Code generieren",
+  "OK": "OK",
+  "Open Upload Page": "Upload-Seite öffnen",
+  "Copied": "Kopiert",
+  "Import code copied to clipboard.": "Import-Code in Zwischenablage kopiert.",
+  "Copy Code": "Code kopieren",
+  "Import Code Generated": "Import-Code generiert",
+  "Bulk Upload (CSV/XLSX)": "Massen-Upload (CSV/XLSX)",
+  "Import Codes": "Import-Code",
+  "Settings": "Einstellungen",
+  "Members": "Mitglieder",
+  "Import Codes & Epiration Date": "Import-Sicherheitscode & Ablauf",
+  "Touch Generate Import Code": "Tippen Sie unten auf \"Code generieren\".",
+  "Share ID": "Meine Share-ID",
+  "+ Add": "+ Hinzufügen",
+  "Pending": "Ausstehend ({{pendingBills}})",
+  "Paid": "Bezahlt ({{paidBills}})",
+  "No pending debts": "Keine offenen Schulden 🎉",
+  "No paid debts.": "Keine bezahlten Schulden.",
+  "Due": "Fällig",
+  "Edit": "Bearbeiten",
+  "Mark Paid": "Bezahlt markieren",
+  "Delete": "Löschen",
+  "Import": "Importieren",
+  "No valid rows found in CSV.": "Keine gültigen Zeilen im CSV gefunden.",
+  "Import error": "Importfehler",
+  "Failed to read CSV": "CSV konnte nicht gelesen werden",
+  "Please enter an import code.": "Bitte geben Sie einen Import-Code ein.",
+  "Please pick a CSV otr XLSX and parse some bills first.": "Bitte wählen Sie erst eine CSV/XLSX und parsen Sie Rechnungen.",
+  "Bills imported successfully!": "Rechnungen erfolgreich importiert!",
+  "Unknown error": "Unbekannter Fehler",
+  "Import failed": "Import fehlgeschlagen",
+  "Import Bills": "Rechnungen importieren",
+  "Import code (Generated in Profile)": "Import-Code (im Profil generiert)",
+  "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time": "Gläubiger, Betrag, Datum. Wiederholung, Vorlauftage, Zeit",
+  "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:": "Code einfügen, dann Datei wählen. CSV oder XLSX mit Spalten hochladen:",
+  "Pick another  or XLSX": "Andere CSV oder XLSX wählen",
+  "Pick CSV or XLSX file": "CSV oder XLSX Datei wählen",
+  "Selected:": "Ausgewählt: ",
+  "Parsed": "{{bills}} Rechnung(en) geparst",
+  "ParsedCSV": "{{bills}} Rechnung(en) aus Datei geparst.",
+  "Importing...": "Importiere...",
+  "Same day": "Am selben Tag",
+  "1 day before": "1 Tag vorher",
+  "2 day before": "2 Tage vorher",
+  "3 day before": "3 Tage vorher",
+  "Not allowed": "Nicht erlaubt",
+  "Only a admin can change shared settings.": "Nur ein Admin kann geteilte Einstellungen ändern.",
+  "Time must be HH:MM or HH:MM:SS": "Zeit muss HH:MM oder HH:MM:SS sein",
+  "Offset must be 0, 1, 2, or 3": "Offset muss 0, 1, 2 oder 3 sein",
+  "Saved": "Gespeichert",
+  "Share defaults updated.": "Teil-Standards aktualisiert.",
+  "Share Settings": "Teil-Einstellungen",
+  "Shared reminder defaults for the whole group.": "Standard-Erinnerungen für die ganze Gruppe.",
+  "Default offset": "Standard-Offset",
+  "Default time (local)": "Standard-Alarmzeit",
+  "Ask a family admin to change these.": "Bitten Sie einen Familien-Admin, dies zu ändern.",
+  "Family created": "Familie erstellt",
+  "Your Family ID": "Ihre Familien-ID: {{family_code}}",
+  "Create a new Family": "Neue Familie erstellen",
+  "Or join with Family ID": "Oder mit Familien-ID beitreten",
+  "Join Family": "Familie beitreten",
+  "FAQ": "FAQ",
+  "Frequently Asked Questions": "Häufig gestellte Fragen",
+  "faqSections": [
+    {
+      "title": "Schulden verwalten",
+      "items": [
+        { "q": "Wie füge ich eine Schuld hinzu?", "a": "Gehen Sie zu Schulden und tippen Sie auf '+ Hinzufügen'." },
+        { "q": "Wie bearbeite ich?", "a": "Tippen Sie auf eine Schuld in der Liste, um sie zu bearbeiten." },
+        { "q": "Wie lösche ich?", "a": "Wählen Sie eine Schuld und tippen Sie auf 'Löschen'." },
+        { "q": "Was passiert bei 'Als bezahlt markieren'?", "a": "Sie wird in den Bereich 'Bezahlt' verschoben und Erinnerungen stoppen." }
+      ]
+    },
+    {
+      "title": "Benachrichtigungen",
+      "items": [
+        { "q": "Wann erhalte ich Erinnerungen?", "a": "Sie erhalten eine Erinnerung einen Tag vor Fälligkeit (je nach Einstellung)." },
+        { "q": "Warum keine Benachrichtigungen?", "a": "Prüfen Sie die Geräteeinstellungen und ob Sie eingeloggt sind." },
+        { "q": "Synchronisieren Erinnerungen?", "a": "Ja. Alle Familienmitglieder erhalten Erinnerungen für geteilte Schulden." }
+      ]
+    },
+    {
+      "title": "Familien & Teilen",
+      "items": [
+        { "q": "Kann ich mein Konto teilen?", "a": "Ja. Teilen Sie Ihre Familien-ID." },
+        { "q": "Wie lade ich jemanden ein?", "a": "Geben Sie Ihre Familien-ID aus dem Profil weiter." },
+        { "q": "Können mehrere Personen verwalten?", "a": "Absolut. Jeder in der Familie kann verwalten." },
+        { "q": "Kann ich eine Familie verlassen?", "a": "Ja, über die Familien-Einstellungen." }
+      ]
+    },
+    {
+      "title": "Import & Upload",
+      "items": [
+        { "q": "Wie funktioniert der Import-Code?", "a": "Admins generieren einen Code für den Massen-Upload." },
+        { "q": "Welche Dateitypen?", "a": "CSV-Dateien mit: name, amount, due_date, notes, autopay." },
+        { "q": "Mehrere Schulden importieren?", "a": "Ja, nutzen Sie den Massen-Upload." },
+        { "q": "Warum schlug der Import fehl?", "a": "Prüfen Sie das CSV-Format und ob der Code gültig ist." }
+      ]
+    },
+    {
+      "title": "Konto & Sicherheit",
+      "items": [
+        { "q": "Wie melde ich mich an?", "a": "Über Apple Sign-In oder Google Sign-In." },
+        { "q": "Sind meine Daten sicher?", "a": "Ja. Verschlüsselte Authentifizierungs-Token sichern Ihre Daten." },
+        { "q": "Synchronisieren Daten?", "a": "Ja, bei gleichem Login auf allen Geräten." }
+      ]
+    },
+    {
+      "title": "Einstellungen",
+      "items": [
+        { "q": "Dunkelmodus?", "a": "Ja, passt sich dem Gerät an." },
+        { "q": "Erinnerungen ändern?", "a": "Familien-Admins können Standardzeiten ändern." },
+        { "q": "Familien-ID ändern?", "a": "Nein, diese sind systemgeneriert." }
+      ]
+    },
+    {
+      "title": "Abrechnung",
+      "items": [
+        { "q": "Wie Beträge eingeben?", "a": "Voller Betrag ohne Symbole (z.B. '150.25')." },
+        { "q": "Auto-Pay verfolgen?", "a": "Ja, beim Erstellen als Auto-Pay markieren." }
+      ]
+    },
+    {
+      "title": "Fehlerbehebung",
+      "items": [
+        { "q": "Rechnungen aktualisieren nicht.", "a": "Prüfen Sie die Familien-Zugehörigkeit. Ziehen Sie die Liste zum Aktualisieren herunter." },
+        { "q": "Versehentlich gelöscht?", "a": "Nein. Gelöschte Schulden sind weg." }
+      ]
+    }
+  ]
+}
