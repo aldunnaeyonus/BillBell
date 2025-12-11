@@ -8,6 +8,7 @@ import { screen, card, button, buttonText } from "../../src/ui/styles";
 import { openLink } from "../../src/ui/openLink";
 import { notifyImportCode } from "../../src/notifications/importCode";
 import { copyToClipboard } from "../../src/ui/copy";
+import { googleSignOut } from "../../src/auth/providers";
 
 export default function Profile() {
   const [data, setData] = useState<any>(null);
@@ -125,13 +126,13 @@ export default function Profile() {
                     },
                   },
                   {
-  text: "Open Upload Page",
-  onPress: () =>
-    router.push({
-      pathname: "/(app)/browser",
-      params: { url: encodeURIComponent(IMPORT_URL) }
-    })
-},
+                    text: "Open Upload Page",
+                    onPress: () =>
+                      router.push({
+                        pathname: "/(app)/browser",
+                        params: { url: encodeURIComponent(IMPORT_URL) },
+                      }),
+                  },
                   { text: "OK", style: "cancel" },
                 ]
               );
@@ -168,6 +169,7 @@ export default function Profile() {
 
         <Pressable
           onPress={async () => {
+            await googleSignOut();
             await clearToken();
             Alert.alert("Logged out");
             router.replace("/(auth)/login");

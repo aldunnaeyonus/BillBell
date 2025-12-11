@@ -1,6 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/billMVP";
 
 async function getToken() {
   return SecureStore.getItemAsync("token");
@@ -23,6 +23,27 @@ async function request(path: string, opts: RequestInit = {}) {
     throw new Error(msg);
   }
   return json;
+}
+
+async function parseJsonOrThrow(res: Response) {
+  const text = await res.text();
+
+  // Try to parse JSON if it looks like JSON
+  const looksJson = /^\s*[{[]/.test(text);
+  const data = looksJson ? (() => { try { return JSON.parse(text); } catch { return null; } })() : null;
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.error || data.message)) ||
+      `HTTP ${res.status} ${res.statusText}: ${text.slice(0, 500)}`;
+    throw new Error(msg);
+  }
+
+  if (!data) {
+    throw new Error(`Expected JSON but got: ${text.slice(0, 500)}`);
+  }
+
+  return data;
 }
 
 export const api = {

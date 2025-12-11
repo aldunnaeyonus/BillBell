@@ -17,7 +17,8 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dunn.carabali.billbell"
+      "bundleIdentifier": "com.dunn.carabali.billbell",
+      "appleTeamId": "2899NRK28S"
     },
     "android": {
       "package": "com.dunn.carabali.billbell",
@@ -27,6 +28,12 @@
       }
     },
     "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.YOUR_REVERSED_CLIENT_ID_HERE"
+        }
+      ],
       "expo-router",
       [
         "expo-notifications",
@@ -35,8 +42,9 @@
           "color": "#0B1F3B",
           "mode": "production"
         }
-      ]
-        ],
+      ],
+      "expo-secure-store"
+    ],
     "extra": {
       "eas": {
         "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
