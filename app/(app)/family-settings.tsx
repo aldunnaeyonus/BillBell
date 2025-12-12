@@ -100,7 +100,7 @@ export default function FamilySettings() {
     borderColor: theme.colors.border,
     padding: 12,
     borderRadius: 12,
-    color: theme.colors.primaryText,
+    color: theme.colors.primary,
     backgroundColor: theme.colors.bg,
   };
 
@@ -111,7 +111,7 @@ export default function FamilySettings() {
           style={{
             fontSize: 20,
             fontWeight: "900",
-            color: theme.colors.primaryText,
+            color: theme.colors.primary,
           }}
         >
           {t("Share Settings")}
@@ -120,7 +120,7 @@ export default function FamilySettings() {
           {t("Shared reminder defaults for the whole group.")}
         </Text>
 
-        <Text style={{ fontWeight: "800", color: theme.colors.primaryText }}>
+        <Text style={{ fontWeight: "800", color: theme.colors.primary }}>
           {t("Default offset")}
         </Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
@@ -143,7 +143,7 @@ export default function FamilySettings() {
             </Pressable>
           ))}
         </View>
-        <Text style={{ fontWeight: "800", color: theme.colors.primaryText }}>
+        <Text style={{ fontWeight: "800", color: theme.colors.primary }}>
           {t("Default time (local)")}
         </Text>
         <Pressable
@@ -152,7 +152,7 @@ export default function FamilySettings() {
           }}
           style={inputStyle}
         >
-          <Text style={{ color: theme.colors.primaryText }}>
+          <Text style={{ color: theme.colors.primary }}>
             {reminderDateObj.toLocaleTimeString([], {
               hour: "numeric",
               minute: "2-digit",
@@ -181,7 +181,7 @@ export default function FamilySettings() {
             { opacity: !editable || loading ? 0.5 : 1 },
           ]}
         >
-          <Text style={buttonText(theme, "primary")}>{t("Save")}</Text>
+          <Text style={buttonText(theme, "danger")}>{t("Save")}</Text>
         </Pressable>
       </View>
     </View>

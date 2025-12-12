@@ -88,7 +88,7 @@ export default function FeedbackScreen() {
               style={{
                 fontSize: 24,
                 fontWeight: "900",
-                color: theme.colors.primaryText,
+                color: theme.colors.primary,
               }}
             >
               {t("Feedback & Bug Reports")}
@@ -112,7 +112,7 @@ export default function FeedbackScreen() {
                 style={{
                   fontSize: 14,
                   fontWeight: "700",
-                  color: theme.colors.primaryText,
+                  color: theme.colors.primary,
                 }}
               >
                 {t("What are you sending?")}
@@ -129,7 +129,7 @@ export default function FeedbackScreen() {
                   <Text
                     style={buttonText(
                       theme,
-                      type === "feedback" ? "primary" : "ghost"
+                      type === "feedback" ? "danger" : "ghost"
                     )}
                   >
                     {t("Feedback")}
@@ -146,7 +146,7 @@ export default function FeedbackScreen() {
                   <Text
                     style={buttonText(
                       theme,
-                      type === "bug" ? "primary" : "ghost"
+                      type === "bug" ? "danger" : "ghost"
                     )}
                   >
                     {t("Bug")}
@@ -161,7 +161,7 @@ export default function FeedbackScreen() {
                 style={{
                   fontSize: 14,
                   fontWeight: "700",
-                  color: theme.colors.primaryText,
+                  color: theme.colors.primary,
                 }}
               >
                 {t("Title")}
@@ -177,7 +177,7 @@ export default function FeedbackScreen() {
                   borderRadius: 10,
                   paddingHorizontal: 12,
                   paddingVertical: 8,
-                  color: theme.colors.primaryText,
+                  color: theme.colors.primary,
                 }}
               />
             </View>
@@ -188,7 +188,7 @@ export default function FeedbackScreen() {
                 style={{
                   fontSize: 14,
                   fontWeight: "700",
-                  color: theme.colors.primaryText,
+                  color: theme.colors.primary,
                 }}
               >
                 {t("Details")}
@@ -213,7 +213,7 @@ export default function FeedbackScreen() {
                   paddingHorizontal: 12,
                   paddingVertical: 10,
                   minHeight: 120,
-                  color: theme.colors.primaryText,
+                  color: theme.colors.primary,
                 }}
               />
             </View>
@@ -224,7 +224,7 @@ export default function FeedbackScreen() {
                 style={{
                   fontSize: 14,
                   fontWeight: "700",
-                  color: theme.colors.primaryText,
+                  color: theme.colors.primary,
                 }}
               >
                 {t("Contact (optional)")}
@@ -241,7 +241,7 @@ export default function FeedbackScreen() {
                   borderRadius: 10,
                   paddingHorizontal: 12,
                   paddingVertical: 8,
-                  color: theme.colors.primaryText,
+                  color: theme.colors.primary,
                 }}
               />
             </View>
@@ -251,12 +251,12 @@ export default function FeedbackScreen() {
               onPress={onSubmit}
               disabled={submitting}
               style={[
-                button(theme, "ghost"),
-                submitting && { opacity: 0.7 },
+                button(theme, "primary"),
+                submitting && { opacity: 0.2 },
                 { marginTop: 8 },
               ]}
             >
-              <Text style={buttonText(theme, "primary")}>
+              <Text style={buttonText(theme, "danger")}>
                 {submitting ? t("Opening mail…") : t("Send")}
               </Text>
             </Pressable>

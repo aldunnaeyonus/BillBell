@@ -85,7 +85,7 @@ export default function Login() {
             style={{
               fontSize: 26,
               fontWeight: "800",
-              color: theme.colors.primaryText,
+              color: theme.colors.primary,
             }}
           >
             {t("Notification vibes.")}"

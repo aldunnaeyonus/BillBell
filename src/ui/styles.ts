@@ -35,7 +35,10 @@ export function button(theme: Theme, variant: "primary" | "ghost" | "danger" = "
 }
 
 export function buttonText(theme: Theme, variant: "primary" | "ghost" | "danger" = "primary") {
-  const color = variant === "ghost" ? theme.colors.text : "#FFFFFF";
+  const color =
+    variant === "ghost" ? theme.colors.text :
+    variant === "primary" ? theme.colors.primary :
+    "#FFFFFF"; // danger stays white unless you add dangerText too
 
   return {
     color,

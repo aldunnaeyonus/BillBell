@@ -152,7 +152,7 @@ export default function BulkImport() {
             style={{
               fontSize: 22,
               fontWeight: "900",
-              color: theme.colors.primaryText,
+              color: theme.colors.primary,
             }}
           >
             {t("Import Bills")}
@@ -181,7 +181,7 @@ export default function BulkImport() {
           <Text
             style={{
               marginBottom: 6,
-              color: theme.colors.primaryText,
+              color: theme.colors.primary,
               fontWeight: "700",
             }}
           >
@@ -201,7 +201,7 @@ export default function BulkImport() {
               borderRadius: 12,
               paddingHorizontal: 12,
               paddingVertical: 10,
-              color: theme.colors.primaryText,
+              color: theme.colors.primary,
             }}
           />
 
@@ -237,11 +237,11 @@ export default function BulkImport() {
             style={[
               button(theme, "primary"),
               (loading || !importCode.trim() || !bills.length) && {
-                opacity: 0.6,
+                opacity: 0.2,
               },
             ]}
           >
-            <Text style={buttonText(theme, "primary")}>
+            <Text style={buttonText(theme, "danger")}>
               {loading ? t("Importing...") : t("Import")}
             </Text>
           </Pressable>

@@ -18,7 +18,7 @@ export default function Family() {
           style={{
             fontSize: 22,
             fontWeight: "800",
-            color: theme.colors.primaryText,
+            color: theme.colors.primary,
           }}
         >
           {t("Family setup")}
@@ -58,7 +58,7 @@ export default function Family() {
             borderColor: theme.colors.border,
             padding: 12,
             borderRadius: 12,
-            color: theme.colors.primaryText,
+            color: theme.colors.primary,
             backgroundColor: theme.colors.bg,
           }}
         />

@@ -81,7 +81,7 @@ export default function Bills() {
             style={{
               fontSize: 22,
               fontWeight: "900",
-              color: theme.colors.primaryText,
+              color: theme.colors.primary,
             }}
           >
             {t("Debts")}
@@ -98,7 +98,7 @@ export default function Bills() {
             onPress={() => router.push("/(app)/bill-edit")}
             style={button(theme, "primary")}
           >
-            <Text style={buttonText(theme, "primary")}>+ {t("Add")}</Text>
+            <Text style={buttonText(theme, "danger")}>+ {t("Add")}</Text>
           </Pressable>
         </View>
       </View>
@@ -188,7 +188,7 @@ export default function Bills() {
                 style={{
                   fontSize: 16,
                   fontWeight: "800",
-                  color: theme.colors.primaryText,
+                  color: theme.colors.primary,
                 }}
               >
                 {item.creditor} {isPaid ? "✅" : ""}

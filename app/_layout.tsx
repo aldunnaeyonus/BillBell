@@ -45,8 +45,8 @@ function AppStack() {
         screenOptions={{
           headerTitleAlign: "center",
           headerStyle: { backgroundColor: theme.colors.bg },
-          headerTitleStyle: { color: theme.colors.primaryText },
-          headerTintcolor: theme.colors.primaryText,
+          headerTitleStyle: { color: theme.colors.primary },
+          headerTintColor: theme.colors.primary,
           headerShadowVisible: false,
           contentStyle: { backgroundColor: theme.colors.bg },
         }}

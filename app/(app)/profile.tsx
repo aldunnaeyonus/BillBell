@@ -32,7 +32,7 @@ export default function Profile() {
           style={{
             fontSize: 20,
             fontWeight: "900",
-            color: theme.colors.primaryText,
+            color: theme.colors.primary,
           }}
         >
           {t("Profile")}
@@ -40,18 +40,14 @@ export default function Profile() {
 
         {data && (
           <>
-            <Text
-              style={{ fontWeight: "800", color: theme.colors.primaryText }}
-            >
+            <Text style={{ fontWeight: "800", color: theme.colors.primary }}>
               {t("Share ID")}
             </Text>
             <Text style={{ color: theme.colors.subtext }}>
               {data.family_code}
             </Text>
 
-            <Text
-              style={{ fontWeight: "800", color: theme.colors.primaryText }}
-            >
+            <Text style={{ fontWeight: "800", color: theme.colors.primary }}>
               {t("Import Codes & Epiration Date")}
             </Text>
             <Text style={{ color: theme.colors.subtext }}>
@@ -62,7 +58,7 @@ export default function Profile() {
             <Text
               style={{
                 fontWeight: "800",
-                color: theme.colors.primaryText,
+                color: theme.colors.primary,
                 marginTop: 8,
               }}
             >
@@ -76,7 +72,7 @@ export default function Profile() {
                   <Text
                     style={{
                       fontWeight: "700",
-                      color: theme.colors.primaryText,
+                      color: theme.colors.primary,
                     }}
                   >
                     {item.name || item.email || `User ${item.id}`}

@@ -104,7 +104,7 @@ export default function BillEdit() {
     borderColor: theme.colors.border,
     padding: 12,
     borderRadius: 12,
-    color: theme.colors.primaryText,
+    color: theme.colors.primary,
     backgroundColor: theme.colors.bg,
   };
 
@@ -154,7 +154,7 @@ export default function BillEdit() {
               style={{
                 fontSize: 20,
                 fontWeight: "900",
-                color: theme.colors.primaryText,
+                color: theme.colors.primary,
               }}
             >
               {id ? t("Edit Debts") : t("Add Debts")}
@@ -184,7 +184,7 @@ export default function BillEdit() {
               onPress={() => setShowReminderDatePicker(true)}
               style={inputStyle}
             >
-              <Text style={{ color: theme.colors.primaryText }}>
+              <Text style={{ color: theme.colors.primary }}>
                 {reminderDateObj.toDateString()}
               </Text>
             </Pressable>
@@ -229,7 +229,7 @@ export default function BillEdit() {
               onValueChange={(val) => setOffsetDays(String(val))}
             />
             <Pressable onPress={save} style={button(theme, "primary")}>
-              <Text style={buttonText(theme, "primary")}>{t("Save")}</Text>
+              <Text style={buttonText(theme, "danger")}>{t("Save")}</Text>
             </Pressable>
           </View>
         </ScrollView>

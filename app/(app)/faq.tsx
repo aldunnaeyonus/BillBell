@@ -31,7 +31,7 @@ export default function FAQ() {
                   fontSize: 18,
                   fontWeight: "900",
                   marginBottom: 8,
-                  color: theme.colors.primaryText,
+                  color: theme.colors.primary,
                 }}
               >
                 {t(section.title)}
