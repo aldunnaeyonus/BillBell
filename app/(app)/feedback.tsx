@@ -240,7 +240,7 @@ export default function FeedbackScreen() {
             onPress={onSubmit}
             disabled={submitting}
             style={[
-              button(theme, "primary"),
+              button(theme, "ghost"),
               submitting && { opacity: 0.7 },
               { marginTop: 8 },
             ]}

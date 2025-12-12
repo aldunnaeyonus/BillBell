@@ -43,7 +43,7 @@ export function makeTheme(mode: "light" | "dark"): Theme {
       text: mode === "dark" ? palette.darkText : palette.lightText,
       subtext: mode === "dark" ? palette.darkSubtext : palette.lightSubtext,
       border: mode === "dark" ? palette.darkBorder : palette.lightBorder,
-      primary: mode === "dark" ? palette.darkText : palette.navy,
+      primary: mode === "dark" ? palette.lightSubtext : palette.navy,
       accent: palette.mint,
       navy: palette.navy,
       danger: palette.danger
