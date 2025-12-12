@@ -12,7 +12,7 @@ import {
 import { getExpoPushTokenSafe } from "../../src/notifications/notifications";
 import { useTheme } from "../../src/ui/useTheme";
 import { screen, card, button, buttonText } from "../../src/ui/styles";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -64,7 +64,7 @@ export default function Login() {
         source={require("../../assets/black_logo.png")}
         style={{ width: 200, height: 200, resizeMode: "contain" }}
       />
-      <View style={[card(theme), {width:'90%'}]}>
+      <View style={[card(theme), { width: "90%" }]}>
         <View
           style={{
             flexDirection: "row",
@@ -85,14 +85,14 @@ export default function Login() {
             style={{
               fontSize: 26,
               fontWeight: "800",
-              color: theme.colors.text,
+              color: theme.colors.primaryText,
             }}
           >
-           {t("Notification vibes.")}"
+            {t("Notification vibes.")}"
           </Text>
         </View>
         <Text style={{ color: theme.colors.subtext }}>
-           {t("Never miss a due date again.")}"
+          {t("Never miss a due date again.")}"
         </Text>
 
         <View style={{ height: 14 }} />
@@ -109,7 +109,9 @@ export default function Login() {
           }}
           style={[button(theme, "primary"), { marginBottom: 10 }]}
         >
-          <Text style={buttonText(theme, "primary")}>{t("Continue with Apple")}</Text>
+          <Text style={buttonText(theme, "primary")}>
+            {t("Continue with Apple")}
+          </Text>
         </Pressable>
 
         <Pressable
@@ -127,7 +129,9 @@ export default function Login() {
           }}
           style={[button(theme, "ghost")]}
         >
-          <Text style={[buttonText(theme, "ghost")]}>{t("Continue with Google")}</Text>
+          <Text style={[buttonText(theme, "ghost")]}>
+            {t("Continue with Google")}
+          </Text>
         </Pressable>
       </View>
     </View>

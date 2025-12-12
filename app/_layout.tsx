@@ -1,4 +1,4 @@
-import i18n from '../src/api/i18n';
+import i18n from "../src/api/i18n";
 import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -45,23 +45,41 @@ function AppStack() {
         screenOptions={{
           headerTitleAlign: "center",
           headerStyle: { backgroundColor: theme.colors.bg },
-          headerTitleStyle: { color: theme.colors.text },
-          headerTintColor: theme.colors.text,
+          headerTitleStyle: { color: theme.colors.primaryText },
+          headerTintcolor: theme.colors.primaryText,
           headerShadowVisible: false,
           contentStyle: { backgroundColor: theme.colors.bg },
         }}
       >
-        <Stack.Screen name="(app)/feedback" options={{ title: t("Feedback & Bugs") }} />
+        <Stack.Screen
+          name="(app)/feedback"
+          options={{ title: t("Feedback & Bugs") }}
+        />
         <Stack.Screen name="(app)/faq" options={{ title: t("FAQ") }} />
         <Stack.Screen name="(app)/browser" options={{ title: t("Browser") }} />
-        <Stack.Screen name="(app)/bulk-import" options={{ title: t("Bulk Upload") }} />
+        <Stack.Screen
+          name="(app)/bulk-import"
+          options={{ title: t("Bulk Upload") }}
+        />
         <Stack.Screen name="index" options={{ title: t("Debts") }} />
         <Stack.Screen name="(auth)/login" options={{ title: t("Sign in") }} />
-        <Stack.Screen name="(app)/family" options={{ title: t("Shared Group") }} />
-        <Stack.Screen name="(app)/bills" options={{ title: t("DueView App") }} />
-        <Stack.Screen name="(app)/bill-edit" options={{ title: t("Edit Debts") }} />
+        <Stack.Screen
+          name="(app)/family"
+          options={{ title: t("Shared Group") }}
+        />
+        <Stack.Screen
+          name="(app)/bills"
+          options={{ title: t("DueView App") }}
+        />
+        <Stack.Screen
+          name="(app)/bill-edit"
+          options={{ title: t("Edit Debts") }}
+        />
         <Stack.Screen name="(app)/profile" options={{ title: t("Profile") }} />
-        <Stack.Screen name="(app)/family-settings" options={{ title: t("Shared Settings") }} />
+        <Stack.Screen
+          name="(app)/family-settings"
+          options={{ title: t("Shared Settings") }}
+        />
       </Stack>
     </>
   );

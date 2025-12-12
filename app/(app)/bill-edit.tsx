@@ -15,7 +15,7 @@ import { useTheme } from "../../src/ui/useTheme";
 import { screen, card, button, buttonText } from "../../src/ui/styles";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Slider from "@react-native-community/slider";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 function todayISO() {
   const d = new Date();
@@ -104,7 +104,7 @@ export default function BillEdit() {
     borderColor: theme.colors.border,
     padding: 12,
     borderRadius: 12,
-    color: theme.colors.text,
+    color: theme.colors.primaryText,
     backgroundColor: theme.colors.bg,
   };
 
@@ -154,7 +154,7 @@ export default function BillEdit() {
               style={{
                 fontSize: 20,
                 fontWeight: "900",
-                color: theme.colors.text,
+                color: theme.colors.primaryText,
               }}
             >
               {id ? t("Edit Debts") : t("Add Debts")}
@@ -184,7 +184,7 @@ export default function BillEdit() {
               onPress={() => setShowReminderDatePicker(true)}
               style={inputStyle}
             >
-              <Text style={{ color: theme.colors.text }}>
+              <Text style={{ color: theme.colors.primaryText }}>
                 {reminderDateObj.toDateString()}
               </Text>
             </Pressable>
@@ -197,7 +197,9 @@ export default function BillEdit() {
                 onChange={onReminderDateChange}
               />
             )}
-            <Text style={{ color: theme.colors.subtext }}>{t("Recurring")}</Text>
+            <Text style={{ color: theme.colors.subtext }}>
+              {t("Recurring")}
+            </Text>
             {/* Added flexWrap to handle 4 buttons gracefully */}
             <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
               {renderRecurrenceBtn("none", t("None"))}
@@ -208,7 +210,7 @@ export default function BillEdit() {
             </View>
 
             <Text style={{ color: theme.colors.subtext }}>
-              {t('Remind me', {days: offsetDays})}
+              {t("Remind me", { days: offsetDays })}
             </Text>
 
             <Slider

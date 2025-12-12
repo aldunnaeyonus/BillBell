@@ -29,21 +29,29 @@ export default function Profile() {
     <View style={screen(theme)}>
       <View style={[card(theme), { gap: 12 }]}>
         <Text
-          style={{ fontSize: 20, fontWeight: "900", color: theme.colors.text }}
+          style={{
+            fontSize: 20,
+            fontWeight: "900",
+            color: theme.colors.primaryText,
+          }}
         >
           {t("Profile")}
         </Text>
 
         {data && (
           <>
-            <Text style={{ fontWeight: "800", color: theme.colors.text }}>
+            <Text
+              style={{ fontWeight: "800", color: theme.colors.primaryText }}
+            >
               {t("Share ID")}
             </Text>
             <Text style={{ color: theme.colors.subtext }}>
               {data.family_code}
             </Text>
 
-            <Text style={{ fontWeight: "800", color: theme.colors.text }}>
+            <Text
+              style={{ fontWeight: "800", color: theme.colors.primaryText }}
+            >
               {t("Import Codes & Epiration Date")}
             </Text>
             <Text style={{ color: theme.colors.subtext }}>
@@ -54,7 +62,7 @@ export default function Profile() {
             <Text
               style={{
                 fontWeight: "800",
-                color: theme.colors.text,
+                color: theme.colors.primaryText,
                 marginTop: 8,
               }}
             >
@@ -65,7 +73,12 @@ export default function Profile() {
               keyExtractor={(m) => String(m.id)}
               renderItem={({ item }) => (
                 <View style={{ paddingVertical: 8 }}>
-                  <Text style={{ fontWeight: "700", color: theme.colors.text }}>
+                  <Text
+                    style={{
+                      fontWeight: "700",
+                      color: theme.colors.primaryText,
+                    }}
+                  >
                     {item.name || item.email || `User ${item.id}`}
                   </Text>
                   <Text style={{ color: theme.colors.subtext }}>

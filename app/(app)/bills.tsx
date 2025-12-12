@@ -1,5 +1,12 @@
 import { useCallback, useState } from "react";
-import { View, Text, FlatList, Pressable, RefreshControl, Alert } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  Alert,
+} from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { api } from "../../src/api/client";
 import {
@@ -21,12 +28,10 @@ export default function Bills() {
 
   // 🔹 Derive pending vs paid
   const pendingBills = bills.filter(
-    (b: any) =>
-      (!b.paid_at && !b.is_paid && b.status !== "paid") // try to be defensive w/ shape
+    (b: any) => !b.paid_at && !b.is_paid && b.status !== "paid" // try to be defensive w/ shape
   );
   const paidBills = bills.filter(
-    (b: any) =>
-      b.paid_at || b.is_paid || b.status === "paid"
+    (b: any) => b.paid_at || b.is_paid || b.status === "paid"
   );
 
   const visibleBills = tab === "pending" ? pendingBills : paidBills;
@@ -76,7 +81,7 @@ export default function Bills() {
             style={{
               fontSize: 22,
               fontWeight: "900",
-              color: theme.colors.text,
+              color: theme.colors.primaryText,
             }}
           >
             {t("Debts")}
@@ -91,7 +96,7 @@ export default function Bills() {
           </Pressable>
           <Pressable
             onPress={() => router.push("/(app)/bill-edit")}
-            style={button(theme, "ghost")}
+            style={button(theme, "primary")}
           >
             <Text style={buttonText(theme, "primary")}>+ {t("Add")}</Text>
           </Pressable>
@@ -126,7 +131,7 @@ export default function Bills() {
               fontWeight: "600",
             }}
           >
-            {t("Pending", { pendingBills: pendingBills.length } )}
+            {t("Pending", { pendingBills: pendingBills.length })}
           </Text>
         </Pressable>
 
@@ -149,7 +154,7 @@ export default function Bills() {
               fontWeight: "600",
             }}
           >
-           {t("Paid", { paidBills: paidBills.length } )}
+            {t("Paid", { paidBills: paidBills.length })}
           </Text>
         </Pressable>
       </View>
@@ -169,16 +174,13 @@ export default function Bills() {
               color: theme.colors.subtext,
             }}
           >
-            {tab === "pending"
-              ? t("No pending debts")
-              : t("No paid debts")}
+            {tab === "pending" ? t("No pending debts") : t("No paid debts")}
           </Text>
         }
         renderItem={({ item }) => {
           const amt = (item.amount_cents / 100).toFixed(2);
           const status = item.status;
-          const isPaid =
-            status === "paid" || item.paid_at || item.is_paid;
+          const isPaid = status === "paid" || item.paid_at || item.is_paid;
 
           return (
             <View style={[card(theme), { marginBottom: 10 }]}>
@@ -186,7 +188,7 @@ export default function Bills() {
                 style={{
                   fontSize: 16,
                   fontWeight: "800",
-                  color: theme.colors.text,
+                  color: theme.colors.primaryText,
                 }}
               >
                 {item.creditor} {isPaid ? "✅" : ""}

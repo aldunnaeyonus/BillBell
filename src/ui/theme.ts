@@ -25,6 +25,7 @@ export type Theme = {
     bg: string;
     card: string;
     text: string;
+    primaryText: string;
     subtext: string;
     border: string;
     primary: string;
@@ -35,18 +36,26 @@ export type Theme = {
 };
 
 export function makeTheme(mode: "light" | "dark"): Theme {
+  const isDark = mode === "dark";
+
   return {
     mode,
     colors: {
-      bg: mode === "dark" ? palette.darkBg : palette.lightBg,
-      card: mode === "dark" ? palette.darkCard : palette.lightCard,
-      text: mode === "dark" ? palette.darkText : palette.lightText,
-      subtext: mode === "dark" ? palette.darkSubtext : palette.lightSubtext,
-      border: mode === "dark" ? palette.darkBorder : palette.lightBorder,
-      primary: mode === "dark" ? palette.lightSubtext : palette.navy,
+      bg: isDark ? palette.darkBg : palette.lightBg,
+      card: isDark ? palette.darkCard : palette.lightCard,
+      text: isDark ? palette.darkText : palette.lightText,
+      subtext: isDark ? palette.darkSubtext : palette.lightSubtext,
+      border: isDark ? palette.darkBorder : palette.lightBorder,
+
+      // ✅ primary should be a solid, readable brand color in both modes
+      primary: isDark ? palette.mint : palette.navy,
+
+      // ✅ text that sits ON TOP of primary
+      primaryText: isDark ? palette.darkBg : "#FFFFFF",
+
       accent: palette.mint,
       navy: palette.navy,
-      danger: palette.danger
-    }
+      danger: palette.danger,
+    },
   };
 }

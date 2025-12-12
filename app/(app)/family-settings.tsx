@@ -16,11 +16,11 @@ export default function FamilySettings() {
   const { t } = useTranslation();
   const [showReminderDatePicker, setShowReminderDatePicker] = useState(false);
   const [reminderDateObj, setReminderDateObj] = useState(() => {
-  const d = new Date();
-  d.setHours(9, 0, 0, 0); // Default to 9:00 AM
-  return d;
-});
-  
+    const d = new Date();
+    d.setHours(9, 0, 0, 0); // Default to 9:00 AM
+    return d;
+  });
+
   const OFFSETS = [
     { label: t("Same day"), value: 0 },
     { label: t("1 day before"), value: 1 },
@@ -47,15 +47,15 @@ export default function FamilySettings() {
   }
 
   const onReminderDateChange = (event: any, selectedDate: any) => {
-  // If the user cancels (Android), selectedDate is undefined.
-  // The '||' operator ensures we keep the old value in that case.
-  const currentDate = selectedDate || reminderDateObj;
+    // If the user cancels (Android), selectedDate is undefined.
+    // The '||' operator ensures we keep the old value in that case.
+    const currentDate = selectedDate || reminderDateObj;
 
-  // Note: If you are on Android, you typically set the picker visibility to false here.
-  setShowReminderDatePicker(false)
+    // Note: If you are on Android, you typically set the picker visibility to false here.
+    setShowReminderDatePicker(false);
 
-  setReminderDateObj(currentDate);
-};
+    setReminderDateObj(currentDate);
+  };
 
   async function save() {
     if (!editable)
@@ -100,7 +100,7 @@ export default function FamilySettings() {
     borderColor: theme.colors.border,
     padding: 12,
     borderRadius: 12,
-    color: theme.colors.text,
+    color: theme.colors.primaryText,
     backgroundColor: theme.colors.bg,
   };
 
@@ -108,7 +108,11 @@ export default function FamilySettings() {
     <View style={screen(theme)}>
       <View style={[card(theme), { gap: 12 }]}>
         <Text
-          style={{ fontSize: 20, fontWeight: "900", color: theme.colors.text }}
+          style={{
+            fontSize: 20,
+            fontWeight: "900",
+            color: theme.colors.primaryText,
+          }}
         >
           {t("Share Settings")}
         </Text>
@@ -116,7 +120,7 @@ export default function FamilySettings() {
           {t("Shared reminder defaults for the whole group.")}
         </Text>
 
-        <Text style={{ fontWeight: "800", color: theme.colors.text }}>
+        <Text style={{ fontWeight: "800", color: theme.colors.primaryText }}>
           {t("Default offset")}
         </Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
@@ -139,11 +143,21 @@ export default function FamilySettings() {
             </Pressable>
           ))}
         </View>
-        <Text style={{ fontWeight: "800", color: theme.colors.text }}>
+        <Text style={{ fontWeight: "800", color: theme.colors.primaryText }}>
           {t("Default time (local)")}
         </Text>
-        <Pressable onPress={() => {setShowReminderDatePicker(true)}} style={inputStyle}>
-          <Text style={{ color: theme.colors.text }}>{reminderDateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</Text>
+        <Pressable
+          onPress={() => {
+            setShowReminderDatePicker(true);
+          }}
+          style={inputStyle}
+        >
+          <Text style={{ color: theme.colors.primaryText }}>
+            {reminderDateObj.toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+          </Text>
         </Pressable>
         {showReminderDatePicker && (
           <DateTimePicker

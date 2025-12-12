@@ -14,22 +14,39 @@ export default function Family() {
   return (
     <View style={screen(theme)}>
       <View style={[card(theme), { gap: 12 }]}>
-        <Text style={{ fontSize: 22, fontWeight: "800", color: theme.colors.text }}>{t("Family setup")}</Text>
+        <Text
+          style={{
+            fontSize: 22,
+            fontWeight: "800",
+            color: theme.colors.primaryText,
+          }}
+        >
+          {t("Family setup")}
+        </Text>
 
         <Pressable
           onPress={async () => {
             try {
               const res = await api.familyCreate();
-              Alert.alert(t("Family created"), t("Your Family ID",  {family_code: res.family_code}));
+              Alert.alert(
+                t("Family created"),
+                t("Your Family ID", { family_code: res.family_code })
+              );
               router.replace("/(app)/bills");
-            } catch (e: any) { Alert.alert(t("Error"), e.message); }
+            } catch (e: any) {
+              Alert.alert(t("Error"), e.message);
+            }
           }}
           style={button(theme, "primary")}
         >
-          <Text style={buttonText(theme, "primary")}>{t("Create a new Family")}|</Text>
+          <Text style={buttonText(theme, "primary")}>
+            {t("Create a new Family")}|
+          </Text>
         </Pressable>
 
-        <Text style={{ color: theme.colors.subtext, marginTop: 8 }}>{t("Or join with Family ID")}</Text>
+        <Text style={{ color: theme.colors.subtext, marginTop: 8 }}>
+          {t("Or join with Family ID")}
+        </Text>
         <TextInput
           value={code}
           onChangeText={setCode}
@@ -37,15 +54,22 @@ export default function Family() {
           placeholderTextColor={theme.colors.subtext}
           autoCapitalize="characters"
           style={{
-            borderWidth: 1, borderColor: theme.colors.border,
-            padding: 12, borderRadius: 12,
-            color: theme.colors.text, backgroundColor: theme.colors.bg
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            padding: 12,
+            borderRadius: 12,
+            color: theme.colors.primaryText,
+            backgroundColor: theme.colors.bg,
           }}
         />
         <Pressable
           onPress={async () => {
-            try { await api.familyJoin(code.trim().toUpperCase()); router.replace("/(app)/bills"); }
-            catch (e: any) { Alert.alert(t("Error"), e.message); }
+            try {
+              await api.familyJoin(code.trim().toUpperCase());
+              router.replace("/(app)/bills");
+            } catch (e: any) {
+              Alert.alert(t("Error"), e.message);
+            }
           }}
           style={button(theme, "ghost")}
         >

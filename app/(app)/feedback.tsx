@@ -7,7 +7,7 @@ import {
   Pressable,
   Alert,
   Platform,
-    KeyboardAvoidingView,
+  KeyboardAvoidingView,
 } from "react-native";
 import * as Linking from "expo-linking";
 
@@ -29,11 +29,16 @@ export default function FeedbackScreen() {
 
   async function onSubmit() {
     if (!title.trim() || !description.trim()) {
-      Alert.alert(t("Missing info"), t("Please add a title and description first."));
+      Alert.alert(
+        t("Missing info"),
+        t("Please add a title and description first.")
+      );
       return;
     }
 
-    const subject = `[${type === "bug" ? t("Bug") : t("Feedback")}] ${title.trim()}`;
+    const subject = `[${
+      type === "bug" ? t("Bug") : t("Feedback")
+    }] ${title.trim()}`;
 
     const bodyLines = [
       `Type: ${type === "bug" ? t("Bug Report") : t("General Feedback")}`,
@@ -77,192 +82,198 @@ export default function FeedbackScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        <View style={[card(theme), { gap: 16 }]}>
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "900",
-              color: theme.colors.text,
-            }}
-          >
-            {t("Feedback & Bug Reports")}
-          </Text>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+          <View style={[card(theme), { gap: 16 }]}>
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "900",
+                color: theme.colors.primaryText,
+              }}
+            >
+              {t("Feedback & Bug Reports")}
+            </Text>
 
-          <Text
-            style={{
-              fontSize: 14,
-              color: theme.colors.subtext,
-              lineHeight: 20,
-            }}
-          >
-            {t(
-              "Spotted a bug or have an idea to make the app better? Send it here and we'll take a look."
-            )}
-          </Text>
-
-          {/* Type toggle */}
-          <View style={{ gap: 8 }}>
             <Text
               style={{
                 fontSize: 14,
-                fontWeight: "700",
-                color: theme.colors.text,
+                color: theme.colors.subtext,
+                lineHeight: 20,
               }}
             >
-              {t("What are you sending?")}
+              {t(
+                "Spotted a bug or have an idea to make the app better? Send it here and we'll take a look."
+              )}
             </Text>
 
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              <Pressable
-                onPress={() => setType("feedback")}
-                style={[
-                  button(theme, type === "feedback" ? "primary" : "ghost"),
-                  { flex: 1 },
-                ]}
+            {/* Type toggle */}
+            <View style={{ gap: 8 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "700",
+                  color: theme.colors.primaryText,
+                }}
               >
-                <Text
-                  style={buttonText(theme, type === "feedback" ? "primary" : "ghost")}
-                >
-                  {t("Feedback")}
-                </Text>
-              </Pressable>
+                {t("What are you sending?")}
+              </Text>
 
-              <Pressable
-                onPress={() => setType("bug")}
-                style={[
-                  button(theme, type === "bug" ? "primary" : "ghost"),
-                  { flex: 1 },
-                ]}
-              >
-                <Text
-                  style={buttonText(theme, type === "bug" ? "primary" : "ghost")}
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                <Pressable
+                  onPress={() => setType("feedback")}
+                  style={[
+                    button(theme, type === "feedback" ? "primary" : "ghost"),
+                    { flex: 1 },
+                  ]}
                 >
-                  {t("Bug")}
-                </Text>
-              </Pressable>
+                  <Text
+                    style={buttonText(
+                      theme,
+                      type === "feedback" ? "primary" : "ghost"
+                    )}
+                  >
+                    {t("Feedback")}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setType("bug")}
+                  style={[
+                    button(theme, type === "bug" ? "primary" : "ghost"),
+                    { flex: 1 },
+                  ]}
+                >
+                  <Text
+                    style={buttonText(
+                      theme,
+                      type === "bug" ? "primary" : "ghost"
+                    )}
+                  >
+                    {t("Bug")}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
-          </View>
 
-          {/* Title */}
-          <View style={{ gap: 6 }}>
+            {/* Title */}
+            <View style={{ gap: 6 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "700",
+                  color: theme.colors.primaryText,
+                }}
+              >
+                {t("Title")}
+              </Text>
+              <TextInput
+                placeholder={t("Short summary (e.g. 'Crash when adding bill')")}
+                placeholderTextColor={theme.colors.subtext}
+                value={title}
+                onChangeText={setTitle}
+                style={{
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  color: theme.colors.primaryText,
+                }}
+              />
+            </View>
+
+            {/* Description */}
+            <View style={{ gap: 6 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "700",
+                  color: theme.colors.primaryText,
+                }}
+              >
+                {t("Details")}
+              </Text>
+              <TextInput
+                placeholder={
+                  type === "bug"
+                    ? t(
+                        "What happened? What did you expect? Any steps to reproduce?"
+                      )
+                    : t("Share your thoughts, ideas, or suggestions.")
+                }
+                placeholderTextColor={theme.colors.subtext}
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                textAlignVertical="top"
+                style={{
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 10,
+                  minHeight: 120,
+                  color: theme.colors.primaryText,
+                }}
+              />
+            </View>
+
+            {/* Contact (optional) */}
+            <View style={{ gap: 6 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "700",
+                  color: theme.colors.primaryText,
+                }}
+              >
+                {t("Contact (optional)")}
+              </Text>
+              <TextInput
+                placeholder={t("Email or @handle if you want a reply")}
+                placeholderTextColor={theme.colors.subtext}
+                value={contact}
+                onChangeText={setContact}
+                autoCapitalize="none"
+                style={{
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  color: theme.colors.primaryText,
+                }}
+              />
+            </View>
+
+            {/* Submit */}
+            <Pressable
+              onPress={onSubmit}
+              disabled={submitting}
+              style={[
+                button(theme, "ghost"),
+                submitting && { opacity: 0.7 },
+                { marginTop: 8 },
+              ]}
+            >
+              <Text style={buttonText(theme, "primary")}>
+                {submitting ? t("Opening mail…") : t("Send")}
+              </Text>
+            </Pressable>
+
             <Text
               style={{
-                fontSize: 14,
-                fontWeight: "700",
-                color: theme.colors.text,
+                fontSize: 12,
+                color: theme.colors.subtext,
+                marginTop: 4,
               }}
             >
-              {t("Title")}
+              {t(
+                "This will open your email app with a pre-filled message so you can review and send."
+              )}
             </Text>
-            <TextInput
-              placeholder={t("Short summary (e.g. 'Crash when adding bill')")}
-              placeholderTextColor={theme.colors.subtext}
-              value={title}
-              onChangeText={setTitle}
-              style={{
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                borderRadius: 10,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                color: theme.colors.text,
-              }}
-            />
           </View>
-
-          {/* Description */}
-          <View style={{ gap: 6 }}>
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: "700",
-                color: theme.colors.text,
-              }}
-            >
-              {t("Details")}
-            </Text>
-            <TextInput
-              placeholder={
-                type === "bug"
-                  ? t(
-                      "What happened? What did you expect? Any steps to reproduce?"
-                    )
-                  : t("Share your thoughts, ideas, or suggestions.")
-              }
-              placeholderTextColor={theme.colors.subtext}
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              textAlignVertical="top"
-              style={{
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                borderRadius: 10,
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                minHeight: 120,
-                color: theme.colors.text,
-              }}
-            />
-          </View>
-
-          {/* Contact (optional) */}
-          <View style={{ gap: 6 }}>
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: "700",
-                color: theme.colors.text,
-              }}
-            >
-              {t("Contact (optional)")}
-            </Text>
-            <TextInput
-              placeholder={t("Email or @handle if you want a reply")}
-              placeholderTextColor={theme.colors.subtext}
-              value={contact}
-              onChangeText={setContact}
-              autoCapitalize="none"
-              style={{
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                borderRadius: 10,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                color: theme.colors.text,
-              }}
-            />
-          </View>
-
-          {/* Submit */}
-          <Pressable
-            onPress={onSubmit}
-            disabled={submitting}
-            style={[
-              button(theme, "ghost"),
-              submitting && { opacity: 0.7 },
-              { marginTop: 8 },
-            ]}
-          >
-            <Text style={buttonText(theme, "primary")}>
-              {submitting ? t("Opening mail…") : t("Send")}
-            </Text>
-          </Pressable>
-
-          <Text
-            style={{
-              fontSize: 12,
-              color: theme.colors.subtext,
-              marginTop: 4,
-            }}
-          >
-            {t(
-              "This will open your email app with a pre-filled message so you can review and send."
-            )}
-          </Text>
-        </View>
-      </ScrollView>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );

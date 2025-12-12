@@ -1,6 +1,13 @@
 // app/(app)/import.tsx  (or wherever your route screen lives)
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, Alert, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Alert,
+  ScrollView,
+} from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { useTranslation } from "react-i18next";
 
@@ -18,7 +25,10 @@ export default function BulkImport() {
   const [loading, setLoading] = useState(false);
 
   const deviceDate = new Date().toLocaleDateString();
-  const deviceTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const deviceTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   async function pickCsv() {
     try {
@@ -112,7 +122,10 @@ export default function BulkImport() {
       return;
     }
     if (!bills.length) {
-      Alert.alert(t("Import"), t("Please pick a CSV and parse some bills first."));
+      Alert.alert(
+        t("Import"),
+        t("Please pick a CSV and parse some bills first.")
+      );
       return;
     }
 
@@ -135,11 +148,23 @@ export default function BulkImport() {
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
       <View style={[screen(theme), { gap: 12 }]}>
         <View style={card(theme)}>
-          <Text style={{ fontSize: 22, fontWeight: "900", color: theme.colors.text }}>
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: "900",
+              color: theme.colors.primaryText,
+            }}
+          >
             {t("Import Bills")}
           </Text>
 
-          <Text style={{ color: theme.colors.subtext, marginTop: 6, lineHeight: 20 }}>
+          <Text
+            style={{
+              color: theme.colors.subtext,
+              marginTop: 6,
+              lineHeight: 20,
+            }}
+          >
             {t(
               "Paste the import code you generated (or received), then pick a CSV file with your bills."
             )}
@@ -153,7 +178,13 @@ export default function BulkImport() {
 
           <View style={{ height: 14 }} />
 
-          <Text style={{ marginBottom: 6, color: theme.colors.text, fontWeight: "700" }}>
+          <Text
+            style={{
+              marginBottom: 6,
+              color: theme.colors.primaryText,
+              fontWeight: "700",
+            }}
+          >
             {t("Import code (Generated in Profile)")}
           </Text>
 
@@ -170,7 +201,7 @@ export default function BulkImport() {
               borderRadius: 12,
               paddingHorizontal: 12,
               paddingVertical: 10,
-              color: theme.colors.text,
+              color: theme.colors.primaryText,
             }}
           />
 
@@ -205,7 +236,9 @@ export default function BulkImport() {
             disabled={loading || !importCode.trim() || !bills.length}
             style={[
               button(theme, "primary"),
-              (loading || !importCode.trim() || !bills.length) && { opacity: 0.6 },
+              (loading || !importCode.trim() || !bills.length) && {
+                opacity: 0.6,
+              },
             ]}
           >
             <Text style={buttonText(theme, "primary")}>
