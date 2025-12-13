@@ -551,6 +551,19 @@ export default function Profile() {
                 label={t("Feedback & Bugs")}
                 theme={theme}
                 onPress={() => router.push("/(app)/feedback")}
+              />
+              {/* NEW LEGAL LINKS */}
+              <ActionRow
+                icon="shield-checkmark-outline"
+                label={t("Privacy Policy")}
+                theme={theme}
+                onPress={() => router.push("/(app)/privacy")}
+              />
+              <ActionRow
+                icon="document-text-outline"
+                label={t("Terms of Use")}
+                theme={theme}
+                onPress={() => router.push("/(app)/terms")}
                 isLast
               />
             </View>
@@ -566,7 +579,6 @@ export default function Profile() {
                 danger
                 onPress={handleLogout}
               />
-              {/* DELETE ACCOUNT BUTTON FOR APPLE COMPLIANCE */}
               <ActionRow
                 icon="trash-outline"
                 label={t("Delete Account")}
@@ -577,7 +589,7 @@ export default function Profile() {
               />
             </View>
             <Text style={{ textAlign: 'center', color: theme.colors.subtext, marginTop: 16, fontSize: 12 }}>
-              {t("Version")} 1.0.0 (GroupDue)
+              {t("Version")} 1.0.0 (DueView)
             </Text>
           </View>
 

@@ -1,28 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, AppState, Pressable, StatusBar, Platform } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useSegments } from 'expo-router';
 import LinearGradient from 'react-native-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next'; // Added translation
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../ui/useTheme';
 
 export function BiometricAuth({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hasHardware, setHasHardware] = useState(false);
+  const isAuthedRef = useRef(false);
   const theme = useTheme();
-  const { t } = useTranslation(); // Hook for translations
+  const { t } = useTranslation();
   const segments = useSegments(); 
 
   useEffect(() => {
     checkHardware();
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'background' || nextAppState === 'inactive') {
+      // Fix: Only lock on background. 'inactive' is triggered by the Biometric Prompt itself.
+      if (nextAppState === 'background') {
         setIsAuthenticated(false);
+        isAuthedRef.current = false;
       }
       if (nextAppState === 'active') {
-        // Delay slightly to allow app to wake up
-        setTimeout(() => authenticate(), 100);
+        if (!isAuthedRef.current) {
+            setTimeout(() => authenticate(), 200);
+        }
       }
     });
     return () => subscription.remove();
@@ -31,48 +35,51 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
   async function checkHardware() {
     const compatible = await LocalAuthentication.hasHardwareAsync();
     setHasHardware(compatible);
-    if (compatible) authenticate();
-    else setIsAuthenticated(true); 
+    if (!compatible) {
+        setIsAuthenticated(true);
+        isAuthedRef.current = true;
+    } else {
+        authenticate();
+    }
   }
 
   async function authenticate() {
+    if (isAuthedRef.current) return;
+
     try {
         const hasRecords = await LocalAuthentication.isEnrolledAsync();
         if (!hasRecords) {
             setIsAuthenticated(true);
+            isAuthedRef.current = true;
             return;
         }
 
-        // Check if we are already on a public route before prompting
-        // This prevents the faceid prompt from appearing over the login screen momentarily
         if (segments[0] === '(auth)') {
             return;
         }
 
         const result = await LocalAuthentication.authenticateAsync({
-            promptMessage: t('Unlock App') || 'Unlock App', // Uses translation
+            promptMessage: t('Unlock App') || 'Unlock App',
             fallbackLabel: 'Use Passcode',
         });
 
         if (result.success) {
             setIsAuthenticated(true);
+            isAuthedRef.current = true;
         }
     } catch (e) {
         console.log(e);
     }
   }
 
-  // Bypass logic for Login/Auth screens
   const isPublicRoute = segments[0] === '(auth)'; 
   if (isPublicRoute) {
       return <>{children}</>;
   }
 
-  // LOCKED SCREEN UI
   if (!isAuthenticated && hasHardware) {
     return (
       <View style={styles.container}>
-        {/* Force Status Bar to White on Lock Screen */}
         <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         
         <LinearGradient

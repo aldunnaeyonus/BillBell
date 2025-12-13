@@ -13,6 +13,8 @@ import { useTranslation, I18nextProvider } from "react-i18next";
 import { BiometricAuth } from "../src/auth/BiometricAuth";
 import { LogBox } from "react-native";
 
+// --- Configuration ---
+// Explicitly ignore all logs in Production (Release builds), but keep them in Dev.
 if (!__DEV__) {
   LogBox.ignoreAllLogs();
 }
@@ -57,7 +59,7 @@ function AppStack() {
           contentStyle: { backgroundColor: theme.colors.bg },
           // @ts-ignore: 'headerBackButtonDisplayMode' is new in React Nav 7 / Expo Router 6
           headerBackButtonDisplayMode: 'minimal',
-          headerBackTitleVisible: false, // Fallback for older versions, ignored if types fail due to @ts-ignore
+          headerBackTitleVisible: false, 
         } as any} 
       >
          <Stack.Screen
@@ -72,6 +74,8 @@ function AppStack() {
           options={{ title: t("Feedback & Bugs") }}
         />
         <Stack.Screen name="(app)/faq" options={{ title: t("FAQ") }} />
+        <Stack.Screen name="(app)/privacy" options={{ title: t("Privacy Policy") || "Privacy Policy" }} />
+        <Stack.Screen name="(app)/terms" options={{ title: t("Terms of Use") || "Terms of Use" }} />
         <Stack.Screen name="(app)/insights" options={{ title: t("Financial Insights") }} />
         <Stack.Screen name="(app)/browser" options={{ title: t("Browser") }} />
         <Stack.Screen
