@@ -589,7 +589,7 @@ export default function Profile() {
               />
             </View>
             <Text style={{ textAlign: 'center', color: theme.colors.subtext, marginTop: 16, fontSize: 12 }}>
-              {t("Version")} 1.0.0 (DueView)
+              {t("Version")} 1.0.0 (GroupDue)
             </Text>
           </View>
 
