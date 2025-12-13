@@ -85,14 +85,14 @@ export default function Login() {
             style={{
               fontSize: 26,
               fontWeight: "800",
-              color: theme.colors.primary,
+              color: theme.colors.primaryText,
             }}
           >
-            {t("Notification vibes.")}"
+            {t("Notification vibes.")}
           </Text>
         </View>
         <Text style={{ color: theme.colors.subtext }}>
-          {t("Never miss a due date again.")}"
+          {t("Never miss a due date again.")}
         </Text>
 
         <View style={{ height: 14 }} />

@@ -104,7 +104,7 @@ export default function BillEdit() {
     borderColor: theme.colors.border,
     padding: 12,
     borderRadius: 12,
-    color: theme.colors.primary,
+    color: theme.colors.primaryText,
     backgroundColor: theme.colors.bg,
   };
 
@@ -120,13 +120,12 @@ export default function BillEdit() {
         {
           // roughly 48% width allows 2 buttons per row with a small gap
           width: "48%",
-          opacity: recurrence === value ? 1 : 0.75,
-          borderColor:
-            recurrence === value ? theme.colors.accent : theme.colors.border,
+          backgroundColor:
+            recurrence === value ? theme.colors.accent : theme.colors.navy,
         },
       ]}
     >
-      <Text style={buttonText(theme, "ghost")}>{label}</Text>
+      <Text style={buttonText(theme, "danger")}>{label}</Text>
     </Pressable>
   );
 
@@ -154,7 +153,7 @@ export default function BillEdit() {
               style={{
                 fontSize: 20,
                 fontWeight: "900",
-                color: theme.colors.primary,
+                color: theme.colors.primaryText,
               }}
             >
               {id ? t("Edit Debts") : t("Add Debts")}
@@ -165,6 +164,7 @@ export default function BillEdit() {
               value={creditor}
               onChangeText={setCreditor}
               style={inputStyle}
+              placeholder={t("Creditor")}
               placeholderTextColor={theme.colors.subtext}
             />
 
@@ -184,7 +184,7 @@ export default function BillEdit() {
               onPress={() => setShowReminderDatePicker(true)}
               style={inputStyle}
             >
-              <Text style={{ color: theme.colors.primary }}>
+              <Text style={{ color: theme.colors.primaryText }}>
                 {reminderDateObj.toDateString()}
               </Text>
             </Pressable>
@@ -214,8 +214,8 @@ export default function BillEdit() {
             </Text>
 
             <Slider
-              thumbTintColor={theme.colors.primary}
-              minimumTrackTintColor={theme.colors.primary}
+              thumbTintColor={theme.colors.primaryText}
+              minimumTrackTintColor={theme.colors.primaryText}
               maximumTrackTintColor={theme.colors.subtext}
               // 2. Style only controls layout (width, height, margins)
               style={{

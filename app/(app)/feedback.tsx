@@ -82,13 +82,13 @@ export default function FeedbackScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
           <View style={[card(theme), { gap: 16 }]}>
             <Text
               style={{
                 fontSize: 24,
                 fontWeight: "900",
-                color: theme.colors.primary,
+                color: theme.colors.primaryText,
               }}
             >
               {t("Feedback & Bug Reports")}
@@ -112,7 +112,7 @@ export default function FeedbackScreen() {
                 style={{
                   fontSize: 14,
                   fontWeight: "700",
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                 }}
               >
                 {t("What are you sending?")}
@@ -161,7 +161,7 @@ export default function FeedbackScreen() {
                 style={{
                   fontSize: 14,
                   fontWeight: "700",
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                 }}
               >
                 {t("Title")}
@@ -177,7 +177,7 @@ export default function FeedbackScreen() {
                   borderRadius: 10,
                   paddingHorizontal: 12,
                   paddingVertical: 8,
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                 }}
               />
             </View>
@@ -188,7 +188,7 @@ export default function FeedbackScreen() {
                 style={{
                   fontSize: 14,
                   fontWeight: "700",
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                 }}
               >
                 {t("Details")}
@@ -213,7 +213,7 @@ export default function FeedbackScreen() {
                   paddingHorizontal: 12,
                   paddingVertical: 10,
                   minHeight: 120,
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                 }}
               />
             </View>
@@ -224,7 +224,7 @@ export default function FeedbackScreen() {
                 style={{
                   fontSize: 14,
                   fontWeight: "700",
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                 }}
               >
                 {t("Contact (optional)")}
@@ -241,7 +241,7 @@ export default function FeedbackScreen() {
                   borderRadius: 10,
                   paddingHorizontal: 12,
                   paddingVertical: 8,
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                 }}
               />
             </View>

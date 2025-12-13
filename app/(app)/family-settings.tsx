@@ -52,7 +52,7 @@ export default function FamilySettings() {
     const currentDate = selectedDate || reminderDateObj;
 
     // Note: If you are on Android, you typically set the picker visibility to false here.
-    setShowReminderDatePicker(false);
+    //setShowReminderDatePicker(false);
 
     setReminderDateObj(currentDate);
   };
@@ -100,7 +100,7 @@ export default function FamilySettings() {
     borderColor: theme.colors.border,
     padding: 12,
     borderRadius: 12,
-    color: theme.colors.primary,
+    color: theme.colors.primaryText,
     backgroundColor: theme.colors.bg,
   };
 
@@ -111,7 +111,7 @@ export default function FamilySettings() {
           style={{
             fontSize: 20,
             fontWeight: "900",
-            color: theme.colors.primary,
+            color: theme.colors.primaryText,
           }}
         >
           {t("Share Settings")}
@@ -120,30 +120,30 @@ export default function FamilySettings() {
           {t("Shared reminder defaults for the whole group.")}
         </Text>
 
-        <Text style={{ fontWeight: "800", color: theme.colors.primary }}>
+        <Text style={{ fontWeight: "800", color: theme.colors.primaryText }}>
           {t("Default offset")}
         </Text>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+        <View style={[card(theme), { gap: 10 }]}>
           {OFFSETS.map((o) => (
             <Pressable
               key={o.value}
               onPress={() => editable && setOffset(o.value)}
               style={[
-                button(theme, "ghost"),
+                button(theme, "primary"),
                 {
                   opacity: editable ? 1 : 0.6,
-                  borderColor:
+                  backgroundColor:
                     offset === o.value
                       ? theme.colors.accent
-                      : theme.colors.border,
+                      : theme.colors.navy,
                 },
               ]}
             >
-              <Text style={buttonText(theme, "ghost")}>{o.label}</Text>
+              <Text style={buttonText(theme, "danger")}>{o.label}</Text>
             </Pressable>
           ))}
         </View>
-        <Text style={{ fontWeight: "800", color: theme.colors.primary }}>
+        <Text style={{ fontWeight: "800", color: theme.colors.primaryText }}>
           {t("Default time (local)")}
         </Text>
         <Pressable
@@ -152,7 +152,7 @@ export default function FamilySettings() {
           }}
           style={inputStyle}
         >
-          <Text style={{ color: theme.colors.primary }}>
+          <Text style={{ color: theme.colors.primaryText }}>
             {reminderDateObj.toLocaleTimeString([], {
               hour: "numeric",
               minute: "2-digit",

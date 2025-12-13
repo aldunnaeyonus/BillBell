@@ -30,15 +30,20 @@ export function button(theme: Theme, variant: "primary" | "ghost" | "danger" = "
     borderColor,
     borderRadius: 14,
     paddingVertical: 12,
-    paddingHorizontal: 14
+    paddingHorizontal: 14,
   };
 }
 
-export function buttonText(theme: Theme, variant: "primary" | "ghost" | "danger" = "primary") {
+export function buttonText(
+  theme: Theme,
+  variant: "primary" | "ghost" | "danger" = "primary"
+) {
   const color =
-    variant === "ghost" ? theme.colors.text :
-    variant === "primary" ? theme.colors.primary :
-    "#FFFFFF"; // danger stays white unless you add dangerText too
+    variant === "ghost"
+      ? theme.colors.text
+      : variant === "danger"
+      ? theme.colors.dangerText
+      : theme.colors.primaryTextButton;
 
   return {
     color,

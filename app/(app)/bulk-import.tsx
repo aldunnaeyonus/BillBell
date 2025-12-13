@@ -152,7 +152,7 @@ export default function BulkImport() {
             style={{
               fontSize: 22,
               fontWeight: "900",
-              color: theme.colors.primary,
+              color: theme.colors.primaryText,
             }}
           >
             {t("Import Bills")}
@@ -181,7 +181,7 @@ export default function BulkImport() {
           <Text
             style={{
               marginBottom: 6,
-              color: theme.colors.primary,
+              color: theme.colors.primaryText,
               fontWeight: "700",
             }}
           >
@@ -201,7 +201,7 @@ export default function BulkImport() {
               borderRadius: 12,
               paddingHorizontal: 12,
               paddingVertical: 10,
-              color: theme.colors.primary,
+              color: theme.colors.primaryText,
             }}
           />
 

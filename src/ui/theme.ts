@@ -26,12 +26,14 @@ export type Theme = {
     card: string;
     text: string;
     primaryText: string;
+    dangerText: string;
     subtext: string;
     border: string;
     primary: string;
     accent: string;
     danger: string;
     navy: string;
+    primaryTextButton: string;
   };
 };
 
@@ -47,11 +49,14 @@ export function makeTheme(mode: "light" | "dark"): Theme {
       subtext: isDark ? palette.darkSubtext : palette.lightSubtext,
       border: isDark ? palette.darkBorder : palette.lightBorder,
 
-      // ✅ primary should be a solid, readable brand color in both modes
       primary: isDark ? palette.mint : palette.navy,
 
-      // ✅ text that sits ON TOP of primary
-      primaryText: isDark ? palette.darkBg : "#FFFFFF",
+      // text ON TOP of primary
+      primaryText: isDark ? "#FFFFFF" : palette.darkBg ,
+      primaryTextButton: isDark ? palette.darkBg : "#FFFFFF",
+
+      // text ON TOP of danger
+      dangerText: "#FFFFFF",
 
       accent: palette.mint,
       navy: palette.navy,
@@ -59,3 +64,4 @@ export function makeTheme(mode: "light" | "dark"): Theme {
     },
   };
 }
+

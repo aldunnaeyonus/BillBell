@@ -45,8 +45,8 @@ function AppStack() {
         screenOptions={{
           headerTitleAlign: "center",
           headerStyle: { backgroundColor: theme.colors.bg },
-          headerTitleStyle: { color: theme.colors.primary },
-          headerTintColor: theme.colors.primary,
+          headerTitleStyle: { color: theme.colors.primaryText },
+          headerTintColor: theme.colors.primaryText,
           headerShadowVisible: false,
           contentStyle: { backgroundColor: theme.colors.bg },
         }}
@@ -62,14 +62,23 @@ function AppStack() {
           options={{ title: t("Bulk Upload") }}
         />
         <Stack.Screen name="index" options={{ title: t("Debts") }} />
-        <Stack.Screen name="(auth)/login" options={{ title: t("Sign in") }} />
+        <Stack.Screen
+          name="(auth)/login"
+          options={{
+            title: t("Sign in"),
+            headerBackVisible: false,
+          }}
+        />
         <Stack.Screen
           name="(app)/family"
           options={{ title: t("Shared Group") }}
         />
         <Stack.Screen
           name="(app)/bills"
-          options={{ title: t("DueView App") }}
+          options={{
+            title: t("DueView App"),
+            headerBackVisible: false,
+          }}
         />
         <Stack.Screen
           name="(app)/bill-edit"

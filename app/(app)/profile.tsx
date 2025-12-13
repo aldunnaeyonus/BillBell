@@ -32,7 +32,7 @@ export default function Profile() {
           style={{
             fontSize: 20,
             fontWeight: "900",
-            color: theme.colors.primary,
+            color: theme.colors.primaryText,
           }}
         >
           {t("Profile")}
@@ -40,14 +40,18 @@ export default function Profile() {
 
         {data && (
           <>
-            <Text style={{ fontWeight: "800", color: theme.colors.primary }}>
+            <Text
+              style={{ fontWeight: "800", color: theme.colors.primaryText }}
+            >
               {t("Share ID")}
             </Text>
             <Text style={{ color: theme.colors.subtext }}>
               {data.family_code}
             </Text>
 
-            <Text style={{ fontWeight: "800", color: theme.colors.primary }}>
+            <Text
+              style={{ fontWeight: "800", color: theme.colors.primaryText }}
+            >
               {t("Import Codes & Epiration Date")}
             </Text>
             <Text style={{ color: theme.colors.subtext }}>
@@ -58,7 +62,7 @@ export default function Profile() {
             <Text
               style={{
                 fontWeight: "800",
-                color: theme.colors.primary,
+                color: theme.colors.primaryText,
                 marginTop: 8,
               }}
             >
@@ -72,7 +76,7 @@ export default function Profile() {
                   <Text
                     style={{
                       fontWeight: "700",
-                      color: theme.colors.primary,
+                      color: theme.colors.primaryText,
                     }}
                   >
                     {item.name || item.email || `User ${item.id}`}
@@ -166,7 +170,6 @@ export default function Profile() {
           onPress={async () => {
             await googleSignOut();
             await clearToken();
-            Alert.alert("Logged out");
             router.replace("/(auth)/login");
           }}
           style={button(theme, "danger")}

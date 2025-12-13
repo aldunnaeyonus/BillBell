@@ -21,7 +21,7 @@ export default function FAQ() {
     <View style={screen(theme)}>
       <Stack.Screen options={{ title: t("FAQ") }} />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         <View style={[card(theme), { gap: 20 }]}>
           {faqItems.map((section, sIdx) => (
             <View key={sIdx} style={{ marginTop: sIdx === 0 ? 0 : 12 }}>
@@ -31,7 +31,7 @@ export default function FAQ() {
                   fontSize: 18,
                   fontWeight: "900",
                   marginBottom: 8,
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                 }}
               >
                 {t(section.title)}
@@ -50,7 +50,7 @@ export default function FAQ() {
                       style={{
                         fontSize: 16,
                         fontWeight: "800",
-                        color: theme.colors.primary,
+                        color: theme.colors.primaryText,
                       }}
                     >
                       {t(item.q)}

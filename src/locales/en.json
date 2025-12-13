@@ -74,7 +74,7 @@
   "Import failed": "Import failed",
   "Import Bills": "Import Bills",
   "Import code (Generated in Profile)": "Import code (Generated in Profile)",
-  "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time": "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days,Reminder Time",
+  "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time": "Creditor, Amount, Due Date, Recurrence, Reminder Offset Days, Reminder Time",
   "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:": "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with the following headers:",
   "Pick another  or XLSX": "Pick another CSV or XLSX file",
   "Pick CSV or XLSX file": "Pick a CSV or XLSX file",
