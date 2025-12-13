@@ -8,7 +8,7 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import { router, useFocusEffect, Stack } from "expo-router"; // <--- Added Stack
+import { router, useFocusEffect, Stack } from "expo-router";
 import { api } from "../../src/api/client";
 import {
   resyncLocalNotificationsFromBills,
@@ -42,9 +42,6 @@ function isOverdue(item: any) {
   return Date.now() > due;
 }
 
-/**
- * Converts array of objects to CSV string handling escapes.
- */
 const jsonToCSV = (data: any[]): string => {
   if (!data || data.length === 0) return "";
   const headers = Object.keys(data[0]);
@@ -253,54 +250,60 @@ export default function Bills() {
     Alert.alert(item.creditor || "Bill", "Choose an action", actions);
   }
 
+  // --- Combined Tab Button ---
   const SegButton = ({
     active,
     label,
+    amount,
     onPress,
   }: {
     active: boolean;
     label: string;
+    amount: number;
     onPress: () => void;
   }) => (
     <Pressable
       onPress={onPress}
       style={[
         button(theme, active ? "primary" : "ghost"),
-        { paddingVertical: 10, flex: 1 },
+        { paddingVertical: 10, flex: 1, alignItems: 'center' },
       ]}
     >
-      <Text style={buttonText(theme, active ? "primary" : "ghost")}>
+      <Text style={[buttonText(theme, active ? "primary" : "ghost"), { fontSize: 13, opacity: 0.8 }]}>
         {label}
+      </Text>
+      <Text style={[buttonText(theme, active ? "primary" : "ghost"), { fontSize: 16, fontWeight: '900' }]}>
+        ${centsToDollars(amount)}
       </Text>
     </Pressable>
   );
 
-  const SortPill = ({
-    keyName,
-    label,
-  }: {
-    keyName: SortKey;
-    label: string;
-  }) => {
-    const active = sort === keyName;
-    return (
-      <Pressable
-        onPress={() => setSort(keyName)}
-        style={[
-          button(theme, active ? "primary" : "ghost"),
-          { paddingVertical: 8, paddingHorizontal: 12 },
-        ]}
-      >
-        <Text style={buttonText(theme, active ? "primary" : "ghost")}>
-          {label}
-        </Text>
-      </Pressable>
-    );
-  };
+  // --- Cycle Sort Logic ---
+function cycleSort() {
+     if (sort === 'due') setSort('amount');
+     else if (sort === 'amount') setSort('name');
+     else setSort('due');
+  }
+
+  // OLD:
+  // const sortLabel = {
+  //     due: "Due Date",
+  //     amount: "Amount",
+  //     name: "Name"
+  // }[sort];
+
+  // NEW: Dynamic Label
+  const sortLabel = useMemo(() => {
+    if (sort === 'amount') return "Amount";
+    if (sort === 'name') return "Name";
+    
+    // If sort is 'due', check the tab
+    return tab === 'pending' ? "Due Date" : "Paid Date";
+  }, [sort, tab]);
 
   return (
     <View style={screen(theme)}>
-      {/* 1. Stack Screen Configuration */}
+      {/* Header Profile Button */}
       <Stack.Screen
         options={{
           headerTitle: "My Bills",
@@ -310,55 +313,19 @@ export default function Bills() {
               style={{ padding: 8 }} // hit slop
             >
                  <Text style={{ color: theme.colors.primaryText, fontWeight: '700' }}>Profile</Text> 
-              
             </Pressable>
           ),
         }}
       />
 
-      {/* Stats row */}
-      <View style={{ flexDirection: "row", gap: 10, marginBottom: 20 }}>
-        <View style={[card(theme), { flex: 1 }]}>
-          <Text style={{ color: theme.colors.subtext, fontWeight: "700" }}>
-            Pending Total
-          </Text>
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 18,
-              fontWeight: "900",
-              marginTop: 6,
-            }}
-          >
-            ${centsToDollars(stats.pendingTotal)}
-          </Text>
-        </View>
-
-        <View style={[card(theme), { flex: 1 }]}>
-          <Text style={{ color: theme.colors.subtext, fontWeight: "700" }}>
-            Paid Total
-          </Text>
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 18,
-              fontWeight: "900",
-              marginTop: 6,
-            }}
-          >
-            ${centsToDollars(stats.paidTotal)}
-          </Text>
-        </View>
-      </View>
-
-      {/* Action Buttons Row */}
+      {/* Main Action Buttons */}
       <View
         style={{
           flexDirection: "row",
           justifyContent: "space-around",
           alignItems: "center",
           gap: 10,
-          marginBottom: 20,
+          marginBottom: 16,
         }}
       >
         <Pressable
@@ -383,101 +350,61 @@ export default function Bills() {
         }
         ListHeaderComponent={
           <View style={{ gap: 12, marginBottom: 12 }}>
-            {/* Pending / Paid toggle */}
-            <View style={[card(theme), { flexDirection: "row", gap: 10 }]}>
+            
+            {/* Combined Filter & Stats: Tabs now show $$$ */}
+            <View style={[card(theme), { flexDirection: "row", gap: 6, padding: 6 }]}>
               <SegButton
                 active={tab === "pending"}
-                label={`Pending (${stats.pendingCount})`}
+                label="Pending"
+                amount={stats.pendingTotal}
                 onPress={() => setTab("pending")}
               />
+              <View style={{width: 1, backgroundColor: theme.colors.border, marginVertical: 6}} />
               <SegButton
                 active={tab === "paid"}
-                label={`Paid (${stats.paidCount})`}
+                label="Paid"
+                amount={stats.paidTotal}
                 onPress={() => setTab("paid")}
               />
             </View>
 
-            {/* Sort controls */}
-            <View style={[card(theme), { gap: 10 }]}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{ color: theme.colors.subtext, fontWeight: "800" }}
-                >
-                  Sort
-                </Text>
-                {/* Export Button */}
+            {/* Minimal Sort & Export Row */}
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 4 }}>
+                {/* Single Sort Button (Cycles on tap) */}
+                <Pressable onPress={cycleSort} style={{ flexDirection: 'row', alignItems: 'center', padding: 8 }}>
+                    <Text style={{ color: theme.colors.subtext }}>Sort by: </Text>
+                    <Text style={{ fontWeight: '800', color: theme.colors.text }}>{sortLabel} ▾</Text>
+                </Pressable>
+
+                {/* Export Link */}
                 {bills.length > 0 && (
-                  <Pressable onPress={generateAndShareCSV}>
-                    <Text
-                      style={{
-                        color: theme.colors.accent,
-                        fontSize: 12,
-                        fontWeight: "700",
-                      }}
-                    >
+                  <Pressable onPress={generateAndShareCSV} style={{ padding: 8 }}>
+                    <Text style={{ color: theme.colors.accent, fontWeight: "700", fontSize: 13 }}>
                       Export CSV
                     </Text>
                   </Pressable>
                 )}
-              </View>
-
-              <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
-                <SortPill
-                  keyName="due"
-                  label={tab === "pending" ? "Due soon" : "Recently paid"}
-                />
-                <SortPill keyName="amount" label="Amount" />
-                <SortPill keyName="name" label="Name" />
-              </View>
             </View>
           </View>
         }
         ListEmptyComponent={
-          <View style={[card(theme), { gap: 10 }]}>
+          <View style={[card(theme), { gap: 10, alignItems: 'center', paddingVertical: 40 }]}>
+            <Text style={{ fontSize: 40 }}>{tab === "pending" ? "🎉" : "💸"}</Text>
             <Text
               style={{
                 color: theme.colors.text,
                 fontSize: 18,
                 fontWeight: "900",
+                textAlign: 'center'
               }}
             >
-              {tab === "pending" ? "No pending debts 🎉" : "No paid debts yet"}
+              {tab === "pending" ? "All caught up!" : "No paid history"}
             </Text>
-            <Text style={{ color: theme.colors.subtext, lineHeight: 20 }}>
+            <Text style={{ color: theme.colors.subtext, textAlign: 'center', lineHeight: 20 }}>
               {tab === "pending"
-                ? "Add your first debt or bulk import a CSV to get started."
-                : "Mark a debt paid to see it show up here."}
+                ? "You have no pending bills. Enjoy the freedom!"
+                : "Bills you mark as paid will appear here."}
             </Text>
-
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <Pressable
-                onPress={() => router.push("/(app)/bill-edit")}
-                style={[button(theme, "primary"), { flex: 1 }]}
-              >
-                <Text style={buttonText(theme, "primary")}>+ Add</Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => router.push("/(app)/bulk-import")}
-                style={[button(theme, "ghost"), { flex: 1 }]}
-              >
-                <Text style={buttonText(theme, "ghost")}>Import</Text>
-              </Pressable>
-
-              {/* Keep this fallback just in case lists are empty but data exists elsewhere */}
-              <Pressable
-                onPress={generateAndShareCSV}
-                style={[button(theme, "ghost"), { flex: 1 }]}
-              >
-                <Text style={buttonText(theme, "ghost")}>Export</Text>
-              </Pressable>
-            </View>
           </View>
         }
         renderItem={({ item }) => {
@@ -493,40 +420,31 @@ export default function Bills() {
               delayLongPress={350}
               style={[card(theme), { marginBottom: 10 }]}
             >
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: "800",
-                  color: theme.colors.text,
-                }}
-              >
-                {item.creditor} {isPaid ? "✅" : ""}
-              </Text>
-              {overdue && (
-                <View
-                  style={{
-                    paddingHorizontal: 10,
-                    paddingVertical: 4,
-                    borderRadius: 999,
-                    backgroundColor: theme.colors.danger,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: theme.colors.primaryText,
-                      fontWeight: "800",
-                      fontSize: 12,
-                    }}
-                  >
-                    OVERDUE
-                  </Text>
-                </View>
-              )}
-              <Text style={{ color: theme.colors.subtext }}>
-                ${amt} • {isPaid ? "Paid" : "Due"} {item.due_date}
-              </Text>
+              <View style={{flexDirection: 'row', justifyContent:'space-between', alignItems: 'flex-start'}}>
+                  <View>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: "800",
+                          color: theme.colors.text,
+                        }}
+                      >
+                        {item.creditor}
+                      </Text>
+                      <Text style={{ color: theme.colors.subtext, marginTop: 4 }}>
+                        {isPaid ? "Paid on " : "Due "} {item.due_date}
+                      </Text>
+                  </View>
+                  <View style={{alignItems: 'flex-end'}}>
+                      <Text style={{fontSize: 18, fontWeight: '900', color: theme.colors.text}}>${amt}</Text>
+                      {overdue && (
+                        <Text style={{color: theme.colors.danger, fontWeight: '800', fontSize: 10, marginTop: 4}}>OVERDUE</Text>
+                      )}
+                  </View>
+              </View>
 
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
+              {/* Action Buttons Row */}
+              <View style={{ flexDirection: "row", gap: 10, marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
                 <Pressable
                   onPress={() =>
                     router.push({
@@ -534,37 +452,22 @@ export default function Bills() {
                       params: { id: String(item.id) },
                     })
                   }
-                  style={button(theme, "ghost")}
+                  style={{flex: 1, alignItems: 'center'}}
                 >
-                  <Text style={buttonText(theme, "ghost")}>Edit</Text>
+                  <Text style={{color: theme.colors.subtext, fontWeight: '600'}}>Edit</Text>
                 </Pressable>
 
                 {!isPaid && (
                   <Pressable
                     onPress={() => markPaid(item)}
-                    style={button(theme, "primary")}
+                    style={{flex: 1, alignItems: 'center'}}
                   >
-                    <Text style={buttonText(theme, "primary")}>Mark Paid</Text>
+                    <Text style={{color: theme.colors.primary, fontWeight: '800'}}>Mark Paid</Text>
                   </Pressable>
                 )}
-
-                <Pressable
-                  onPress={() => deleteBill(item)}
-                  style={button(theme, "danger")}
-                >
-                  <Text style={buttonText(theme, "danger")}>Delete</Text>
-                </Pressable>
+                 
+                 {/* Delete is hidden in long-press to clean up UI, or you can keep it here */}
               </View>
-
-              <Text
-                style={{
-                  color: theme.colors.subtext,
-                  marginTop: 10,
-                  fontSize: 12,
-                }}
-              >
-                Tip: long-press for quick actions
-              </Text>
             </Pressable>
           );
         }}
