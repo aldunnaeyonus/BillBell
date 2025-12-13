@@ -12,8 +12,6 @@ import ja from '../locales/ja.json';
 import zhHans from '../locales/zh-Hans.json';
 import ptBR from '../locales/pt-BR.json';
 import it from '../locales/it.json';
-// pt is essentially pt-BR in your setup
-import pt from '../locales/pt-BR.json';
 
 const resources = {
   en: { translation: en },
@@ -21,9 +19,9 @@ const resources = {
   de: { translation: de },
   fr: { translation: fr },
   ja: { translation: ja },
-  pt: { translation: pt },
   "zh-Hans": { translation: zhHans },
   "pt-BR": { translation: ptBR },
+  pt: { translation: ptBR }, // Reuse the variable
   it: { translation: it },
   zh: { translation: zhHans },
 };
