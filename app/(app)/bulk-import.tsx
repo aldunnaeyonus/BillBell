@@ -1,4 +1,3 @@
-// app/(app)/import.tsx  (or wherever your route screen lives)
 import React, { useState } from "react";
 import {
   View,
@@ -7,15 +6,103 @@ import {
   Pressable,
   Alert,
   ScrollView,
-  Platform
+  Platform,
+  StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
+import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import RNFS from "react-native-fs"; // <--- Added
-import Share from "react-native-share"; // <--- Added
+import RNFS from "react-native-fs";
+import Share from "react-native-share";
+import LinearGradient from "react-native-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import { api } from "../../src/api/client";
-import { useTheme } from "../../src/ui/useTheme";
-import { screen, card, button, buttonText } from "../../src/ui/styles";
+import { useTheme, Theme } from "../../src/ui/useTheme";
+
+// --- Components ---
+
+function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
+  return (
+    <View style={styles.headerShadowContainer}>
+      <LinearGradient
+        colors={[theme.colors.navy, "#1a2c4e"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.headerIconCircle}>
+          <Ionicons name="cloud-upload" size={28} color="#FFF" />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.headerTitle}>{title}</Text>
+          <Text style={styles.headerSubtitle}>{subtitle}</Text>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+}
+
+function SectionTitle({ title, theme }: { title: string; theme: Theme }) {
+  return (
+    <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>
+      {title}
+    </Text>
+  );
+}
+
+function FileDropZone({
+  filename,
+  onPress,
+  theme,
+  parsedCount,
+}: {
+  filename: string | null;
+  onPress: () => void;
+  theme: Theme;
+  parsedCount: number;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.dropZone,
+        {
+          borderColor: filename ? theme.colors.primary : theme.colors.border,
+          backgroundColor: pressed ? theme.colors.card : "transparent",
+          opacity: pressed ? 0.7 : 1,
+        },
+      ]}
+    >
+      <Ionicons
+        name={filename ? "document-text" : "add-circle-outline"}
+        size={40}
+        color={filename ? theme.colors.primary : theme.colors.subtext}
+      />
+      <View style={{ alignItems: "center", gap: 4 }}>
+        <Text
+          style={[
+            styles.dropZoneTitle,
+            { color: filename ? theme.colors.primaryText : theme.colors.subtext },
+          ]}
+        >
+          {filename || "Tap to select CSV/XLSX"}
+        </Text>
+        {filename ? (
+          <Text style={{ color: theme.colors.accent, fontWeight: "700" }}>
+            {parsedCount} items found
+          </Text>
+        ) : (
+          <Text style={{ color: theme.colors.subtext, fontSize: 12 }}>
+            Max size: 5MB
+          </Text>
+        )}
+      </View>
+    </Pressable>
+  );
+}
+
+// --- Main Screen ---
 
 export default function BulkImport() {
   const theme = useTheme();
@@ -26,11 +113,7 @@ export default function BulkImport() {
   const [bills, setBills] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const deviceDate = new Date().toLocaleDateString();
-  const deviceTime = new Date().toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  // --- Logic ---
 
   async function pickCsv() {
     try {
@@ -40,6 +123,7 @@ export default function BulkImport() {
           "text/plain",
           "application/vnd.ms-excel",
           "text/comma-separated-values",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         ],
         copyToCacheDirectory: true,
       });
@@ -59,7 +143,6 @@ export default function BulkImport() {
       }
 
       setBills(parsed);
-      Alert.alert(t("Import"), t("ParsedCSV", { bills: parsed.length }));
     } catch (e: any) {
       console.error(e);
       Alert.alert(t("Import error"), e?.message ?? t("Failed to read CSV"));
@@ -67,95 +150,90 @@ export default function BulkImport() {
   }
 
   function parseCsvToBills(csv: string): any[] {
-  const lines = csv
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0);
+    const lines = csv
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
 
-  if (!lines.length) return [];
+    if (!lines.length) return [];
 
-  const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
-  const idx = (key: string) => header.indexOf(key);
+    const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+    const idx = (key: string) => header.indexOf(key);
 
-  const iName = idx("name");
-  const iAmount = idx("amount");
-  const iDueDate = idx("due_date");
-  const iNotes = idx("notes");
-  // ADD THIS:
-  const iRecurrence = idx("recurrence");
+    const iName = idx("name");
+    const iAmount = idx("amount");
+    const iDueDate = idx("due_date");
+    const iNotes = idx("notes");
+    const iRecurrence = idx("recurrence");
+    const iOffset = idx("offset");
 
-  const result: any[] = [];
+    const result: any[] = [];
 
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(",").map((c) => c.trim());
-    
-    // Safety checks (same as before)
-    const name = iName >= 0 ? cols[iName] : "";
-    const amountStr = iAmount >= 0 ? cols[iAmount] : "";
-    const dueDate = iDueDate >= 0 ? cols[iDueDate] : "";
-    
-    // Optional fields
-    const notes = iNotes >= 0 ? cols[iNotes] : "";
-    
-    // NEW: Parse recurrence
-    let recurrence = "none";
-    if (iRecurrence >= 0) {
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(",").map((c) => c.trim());
+
+      const name = iName >= 0 ? cols[iName] : "";
+      const amountStr = iAmount >= 0 ? cols[iAmount] : "";
+      const dueDate = iDueDate >= 0 ? cols[iDueDate] : "";
+      const notes = iNotes >= 0 ? cols[iNotes] : "";
+      
+      let recurrence = "none";
+      if (iRecurrence >= 0) {
         const val = cols[iRecurrence].toLowerCase();
         if (["weekly", "bi-weekly", "monthly", "annually"].includes(val)) {
-            recurrence = val;
+          recurrence = val;
         }
+      }
+
+      let offset = 0;
+      if (iOffset >= 0) {
+          const val = parseInt(cols[iOffset]);
+          if (!isNaN(val) && val >= 0 && val <= 3) offset = val;
+      }
+
+      if (!name || !amountStr || !dueDate) continue;
+      const amount = parseFloat(amountStr);
+      if (Number.isNaN(amount)) continue;
+
+      result.push({
+        name,
+        amount,
+        due_date: dueDate,
+        notes,
+        recurrence,
+        offset, 
+      });
     }
 
-    if (!name || !amountStr || !dueDate) continue;
-    const amount = parseFloat(amountStr);
-    if (Number.isNaN(amount)) continue;
-
-    result.push({
-      name,
-      amount,
-      due_date: dueDate,
-      notes,
-      recurrence, // <-- Include this in the object
-    });
+    return result;
   }
 
-  return result;
-}
-
-// --- New Feature: Download Template ---
   async function downloadTemplate() {
     try {
-      // 1. Define the correct headers and a sample row
       const headers = "name,amount,due_date,notes,recurrence,offset";
-      // Using a dynamic date example so it looks current
-      const today = new Date().toISOString().split('T')[0]; 
-      const sampleRow = `Netflix,15.99,${today},Family Plan,monthly,0`;
-      
+      const today = new Date().toISOString().split("T")[0];
+      const sampleRow = `Netflix,15.99,${today},Family Plan,monthly,1`;
       const csvContent = `${headers}\n${sampleRow}`;
 
-      // 2. Save to device
-      const path = Platform.OS === "ios"
+      const path =
+        Platform.OS === "ios"
           ? `${RNFS.DocumentDirectoryPath}/bill_template.csv`
           : `${RNFS.CachesDirectoryPath}/bill_template.csv`;
 
       await RNFS.writeFile(path, csvContent, "utf8");
 
-      // 3. Share / Save
       await Share.open({
         url: `file://${path}`,
         type: "text/csv",
-        filename: "bill_import_template", // Android 
-        title: "Download Bill Template", // iOS
+        filename: "bill_import_template",
+        title: "Download Bill Template",
       });
-
     } catch (error: any) {
       if (error?.message !== "User did not share") {
         Alert.alert(t("Error"), t("Failed to download template"));
-        console.error(error);
       }
     }
   }
-  // --------------------------------------
 
   async function doImport() {
     if (!importCode.trim()) {
@@ -163,10 +241,7 @@ export default function BulkImport() {
       return;
     }
     if (!bills.length) {
-      Alert.alert(
-        t("Import"),
-        t("Please pick a CSV and parse some bills first.")
-      );
+      Alert.alert(t("Import"), t("Please pick a CSV and parse some bills first."));
       return;
     }
 
@@ -177,8 +252,8 @@ export default function BulkImport() {
       setImportCode("");
       setCsvName(null);
       setBills([]);
+      router.back();
     } catch (e: any) {
-      console.error(e);
       Alert.alert(t("Import failed"), e?.message ?? t("Unknown error"));
     } finally {
       setLoading(false);
@@ -186,118 +261,230 @@ export default function BulkImport() {
   }
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-      <View style={[screen(theme), { gap: 12 }]}>
-        <View style={card(theme)}>
-          <Text
-            style={{
-              fontSize: 22,
-              fontWeight: "900",
-              color: theme.colors.primaryText,
-            }}
-          >
-            {t("Import")}
-          </Text>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.colors.bg }]}
+      contentContainerStyle={{ paddingBottom: 60 }}
+    >
+      <View style={styles.content}>
+        {/* Header */}
+        <Header
+          title={t("Bulk Upload")}
+          subtitle={t("Import multiple bills via CSV")}
+          theme={theme}
+        />
 
-          <Text
-            style={{
-              color: theme.colors.subtext,
-              marginTop: 6,
-              lineHeight: 20,
-            }}
-          >
-{t("CSV columns: name, amount, due_date, notes, recurrence, offset")}
-  {"\n\n"}
-  {`Example: Netflix, 15.99, 2025-10-15, Family Plan, monthly, 0`}
-  {"\n"}
-    {`Insurance, 115.99, 2025-10-15, 2 Cars, annually, 0`}
-  {"\n\n"}
-            {`Time example: ${deviceTime}`}
-              {"\n\n"}
-            {`Offset is when do you want to be reminder days prior to due date.`}
-             {"\n\n"}
-            {`Valid values for the recurrence column: weekly, bi-weekly, monthly, annually, none (or leave blank)`}
-          </Text>
-<Pressable
+        {/* Step 1 */}
+        <View style={styles.section}>
+          <SectionTitle title={t("Step 1: Preparation")} theme={theme} />
+          <Pressable
             onPress={downloadTemplate}
-            style={{ margin: 20, alignSelf: 'flex-start' }}
-          >
-             <Text style={{color: theme.colors.accent, fontWeight: '700'}}>
-               📥 {t("Download Clean CSV Template")}
-             </Text>
-          </Pressable>
-          <View style={{ height: 14 }} />
-
-          <Text
-            style={{
-              marginBottom: 6,
-              color: theme.colors.primaryText,
-              fontWeight: "700",
-            }}
-          >
-            {t("Import code (Generated in Profile)")}
-          </Text>
-
-          <TextInput
-            value={importCode}
-            onChangeText={setImportCode}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            placeholder={t("e.g. ABCD1234")}
-            placeholderTextColor={theme.colors.subtext}
-            style={{
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              borderRadius: 12,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-              color: theme.colors.primaryText,
-            }}
-          />
-
-          <View style={{ height: 14 }} />
-
-          <Pressable
-            onPress={pickCsv}
-            disabled={loading}
-            style={button(theme, "ghost")}
-          >
-            <Text style={buttonText(theme, "ghost")}>
-              {csvName ? t("Pick another CSV") : t("Pick CSV file")}
-            </Text>
-          </Pressable>
-
-          {csvName && (
-            <Text style={{ marginTop: 8, color: theme.colors.subtext }}>
-              {t("Selected:")} {csvName}
-            </Text>
-          )}
-
-          {bills.length > 0 && (
-            <Text style={{ marginTop: 6, color: theme.colors.subtext }}>
-              {t("Parsed", { bills: bills.length })}
-            </Text>
-          )}
-
-          <View style={{ height: 16 }} />
-
-          <Pressable
-            onPress={doImport}
-            disabled={loading || !importCode.trim() || !bills.length}
-            style={[
-              button(theme, "primary"),
-              (loading || !importCode.trim() || !bills.length) && {
-                opacity: 0.2,
+            style={({ pressed }) => [
+              styles.actionCard,
+              {
+                backgroundColor: theme.colors.card,
+                borderColor: theme.colors.border,
+                opacity: pressed ? 0.7 : 1,
               },
             ]}
           >
-            <Text style={buttonText(theme, "danger")}>
-              {loading ? t("Importing...") : t("Import")}
-            </Text>
+            <View style={[styles.iconBox, { backgroundColor: theme.mode === 'dark' ? '#1E293B' : '#F1F5F9' }]}>
+              <Ionicons name="download-outline" size={22} color={theme.colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>
+                {t("Download Template")}
+              </Text>
+              <Text style={[styles.cardSubtitle, { color: theme.colors.subtext }]}>
+                {t("Get the CSV template to ensure correct formatting.")}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={theme.colors.subtext} />
           </Pressable>
-          
         </View>
+
+        {/* Step 2 */}
+        <View style={styles.section}>
+          <SectionTitle title={t("Step 2: Select File")} theme={theme} />
+          <FileDropZone
+            filename={csvName}
+            onPress={pickCsv}
+            theme={theme}
+            parsedCount={bills.length}
+          />
+        </View>
+
+        {/* Step 3 */}
+        <View style={styles.section}>
+          <SectionTitle title={t("Step 3: Authorization")} theme={theme} />
+          <View style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <Ionicons name="key-outline" size={20} color={theme.colors.subtext} style={{ marginLeft: 12 }} />
+            <TextInput
+              value={importCode}
+              onChangeText={setImportCode}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              placeholder={t("Enter Import Code")}
+              placeholderTextColor={theme.colors.subtext}
+              style={[styles.input, { color: theme.colors.primaryText }]}
+            />
+          </View>
+          <Text style={{ color: theme.colors.subtext, fontSize: 12, marginLeft: 4 }}>
+            {t("Generate this in your Profile")}
+          </Text>
+        </View>
+
+        {/* Action Button */}
+        <Pressable
+          onPress={doImport}
+          disabled={loading || !importCode.trim() || !bills.length}
+          style={({ pressed }) => [
+            styles.importButton,
+            {
+              backgroundColor: theme.colors.primary,
+              opacity: loading || !importCode.trim() || !bills.length ? 0.3 : pressed ? 0.8 : 1,
+            },
+          ]}
+        >
+          {loading ? (
+            <ActivityIndicator color={theme.colors.primaryTextButton} />
+          ) : (
+            <Text style={[styles.importButtonText, { color: theme.colors.primaryTextButton }]}>
+              {t("Start Import")}
+            </Text>
+          )}
+        </Pressable>
       </View>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    padding: 16,
+    gap: 24,
+  },
+  // Header
+  headerShadowContainer: {
+    backgroundColor: 'transparent',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+    marginVertical: 4,
+    borderRadius: 20, 
+  },
+  headerGradient: {
+    borderRadius: 20,
+    height:120,
+    paddingLeft: 24,
+    paddingRight: 24,
+    paddingBottom: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    overflow: "hidden",
+  },
+  headerIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#FFF",
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.7)",
+  },
+  // Sections
+  section: {
+    gap: 10,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginLeft: 4,
+  },
+  // Card
+  actionCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 12,
+  },
+  iconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  cardSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  // Drop Zone
+  dropZone: {
+    height: 140,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+  },
+  dropZoneTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Input
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 14,
+    height: 56,
+  },
+  input: {
+    flex: 1,
+    height: "100%",
+    paddingHorizontal: 12,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Button
+  importButton: {
+    height: 56,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+    marginTop: 12,
+  },
+  importButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+});

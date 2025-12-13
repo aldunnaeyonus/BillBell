@@ -1,150 +1,327 @@
 import { useState, useMemo } from "react";
-import { View, Text, ScrollView, TextInput, Pressable, Keyboard } from "react-native";
-import { useTheme } from "../../src/ui/useTheme";
-import { screen, card } from "../../src/ui/styles";
+import {
+  View,
+  Text,
+  ScrollView,
+  TextInput,
+  Pressable,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+  StyleSheet,
+  KeyboardAvoidingView,
+} from "react-native";
+import { useTheme, Theme } from "../../src/ui/useTheme";
 import { useTranslation } from "react-i18next";
-import { Stack } from "expo-router";
-import { Key } from "react";
+import LinearGradient from "react-native-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+
+// Enable LayoutAnimation for Android
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+interface FaqItem {
+  q: string;
+  a: string;
+}
 
 interface FaqSection {
   title: string;
-  items: { q: string; a: string }[];
+  items: FaqItem[];
 }
+
+// --- Components ---
+
+function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
+  return (
+    <View style={styles.headerShadowContainer}>
+      <LinearGradient
+        colors={[theme.colors.navy, "#1a2c4e"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.headerIconCircle}>
+          <Ionicons name="help-buoy" size={28} color="#FFF" />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.headerTitle}>{title}</Text>
+          <Text style={styles.headerSubtitle}>{subtitle}</Text>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+}
+
+function SearchBar({
+  value,
+  onChange,
+  theme,
+  t,
+}: {
+  value: string;
+  onChange: (text: string) => void;
+  theme: Theme;
+  t: any;
+}) {
+  return (
+    <View style={[styles.searchContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+      <Ionicons name="search" size={20} color={theme.colors.subtext} />
+      <TextInput
+        value={value}
+        onChangeText={onChange}
+        placeholder={t("Search questions...")}
+        placeholderTextColor={theme.colors.subtext}
+        style={[styles.searchInput, { color: theme.colors.text }]}
+      />
+      {value.length > 0 && (
+        <Pressable onPress={() => onChange("")}>
+          <Ionicons name="close-circle" size={18} color={theme.colors.subtext} />
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+function AccordionItem({
+  question,
+  answer,
+  theme,
+}: {
+  question: string;
+  answer: string;
+  theme: Theme;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const toggleExpand = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(!expanded);
+  };
+
+  return (
+    <View style={[styles.accordionItem, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+      <Pressable onPress={toggleExpand} style={styles.accordionHeader}>
+        <View style={{ flex: 1, marginRight: 10 }}>
+          <Text style={[styles.questionText, { color: theme.colors.primaryText }]}>
+            {question}
+          </Text>
+        </View>
+        <Ionicons
+          name={expanded ? "chevron-up" : "chevron-down"}
+          size={20}
+          color={expanded ? theme.colors.accent : theme.colors.subtext}
+        />
+      </Pressable>
+      {expanded && (
+        <View style={styles.accordionBody}>
+          <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+          <Text style={[styles.answerText, { color: theme.colors.subtext }]}>
+            {answer}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+// --- Main Screen ---
 
 export default function FAQ() {
   const theme = useTheme();
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Cast the translation result to our interface
   const rawFaqItems = t("faqSections", { returnObjects: true }) as FaqSection[];
 
-  // Filter logic
   const filteredFaqItems = useMemo(() => {
     if (!searchQuery.trim()) return rawFaqItems;
-
     const lowerQuery = searchQuery.toLowerCase();
 
     return rawFaqItems
       .map((section) => {
-        // Filter items within the section
         const matchingItems = section.items.filter((item) => {
           const question = t(item.q).toLowerCase();
           const answer = t(item.a).toLowerCase();
           return question.includes(lowerQuery) || answer.includes(lowerQuery);
         });
-
-        // Return the section with only matching items
-        return {
-          ...section,
-          items: matchingItems,
-        };
+        return { ...section, items: matchingItems };
       })
-      // Only keep sections that actually have matching items left
       .filter((section) => section.items.length > 0);
   }, [searchQuery, rawFaqItems, t]);
 
   return (
-    <View style={screen(theme)}>
-      <Stack.Screen options={{ title: t("FAQ") }} />
+    <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            
+            {/* Header */}
+            <Header
+              title={t("FAQ")}
+              subtitle={t("Frequently Asked Questions")}
+              theme={theme}
+            />
 
-      {/* Search Bar */}
-      <View style={{ marginBottom: 16 }}>
-        <TextInput
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder={t("Search questions...")}
-          placeholderTextColor={theme.colors.subtext}
-          style={{
-            backgroundColor: theme.colors.card,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            borderRadius: 12,
-            padding: 12,
-            fontSize: 16,
-            color: theme.colors.text,
-          }}
-        />
-      </View>
+            {/* Search */}
+            <SearchBar value={searchQuery} onChange={setSearchQuery} theme={theme} t={t} />
 
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {filteredFaqItems.length === 0 ? (
-           // Empty State
-          <View style={[card(theme), { alignItems: "center", padding: 30 }]}>
-            <Text style={{ fontSize: 40, marginBottom: 10 }}>🔍</Text>
-            <Text
-              style={{
-                color: theme.colors.subtext,
-                fontSize: 16,
-                textAlign: "center",
-              }}
-            >
-              {t("No results found for")} "{searchQuery}"
-            </Text>
-            <Pressable onPress={() => setSearchQuery("")} style={{ marginTop: 20 }}>
-                <Text style={{ color: theme.colors.accent, fontWeight: 'bold' }}>{t("Clear Search")}</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <View style={[card(theme), { gap: 20 }]}>
-            {filteredFaqItems.map((section, sIdx) => (
-              <View key={sIdx} style={{ marginTop: sIdx === 0 ? 0 : 12 }}>
-                {/* Section title */}
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "900",
-                    marginBottom: 12,
-                    color: theme.colors.primaryText,
-                    textTransform: 'uppercase', 
-                    opacity: 0.8
-                  }}
-                >
-                  {t(section.title)}
+            {/* Content */}
+            {filteredFaqItems.length === 0 ? (
+              <View style={[styles.emptyState, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                <Ionicons name="search-outline" size={48} color={theme.colors.subtext} />
+                <Text style={[styles.emptyText, { color: theme.colors.subtext }]}>
+                  {t("No results found for")} "{searchQuery}"
                 </Text>
-
-                {section.items.map((item, index) => (
-                  <View key={index} style={{ gap: 4, marginBottom: 16 }}>
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: "800",
-                        color: theme.colors.primaryText,
-                      }}
-                    >
-                      {t(item.q)}
+              </View>
+            ) : (
+              <View style={{ gap: 24 }}>
+                {filteredFaqItems.map((section, sIdx) => (
+                  <View key={sIdx}>
+                    <Text style={[styles.sectionHeader, { color: theme.colors.subtext }]}>
+                      {t(section.title)}
                     </Text>
-                    <Text
-                      style={{
-                        fontSize: 15, // Bumped slightly for readability
-                        color: theme.colors.subtext,
-                        lineHeight: 22,
-                      }}
-                    >
-                      {t(item.a)}
-                    </Text>
-
-                    {index < section.items.length - 1 && (
-                      <View
-                        style={{
-                          height: 1,
-                          backgroundColor: theme.colors.border,
-                          marginTop: 12,
-                          opacity: 0.5
-                        }}
-                      />
-                    )}
+                    <View style={{ gap: 10 }}>
+                      {section.items.map((item, index) => (
+                        <AccordionItem
+                          key={index}
+                          question={t(item.q)}
+                          answer={t(item.a)}
+                          theme={theme}
+                        />
+                      ))}
+                    </View>
                   </View>
                 ))}
               </View>
-            ))}
+            )}
           </View>
-        )}
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    padding: 16,
+    gap: 20,
+  },
+  // Header
+  headerShadowContainer: {
+    backgroundColor: 'transparent',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+    marginVertical: 4,
+    borderRadius: 20,
+  },
+  headerGradient: {
+    borderRadius: 20,
+    height:120,
+    paddingLeft: 24,
+    paddingRight: 24,
+    paddingBottom: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    overflow: "hidden",
+  },
+  headerIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#FFF",
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.7)",
+  },
+  // Search
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    height: 50,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    height: "100%",
+  },
+  // Sections
+  sectionHeader: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    marginBottom: 10,
+    marginLeft: 4,
+    letterSpacing: 0.5,
+  },
+  // Accordion
+  accordionItem: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  accordionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    minHeight: 60,
+  },
+  questionText: {
+    fontSize: 16,
+    fontWeight: "600",
+    lineHeight: 22,
+  },
+  accordionBody: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
+  divider: {
+    height: 1,
+    width: "100%",
+    marginBottom: 16,
+    opacity: 0.5,
+  },
+  answerText: {
+    fontSize: 15,
+    lineHeight: 24,
+  },
+  // Empty State
+  emptyState: {
+    padding: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 16,
+    marginTop: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: "center",
+  },
+});

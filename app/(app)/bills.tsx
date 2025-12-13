@@ -7,22 +7,27 @@ import {
   RefreshControl,
   Alert,
   Platform,
+  StyleSheet,
+  StatusBar,
 } from "react-native";
 import { router, useFocusEffect, Stack } from "expo-router";
+import LinearGradient from "react-native-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import RNFS from "react-native-fs";
+import Share from "react-native-share";
+
 import { api } from "../../src/api/client";
 import {
   resyncLocalNotificationsFromBills,
   cancelBillReminderLocal,
 } from "../../src/notifications/notifications";
-import { useTheme } from "../../src/ui/useTheme";
-import { screen, card, button, buttonText } from "../../src/ui/styles";
-import RNFS from "react-native-fs";
-import Share from "react-native-share";
+import { useTheme, Theme } from "../../src/ui/useTheme";
 
+// --- Types ---
 type SortKey = "due" | "amount" | "name";
 
 // --- Helper Functions ---
-
 function centsToDollars(cents: number) {
   return (Number(cents || 0) / 100).toFixed(2);
 }
@@ -39,13 +44,15 @@ function isOverdue(item: any) {
   if (isPaid) return false;
   const due = safeDateNum(item.due_date);
   if (!due) return false;
-  return Date.now() > due;
+  // overdue if due date is before today (ignoring time)
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return due < now.getTime();
 }
 
 const jsonToCSV = (data: any[]): string => {
   if (!data || data.length === 0) return "";
   const headers = Object.keys(data[0]);
-  
   const escapeField = (field: any) => {
     if (field === null || field === undefined) return "";
     const stringField = String(field);
@@ -54,122 +61,191 @@ const jsonToCSV = (data: any[]): string => {
     }
     return stringField;
   };
-
   const headerRow = headers.map(escapeField).join(",");
   const rows = data.map((row) =>
     headers.map((header) => escapeField(row[header])).join(",")
   );
-
   return [headerRow, ...rows].join("\n");
 };
 
-// --- Main Component ---
+// --- Components ---
+
+function Header({ theme, title, onProfilePress }: { theme: Theme; title: string; onProfilePress: () => void }) {
+  return (
+    <LinearGradient
+      colors={[theme.colors.navy, "#1a2c4e"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ paddingTop: (StatusBar.currentHeight || 40) + 10, paddingBottom: 20, paddingHorizontal: 20 }}
+    >
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={{ fontSize: 28, fontWeight: '800', color: '#FFF' }}>
+          {title}
+        </Text>
+        <Pressable 
+          onPress={onProfilePress}
+          style={{ 
+            width: 40, 
+            height: 40, 
+            borderRadius: 20, 
+            backgroundColor: 'rgba(255,255,255,0.2)', 
+            justifyContent: 'center', 
+            alignItems: 'center' 
+          }}
+        >
+          <Ionicons name="person" size={20} color="#FFF" />
+        </Pressable>
+      </View>
+    </LinearGradient>
+  );
+}
+
+function SummaryCard({ theme, label, amount, t }: { theme: Theme; label: string; amount: number; t: any }) {
+  return (
+    <View style={[styles.summaryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+      <Text style={[styles.summaryLabel, { color: theme.colors.subtext }]}>{t("Total")} {label}</Text>
+      <Text style={[styles.summaryAmount, { color: theme.colors.primaryText }]}>
+        ${centsToDollars(amount)}
+      </Text>
+    </View>
+  );
+}
+
+function TabSegment({ 
+  tabs, 
+  activeTab, 
+  onTabPress, 
+  theme 
+}: { 
+  tabs: { key: string; label: string }[]; 
+  activeTab: string; 
+  onTabPress: (key: string) => void; 
+  theme: Theme 
+}) {
+  return (
+    <View style={[styles.tabContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.key;
+        return (
+          <Pressable
+            key={tab.key}
+            onPress={() => onTabPress(tab.key)}
+            style={[
+              styles.tabButton,
+              isActive && { backgroundColor: theme.colors.primary },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: isActive ? theme.colors.primaryTextButton : theme.colors.subtext, fontWeight: isActive ? '700' : '500' },
+              ]}
+            >
+              {tab.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+function BillItem({ item, theme, t, onLongPress }: { item: any; theme: Theme; t: any; onLongPress: () => void }) {
+  const amt = centsToDollars(item.amount_cents);
+  const isPaid = Boolean(item.paid_at || item.is_paid || item.status === "paid");
+  const overdue = isOverdue(item);
+
+  return (
+    <Pressable
+      onLongPress={onLongPress}
+      delayLongPress={350}
+      style={({ pressed }) => [
+        styles.billCard,
+        {
+          backgroundColor: theme.colors.card,
+          borderColor: overdue ? theme.colors.danger : theme.colors.border,
+          opacity: pressed ? 0.9 : 1,
+          borderWidth: overdue ? 1 : 1,
+        },
+      ]}
+    >
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.billCreditor, { color: theme.colors.primaryText }]} numberOfLines={1}>
+            {item.creditor}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+            <Ionicons 
+              name={isPaid ? "checkmark-circle" : "calendar-outline"} 
+              size={14} 
+              color={isPaid ? theme.colors.accent : theme.colors.subtext} 
+            />
+            <Text style={{ color: isPaid ? theme.colors.accent : theme.colors.subtext, fontSize: 13, fontWeight: '500' }}>
+              {isPaid ? `${t("Paid on")} ${item.paid_at || item.due_date}` : `${t("Due")} ${item.due_date}`}
+            </Text>
+          </View>
+        </View>
+        
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={[styles.billAmount, { color: theme.colors.primaryText }]}>${amt}</Text>
+          {overdue && (
+            <View style={{ backgroundColor: '#FFE5E5', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4 }}>
+              <Text style={{ color: theme.colors.danger, fontSize: 10, fontWeight: '800' }}>{t("OVERDUE")}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+// --- Main Screen ---
 
 export default function Bills() {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const [bills, setBills] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-
   const [tab, setTab] = useState<"pending" | "paid">("pending");
   const [sort, setSort] = useState<SortKey>("due");
 
+  // --- Derived Data ---
   const pendingBills = useMemo(
-    () =>
-      bills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"),
+    () => bills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"),
     [bills]
   );
   const paidBills = useMemo(
-    () =>
-      bills.filter((b: any) => b.paid_at || b.is_paid || b.status === "paid"),
+    () => bills.filter((b: any) => b.paid_at || b.is_paid || b.status === "paid"),
     [bills]
   );
 
   const visibleBills = useMemo(() => {
     const list = tab === "pending" ? pendingBills : paidBills;
-
-    const sorted = [...list].sort((a: any, b: any) => {
-      if (sort === "name") {
-        return String(a.creditor || "").localeCompare(String(b.creditor || ""));
-      }
-      if (sort === "amount") {
-        return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
-      }
-      // sort === "due"
-      if (tab === "pending") {
-        return safeDateNum(a.due_date) - safeDateNum(b.due_date);
-      } else {
-        const ap =
-          safeDateNum(a.paid_at) ||
-          safeDateNum(a.updated_at) ||
-          safeDateNum(a.due_date);
-        const bp =
-          safeDateNum(b.paid_at) ||
-          safeDateNum(b.updated_at) ||
-          safeDateNum(b.due_date);
-        return bp - ap;
-      }
+    return [...list].sort((a: any, b: any) => {
+      if (sort === "name") return String(a.creditor || "").localeCompare(String(b.creditor || ""));
+      if (sort === "amount") return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
+      
+      const dateA = tab === "pending" ? safeDateNum(a.due_date) : (safeDateNum(a.paid_at) || safeDateNum(a.due_date));
+      const dateB = tab === "pending" ? safeDateNum(b.due_date) : (safeDateNum(b.paid_at) || safeDateNum(b.due_date));
+      
+      return tab === "pending" ? dateA - dateB : dateB - dateA; // Pending: Ascending, Paid: Descending
     });
-
-    return sorted;
   }, [tab, pendingBills, paidBills, sort]);
 
-  const generateAndShareCSV = async () => {
-    try {
-      if (bills.length === 0) {
-        Alert.alert("No Data", "There are no bills to export.");
-        return;
-      }
-
-      const exportData = bills.map((b) => ({
-        ID: b.id,
-        Creditor: b.creditor,
-        Amount: centsToDollars(b.amount_cents),
-        DueDate: b.due_date,
-        Status: b.status === "paid" ? "Paid" : "Pending",
-        Notes: b.notes || "",
-        Recurrence: b.recurrence || "none",
-        OffsetDays: b.reminder_offset_days || "0",
-        Reminder: b.reminder_time_local || "",
-      }));
-
-      const csvString = jsonToCSV(exportData);
-
-      const path =
-        Platform.OS === "ios"
-          ? `${RNFS.DocumentDirectoryPath}/bills_export.csv`
-          : `${RNFS.CachesDirectoryPath}/bills_export.csv`;
-
-      await RNFS.writeFile(path, csvString, "utf8");
-
-      await Share.open({
-        url: `file://${path}`,
-        type: "text/csv",
-        filename: "bills_export",
-        title: "Export Bills CSV",
-      });
-    } catch (error) {
-      console.log("Share cancelled or failed", error);
-    }
-  };
-
   const stats = useMemo(() => {
-    const pendingTotal = pendingBills.reduce(
-      (sum: number, b: any) => sum + Number(b.amount_cents || 0),
-      0
-    );
-    const paidTotal = paidBills.reduce(
-      (sum: number, b: any) => sum + Number(b.amount_cents || 0),
-      0
-    );
-
-    return {
-      pendingCount: pendingBills.length,
-      pendingTotal,
-      paidCount: paidBills.length,
-      paidTotal,
-    };
+    const pendingTotal = pendingBills.reduce((sum, b) => sum + Number(b.amount_cents || 0), 0);
+    const paidTotal = paidBills.reduce((sum, b) => sum + Number(b.amount_cents || 0), 0);
+    return { pendingTotal, paidTotal };
   }, [pendingBills, paidBills]);
+
+  const sortLabel = useMemo(() => {
+    if (sort === 'amount') return t("Amount");
+    if (sort === 'name') return t("Name");
+    return tab === 'pending' ? t("Due Date") : t("Paid Date");
+  }, [sort, tab, t]);
+
+  // --- Actions ---
 
   const load = useCallback(async () => {
     const res = await api.billsList();
@@ -178,18 +254,13 @@ export default function Bills() {
   }, []);
 
   useFocusEffect(
-    useCallback(() => {
-      load().catch(() => {});
-    }, [load])
+    useCallback(() => { load().catch(() => {}); }, [load])
   );
 
   async function onRefresh() {
     setRefreshing(true);
-    try {
-      await load();
-    } finally {
-      setRefreshing(false);
-    }
+    await load();
+    setRefreshing(false);
   }
 
   async function markPaid(item: any) {
@@ -198,7 +269,7 @@ export default function Bills() {
       await cancelBillReminderLocal(item.id);
       await load();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      Alert.alert(t("Error"), e.message);
     }
   }
 
@@ -208,270 +279,204 @@ export default function Bills() {
       await cancelBillReminderLocal(item.id);
       await load();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      Alert.alert(t("Error"), e.message);
     }
   }
+
+  function cycleSort() {
+    if (sort === 'due') setSort('amount');
+    else if (sort === 'amount') setSort('name');
+    else setSort('due');
+  }
+
+  const generateAndShareCSV = async () => {
+    try {
+      if (bills.length === 0) {
+        Alert.alert(t("No Data"), t("There are no bills to export."));
+        return;
+      }
+      const exportData = bills.map((b) => ({
+        ID: b.id,
+        Creditor: b.creditor,
+        Amount: centsToDollars(b.amount_cents),
+        DueDate: b.due_date,
+        Status: b.status === "paid" ? "Paid" : "Pending",
+        Notes: b.notes || "",
+      }));
+      const csvString = jsonToCSV(exportData);
+      const path = Platform.OS === "ios"
+          ? `${RNFS.DocumentDirectoryPath}/bills_export.csv`
+          : `${RNFS.CachesDirectoryPath}/bills_export.csv`;
+      await RNFS.writeFile(path, csvString, "utf8");
+      await Share.open({
+        url: `file://${path}`,
+        type: "text/csv",
+        filename: "bills_export",
+        title: t("Export Bills CSV"),
+      });
+    } catch (error) {
+      console.log("Share cancelled or failed", error);
+    }
+  };
 
   function onLongPressBill(item: any) {
-    const isPaid = Boolean(
-      item.paid_at || item.is_paid || item.status === "paid"
-    );
-
-    const actions: {
-      text: string;
-      style?: "cancel" | "destructive";
-      onPress?: () => void;
-    }[] = [
-      {
-        text: "Edit",
-        onPress: () =>
-          router.push({
-            pathname: "/(app)/bill-edit",
-            params: { id: String(item.id) },
-          }),
-      },
-    ];
-
-    if (!isPaid) {
-      actions.push({
-        text: "Mark Paid",
-        onPress: () => markPaid(item),
-      });
-    }
-
-    actions.push({
-      text: "Delete",
-      style: "destructive",
-      onPress: () => deleteBill(item),
-    });
-
-    actions.push({ text: "Cancel", style: "cancel" });
-
-    Alert.alert(item.creditor || "Bill", "Choose an action", actions);
+    const isPaid = Boolean(item.paid_at || item.is_paid || item.status === "paid");
+    const actions: any[] = [{ text: t("Edit"), onPress: () => router.push({ pathname: "/(app)/bill-edit", params: { id: String(item.id) } }) }];
+    if (!isPaid) actions.push({ text: t("Mark Paid"), onPress: () => markPaid(item) });
+    actions.push({ text: t("Delete"), style: "destructive", onPress: () => deleteBill(item) });
+    actions.push({ text: t("Cancel"), style: "cancel" });
+    Alert.alert(item.creditor || t("Bill"), t("Choose an action"), actions);
   }
-
-  // --- Combined Tab Button ---
-  const SegButton = ({
-    active,
-    label,
-    amount,
-    onPress,
-  }: {
-    active: boolean;
-    label: string;
-    amount: number;
-    onPress: () => void;
-  }) => (
-    <Pressable
-      onPress={onPress}
-      style={[
-        button(theme, active ? "primary" : "ghost"),
-        { paddingVertical: 10, flex: 1, alignItems: 'center' },
-      ]}
-    >
-      <Text style={[buttonText(theme, active ? "primary" : "ghost"), { fontSize: 13, opacity: 0.8 }]}>
-        {label}
-      </Text>
-      <Text style={[buttonText(theme, active ? "primary" : "ghost"), { fontSize: 16, fontWeight: '900' }]}>
-        ${centsToDollars(amount)}
-      </Text>
-    </Pressable>
-  );
-
-  // --- Cycle Sort Logic ---
-function cycleSort() {
-     if (sort === 'due') setSort('amount');
-     else if (sort === 'amount') setSort('name');
-     else setSort('due');
-  }
-
-  // OLD:
-  // const sortLabel = {
-  //     due: "Due Date",
-  //     amount: "Amount",
-  //     name: "Name"
-  // }[sort];
-
-  // NEW: Dynamic Label
-  const sortLabel = useMemo(() => {
-    if (sort === 'amount') return "Amount";
-    if (sort === 'name') return "Name";
-    
-    // If sort is 'due', check the tab
-    return tab === 'pending' ? "Due Date" : "Paid Date";
-  }, [sort, tab]);
 
   return (
-    <View style={screen(theme)}>
-      {/* Header Profile Button */}
-      <Stack.Screen
-        options={{
-          headerTitle: "My Bills",
-          headerRight: () => (
-            <Pressable 
-              onPress={() => router.push("/(app)/profile")}
-              style={{ padding: 8 }} // hit slop
-            >
-                 <Text style={{ color: theme.colors.primaryText, fontWeight: '700' }}>Profile</Text> 
-            </Pressable>
-          ),
-        }}
+    <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Header 
+        theme={theme} 
+        title={t("My Bills")} 
+        onProfilePress={() => router.push("/(app)/profile")} 
       />
 
-      {/* Main Action Buttons */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-around",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 16,
-        }}
-      >
-        <Pressable
-          onPress={() => router.push("/(app)/insights")}
-          style={[button(theme, "primary"), { flex: 1 }]}
-        >
-          <Text style={buttonText(theme, "primary")}>Insights</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => router.push("/(app)/bill-edit")}
-          style={[button(theme, "primary"), { flex: 1 }]}
-        >
-          <Text style={buttonText(theme, "primary")}>+ Add</Text>
-        </Pressable>
-      </View>
-
-      <FlatList
-        data={visibleBills}
-        keyExtractor={(item) => String(item.id)}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListHeaderComponent={
-          <View style={{ gap: 12, marginBottom: 12 }}>
-            
-            {/* Combined Filter & Stats: Tabs now show $$$ */}
-            <View style={[card(theme), { flexDirection: "row", gap: 6, padding: 6 }]}>
-              <SegButton
-                active={tab === "pending"}
-                label="Pending"
-                amount={stats.pendingTotal}
-                onPress={() => setTab("pending")}
+      <View style={{ flex: 1, marginTop: -20, borderTopLeftRadius: 24, borderTopRightRadius: 24, backgroundColor: theme.colors.bg, paddingHorizontal: 16 }}>
+        
+        <FlatList
+          data={visibleBills}
+          keyExtractor={(item) => String(item.id)}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
+          contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <View style={{ gap: 16, marginBottom: 16 }}>
+              {/* Summary Card */}
+              <SummaryCard 
+                theme={theme} 
+                label={tab === "pending" ? t("Pending") : t("Paid")} 
+                amount={tab === "pending" ? stats.pendingTotal : stats.paidTotal} 
+                t={t}
               />
-              <View style={{width: 1, backgroundColor: theme.colors.border, marginVertical: 6}} />
-              <SegButton
-                active={tab === "paid"}
-                label="Paid"
-                amount={stats.paidTotal}
-                onPress={() => setTab("paid")}
-              />
-            </View>
 
-            {/* Minimal Sort & Export Row */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 4 }}>
-                {/* Single Sort Button (Cycles on tap) */}
-                <Pressable onPress={cycleSort} style={{ flexDirection: 'row', alignItems: 'center', padding: 8 }}>
-                    <Text style={{ color: theme.colors.subtext }}>Sort by: </Text>
-                    <Text style={{ fontWeight: '800', color: theme.colors.text }}>{sortLabel} ▾</Text>
+              {/* Action Buttons */}
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <Pressable onPress={() => router.push("/(app)/insights")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
+                  <Ionicons name="bar-chart" size={18} color={theme.colors.primaryTextButton} />
+                  <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("Insights")}</Text>
                 </Pressable>
+                <Pressable onPress={() => router.push("/(app)/bill-edit")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
+                  <Ionicons name="add" size={20} color={theme.colors.primaryTextButton} />
+                  <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("+ Add")}</Text>
+                </Pressable>
+              </View>
 
-                {/* Export Link */}
+              {/* Tabs */}
+              <TabSegment 
+                theme={theme}
+                activeTab={tab}
+                onTabPress={(key) => setTab(key as any)}
+                tabs={[
+                  { key: "pending", label: t("Pending") },
+                  { key: "paid", label: t("Paid") },
+                ]}
+              />
+
+              {/* Sort & Export Row */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4 }}>
+                <Pressable onPress={cycleSort} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Text style={{ color: theme.colors.subtext, fontSize: 13 }}>{t("Sort by")}:</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 13 }}>{sortLabel}</Text>
+                  <Ionicons name="chevron-down" size={12} color={theme.colors.text} />
+                </Pressable>
                 {bills.length > 0 && (
-                  <Pressable onPress={generateAndShareCSV} style={{ padding: 8 }}>
-                    <Text style={{ color: theme.colors.accent, fontWeight: "700", fontSize: 13 }}>
-                      Export CSV
-                    </Text>
+                  <Pressable onPress={generateAndShareCSV}>
+                    <Text style={{ color: theme.colors.accent, fontWeight: '700', fontSize: 13 }}>{t("Export CSV")}</Text>
                   </Pressable>
                 )}
+              </View>
             </View>
-          </View>
-        }
-        ListEmptyComponent={
-          <View style={[card(theme), { gap: 10, alignItems: 'center', paddingVertical: 40 }]}>
-            <Text style={{ fontSize: 40 }}>{tab === "pending" ? "🎉" : "💸"}</Text>
-            <Text
-              style={{
-                color: theme.colors.text,
-                fontSize: 18,
-                fontWeight: "900",
-                textAlign: 'center'
-              }}
-            >
-              {tab === "pending" ? "All caught up!" : "No paid history"}
-            </Text>
-            <Text style={{ color: theme.colors.subtext, textAlign: 'center', lineHeight: 20 }}>
-              {tab === "pending"
-                ? "You have no pending bills. Enjoy the freedom!"
-                : "Bills you mark as paid will appear here."}
-            </Text>
-          </View>
-        }
-        renderItem={({ item }) => {
-          const amt = centsToDollars(item.amount_cents);
-          const isPaid = Boolean(
-            item.paid_at || item.is_paid || item.status === "paid"
-          );
-          const overdue = isOverdue(item);
-
-          return (
-            <Pressable
-              onLongPress={() => onLongPressBill(item)}
-              delayLongPress={350}
-              style={[card(theme), { marginBottom: 10 }]}
-            >
-              <View style={{flexDirection: 'row', justifyContent:'space-between', alignItems: 'flex-start'}}>
-                  <View>
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          fontWeight: "800",
-                          color: theme.colors.text,
-                        }}
-                      >
-                        {item.creditor}
-                      </Text>
-                      <Text style={{ color: theme.colors.subtext, marginTop: 4 }}>
-                        {isPaid ? "Paid on " : "Due "} {item.due_date}
-                      </Text>
-                  </View>
-                  <View style={{alignItems: 'flex-end'}}>
-                      <Text style={{fontSize: 18, fontWeight: '900', color: theme.colors.text}}>${amt}</Text>
-                      {overdue && (
-                        <Text style={{color: theme.colors.danger, fontWeight: '800', fontSize: 10, marginTop: 4}}>OVERDUE</Text>
-                      )}
-                  </View>
-              </View>
-
-              {/* Action Buttons Row */}
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
-                <Pressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(app)/bill-edit",
-                      params: { id: String(item.id) },
-                    })
-                  }
-                  style={{flex: 1, alignItems: 'center'}}
-                >
-                  <Text style={{color: theme.colors.subtext, fontWeight: '600'}}>Edit</Text>
-                </Pressable>
-
-                {!isPaid && (
-                  <Pressable
-                    onPress={() => markPaid(item)}
-                    style={{flex: 1, alignItems: 'center'}}
-                  >
-                    <Text style={{color: theme.colors.primary, fontWeight: '800'}}>Mark Paid</Text>
-                  </Pressable>
-                )}
-                 
-                 {/* Delete is hidden in long-press to clean up UI, or you can keep it here */}
-              </View>
-            </Pressable>
-          );
-        }}
-      />
+          }
+          ListEmptyComponent={
+            <View style={{ alignItems: 'center', paddingVertical: 60, gap: 12 }}>
+              <Ionicons name={tab === 'pending' ? "checkmark-done-circle-outline" : "wallet-outline"} size={64} color={theme.colors.border} />
+              <Text style={{ color: theme.colors.subtext, fontSize: 16, textAlign: 'center' }}>
+                {tab === "pending" ? t("You have no pending bills. Enjoy the freedom!") : t("No paid history")}
+              </Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <BillItem item={item} theme={theme} t={t} onLongPress={() => onLongPressBill(item)} />
+          )}
+        />
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  summaryCard: {
+    padding: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    gap: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  summaryLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  summaryAmount: {
+    fontSize: 36,
+    fontWeight: '900',
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 16,
+    gap: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  actionBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    padding: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 12,
+  },
+  tabText: {
+    fontSize: 14,
+  },
+  billCard: {
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+  },
+  billCreditor: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  billAmount: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+});

@@ -8,15 +8,147 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { api } from "../../src/api/client";
-import { useTheme } from "../../src/ui/useTheme";
-import { screen, card, button, buttonText } from "../../src/ui/styles";
+import LinearGradient from "react-native-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Slider from "@react-native-community/slider";
 import { useTranslation } from "react-i18next";
+import { api } from "../../src/api/client";
+import { useTheme, Theme } from "../../src/ui/useTheme";
 import { addToCalendar } from "../../src/calendar/calendarSync";
+
+// --- Components ---
+
+function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
+  return (
+    <View style={styles.headerShadowContainer}>
+      <LinearGradient
+        colors={[theme.colors.navy, "#1a2c4e"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.headerIconCircle}>
+          <Ionicons name="receipt" size={28} color="#FFF" />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.headerTitle}>{title}</Text>
+          <Text style={styles.headerSubtitle}>{subtitle}</Text>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+}
+
+function SectionTitle({ title, theme }: { title: string; theme: Theme }) {
+  return (
+    <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>
+      {title}
+    </Text>
+  );
+}
+
+function InputField({
+  icon,
+  placeholder,
+  value,
+  onChangeText,
+  keyboardType = "default",
+  theme,
+  multiline = false,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  placeholder: string;
+  value: string;
+  onChangeText: (t: string) => void;
+  keyboardType?: any;
+  theme: Theme;
+  multiline?: boolean;
+}) {
+  return (
+    <View
+      style={[
+        styles.inputContainer,
+        {
+          backgroundColor: theme.colors.card,
+          borderColor: theme.colors.border,
+          height: multiline ? 100 : 56,
+          alignItems: multiline ? "flex-start" : "center",
+        },
+      ]}
+    >
+      <Ionicons
+        name={icon}
+        size={20}
+        color={theme.colors.subtext}
+        style={{ marginTop: multiline ? 12 : 0 }}
+      />
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={theme.colors.subtext}
+        keyboardType={keyboardType}
+        multiline={multiline}
+        style={[
+          styles.input,
+          {
+            color: theme.colors.primaryText,
+            height: "100%",
+            paddingTop: multiline ? 12 : 0,
+            textAlignVertical: multiline ? "top" : "center",
+          },
+        ]}
+      />
+    </View>
+  );
+}
+
+function RecurrenceChip({
+  label,
+  value,
+  active,
+  onPress,
+  theme,
+}: {
+  label: string;
+  value: string;
+  active: boolean;
+  onPress: () => void;
+  theme: Theme;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.chip,
+        {
+          backgroundColor: active ? theme.colors.accent : theme.colors.card,
+          borderColor: active ? theme.colors.accent : theme.colors.border,
+          opacity: pressed ? 0.8 : 1,
+        },
+      ]}
+    >
+      <Text
+        style={[
+          styles.chipText,
+          {
+            color: active ? theme.colors.navy : theme.colors.text,
+            fontWeight: active ? "700" : "500",
+          },
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+// --- Helper Functions ---
 
 function todayISO() {
   const d = new Date();
@@ -26,74 +158,97 @@ function todayISO() {
   return `${y}-${m}-${da}`;
 }
 
+// --- Main Component ---
+
 export default function BillEdit() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = params.id ? Number(params.id) : null;
   const theme = useTheme();
+  const { t } = useTranslation();
+
   const [creditor, setCreditor] = useState("");
-  const [amount, setAmount] = useState("0.00");
+  const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState(todayISO());
   const [offsetDays, setOffsetDays] = useState("0");
+  const [reminderTime, setReminderTime] = useState("09:00:00");
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const reminderDateObj = useMemo(() => {
-    const d = new Date(dueDate);
-    d.setDate(d.getDate());
-    return d;
+    // Basic parsing to avoid timezone shifts on simple YYYY-MM-DD
+    const [y, m, d] = dueDate.split('-').map(Number);
+    return new Date(y, m - 1, d);
   }, [dueDate]);
-  // Updated type definition
+
   const [recurrence, setRecurrence] = useState<
     "none" | "weekly" | "bi-weekly" | "monthly" | "annually"
   >("none");
-  const { t } = useTranslation();
-const [notes, setNotes] = useState("");
-  const [showReminderDatePicker, setShowReminderDatePicker] = useState(false);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  // Time object for the TimePicker
+  const timeObj = useMemo(() => {
+    const d = new Date();
+    const [h, m] = reminderTime.split(":").map(Number);
+    d.setHours(h || 9, m || 0, 0, 0);
+    return d;
+  }, [reminderTime]);
 
   const amountCents = useMemo(
     () => Math.round(parseFloat(amount || "0") * 100),
     [amount]
   );
+
+  // 1. Load Defaults (Create Mode)
   useEffect(() => {
     (async () => {
       if (id) return;
       try {
         const s = await api.familySettingsGet();
         setOffsetDays(String(s.default_reminder_offset_days ?? 0));
+        if (s.default_reminder_time_local) {
+          setReminderTime(s.default_reminder_time_local);
+        }
       } catch {}
     })();
   }, [id]);
 
-useEffect(() => {
-  (async () => {
-    if (!id) return;
-    const res = await api.billsList();
-    const bill = res.bills.find((b: any) => b.id === id);
-    if (!bill) return;
-    setCreditor(bill.creditor);
-    setAmount((bill.amount_cents / 100).toFixed(2));
-    setDueDate(bill.due_date);
-    setRecurrence(bill.recurrence);
-    setOffsetDays(String(bill.reminder_offset_days ?? 0));
-    setNotes(bill.notes || ""); // <-- ADD THIS
-  })().catch(() => {});
-}, [id]);
+  // 2. Load Bill (Edit Mode)
+  useEffect(() => {
+    (async () => {
+      if (!id) return;
+      try {
+        const res = await api.billsList();
+        const bill = res.bills.find((b: any) => b.id === id);
+        if (!bill) return;
+        setCreditor(bill.creditor);
+        setAmount((bill.amount_cents / 100).toFixed(2));
+        setDueDate(bill.due_date);
+        setRecurrence(bill.recurrence);
+        setOffsetDays(String(bill.reminder_offset_days ?? 0));
+        setNotes(bill.notes || "");
+        if (bill.reminder_time_local) {
+          setReminderTime(bill.reminder_time_local);
+        }
+      } catch {}
+    })();
+  }, [id]);
 
   const handleCalendarSync = async () => {
-    // We need the bill data. If it's a new bill, warn them to save first.
     if (!id) {
       Alert.alert(
-        "Save First",
-        "Please save the bill before syncing to calendar."
+        t("Save First"),
+        t("Please save the bill before syncing to calendar.")
       );
       return;
     }
-
-    // Construct the bill object from state
     const currentBill = {
-      creditor, // from your state
-      amount_cents: Number(amount) * 100, // from your state
-      due_date: dueDate, // from your state
-      notes: notes, // from your state
+      creditor,
+      amount_cents: Number(amount) * 100,
+      due_date: dueDate,
+      notes: notes,
     };
-
     await addToCalendar(currentBill);
   };
 
@@ -104,15 +259,16 @@ useEffect(() => {
       if (amountCents <= 0)
         return Alert.alert(t("Validation"), t("Amount must be > 0"));
 
+      setLoading(true);
       const payload = {
         creditor: creditor.trim(),
         amount_cents: amountCents,
         due_date: dueDate,
         recurrence,
         reminder_offset_days: Number(offsetDays),
-        reminder_time_local: "09:00:00",
-        notes: notes.trim(), // <-- ADD THIS
-    };
+        reminder_time_local: reminderTime,
+        notes: notes.trim(),
+      };
 
       if (!id) await api.billsCreate(payload);
       else await api.billsUpdate(id, payload);
@@ -120,174 +276,362 @@ useEffect(() => {
       router.back();
     } catch (e: any) {
       Alert.alert(t("Error"), e.message);
+    } finally {
+      setLoading(false);
     }
   }
 
-  const inputStyle = {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: 12,
-    borderRadius: 12,
-    color: theme.colors.primaryText,
-    backgroundColor: theme.colors.bg,
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") setShowDatePicker(false);
+    if (selectedDate) {
+      const y = selectedDate.getFullYear();
+      const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const d = String(selectedDate.getDate()).padStart(2, "0");
+      setDueDate(`${y}-${m}-${d}`);
+    }
   };
 
-  // Helper to render recurrence buttons cleanly
-  const renderRecurrenceBtn = (
-    value: "none" | "weekly" | "bi-weekly" | "monthly" | "annually",
-    label: string
-  ) => (
-    <Pressable
-      onPress={() => setRecurrence(value)}
-      style={[
-        button(theme, "ghost"),
-        {
-          // roughly 48% width allows 2 buttons per row with a small gap
-          width: "48%",
-          backgroundColor:
-            recurrence === value ? theme.colors.accent : theme.colors.navy,
-        },
-      ]}
-    >
-      <Text style={buttonText(theme, "danger")}>{label}</Text>
-    </Pressable>
-  );
-
-  const onReminderDateChange = (event: any, selectedDate?: Date) => {
-    setShowReminderDatePicker(Platform.OS === "ios");
+  const onTimeChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") setShowTimePicker(false);
     if (selectedDate) {
-      const due = new Date(dueDate);
-      const diffTime = due.getTime() - selectedDate.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      const validOffset = Math.max(0, Math.min(3, diffDays));
-      setOffsetDays(String(validOffset));
-      setShowReminderDatePicker(false);
+      const h = String(selectedDate.getHours()).padStart(2, "0");
+      const m = String(selectedDate.getMinutes()).padStart(2, "0");
+      setReminderTime(`${h}:${m}:00`);
     }
   };
 
   return (
-    <View style={screen(theme)}>
+    <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-          <View style={[card(theme), { gap: 10 }]}>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "900",
-                color: theme.colors.primaryText,
-              }}
-            >
-              {id ? t("Edit Debts") : t("Add Debts")}
-            </Text>
-
-            <Text style={{ color: theme.colors.subtext }}>{t("Creditor")}</Text>
-            <TextInput
-              value={creditor}
-              onChangeText={setCreditor}
-              style={inputStyle}
-              placeholder={t("Creditor")}
-              placeholderTextColor={theme.colors.subtext}
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 60 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
+            {/* Header */}
+            <Header
+              title={id ? t("Edit Bill") : t("New Bill")}
+              subtitle={id ? t("Update details") : t("Add a new debt to track")}
+              theme={theme}
             />
 
-            <Text style={{ color: theme.colors.subtext }}>{t("Amount")}</Text>
-            <TextInput
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="decimal-pad"
-              style={inputStyle}
-              placeholderTextColor={theme.colors.subtext}
-            />
+            {/* Bill Details Section */}
+            <View style={styles.section}>
+              <SectionTitle title={t("Bill Details")} theme={theme} />
+              <View style={{ gap: 12 }}>
+                <InputField
+                  icon="person-outline"
+                  placeholder={t("Creditor")}
+                  value={creditor}
+                  onChangeText={setCreditor}
+                  theme={theme}
+                />
+                <InputField
+                  icon="cash-outline"
+                  placeholder="0.00"
+                  value={amount}
+                  onChangeText={setAmount}
+                  keyboardType="decimal-pad"
+                  theme={theme}
+                />
+                
+                {/* Date Picker Row */}
+                <Pressable
+                  onPress={() => setShowDatePicker(true)}
+                  style={[
+                    styles.inputContainer,
+                    {
+                      backgroundColor: theme.colors.card,
+                      borderColor: theme.colors.border,
+                    },
+                  ]}
+                >
+                  <Ionicons name="calendar-outline" size={20} color={theme.colors.subtext} />
+                  <Text style={[styles.inputText, { color: theme.colors.primaryText }]}>
+                    {reminderDateObj.toDateString()}
+                  </Text>
+                  <Ionicons name="chevron-down" size={16} color={theme.colors.subtext} />
+                </Pressable>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={reminderDateObj}
+                    mode="date"
+                    display="spinner"
+                    onChange={onDateChange}
+                    textColor={theme.colors.primaryText}
+                  />
+                )}
 
-            <Text style={{ color: theme.colors.subtext }}>
-              {t("Due Date")} ({reminderDateObj.toDateString()})
-            </Text>
-            <Pressable
-              onPress={() => setShowReminderDatePicker(true)}
-              style={inputStyle}
-            >
-              <Text style={{ color: theme.colors.primaryText }}>
-                {reminderDateObj.toDateString()}
-              </Text>
-            </Pressable>
-            {showReminderDatePicker && (
-              <DateTimePicker
-                value={reminderDateObj}
-                mode="date"
-                display="default"
-                maximumDate={new Date(dueDate)}
-                onChange={onReminderDateChange}
-              />
-            )}
-            <Text style={{ color: theme.colors.subtext }}>
-              {t("Recurring")}
-            </Text>
-            {/* Added flexWrap to handle 4 buttons gracefully */}
-            <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
-              {renderRecurrenceBtn("none", t("None"))}
-              {renderRecurrenceBtn("weekly", t("Weekly"))}
-              {renderRecurrenceBtn("bi-weekly", t("Bi-Weekly"))}
-              {renderRecurrenceBtn("monthly", t("Monthly"))}
-              {renderRecurrenceBtn("annually", t("Annually"))}
+                <InputField
+                  icon="document-text-outline"
+                  placeholder={t("Notes (Optional)")}
+                  value={notes}
+                  onChangeText={setNotes}
+                  theme={theme}
+                  multiline
+                />
+              </View>
             </View>
 
-<Text style={{ color: theme.colors.subtext }}>{t("Notes (Optional)")}</Text>
-<TextInput
-  value={notes}
-  onChangeText={setNotes}
-  style={[inputStyle, { height: 80, textAlignVertical: 'top' }]} // Taller for notes
-  placeholder={t("e.g. Account #12345")}
-  placeholderTextColor={theme.colors.subtext}
-  multiline
-/>
+            {/* Recurrence Section */}
+            <View style={styles.section}>
+              <SectionTitle title={t("Frequency")} theme={theme} />
+              <View style={styles.chipsContainer}>
+                {[
+                  "none",
+                  "weekly",
+                  "bi-weekly",
+                  "monthly",
+                  "annually",
+                ].map((r) => (
+                  <RecurrenceChip
+                    key={r}
+                    label={t(r.charAt(0).toUpperCase() + r.slice(1))}
+                    value={r}
+                    active={recurrence === r}
+                    onPress={() => setRecurrence(r as any)}
+                    theme={theme}
+                  />
+                ))}
+              </View>
+            </View>
 
-            <Text style={{ color: theme.colors.subtext }}>
-              {t("Remind me", { days: offsetDays })}
-            </Text>
-
-            <Slider
-              thumbTintColor={theme.colors.primaryText}
-              minimumTrackTintColor={theme.colors.primaryText}
-              maximumTrackTintColor={theme.colors.subtext}
-              // 2. Style only controls layout (width, height, margins)
-              style={{
-                width: "100%", // Valid: "100%" or a number (e.g., 300)
-                height: 40,
-              }}
-              minimumValue={0} // Minimum days
-              maximumValue={3} // Maximum days
-              step={1} // Increment by whole days
-              value={Number(offsetDays) || 0} // Ensure value is a Number
-              onValueChange={(val) => setOffsetDays(String(val))}
-            />
-            <Pressable onPress={save} style={button(theme, "primary")}>
-              <Text style={buttonText(theme, "danger")}>{t("Save")}</Text>
-            </Pressable>
-            <Pressable
-              onPress={handleCalendarSync}
-              style={[
-                button(theme, "ghost"),
-                {
-                  marginTop: 12,
-                  borderColor: theme.colors.accent,
-                  borderWidth: 1,
-                },
-              ]}
-            >
-              <Text
+            {/* Reminders Section */}
+            <View style={styles.section}>
+              <SectionTitle title={t("Reminders")} theme={theme} />
+              <View
                 style={[
-                  buttonText(theme, "ghost"),
-                  { color: theme.colors.accent },
+                  styles.card,
+                  { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
                 ]}
               >
-                Add to Device Calendar
-              </Text>
-            </Pressable>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+                  <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>
+                    {t("Remind me")}
+                  </Text>
+                  <Text style={{ color: theme.colors.accent, fontWeight: "700" }}>
+                    {offsetDays === "0" ? t("Same day") : t("{{days}} day(s) before", { days: offsetDays })}
+                  </Text>
+                </View>
+                
+                <Slider
+                  style={{ width: "100%", height: 40 }}
+                  minimumValue={0}
+                  maximumValue={3}
+                  step={1}
+                  value={Number(offsetDays) || 0}
+                  onValueChange={(val) => setOffsetDays(String(val))}
+                  thumbTintColor={theme.colors.primary}
+                  minimumTrackTintColor={theme.colors.primary}
+                  maximumTrackTintColor={theme.colors.border}
+                />
+
+                <View style={styles.divider} />
+
+                <Pressable
+                  onPress={() => setShowTimePicker(true)}
+                  style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 8 }}
+                >
+                  <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("Alert Time")}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Text style={{ color: theme.colors.primaryText, fontWeight: "700", fontSize: 16 }}>
+                      {timeObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                    </Text>
+                    <Ionicons name="time-outline" size={18} color={theme.colors.subtext} />
+                  </View>
+                </Pressable>
+                {showTimePicker && (
+                  <DateTimePicker
+                    value={timeObj}
+                    mode="time"
+                    display="spinner"
+                    onChange={onTimeChange}
+                    textColor={theme.colors.primaryText}
+                  />
+                )}
+              </View>
+            </View>
+
+            {/* Actions */}
+            <View style={{ gap: 12, marginTop: 10 }}>
+              <Pressable
+                onPress={save}
+                disabled={loading}
+                style={({ pressed }) => [
+                  styles.saveButton,
+                  {
+                    backgroundColor: theme.colors.primary,
+                    opacity: loading ? 0.6 : pressed ? 0.8 : 1,
+                  },
+                ]}
+              >
+                {loading ? (
+                  <ActivityIndicator color={theme.colors.primaryTextButton} />
+                ) : (
+                  <Text style={[styles.saveButtonText, { color: theme.colors.primaryTextButton }]}>
+                    {t("Save Bill")}
+                  </Text>
+                )}
+              </Pressable>
+
+              <Pressable
+                onPress={handleCalendarSync}
+                style={({ pressed }) => [
+                  styles.calendarButton,
+                  {
+                    borderColor: theme.colors.primary,
+                    opacity: pressed ? 0.6 : 1,
+                  },
+                ]}
+              >
+                <Ionicons name="calendar" size={18} color={theme.colors.primary} />
+                <Text style={{ color: theme.colors.primary, fontWeight: "700" }}>
+                  {t("Add to Device Calendar")}
+                </Text>
+              </Pressable>
+            </View>
+
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    padding: 16,
+    gap: 24,
+  },
+  // Header
+  headerShadowContainer: {
+    backgroundColor: "transparent",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+    marginVertical: 4,
+    borderRadius: 20,
+  },
+  headerGradient: {
+    borderRadius: 20,
+    height:120,
+    paddingLeft: 24,
+    paddingRight: 24,
+    paddingBottom: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    overflow: "hidden",
+  },
+  headerIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#FFF",
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.7)",
+  },
+  // Sections
+  section: {
+    gap: 12,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginLeft: 4,
+  },
+  // Inputs
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    height: 56,
+    gap: 12,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  inputText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  // Chips
+  chipsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  chip: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    minWidth: "30%",
+    flexGrow: 1,
+    alignItems: "center",
+  },
+  chipText: {
+    fontSize: 14,
+  },
+  // Card
+  card: {
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    marginVertical: 12,
+  },
+  // Buttons
+  saveButton: {
+    height: 56,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  calendarButton: {
+    flexDirection: "row",
+    height: 50,
+    borderRadius: 16,
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
+});

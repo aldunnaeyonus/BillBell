@@ -5,3 +5,5 @@ export function useTheme(): Theme {
   const scheme = useColorScheme();
   return makeTheme(scheme === "dark" ? "dark" : "light");
 }
+
+export { Theme };

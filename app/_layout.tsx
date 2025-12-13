@@ -15,7 +15,7 @@ import { BiometricAuth } from "../src/auth/BiometricAuth";
 // 1. Create a child component for the actual App logic
 function AppStack() {
   const theme = useTheme();
-  const { t } = useTranslation(); // This now works because it's inside the Provider
+  const { t } = useTranslation();
 
   useEffect(() => {
     registerNotificationCategories();
@@ -52,6 +52,13 @@ function AppStack() {
           contentStyle: { backgroundColor: theme.colors.bg },
         }}
       >
+         <Stack.Screen
+          name="(app)/bills"
+          options={{
+            title: t("DueView App"),
+            headerBackVisible: false,
+          }}
+        />
         <Stack.Screen
           name="(app)/feedback"
           options={{ title: t("Feedback & Bugs") }}
@@ -74,13 +81,6 @@ function AppStack() {
         <Stack.Screen
           name="(app)/family"
           options={{ title: t("Shared Group") }}
-        />
-        <Stack.Screen
-          name="(app)/bills"
-          options={{
-            title: t("DueView App"),
-            headerBackVisible: false,
-          }}
         />
         <Stack.Screen
           name="(app)/bill-edit"

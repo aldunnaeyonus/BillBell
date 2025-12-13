@@ -66,7 +66,6 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
         <View style={{alignItems:'center', gap: 20}}>
-            <Text style={{ fontSize: 60 }}>🔒</Text>
             <Text style={{ fontSize: 24, fontWeight: '900', color: theme.colors.primaryText }}>
                 Locked
             </Text>

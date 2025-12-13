@@ -40,7 +40,7 @@ export default function Family() {
           style={button(theme, "primary")}
         >
           <Text style={buttonText(theme, "primary")}>
-            {t("Create a new Family")}|
+            {t("Create a new Family")}
           </Text>
         </Pressable>
 
@@ -50,7 +50,7 @@ export default function Family() {
         <TextInput
           value={code}
           onChangeText={setCode}
-          placeholder="e.g. K7P3D9"
+          placeholder={t("e.g. K7P3D9")}
           placeholderTextColor={theme.colors.subtext}
           autoCapitalize="characters"
           style={{
