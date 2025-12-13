@@ -44,7 +44,7 @@ export default function BillEdit() {
     "none" | "weekly" | "bi-weekly" | "monthly" | "annually"
   >("none");
   const { t } = useTranslation();
-
+const [notes, setNotes] = useState("");
   const [showReminderDatePicker, setShowReminderDatePicker] = useState(false);
 
   const amountCents = useMemo(
@@ -61,19 +61,20 @@ export default function BillEdit() {
     })();
   }, [id]);
 
-  useEffect(() => {
-    (async () => {
-      if (!id) return;
-      const res = await api.billsList();
-      const bill = res.bills.find((b: any) => b.id === id);
-      if (!bill) return;
-      setCreditor(bill.creditor);
-      setAmount((bill.amount_cents / 100).toFixed(2));
-      setDueDate(bill.due_date);
-      setRecurrence(bill.recurrence);
-      setOffsetDays(String(bill.reminder_offset_days ?? 0));
-    })().catch(() => {});
-  }, [id]);
+useEffect(() => {
+  (async () => {
+    if (!id) return;
+    const res = await api.billsList();
+    const bill = res.bills.find((b: any) => b.id === id);
+    if (!bill) return;
+    setCreditor(bill.creditor);
+    setAmount((bill.amount_cents / 100).toFixed(2));
+    setDueDate(bill.due_date);
+    setRecurrence(bill.recurrence);
+    setOffsetDays(String(bill.reminder_offset_days ?? 0));
+    setNotes(bill.notes || ""); // <-- ADD THIS
+  })().catch(() => {});
+}, [id]);
 
   const handleCalendarSync = async () => {
     // We need the bill data. If it's a new bill, warn them to save first.
@@ -90,7 +91,7 @@ export default function BillEdit() {
       creditor, // from your state
       amount_cents: Number(amount) * 100, // from your state
       due_date: dueDate, // from your state
-      notes: "", // from your state
+      notes: notes, // from your state
     };
 
     await addToCalendar(currentBill);
@@ -110,7 +111,8 @@ export default function BillEdit() {
         recurrence,
         reminder_offset_days: Number(offsetDays),
         reminder_time_local: "09:00:00",
-      };
+        notes: notes.trim(), // <-- ADD THIS
+    };
 
       if (!id) await api.billsCreate(payload);
       else await api.billsUpdate(id, payload);
@@ -169,7 +171,7 @@ export default function BillEdit() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
           <View style={[card(theme), { gap: 10 }]}>
             <Text
               style={{
@@ -230,6 +232,16 @@ export default function BillEdit() {
               {renderRecurrenceBtn("monthly", t("Monthly"))}
               {renderRecurrenceBtn("annually", t("Annually"))}
             </View>
+
+<Text style={{ color: theme.colors.subtext }}>{t("Notes (Optional)")}</Text>
+<TextInput
+  value={notes}
+  onChangeText={setNotes}
+  style={[inputStyle, { height: 80, textAlignVertical: 'top' }]} // Taller for notes
+  placeholder={t("e.g. Account #12345")}
+  placeholderTextColor={theme.colors.subtext}
+  multiline
+/>
 
             <Text style={{ color: theme.colors.subtext }}>
               {t("Remind me", { days: offsetDays })}
