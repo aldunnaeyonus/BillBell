@@ -7,7 +7,7 @@ export default function Privacy() {
   const { t } = useTranslation();
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.bg }]}>
+    <ScrollView showsVerticalScrollIndicator={false} style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <View style={styles.content}>
         <Text style={[styles.text, { color: theme.colors.text }]}>
           {t("PrivacyText")}

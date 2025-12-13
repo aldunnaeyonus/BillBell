@@ -1,21 +1,21 @@
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
+import i18n from "i18next"; // Import the global instance directly, not the hook
 import {
   getNotificationIdForBill,
   setNotificationIdForBill,
   removeNotificationIdForBill,
   getAllBillNotificationPairs,
 } from "./notificationStore";
-import { useTranslation } from 'react-i18next';
 
-const { t } = useTranslation();
+// REMOVED: const { t } = useTranslation(); -> Hooks cannot be used in non-component files.
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
     shouldSetBadge: false,
-    shouldShowBanner: true, // Required: shows the drop-down banner
-    shouldShowList: true,   // Required: shows in the notification center
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -29,13 +29,13 @@ export async function ensureNotificationPermissions() {
 }
 
 export async function registerNotificationCategories() {
-
+  // Use i18n.t() directly here
   await Notifications.setNotificationCategoryAsync("bill-due-actions", [
     {
       identifier: "mark_paid",
-      buttonTitle: t("Mark as Paid"),
+      buttonTitle: i18n.t("Mark as Paid"), 
       options: {
-        opensAppToForeground: true, // Set to false if you want it to happen in background (requires extra config)
+        opensAppToForeground: true,
       },
     },
   ]);
@@ -46,7 +46,6 @@ export async function getExpoPushTokenSafe() {
   const ok = await ensureNotificationPermissions();
   if (!ok) return null;
 
-  // Register the categories when we get the token
   await registerNotificationCategories();
 
   const token = await Notifications.getExpoPushTokenAsync();
@@ -56,6 +55,7 @@ export async function getExpoPushTokenSafe() {
 function nextFireDateForBill(dueDateISO: string, offsetDays: number, reminderTimeLocal: string) {
   const [y, m, d] = dueDateISO.split("-").map(Number);
   const [hh, mm] = reminderTimeLocal.split(":").map(Number);
+  // Note: Month is 0-indexed in JS Date
   const dt = new Date(y, m - 1, d, hh || 9, mm || 0, 0, 0);
   dt.setDate(dt.getDate() - offsetDays);
   return dt;
@@ -95,18 +95,23 @@ export async function scheduleBillReminderLocal(bill: {
   if (fireAt <= now) return;
 
   const amount = (bill.amount_cents / 100).toFixed(2);
+  
+  // Use i18n.t() directly here
   const notificationId = await Notifications.scheduleNotificationAsync({
     content: {
-      title: t("Bill reminder"),
+      title: i18n.t("Bill reminder"),
       body: `${bill.creditor} – $${amount} due ${bill.due_date}`,
       data: { bill_id: bill.id },
       sound: "default",
-      categoryIdentifier: "bill-due-actions", // <--- ADD THIS
+      categoryIdentifier: "bill-due-actions",
+      // MOVED: channelId belongs in content for Android, not trigger
+      // Ensure you have created this channel elsewhere using setNotificationChannelAsync
+      color: "#ffffff", 
     },
-    trigger: {
-      date: fireAt,
-      channelId: 'bill-due-actions',
-    },
+trigger: {
+date: fireAt,
+channelId: 'bill-due-actions',
+},
   });
 
   await setNotificationIdForBill(bill.id, notificationId);
