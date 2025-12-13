@@ -205,5 +205,17 @@
   "PRO ESTIMATE": "ESTIMATION PRO",
   "Based on your recurring bills, next month's minimum:": "Basé sur vos factures récurrentes :",
   "Payment Ratio": "Ratio de paiement",
-  "You have paid {{percent}}% of this month's obligations.": "Vous avez payé {{percent}}% de vos obligations."
+  "You have paid {{percent}}% of this month's obligations.": "Vous avez payé {{percent}}% de vos obligations.",
+  "Family Setup": "Configuration Famille",
+  "Sync bills with your family or housemates.": "Synchronisez les factures avec votre famille.",
+  "Join a Group": "Rejoindre un groupe",
+  "Have an ID?": "Avez-vous un ID ?",
+  "Enter the Family ID shared with you to join an existing group.": "Entrez l'ID Famille pour rejoindre.",
+  "Start Fresh": "Commencer",
+  "Create New Family": "Créer une Famille",
+  "Become an admin and invite others.": "Devenez admin et invitez d'autres.",
+  "OR": "OU",
+  "Export Data": "Exporter Données",
+  "Download CSV": "Télécharger CSV",
+  "Failed to export data": "Échec de l'exportation"
 }

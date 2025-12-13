@@ -205,5 +205,17 @@
   "PRO ESTIMATE": "专业估算",
   "Based on your recurring bills, next month's minimum:": "根据您的经常性账单，下月最低：",
   "Payment Ratio": "支付比例",
-  "You have paid {{percent}}% of this month's obligations.": "您已支付本月债务的 {{percent}}%。"
+  "You have paid {{percent}}% of this month's obligations.": "您已支付本月债务的 {{percent}}%。",
+  "Family Setup": "家庭设置",
+  "Sync bills with your family or housemates.": "与家人同步账单。",
+  "Join a Group": "加入小组",
+  "Have an ID?": "有 ID 吗？",
+  "Enter the Family ID shared with you to join an existing group.": "输入家庭 ID 以加入现有小组。",
+  "Start Fresh": "新建",
+  "Create New Family": "创建新家庭",
+  "Become an admin and invite others.": "成为管理员并邀请他人。",
+  "OR": "或",
+  "Export Data": "导出数据",
+  "Download CSV": "下载 CSV",
+  "Failed to export data": "导出数据失败"
 }

@@ -1,18 +1,84 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, Alert, Platform, Image } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  Alert,
+  Platform,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+  Dimensions,
+} from "react-native";
 import { router } from "expo-router";
+import LinearGradient from "react-native-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { api } from "../../src/api/client";
 import { setToken } from "../../src/auth/session";
-import { signInWithAppleTokens } from "../../src/auth/providers";
 import {
+  signInWithAppleTokens,
   configureGoogle,
   signInWithGoogleIdToken,
 } from "../../src/auth/providers";
-
 import { getExpoPushTokenSafe } from "../../src/notifications/notifications";
-import { useTheme } from "../../src/ui/useTheme";
-import { screen, card, button, buttonText } from "../../src/ui/styles";
-import { useTranslation } from "react-i18next";
+import { useTheme, Theme } from "../../src/ui/useTheme";
+
+// --- Components ---
+
+function SocialButton({
+  icon,
+  label,
+  onPress,
+  variant = "default",
+  loading = false,
+  theme,
+}: {
+  icon: string;
+  label: string;
+  onPress: () => void;
+  variant?: "apple" | "google" | "default";
+  loading?: boolean;
+  theme: Theme;
+}) {
+  const isApple = variant === "apple";
+  const bg = isApple ? "#000" : "#FFF";
+  const text = isApple ? "#FFF" : "#000";
+  const border = isApple ? "#000" : "#E2E8F0";
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={loading}
+      style={({ pressed }) => [
+        styles.socialBtn,
+        {
+          backgroundColor: bg,
+          borderColor: border,
+          opacity: pressed || loading ? 0.8 : 1,
+        },
+      ]}
+    >
+      {loading ? (
+        <ActivityIndicator color={text} />
+      ) : (
+        <>
+          <Ionicons
+            name={icon as any}
+            size={20}
+            color={text}
+            style={{ marginRight: 12 }}
+          />
+          <Text style={[styles.socialBtnText, { color: text }]}>{label}</Text>
+        </>
+      )}
+    </Pressable>
+  );
+}
+
+// --- Main Screen ---
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -59,81 +125,151 @@ export default function Login() {
   }
 
   return (
-    <View style={[screen(theme), { alignItems: "center", gap: 12 }]}>
-      <Image
-        source={require("../../assets/black_logo.png")}
-        style={{ width: 200, height: 200, resizeMode: "contain" }}
+    <View style={styles.container}>
+      {/* Background Gradient */}
+      <LinearGradient
+        colors={[theme.colors.navy, "#1a2c4e"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
       />
-      <View style={[card(theme), { width: "90%" }]}>
-        <View
+
+      {/* Top Branding Area (Now filled with Logo) */}
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Image
+          source={require("../../assets/black_logo.png")}
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 10,
-            marginBottom: 8,
+            width: 200,
+            height: 200,
+            resizeMode: "contain",
+            tintColor: "#FFF", // Tints the black logo to white
+            opacity: 0.95,
           }}
-        >
-          <View
-            style={{
-              width: 14,
-              height: 14,
-              borderRadius: 7,
-              backgroundColor: theme.colors.accent,
-            }}
-          />
-          <Text
-            style={{
-              fontSize: 26,
-              fontWeight: "800",
-              color: theme.colors.primaryText,
-            }}
-          >
-            {t("Notification vibes.")}
+        />
+      </View>
+
+      {/* Bottom Card */}
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: theme.mode === "dark" ? "#1E293B" : "#FFF" },
+        ]}
+      >
+        {/* Header Text */}
+        <View style={{ alignItems: "center", marginBottom: 32 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View
+              style={[styles.dot, { backgroundColor: theme.colors.accent }]}
+            />
+            <Text style={[styles.title, { color: theme.colors.primaryText }]}>
+              {t("Notification vibes.")}
+            </Text>
+          </View>
+          <Text style={[styles.subtitle, { color: theme.colors.subtext }]}>
+            {t("Never miss a due date again.")}
           </Text>
         </View>
-        <Text style={{ color: theme.colors.subtext }}>
-          {t("Never miss a due date again.")}
+
+        {/* Buttons */}
+        <View style={{ gap: 12, width: "100%" }}>
+          {Platform.OS === "ios" && (
+            <SocialButton
+              icon="logo-apple"
+              label={t("Continue with Apple")}
+              variant="apple"
+              onPress={async () => {
+                try {
+                  const payload = await signInWithAppleTokens();
+                  await loginToBackend("apple", payload);
+                } catch (e: any) {
+                  // Alert.alert(t("Apple sign-in"), e?.message ?? t("Cancelled"));
+                }
+              }}
+              theme={theme}
+              loading={loading}
+            />
+          )}
+
+          <SocialButton
+            icon="logo-google"
+            label={t("Continue with Google")}
+            variant="google"
+            onPress={async () => {
+              try {
+                setLoading(true);
+                const payload = await signInWithGoogleIdToken();
+                await loginToBackend("google", payload);
+              } catch (e: any) {
+                // Alert.alert(t("Google sign-in"), e?.message ?? t("Cancelled"));
+              } finally {
+                setLoading(false);
+              }
+            }}
+            theme={theme}
+            loading={loading}
+          />
+        </View>
+
+        <Text style={[styles.footerText, { color: theme.colors.subtext }]}>
+          v1.0.0 (DueView)
         </Text>
-
-        <View style={{ height: 14 }} />
-
-        <Pressable
-          disabled={loading}
-          onPress={async () => {
-            try {
-              const payload = await signInWithAppleTokens();
-              await loginToBackend("apple", payload);
-            } catch (e: any) {
-              Alert.alert(t("Apple sign-in"), e?.message ?? t("Cancelled"));
-            }
-          }}
-          style={[button(theme, "primary"), { marginBottom: 10 }]}
-        >
-          <Text style={buttonText(theme, "primary")}>
-            {t("Continue with Apple")}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          disabled={loading}
-          onPress={async () => {
-            try {
-              setLoading(true);
-              const payload = await signInWithGoogleIdToken(); // returns { id_token }
-              await loginToBackend("google", payload);
-            } catch (e: any) {
-              Alert.alert(t("Google sign-in"), e?.message ?? t("Cancelled"));
-            } finally {
-              setLoading(false);
-            }
-          }}
-          style={[button(theme, "ghost")]}
-        >
-          <Text style={[buttonText(theme, "ghost")]}>
-            {t("Continue with Google")}
-          </Text>
-        </Pressable>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  card: {
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 20,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "900",
+    letterSpacing: 0.5,
+  },
+  subtitle: {
+    fontSize: 16,
+    marginTop: 8,
+    fontWeight: "500",
+  },
+  socialBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 56,
+    borderRadius: 16,
+    borderWidth: 1,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  socialBtnText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  footerText: {
+    marginTop: 32,
+    fontSize: 12,
+    opacity: 0.5,
+  },
+});

@@ -55,7 +55,7 @@ function AppStack() {
          <Stack.Screen
           name="(app)/bills"
           options={{
-            title: t("DueView App"),
+            title: "",
             headerBackVisible: false,
           }}
         />
@@ -74,8 +74,9 @@ function AppStack() {
         <Stack.Screen
           name="(auth)/login"
           options={{
-            title: t("Sign in"),
+            title: "",
             headerBackVisible: false,
+            headerShown: false
           }}
         />
         <Stack.Screen

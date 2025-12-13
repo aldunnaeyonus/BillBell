@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import RNFS from "react-native-fs";
 import Share from "react-native-share";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { api } from "../../src/api/client";
 import {
@@ -44,7 +45,6 @@ function isOverdue(item: any) {
   if (isPaid) return false;
   const due = safeDateNum(item.due_date);
   if (!due) return false;
-  // overdue if due date is before today (ignoring time)
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   return due < now.getTime();
@@ -70,40 +70,60 @@ const jsonToCSV = (data: any[]): string => {
 
 // --- Components ---
 
-function Header({ theme, title, onProfilePress }: { theme: Theme; title: string; onProfilePress: () => void }) {
+function Header({
+  theme,
+  title,
+  onProfilePress,
+}: {
+  theme: Theme;
+  title: string;
+  onProfilePress: () => void;
+}) {
   return (
-    <LinearGradient
-      colors={[theme.colors.navy, "#1a2c4e"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{ paddingTop: (StatusBar.currentHeight || 40) + 10, paddingBottom: 20, paddingHorizontal: 20 }}
-    >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={{ fontSize: 28, fontWeight: '800', color: '#FFF' }}>
-          {title}
-        </Text>
-        <Pressable 
-          onPress={onProfilePress}
-          style={{ 
-            width: 40, 
-            height: 40, 
-            borderRadius: 20, 
-            backgroundColor: 'rgba(255,255,255,0.2)', 
-            justifyContent: 'center', 
-            alignItems: 'center' 
-          }}
-        >
-          <Ionicons name="person" size={20} color="#FFF" />
-        </Pressable>
-      </View>
-    </LinearGradient>
+    <View style={{ backgroundColor: theme.colors.navy }}>
+      <LinearGradient
+        colors={[theme.colors.navy, "#1a2c4e"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <SafeAreaView edges={["top"]} style={styles.safeArea}>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>{title}</Text>
+            <Pressable onPress={onProfilePress} style={styles.profileButton}>
+              <Ionicons name="person" size={20} color="#FFF" />
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
+    </View>
   );
 }
 
-function SummaryCard({ theme, label, amount, t }: { theme: Theme; label: string; amount: number; t: any }) {
+function SummaryCard({
+  theme,
+  label,
+  amount,
+  t,
+}: {
+  theme: Theme;
+  label: string;
+  amount: number;
+  t: any;
+}) {
   return (
-    <View style={[styles.summaryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-      <Text style={[styles.summaryLabel, { color: theme.colors.subtext }]}>{t("Total")} {label}</Text>
+    <View
+      style={[
+        styles.summaryCard,
+        {
+          backgroundColor: theme.colors.card,
+          borderColor: theme.colors.border,
+        },
+      ]}
+    >
+      <Text style={[styles.summaryLabel, { color: theme.colors.subtext }]}>
+        {t("Total")} {label}
+      </Text>
       <Text style={[styles.summaryAmount, { color: theme.colors.primaryText }]}>
         ${centsToDollars(amount)}
       </Text>
@@ -111,19 +131,27 @@ function SummaryCard({ theme, label, amount, t }: { theme: Theme; label: string;
   );
 }
 
-function TabSegment({ 
-  tabs, 
-  activeTab, 
-  onTabPress, 
-  theme 
-}: { 
-  tabs: { key: string; label: string }[]; 
-  activeTab: string; 
-  onTabPress: (key: string) => void; 
-  theme: Theme 
+function TabSegment({
+  tabs,
+  activeTab,
+  onTabPress,
+  theme,
+}: {
+  tabs: { key: string; label: string }[];
+  activeTab: string;
+  onTabPress: (key: string) => void;
+  theme: Theme;
 }) {
   return (
-    <View style={[styles.tabContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+    <View
+      style={[
+        styles.tabContainer,
+        {
+          backgroundColor: theme.colors.card,
+          borderColor: theme.colors.border,
+        },
+      ]}
+    >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
         return (
@@ -138,7 +166,12 @@ function TabSegment({
             <Text
               style={[
                 styles.tabText,
-                { color: isActive ? theme.colors.primaryTextButton : theme.colors.subtext, fontWeight: isActive ? '700' : '500' },
+                {
+                  color: isActive
+                    ? theme.colors.primaryTextButton
+                    : theme.colors.subtext,
+                  fontWeight: isActive ? "700" : "500",
+                },
               ]}
             >
               {tab.label}
@@ -150,9 +183,21 @@ function TabSegment({
   );
 }
 
-function BillItem({ item, theme, t, onLongPress }: { item: any; theme: Theme; t: any; onLongPress: () => void }) {
+function BillItem({
+  item,
+  theme,
+  t,
+  onLongPress,
+}: {
+  item: any;
+  theme: Theme;
+  t: any;
+  onLongPress: () => void;
+}) {
   const amt = centsToDollars(item.amount_cents);
-  const isPaid = Boolean(item.paid_at || item.is_paid || item.status === "paid");
+  const isPaid = Boolean(
+    item.paid_at || item.is_paid || item.status === "paid"
+  );
   const overdue = isOverdue(item);
 
   return (
@@ -169,28 +214,72 @@ function BillItem({ item, theme, t, onLongPress }: { item: any; theme: Theme; t:
         },
       ]}
     >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <View style={{ flex: 1 }}>
-          <Text style={[styles.billCreditor, { color: theme.colors.primaryText }]} numberOfLines={1}>
+          <Text
+            style={[styles.billCreditor, { color: theme.colors.primaryText }]}
+            numberOfLines={1}
+          >
             {item.creditor}
           </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-            <Ionicons 
-              name={isPaid ? "checkmark-circle" : "calendar-outline"} 
-              size={14} 
-              color={isPaid ? theme.colors.accent : theme.colors.subtext} 
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              marginTop: 4,
+            }}
+          >
+            <Ionicons
+              name={isPaid ? "checkmark-circle" : "calendar-outline"}
+              size={14}
+              color={isPaid ? theme.colors.accent : theme.colors.subtext}
             />
-            <Text style={{ color: isPaid ? theme.colors.accent : theme.colors.subtext, fontSize: 13, fontWeight: '500' }}>
-              {isPaid ? `${t("Paid on")} ${item.paid_at || item.due_date}` : `${t("Due")} ${item.due_date}`}
+            <Text
+              style={{
+                color: isPaid ? theme.colors.accent : theme.colors.subtext,
+                fontSize: 13,
+                fontWeight: "500",
+              }}
+            >
+              {isPaid
+                ? `${t("Paid on")} ${item.paid_at || item.due_date}`
+                : `${t("Due")} ${item.due_date}`}
             </Text>
           </View>
         </View>
-        
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={[styles.billAmount, { color: theme.colors.primaryText }]}>${amt}</Text>
+
+        <View style={{ alignItems: "flex-end" }}>
+          <Text
+            style={[styles.billAmount, { color: theme.colors.primaryText }]}
+          >
+            ${amt}
+          </Text>
           {overdue && (
-            <View style={{ backgroundColor: '#FFE5E5', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4 }}>
-              <Text style={{ color: theme.colors.danger, fontSize: 10, fontWeight: '800' }}>{t("OVERDUE")}</Text>
+            <View
+              style={{
+                backgroundColor: "#FFE5E5",
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                borderRadius: 4,
+                marginTop: 4,
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.danger,
+                  fontSize: 10,
+                  fontWeight: "800",
+                }}
+              >
+                {t("OVERDUE")}
+              </Text>
             </View>
           )}
         </View>
@@ -210,42 +299,55 @@ export default function Bills() {
   const [tab, setTab] = useState<"pending" | "paid">("pending");
   const [sort, setSort] = useState<SortKey>("due");
 
-  // --- Derived Data ---
   const pendingBills = useMemo(
-    () => bills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"),
+    () =>
+      bills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"),
     [bills]
   );
   const paidBills = useMemo(
-    () => bills.filter((b: any) => b.paid_at || b.is_paid || b.status === "paid"),
+    () =>
+      bills.filter((b: any) => b.paid_at || b.is_paid || b.status === "paid"),
     [bills]
   );
 
   const visibleBills = useMemo(() => {
     const list = tab === "pending" ? pendingBills : paidBills;
     return [...list].sort((a: any, b: any) => {
-      if (sort === "name") return String(a.creditor || "").localeCompare(String(b.creditor || ""));
-      if (sort === "amount") return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
-      
-      const dateA = tab === "pending" ? safeDateNum(a.due_date) : (safeDateNum(a.paid_at) || safeDateNum(a.due_date));
-      const dateB = tab === "pending" ? safeDateNum(b.due_date) : (safeDateNum(b.paid_at) || safeDateNum(b.due_date));
-      
-      return tab === "pending" ? dateA - dateB : dateB - dateA; // Pending: Ascending, Paid: Descending
+      if (sort === "name")
+        return String(a.creditor || "").localeCompare(String(b.creditor || ""));
+      if (sort === "amount")
+        return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
+
+      const dateA =
+        tab === "pending"
+          ? safeDateNum(a.due_date)
+          : safeDateNum(a.paid_at) || safeDateNum(a.due_date);
+      const dateB =
+        tab === "pending"
+          ? safeDateNum(b.due_date)
+          : safeDateNum(b.paid_at) || safeDateNum(b.due_date);
+
+      return tab === "pending" ? dateA - dateB : dateB - dateA;
     });
   }, [tab, pendingBills, paidBills, sort]);
 
   const stats = useMemo(() => {
-    const pendingTotal = pendingBills.reduce((sum, b) => sum + Number(b.amount_cents || 0), 0);
-    const paidTotal = paidBills.reduce((sum, b) => sum + Number(b.amount_cents || 0), 0);
+    const pendingTotal = pendingBills.reduce(
+      (sum, b) => sum + Number(b.amount_cents || 0),
+      0
+    );
+    const paidTotal = paidBills.reduce(
+      (sum, b) => sum + Number(b.amount_cents || 0),
+      0
+    );
     return { pendingTotal, paidTotal };
   }, [pendingBills, paidBills]);
 
   const sortLabel = useMemo(() => {
-    if (sort === 'amount') return t("Amount");
-    if (sort === 'name') return t("Name");
-    return tab === 'pending' ? t("Due Date") : t("Paid Date");
+    if (sort === "amount") return t("Amount");
+    if (sort === "name") return t("Name");
+    return tab === "pending" ? t("Due Date") : t("Paid Date");
   }, [sort, tab, t]);
-
-  // --- Actions ---
 
   const load = useCallback(async () => {
     const res = await api.billsList();
@@ -254,7 +356,9 @@ export default function Bills() {
   }, []);
 
   useFocusEffect(
-    useCallback(() => { load().catch(() => {}); }, [load])
+    useCallback(() => {
+      load().catch(() => {});
+    }, [load])
   );
 
   async function onRefresh() {
@@ -284,9 +388,9 @@ export default function Bills() {
   }
 
   function cycleSort() {
-    if (sort === 'due') setSort('amount');
-    else if (sort === 'amount') setSort('name');
-    else setSort('due');
+    if (sort === "due") setSort("amount");
+    else if (sort === "amount") setSort("name");
+    else setSort("due");
   }
 
   const generateAndShareCSV = async () => {
@@ -304,7 +408,8 @@ export default function Bills() {
         Notes: b.notes || "",
       }));
       const csvString = jsonToCSV(exportData);
-      const path = Platform.OS === "ios"
+      const path =
+        Platform.OS === "ios"
           ? `${RNFS.DocumentDirectoryPath}/bills_export.csv`
           : `${RNFS.CachesDirectoryPath}/bills_export.csv`;
       await RNFS.writeFile(path, csvString, "utf8");
@@ -320,10 +425,26 @@ export default function Bills() {
   };
 
   function onLongPressBill(item: any) {
-    const isPaid = Boolean(item.paid_at || item.is_paid || item.status === "paid");
-    const actions: any[] = [{ text: t("Edit"), onPress: () => router.push({ pathname: "/(app)/bill-edit", params: { id: String(item.id) } }) }];
-    if (!isPaid) actions.push({ text: t("Mark Paid"), onPress: () => markPaid(item) });
-    actions.push({ text: t("Delete"), style: "destructive", onPress: () => deleteBill(item) });
+    const isPaid = Boolean(
+      item.paid_at || item.is_paid || item.status === "paid"
+    );
+    const actions: any[] = [
+      {
+        text: t("Edit"),
+        onPress: () =>
+          router.push({
+            pathname: "/(app)/bill-edit",
+            params: { id: String(item.id) },
+          }),
+      },
+    ];
+    if (!isPaid)
+      actions.push({ text: t("Mark Paid"), onPress: () => markPaid(item) });
+    actions.push({
+      text: t("Delete"),
+      style: "destructive",
+      onPress: () => deleteBill(item),
+    });
     actions.push({ text: t("Cancel"), style: "cancel" });
     Alert.alert(item.creditor || t("Bill"), t("Choose an action"), actions);
   }
@@ -331,44 +452,95 @@ export default function Bills() {
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <Stack.Screen options={{ headerShown: false }} />
-      <Header 
-        theme={theme} 
-        title={t("My Bills")} 
-        onProfilePress={() => router.push("/(app)/profile")} 
+      <Header
+        theme={theme}
+        title={t("My Bills")}
+        onProfilePress={() => router.push("/(app)/profile")}
       />
 
-      <View style={{ flex: 1, marginTop: -20, borderTopLeftRadius: 24, borderTopRightRadius: 24, backgroundColor: theme.colors.bg, paddingHorizontal: 16 }}>
-        
+      <View
+        style={{
+          flex: 1,
+          marginTop: -24,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          backgroundColor: theme.colors.bg,
+          paddingHorizontal: 16,
+          overflow: "hidden",
+        }}
+      >
         <FlatList
           data={visibleBills}
           keyExtractor={(item) => String(item.id)}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.colors.primary}
+            />
+          }
           contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             <View style={{ gap: 16, marginBottom: 16 }}>
               {/* Summary Card */}
-              <SummaryCard 
-                theme={theme} 
-                label={tab === "pending" ? t("Pending") : t("Paid")} 
-                amount={tab === "pending" ? stats.pendingTotal : stats.paidTotal} 
+              <SummaryCard
+                theme={theme}
+                label={tab === "pending" ? t("Pending") : t("Paid")}
+                amount={
+                  tab === "pending" ? stats.pendingTotal : stats.paidTotal
+                }
                 t={t}
               />
 
               {/* Action Buttons */}
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                <Pressable onPress={() => router.push("/(app)/insights")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
-                  <Ionicons name="bar-chart" size={18} color={theme.colors.primaryTextButton} />
-                  <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("Insights")}</Text>
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                <Pressable
+                  onPress={() => router.push("/(app)/insights")}
+                  style={[
+                    styles.actionBtn,
+                    { backgroundColor: theme.colors.primary, flex: 1 },
+                  ]}
+                >
+                  <Ionicons
+                    name="bar-chart"
+                    size={18}
+                    color={theme.colors.primaryTextButton}
+                  />
+                  <Text
+                    style={[
+                      styles.actionBtnText,
+                      { color: theme.colors.primaryTextButton },
+                    ]}
+                  >
+                    {t("Insights")}
+                  </Text>
                 </Pressable>
-                <Pressable onPress={() => router.push("/(app)/bill-edit")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
-                  <Ionicons name="add" size={20} color={theme.colors.primaryTextButton} />
-                  <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("+ Add")}</Text>
+                <Pressable
+                  onPress={() => router.push("/(app)/bill-edit")}
+                  style={[
+                    styles.actionBtn,
+                    { backgroundColor: theme.colors.primary, flex: 1 },
+                  ]}
+                >
+                  <Ionicons
+                    name="add"
+                    size={20}
+                    color={theme.colors.primaryTextButton}
+                  />
+                  <Text
+                    style={[
+                      styles.actionBtnText,
+                      { color: theme.colors.primaryTextButton },
+                    ]}
+                  >
+                    {t("+ Add")}
+                  </Text>
                 </Pressable>
               </View>
 
               {/* Tabs */}
-              <TabSegment 
+              <TabSegment
                 theme={theme}
                 activeTab={tab}
                 onTabPress={(key) => setTab(key as any)}
@@ -379,30 +551,85 @@ export default function Bills() {
               />
 
               {/* Sort & Export Row */}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4 }}>
-                <Pressable onPress={cycleSort} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Text style={{ color: theme.colors.subtext, fontSize: 13 }}>{t("Sort by")}:</Text>
-                  <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 13 }}>{sortLabel}</Text>
-                  <Ionicons name="chevron-down" size={12} color={theme.colors.text} />
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  paddingHorizontal: 4,
+                }}
+              >
+                <Pressable
+                  onPress={cycleSort}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                >
+                  <Text style={{ color: theme.colors.subtext, fontSize: 13 }}>
+                    {t("Sort by")}:
+                  </Text>
+                  <Text
+                    style={{
+                      color: theme.colors.text,
+                      fontWeight: "700",
+                      fontSize: 13,
+                    }}
+                  >
+                    {sortLabel}
+                  </Text>
+                  <Ionicons
+                    name="chevron-down"
+                    size={12}
+                    color={theme.colors.text}
+                  />
                 </Pressable>
                 {bills.length > 0 && (
                   <Pressable onPress={generateAndShareCSV}>
-                    <Text style={{ color: theme.colors.accent, fontWeight: '700', fontSize: 13 }}>{t("Export CSV")}</Text>
+                    <Text
+                      style={{
+                        color: theme.colors.accent,
+                        fontWeight: "700",
+                        fontSize: 13,
+                      }}
+                    >
+                      {t("Export CSV")}
+                    </Text>
                   </Pressable>
                 )}
               </View>
             </View>
           }
           ListEmptyComponent={
-            <View style={{ alignItems: 'center', paddingVertical: 60, gap: 12 }}>
-              <Ionicons name={tab === 'pending' ? "checkmark-done-circle-outline" : "wallet-outline"} size={64} color={theme.colors.border} />
-              <Text style={{ color: theme.colors.subtext, fontSize: 16, textAlign: 'center' }}>
-                {tab === "pending" ? t("You have no pending bills. Enjoy the freedom!") : t("No paid history")}
+            <View
+              style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}
+            >
+              <Ionicons
+                name={
+                  tab === "pending"
+                    ? "checkmark-done-circle-outline"
+                    : "wallet-outline"
+                }
+                size={64}
+                color={theme.colors.border}
+              />
+              <Text
+                style={{
+                  color: theme.colors.subtext,
+                  fontSize: 16,
+                  textAlign: "center",
+                }}
+              >
+                {tab === "pending"
+                  ? t("You have no pending bills. Enjoy the freedom!")
+                  : t("No paid history")}
               </Text>
             </View>
           }
           renderItem={({ item }) => (
-            <BillItem item={item} theme={theme} t={t} onLongPress={() => onLongPressBill(item)} />
+            <BillItem
+              item={item}
+              theme={theme}
+              t={t}
+              onLongPress={() => onLongPressBill(item)}
+            />
           )}
         />
       </View>
@@ -411,11 +638,37 @@ export default function Bills() {
 }
 
 const styles = StyleSheet.create({
+  headerGradient: {
+    paddingBottom: 40,
+  },
+  safeArea: {
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+  },
+  headerContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#FFF",
+  },
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   summaryCard: {
     padding: 20,
     borderRadius: 20,
     borderWidth: 1,
-    alignItems: 'center',
+    alignItems: "center",
     gap: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -425,18 +678,18 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    textTransform: "uppercase",
     letterSpacing: 1,
   },
   summaryAmount: {
     fontSize: 36,
-    fontWeight: '900',
+    fontWeight: "900",
   },
   actionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
     borderRadius: 16,
     gap: 8,
@@ -448,10 +701,10 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   tabContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 4,
     borderRadius: 16,
     borderWidth: 1,
@@ -459,7 +712,7 @@ const styles = StyleSheet.create({
   tabButton: {
     flex: 1,
     paddingVertical: 10,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 12,
   },
   tabText: {
@@ -473,10 +726,10 @@ const styles = StyleSheet.create({
   },
   billCreditor: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   billAmount: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: "800",
   },
 });

@@ -205,5 +205,17 @@
   "PRO ESTIMATE": "PRO-SCHÄTZUNG",
   "Based on your recurring bills, next month's minimum:": "Basierend auf Ihren wiederkehrenden Rechnungen:",
   "Payment Ratio": "Zahlungsquote",
-  "You have paid {{percent}}% of this month's obligations.": "Sie haben {{percent}}% der Verpflichtungen dieses Monats bezahlt."
+  "You have paid {{percent}}% of this month's obligations.": "Sie haben {{percent}}% der Verpflichtungen dieses Monats bezahlt.",
+  "Family Setup": "Familien-Einrichtung",
+  "Sync bills with your family or housemates.": "Synchronisieren Sie Rechnungen mit Ihrer Familie.",
+  "Join a Group": "Gruppe beitreten",
+  "Have an ID?": "Haben Sie eine ID?",
+  "Enter the Family ID shared with you to join an existing group.": "Geben Sie die geteilte Familien-ID ein, um beizutreten.",
+  "Start Fresh": "Neu starten",
+  "Create New Family": "Neue Familie erstellen",
+  "Become an admin and invite others.": "Werden Sie Admin und laden Sie andere ein.",
+  "OR": "ODER",
+  "Export Data": "Daten exportieren",
+  "Download CSV": "CSV herunterladen",
+  "Failed to export data": "Datenexport fehlgeschlagen"
 }

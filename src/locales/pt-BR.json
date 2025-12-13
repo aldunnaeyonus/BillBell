@@ -139,7 +139,7 @@
   "Choose an action": "Escolha uma ação",
   "Save First": "Salve Primeiro",
   "Please save the bill before syncing to calendar.": "Salve a conta antes de sincronizar.",
-  "Add to Device Calendar": "Adicionar ao Calendário",
+  "Add to Device Calendar": "Adicionar ao Calendario",
   "Notes (Optional)": "Notas (Opcional)",
   "e.g. Account #12345": "ex. Conta #12345",
   "FAQ & Help": "Ajuda e FAQ",
@@ -205,5 +205,17 @@
   "PRO ESTIMATE": "ESTIMATIVA PRO",
   "Based on your recurring bills, next month's minimum:": "Baseado em contas recorrentes:",
   "Payment Ratio": "Taxa de Pagamento",
-  "You have paid {{percent}}% of this month's obligations.": "Você pagou {{percent}}% das obrigações deste mês."
+  "You have paid {{percent}}% of this month's obligations.": "Você pagou {{percent}}% das obrigações deste mês.",
+  "Family Setup": "Configuração da Família",
+  "Sync bills with your family or housemates.": "Sincronize contas com sua família.",
+  "Join a Group": "Entrar no Grupo",
+  "Have an ID?": "Tem um ID?",
+  "Enter the Family ID shared with you to join an existing group.": "Insira o ID da Família para entrar.",
+  "Start Fresh": "Começar Novo",
+  "Create New Family": "Criar Nova Família",
+  "Become an admin and invite others.": "Vire admin e convide outros.",
+  "OR": "OU",
+  "Export Data": "Exportar Dados",
+  "Download CSV": "Baixar CSV",
+  "Failed to export data": "Falha ao exportar dados"
 }

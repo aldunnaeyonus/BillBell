@@ -205,5 +205,17 @@
   "PRO ESTIMATE": "プロ見積もり",
   "Based on your recurring bills, next month's minimum:": "定期的な請求に基づく来月の最低額:",
   "Payment Ratio": "支払比率",
-  "You have paid {{percent}}% of this month's obligations.": "今月の義務の{{percent}}%を支払いました。"
+  "You have paid {{percent}}% of this month's obligations.": "今月の義務の{{percent}}%を支払いました。",
+  "Family Setup": "ファミリー設定",
+  "Sync bills with your family or housemates.": "家族や同居人と請求書を同期します。",
+  "Join a Group": "グループに参加",
+  "Have an ID?": "IDをお持ちですか？",
+  "Enter the Family ID shared with you to join an existing group.": "共有されたファミリーIDを入力してください。",
+  "Start Fresh": "新規作成",
+  "Create New Family": "新しいファミリーを作成",
+  "Become an admin and invite others.": "管理者になり、他の人を招待します。",
+  "OR": "または",
+  "Export Data": "データのエクスポート",
+  "Download CSV": "CSVをダウンロード",
+  "Failed to export data": "データのエクスポートに失敗しました"
 }
