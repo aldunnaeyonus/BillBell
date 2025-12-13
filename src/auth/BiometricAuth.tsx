@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, AppState, Alert } from 'react-native';
+import { View, Text, StyleSheet, AppState, Pressable } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { useSegments } from 'expo-router'; // Import this
 import { useTheme } from '../ui/useTheme';
 import { button, buttonText } from '../ui/styles';
-import { Pressable } from 'react-native';
 
 export function BiometricAuth({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hasHardware, setHasHardware] = useState(false);
   const theme = useTheme();
+  
+  // 1. Get current navigation segment (e.g., "(auth)" or "(app)")
+  const segments = useSegments(); 
 
   useEffect(() => {
     checkHardware();
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      // Lock app when it goes to background
       if (nextAppState === 'background' || nextAppState === 'inactive') {
         setIsAuthenticated(false);
       }
-      // Trigger auth when coming back to foreground
       if (nextAppState === 'active') {
         authenticate();
       }
@@ -29,14 +30,14 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
     const compatible = await LocalAuthentication.hasHardwareAsync();
     setHasHardware(compatible);
     if (compatible) authenticate();
-    else setIsAuthenticated(true); // Fallback if no hardware
+    else setIsAuthenticated(true); 
   }
 
   async function authenticate() {
     try {
         const hasRecords = await LocalAuthentication.isEnrolledAsync();
         if (!hasRecords) {
-            setIsAuthenticated(true); // No face/fingerprint set up on phone
+            setIsAuthenticated(true);
             return;
         }
 
@@ -53,15 +54,26 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // 2. BYPASS LOGIC: If on Login screen, render children immediately
+  // This prevents the "Locked" screen from blocking the Sign-In buttons
+  const isPublicRoute = segments[0] === '(auth)'; 
+  if (isPublicRoute) {
+      return <>{children}</>;
+  }
+
+  // 3. Normal Lock Logic
   if (!isAuthenticated && hasHardware) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-        <Text style={{ fontSize: 24, fontWeight: '900', color: theme.colors.primaryText, marginBottom: 20 }}>
-            Locked
-        </Text>
-        <Pressable onPress={authenticate} style={button(theme, 'primary')}>
-            <Text style={buttonText(theme, 'primary')}>Unlock with FaceID</Text>
-        </Pressable>
+        <View style={{alignItems:'center', gap: 20}}>
+            <Text style={{ fontSize: 60 }}>🔒</Text>
+            <Text style={{ fontSize: 24, fontWeight: '900', color: theme.colors.primaryText }}>
+                Locked
+            </Text>
+            <Pressable onPress={authenticate} style={button(theme, 'primary')}>
+                <Text style={buttonText(theme, 'primary')}>Unlock with FaceID</Text>
+            </Pressable>
+        </View>
       </View>
     );
   }
