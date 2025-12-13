@@ -10,7 +10,7 @@ export default function Terms() {
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <View style={styles.content}>
         <Text style={[styles.text, { color: theme.colors.text }]}>
-          {t("TermsText") || "Terms of Use Placeholder...\n\n1. Acceptance\nBy using this app, you agree to these terms.\n\n2. User Conduct\nYou agree not to use this app for illegal activities.\n\n3. Disclaimer\nThis app is provided 'as is' without warranties of any kind."}
+{t("TermsText")}
         </Text>
       </View>
     </ScrollView>

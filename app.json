@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "GroupDue",
-    "slug": "groupdue",
-    "scheme": "groupdue",
+    "name": "BillBell",
+    "slug": "billbell",
+    "scheme": "billbell",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",

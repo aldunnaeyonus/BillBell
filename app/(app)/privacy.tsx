@@ -10,7 +10,7 @@ export default function Privacy() {
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <View style={styles.content}>
         <Text style={[styles.text, { color: theme.colors.text }]}>
-          {t("PrivacyPolicyText") || "Privacy Policy Placeholder...\n\n1. Data Collection\nWe collect basic account information to provide the bill tracking service.\n\n2. Data Usage\nYour data is used solely for the purpose of syncing your bills with your family group.\n\n3. Data Deletion\nYou can delete your account at any time from the Profile page, which will remove your data from our servers."}
+          {t("PrivacyText")}
         </Text>
       </View>
     </ScrollView>
