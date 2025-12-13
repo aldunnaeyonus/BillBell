@@ -306,7 +306,44 @@ export default function Bills() {
   return (
     <View style={screen(theme)}>
       {/* Header row */}
+{/* Stats row */}
+            <View style={{ flexDirection: "row", gap: 10, marginBottom:20}}>
+              <View style={[card(theme), { flex: 1 }]}>
+                <Text
+                  style={{ color: theme.colors.subtext, fontWeight: "700" }}
+                >
+                  Pending Total
+                </Text>
+                <Text
+                  style={{
+                    color: theme.colors.text,
+                    fontSize: 18,
+                    fontWeight: "900",
+                    marginTop: 6,
+                  }}
+                >
+                  ${centsToDollars(stats.pendingTotal)}
+                </Text>
+              </View>
 
+              <View style={[card(theme), { flex: 1 }]}>
+                <Text
+                  style={{ color: theme.colors.subtext, fontWeight: "700" }}
+                >
+                  Paid Total
+                </Text>
+                <Text
+                  style={{
+                    color: theme.colors.text,
+                    fontSize: 18,
+                    fontWeight: "900",
+                    marginTop: 6,
+                  }}
+                >
+                  ${centsToDollars(stats.paidTotal)}
+                </Text>
+              </View>
+            </View>
         <View style={{ flexDirection: "row", justifyContent: "space-around", alignItems: "center", gap: 10, marginBottom: 20}}>
            <Pressable
             onPress={() => router.push("/(app)/insights")}
@@ -350,44 +387,7 @@ export default function Bills() {
               />
             </View>
 
-            {/* Stats row */}
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <View style={[card(theme), { flex: 1 }]}>
-                <Text
-                  style={{ color: theme.colors.subtext, fontWeight: "700" }}
-                >
-                  Pending Total
-                </Text>
-                <Text
-                  style={{
-                    color: theme.colors.text,
-                    fontSize: 18,
-                    fontWeight: "900",
-                    marginTop: 6,
-                  }}
-                >
-                  ${centsToDollars(stats.pendingTotal)}
-                </Text>
-              </View>
-
-              <View style={[card(theme), { flex: 1 }]}>
-                <Text
-                  style={{ color: theme.colors.subtext, fontWeight: "700" }}
-                >
-                  Paid Total
-                </Text>
-                <Text
-                  style={{
-                    color: theme.colors.text,
-                    fontSize: 18,
-                    fontWeight: "900",
-                    marginTop: 6,
-                  }}
-                >
-                  ${centsToDollars(stats.paidTotal)}
-                </Text>
-              </View>
-            </View>
+            
 
             {/* Sort controls */}
             <View style={[card(theme), { gap: 10 }]}>

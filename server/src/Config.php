@@ -4,14 +4,13 @@ namespace App;
 class Config {
   public static function db() {
     return [
-      "host" => getenv("DB_HOST"),
-      "name" => getenv("DB_NAME"),
-      "user" => getenv("DB_USER"),
-      "pass" => getenv("DB_PASS"),
+      "host" => $_ENV["DB_HOST"],
+      "name" => $_ENV["DB_NAME"],
+      "user" => $_ENV["DB_USER"],
+      "pass" => $_ENV["DB_PASS"],
     ];
   }
-    public const APPLE_BUNDLE_ID = 'com.dunn.carabali.billbell';
 
-  public static function jwtSecret() { return getenv("JWT_SECRET"); }
-  public static function expoAccessToken() { return getenv("EXPO_ACCESS_TOKEN"); }
+  public static function jwtSecret() { return $_ENV["JWT_SECRET"]; }
+  public static function expoAccessToken() { return $_ENV["EXPO_ACCESS_TOKEN"]; }
 }

@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . "/../vendor/autoload.php";
+require __DIR__ . "/../../../vendor/autoload.php";
 use App\DB;
 
 $pdo = DB::pdo();
@@ -25,11 +25,14 @@ foreach ($bills as $bill) {
     WHERE fm.family_id=?
   ");
   $stmt2->execute([(int)$bill["family_id"]]);
-  $tokens = array_map(fn($r) => $r["expo_push_token"], $stmt2->fetchAll());
+  $tokens = array_map(function($r) {
+    return $r["expo_push_token"];
+}, $stmt2->fetchAll());
+
   $tokens = array_values(array_unique(array_filter($tokens)));
   if (!$tokens) continue;
 
-  $amount = number_format(((int)$bill["amount_cents"]) / 100, 2);
+ $amount = number_format(((int)$bill["amount_cents"]) / 100, 2);
   $messages = [];
   foreach ($tokens as $t) {
     $messages[] = [
@@ -37,6 +40,7 @@ foreach ($bills as $bill) {
       "sound" => "default",
       "title" => "Bill due tomorrow",
       "body"  => "{$bill['creditor']} – \${$amount}",
+      "categoryId" => "bill-due-actions", // <--- ADD THIS
       "data"  => ["bill_id" => (int)$bill["id"]],
     ];
   }

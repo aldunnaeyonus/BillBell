@@ -57,7 +57,7 @@ class AuthController {
   }
 
   private static function verifyGoogleIdToken(string $idToken): array {
-    $clientId = getenv("GOOGLE_CLIENT_ID");
+    $clientId = $_ENV["GOOGLE_CLIENT_ID"];
     if (!$clientId) Utils::json(["error" => "GOOGLE_CLIENT_ID not set"], 500);
 
     $g = new \Google\Client(["client_id" => $clientId]);
@@ -69,7 +69,7 @@ class AuthController {
   }
 
   private static function verifyAppleIdentityToken(string $jwt): array {
-    $bundleId = getenv("APPLE_BUNDLE_ID");
+    $bundleId = $_ENV["APPLE_BUNDLE_ID"];
     if (!$bundleId) Utils::json(["error" => "APPLE_BUNDLE_ID not set"], 500);
 
     $jwksJson = file_get_contents("https://appleid.apple.com/auth/keys");

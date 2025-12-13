@@ -6,33 +6,48 @@ use Firebase\JWT\Key;
 
 class Auth {
   public static function issueToken(int $userId): string {
-    $payload = ["sub" => $userId, "iat" => time(), "exp" => time() + (60 * 60 * 24 * 30)];
+    $payload = [
+      "sub" => $userId,
+      "iat" => time(),
+      "exp" => time() + (60 * 60 * 24 * 30),
+    ];
     return JWT::encode($payload, Config::jwtSecret(), 'HS256');
   }
 
   public static function requireUserId(): int {
-  // Try multiple places for the Authorization header
-  $headers = function_exists('getallheaders') ? getallheaders() : [];
+    // 1) Try normal CGI var
+    $hdr = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
 
-  $authHeader =
-      ($headers['Authorization'] ?? null) ??
-      ($headers['authorization'] ?? null) ??
-      ($_SERVER['HTTP_AUTHORIZATION'] ?? null) ??
-      ($_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? null);
+    // 2) Some Apache + PHP-FPM setups put it here
+    if (!$hdr && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+      $hdr = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    }
 
-  if (!$authHeader || !preg_match('/^Bearer\s+(.+)/i', $authHeader, $m)) {
-    Utils::json(["error" => "Missing Authorization header"], 401);
+    // 3) Fallback to getallheaders, which often has it
+    if (!$hdr && function_exists('getallheaders')) {
+      $headers = getallheaders();
+      if (isset($headers['Authorization'])) {
+        $hdr = $headers['Authorization'];
+      } elseif (isset($headers['authorization'])) {
+        $hdr = $headers['authorization'];
+      }
+    }
+
+    // Debug (optional): uncomment temporarily if needed
+    // file_put_contents(__DIR__ . '/../auth_debug.log',
+    //   "Auth header raw: " . $hdr . PHP_EOL,
+    //   FILE_APPEND
+    // );
+
+    if (!preg_match('/Bearer\s+(.+)$/i', $hdr, $m)) {
+      Utils::json(["error" => "Missing Authorization header"], 401);
+    }
+
+    try {
+      $decoded = JWT::decode($m[1], new Key(Config::jwtSecret(), 'HS256'));
+      return (int)$decoded->sub;
+    } catch (\Throwable $e) {
+      Utils::json(["error" => "Invalid token"], 401);
+    }
   }
-
-  $token = $m[1];
-
-  $userId = self::verifyToken($token);
-  if (!$userId) {
-    Utils::json(["error" => "Invalid token"], 401);
-  }
-
-  return $userId;
 }
-
-
-?>

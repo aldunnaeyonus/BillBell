@@ -10,6 +10,7 @@ import {
   registerNotificationCategories,
 } from "../src/notifications/notifications";
 import { useTranslation, I18nextProvider } from "react-i18next";
+import { BiometricAuth } from "../src/auth/BiometricAuth";
 
 // 1. Create a child component for the actual App logic
 function AppStack() {
@@ -99,7 +100,9 @@ function AppStack() {
 export default function RootLayout() {
   return (
     <I18nextProvider i18n={i18n}>
+      <BiometricAuth>
       <AppStack />
+      </BiometricAuth>
     </I18nextProvider>
   );
 }

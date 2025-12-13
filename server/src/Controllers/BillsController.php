@@ -45,7 +45,8 @@ class BillsController {
     if (strlen($reminderTime) === 5) $reminderTime .= ":00";
 
     $recurrence = $data["recurrence"] ?? "none";
-    if (!in_array($recurrence, ["none","monthly"], true)) Utils::json(["error" => "Invalid recurrence"], 422);
+    // CHANGE 1: Added "weekly" and "bi-weekly" to validation allow list
+    if (!in_array($recurrence, ["none","monthly","weekly","bi-weekly"], true)) Utils::json(["error" => "Invalid recurrence"], 422);
 
     $stmt = $pdo->prepare("
       INSERT INTO bills
@@ -122,9 +123,16 @@ class BillsController {
     $upd = $pdo->prepare("UPDATE bills SET status='paid', snoozed_until=NULL, updated_by_user_id=? WHERE id=? AND family_id=?");
     $upd->execute([$userId, $id, $familyId]);
 
-    if ($bill["recurrence"] === "monthly") {
+    // CHANGE 2: Determine date modifier based on recurrence type
+    $dateModifier = null;
+    if ($bill["recurrence"] === "weekly") $dateModifier = "+1 week";
+    elseif ($bill["recurrence"] === "bi-weekly") $dateModifier = "+2 weeks";
+    elseif ($bill["recurrence"] === "monthly") $dateModifier = "+1 month";
+    elseif ($bill["recurrence"] === "annually") $dateModifier = "+1 year";
+
+    if ($dateModifier) {
       $dt = new \DateTime($bill["due_date"]);
-      $dt->modify("+1 month");
+      $dt->modify($dateModifier);
       $nextDue = $dt->format("Y-m-d");
 
       $chk = $pdo->prepare("SELECT id FROM bills WHERE family_id=? AND creditor=? AND amount_cents=? AND due_date=? LIMIT 1");
@@ -145,7 +153,7 @@ class BillsController {
           $nextDue,
           "active",
           null,
-          "monthly",
+          $bill["recurrence"], // Use the current bill's recurrence for the new one
           (int)$bill["reminder_offset_days"],
           $bill["reminder_time_local"]
         ]);
