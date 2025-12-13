@@ -74,7 +74,7 @@ function AppStack() {
           }}
         />
         <Stack.Screen
-          name="onboarding"
+          name="(app)/onboarding"
           options={{
             headerShown: false, // This removes the navigation bar
             gestureEnabled: false, // This prevents swiping back to the login screen

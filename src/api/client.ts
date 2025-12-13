@@ -14,7 +14,7 @@ async function request(path: string, opts: RequestInit = {}) {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  console.log("API request", path, "token:", token);
+  //console.log("API request", path, "token:", token);
 
   const res = await fetch(`${API_URL}${path}`, { ...opts, headers });
   const text = await res.text();
