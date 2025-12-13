@@ -523,7 +523,7 @@ export default function Profile() {
                 onPress={handleGenerateCode}
                 isLast={data.members.length < 2} 
               />
-              {data.members.length > 0 && (
+              {data.members.length > 1 && (
                 <ActionRow
                   icon="exit-outline"
                   label={t("Leave Family")}

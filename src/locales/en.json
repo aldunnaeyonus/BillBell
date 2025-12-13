@@ -32,7 +32,7 @@
   "Amount": "Amount",
   "Due Date": "Due Date",
   "Recurring": "Recurring",
-  "Remind me": "Remind me {{days}} days before due date",
+  "Remind me": "Remind me: ",
   "Save": "Save",
   "None": "None",
   "Weekly": "Weekly",
