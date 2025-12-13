@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, AppState, Pressable } from 'react-native';
+import { View, Text, StyleSheet, AppState, Pressable, StatusBar, Platform } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { useSegments } from 'expo-router'; // Import this
+import { useSegments } from 'expo-router';
+import LinearGradient from 'react-native-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next'; // Added translation
 import { useTheme } from '../ui/useTheme';
-import { button, buttonText } from '../ui/styles';
 
 export function BiometricAuth({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hasHardware, setHasHardware] = useState(false);
   const theme = useTheme();
-  
-  // 1. Get current navigation segment (e.g., "(auth)" or "(app)")
+  const { t } = useTranslation(); // Hook for translations
   const segments = useSegments(); 
 
   useEffect(() => {
@@ -20,7 +21,8 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(false);
       }
       if (nextAppState === 'active') {
-        authenticate();
+        // Delay slightly to allow app to wake up
+        setTimeout(() => authenticate(), 100);
       }
     });
     return () => subscription.remove();
@@ -41,8 +43,14 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
             return;
         }
 
+        // Check if we are already on a public route before prompting
+        // This prevents the faceid prompt from appearing over the login screen momentarily
+        if (segments[0] === '(auth)') {
+            return;
+        }
+
         const result = await LocalAuthentication.authenticateAsync({
-            promptMessage: 'Unlock DueView',
+            promptMessage: t('Unlock App') || 'Unlock App', // Uses translation
             fallbackLabel: 'Use Passcode',
         });
 
@@ -54,25 +62,41 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // 2. BYPASS LOGIC: If on Login screen, render children immediately
-  // This prevents the "Locked" screen from blocking the Sign-In buttons
+  // Bypass logic for Login/Auth screens
   const isPublicRoute = segments[0] === '(auth)'; 
   if (isPublicRoute) {
       return <>{children}</>;
   }
 
-  // 3. Normal Lock Logic
+  // LOCKED SCREEN UI
   if (!isAuthenticated && hasHardware) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-        <View style={{alignItems:'center', gap: 20}}>
-            <Text style={{ fontSize: 24, fontWeight: '900', color: theme.colors.primaryText }}>
-                Locked
-            </Text>
-            <Pressable onPress={authenticate} style={button(theme, 'primary')}>
-                <Text style={buttonText(theme, 'primary')}>Unlock with FaceID</Text>
-            </Pressable>
-        </View>
+      <View style={styles.container}>
+        {/* Force Status Bar to White on Lock Screen */}
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        
+        <LinearGradient
+            colors={[theme.colors.navy, "#1a2c4e"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradient}
+        >
+            <View style={styles.content}>
+                <View style={styles.iconContainer}>
+                    <Ionicons name="lock-closed" size={80} color="#FFF" />
+                </View>
+                
+                <Text style={styles.title}>{t('Locked') || 'Locked'}</Text>
+                <Text style={styles.subtitle}>{t('Please authenticate to continue') || 'Please authenticate to continue'}</Text>
+
+                <Pressable onPress={authenticate} style={styles.unlockBtn}>
+                    <Ionicons name="finger-print" size={24} color={theme.colors.navy} />
+                    <Text style={[styles.unlockText, { color: theme.colors.navy }]}>
+                        {t('Unlock') || 'Unlock'}
+                    </Text>
+                </Pressable>
+            </View>
+        </LinearGradient>
       </View>
     );
   }
@@ -83,7 +107,59 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  gradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  content: {
+    alignItems: 'center',
+    gap: 20,
+    width: '100%',
+    paddingHorizontal: 40,
+  },
+  iconContainer: {
+    marginBottom: 10,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#FFF',
+    letterSpacing: 1,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.7)',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  unlockBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    gap: 12,
+    width: '100%',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  unlockText: {
+    fontSize: 18,
+    fontWeight: '700',
+  }
 });

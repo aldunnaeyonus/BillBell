@@ -290,12 +290,37 @@ export default function Profile() {
           style: "destructive",
           onPress: async () => {
             try {
-              const res = await api.familyLeave();
+              await api.familyLeave();
               Alert.alert(t("Success"), t("You have left the family."));
-              onRefresh(); // Refresh to show new family info
+              onRefresh();
             } catch (e: any) {
               Alert.alert(t("Error"), e.message);
             }
+          },
+        },
+      ]
+    );
+  };
+  
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      t("Delete Account"),
+      t("DeleteAccountConfirm"),
+      [
+        { text: t("Cancel"), style: "cancel" },
+        {
+          text: t("Delete"),
+          style: "destructive",
+          onPress: async () => {
+             try {
+                await api.deleteAccount();
+                await googleSignOut();
+                await clearToken();
+                Alert.alert(t("Success"), t("Account deleted successfully."));
+                router.replace("/(auth)/login");
+             } catch(e: any) {
+                 Alert.alert(t("Error"), e.message || "Failed to delete account");
+             }
           },
         },
       ]
@@ -496,10 +521,9 @@ export default function Profile() {
                 subLabel={importInfo ? `${t("Active")}: ${importInfo.code}` : t("Create secure code for upload")}
                 theme={theme}
                 onPress={handleGenerateCode}
-                isLast={data.members.length < 2} // Remove bottom border if it's the last item
+                isLast={data.members.length < 2} 
               />
-              {/* Only show Leave Family if there are other members (otherwise it's redundant, but good to have) */}
-              {data.members.length > 1 && (
+              {data.members.length > 0 && (
                 <ActionRow
                   icon="exit-outline"
                   label={t("Leave Family")}
@@ -532,7 +556,7 @@ export default function Profile() {
             </View>
           </View>
 
-          {/* Logout */}
+          {/* Logout & Delete */}
           <View style={[styles.section, { marginTop: 20 }]}>
             <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
               <ActionRow
@@ -541,18 +565,25 @@ export default function Profile() {
                 theme={theme}
                 danger
                 onPress={handleLogout}
+              />
+              {/* DELETE ACCOUNT BUTTON FOR APPLE COMPLIANCE */}
+              <ActionRow
+                icon="trash-outline"
+                label={t("Delete Account")}
+                theme={theme}
+                danger
+                onPress={handleDeleteAccount}
                 isLast
               />
             </View>
             <Text style={{ textAlign: 'center', color: theme.colors.subtext, marginTop: 16, fontSize: 12 }}>
-              {t("Version")} 1.0.0 (DueView)
+              {t("Version")} 1.0.0 (GroupDue)
             </Text>
           </View>
 
         </View>
       </ScrollView>
 
-      {/* Android Language Modal */}
       <Modal
         visible={showLangModal}
         transparent
@@ -647,7 +678,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   copyButton: {
-    paddingRight:30,
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 8,
@@ -655,6 +685,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
     flexShrink: 0,
+    paddingRight:30
   },
   copyButtonText: {
     color: "#FFF",

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -25,10 +25,10 @@ import {
 } from "../../src/notifications/notifications";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 
+// --- Types ---
 type SortKey = "due" | "amount" | "name";
 
 // --- Helper Functions ---
-
 function centsToDollars(cents: number) {
   return (Number(cents || 0) / 100).toFixed(2);
 }
@@ -74,7 +74,7 @@ function Header({ theme, title, onProfilePress }: { theme: Theme; title: string;
   return (
     <View style={{ backgroundColor: theme.colors.navy }}>
       <LinearGradient
-        colors={[theme.colors.navy, "#1a2c4e"]}
+        colors={[theme.colors.navy, theme.colors.navy]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
@@ -206,6 +206,25 @@ export default function Bills() {
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<"pending" | "paid">("pending");
   const [sort, setSort] = useState<SortKey>("due");
+
+  // --- Status Bar Management ---
+  useFocusEffect(
+    useCallback(() => {
+      // When entering Bills (Dark Blue Header) -> White Text
+      StatusBar.setBarStyle("light-content");
+      if (Platform.OS === 'android') {
+        StatusBar.setBackgroundColor("transparent");
+        StatusBar.setTranslucent(true);
+      }
+
+      return () => {
+        // When leaving Bills (to Profile etc) -> Revert to theme default
+        // If Light Mode -> Dark Text. If Dark Mode -> Light Text.
+        const defaultStyle = theme.mode === "dark" ? "light-content" : "dark-content";
+        StatusBar.setBarStyle(defaultStyle);
+      };
+    }, [theme.mode])
+  );
 
   const pendingBills = useMemo(
     () => bills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"),
@@ -479,7 +498,7 @@ const styles = StyleSheet.create({
   tabButton: {
     flex: 1,
     paddingVertical: 10,
-    alignItems: "center",
+    alignItems: 'center',
     borderRadius: 12,
   },
   tabText: {

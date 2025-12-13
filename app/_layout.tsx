@@ -11,6 +11,11 @@ import {
 } from "../src/notifications/notifications";
 import { useTranslation, I18nextProvider } from "react-i18next";
 import { BiometricAuth } from "../src/auth/BiometricAuth";
+import { LogBox } from "react-native";
+
+if (!__DEV__) {
+  LogBox.ignoreAllLogs();
+}
 
 // 1. Create a child component for the actual App logic
 function AppStack() {
@@ -50,7 +55,10 @@ function AppStack() {
           headerTintColor: theme.colors.primaryText,
           headerShadowVisible: false,
           contentStyle: { backgroundColor: theme.colors.bg },
-        }}
+          // @ts-ignore: 'headerBackButtonDisplayMode' is new in React Nav 7 / Expo Router 6
+          headerBackButtonDisplayMode: 'minimal',
+          headerBackTitleVisible: false, // Fallback for older versions, ignored if types fail due to @ts-ignore
+        } as any} 
       >
          <Stack.Screen
           name="(app)/bills"

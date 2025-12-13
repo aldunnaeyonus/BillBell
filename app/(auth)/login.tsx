@@ -1,124 +1,97 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import {
   View,
   Text,
   Pressable,
-  Alert,
-  Platform,
-  Image,
   StyleSheet,
   ActivityIndicator,
-  Dimensions,
+  Alert,
+  Platform,
+  StatusBar,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import * as AppleAuthentication from "expo-apple-authentication";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { api } from "../../src/api/client";
 import { setToken } from "../../src/auth/session";
-import {
-  signInWithAppleTokens,
-  configureGoogle,
-  signInWithGoogleIdToken,
-} from "../../src/auth/providers";
-import { getExpoPushTokenSafe } from "../../src/notifications/notifications";
-import { useTheme, Theme } from "../../src/ui/useTheme";
-
-// --- Components ---
-
-function SocialButton({
-  icon,
-  label,
-  onPress,
-  variant = "default",
-  loading = false,
-  theme,
-}: {
-  icon: string;
-  label: string;
-  onPress: () => void;
-  variant?: "apple" | "google" | "default";
-  loading?: boolean;
-  theme: Theme;
-}) {
-  const isApple = variant === "apple";
-  const bg = isApple ? "#000" : "#FFF";
-  const text = isApple ? "#FFF" : "#000";
-  const border = isApple ? "#000" : "#E2E8F0";
-
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={loading}
-      style={({ pressed }) => [
-        styles.socialBtn,
-        {
-          backgroundColor: bg,
-          borderColor: border,
-          opacity: pressed || loading ? 0.8 : 1,
-        },
-      ]}
-    >
-      {loading ? (
-        <ActivityIndicator color={text} />
-      ) : (
-        <>
-          <Ionicons
-            name={icon as any}
-            size={20}
-            color={text}
-            style={{ marginRight: 12 }}
-          />
-          <Text style={[styles.socialBtnText, { color: text }]}>{label}</Text>
-        </>
-      )}
-    </Pressable>
-  );
-}
-
-// --- Main Screen ---
+import { useTheme } from "../../src/ui/useTheme";
 
 export default function Login() {
-  const [loading, setLoading] = useState(false);
   const theme = useTheme();
   const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+
+  // --- Status Bar Management ---
+  useFocusEffect(
+    useCallback(() => {
+      // Force status bar to be white (light content) on this screen
+      StatusBar.setBarStyle("light-content");
+      if (Platform.OS === 'android') {
+        StatusBar.setBackgroundColor("transparent");
+        StatusBar.setTranslucent(true);
+      }
+    }, [])
+  );
 
   useEffect(() => {
-    try {
-      configureGoogle();
-    } catch {}
+    GoogleSignin.configure({
+      webClientId: "233875745320-icjvn6gi8726vroeq7o8r9s0hg4t731r.apps.googleusercontent.com", // Replace if needed or env var
+      iosClientId: "233875745320-8u6mbqhrcal1mc9jocnij2bhg5decs6t.apps.googleusercontent.com",
+    });
   }, []);
 
-  async function postLoginSetup() {
-    const expoToken = await getExpoPushTokenSafe();
-    if (expoToken) {
-      await api.deviceTokenUpsert({
-        expo_push_token: expoToken,
-        platform: Platform.OS,
-      });
-    }
-
+  async function handleAppleLogin() {
     try {
-      await api.familyMembers();
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      setLoading(true);
+      const res = await api.authApple({
+        identity_token: credential.identityToken,
+        email: credential.email,
+        name: credential.fullName?.givenName
+          ? `${credential.fullName.givenName} ${credential.fullName.familyName}`
+          : null,
+      });
+      await setToken(res.token);
       router.replace("/(app)/bills");
-    } catch {
-      router.replace("/(app)/family");
+    } catch (e: any) {
+      if (e.code === "ERR_REQUEST_CANCELED") {
+        // user cancelled
+      } else {
+        Alert.alert(t("Login failed"), e.message);
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
-  async function loginToBackend(provider: "apple" | "google", payload: any) {
+  async function handleGoogleLogin() {
     try {
-      setLoading(true);
-      const res =
-        provider === "apple"
-          ? await api.authApple(payload)
-          : await api.authGoogle(payload);
-      await setToken(res.token);
-      await postLoginSetup();
-    } catch (e: any) {
-      Alert.alert(t("Login failed"), e.message);
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      if (userInfo.data?.idToken) {
+        setLoading(true);
+        const res = await api.authGoogle({ id_token: userInfo.data?.idToken });
+        await setToken(res.token);
+        router.replace("/(app)/bills");
+      }
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled
+      } else {
+        Alert.alert(t("Login failed"), error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -126,94 +99,50 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
-      {/* Background Gradient */}
       <LinearGradient
         colors={[theme.colors.navy, "#1a2c4e"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-
-      {/* Top Branding Area (Now filled with Logo) */}
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Image
-          source={require("../../assets/black_logo.png")}
-          style={{
-            width: 200,
-            height: 200,
-            resizeMode: "contain",
-            tintColor: "#71E3C3", // Tints the black logo to white
-            opacity: 0.95,
-          }}
-        />
-      </View>
-
-      {/* Bottom Card */}
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: theme.mode === "dark" ? "#1E293B" : "#FFF" },
-        ]}
+        style={styles.gradient}
       >
-        {/* Header Text */}
-        <View style={{ alignItems: "center", marginBottom: 32 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <View
-              style={[styles.dot, { backgroundColor: theme.colors.accent }]}
-            />
-            <Text style={[styles.title, { color: theme.colors.primaryText }]}>
-              {t("Notification vibes.")}
-            </Text>
+        <View style={styles.content}>
+          {/* Logo / Icon */}
+          <View style={styles.iconContainer}>
+            <Ionicons name="notifications-circle" size={100} color="#FFF" />
           </View>
-          <Text style={[styles.subtitle, { color: theme.colors.subtext }]}>
+
+          {/* Title */}
+          <Text style={styles.title}>{t("Notification vibes.")}</Text>
+          <Text style={styles.subtitle}>
             {t("Never miss a due date again.")}
           </Text>
-        </View>
 
-        {/* Buttons */}
-        <View style={{ gap: 12, width: "100%" }}>
-          {Platform.OS === "ios" && (
-            <SocialButton
-              icon="logo-apple"
-              label={t("Continue with Apple")}
-              variant="apple"
-              onPress={async () => {
-                try {
-                  const payload = await signInWithAppleTokens();
-                  await loginToBackend("apple", payload);
-                } catch (e: any) {
-                  // Alert.alert(t("Apple sign-in"), e?.message ?? t("Cancelled"));
-                }
-              }}
-              theme={theme}
-              loading={loading}
-            />
+          {/* Spacer */}
+          <View style={{ height: 60 }} />
+
+          {/* Buttons */}
+          {loading ? (
+            <ActivityIndicator size="large" color="#FFF" />
+          ) : (
+            <View style={styles.buttonGroup}>
+              {Platform.OS === "ios" && (
+                <AppleAuthentication.AppleAuthenticationButton
+                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                  buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+                  cornerRadius={14}
+                  style={styles.appleBtn}
+                  onPress={handleAppleLogin}
+                />
+              )}
+
+              <Pressable onPress={handleGoogleLogin} style={styles.googleBtn}>
+                <Ionicons name="logo-google" size={20} color="#000" />
+                <Text style={styles.googleText}>{t("Continue with Google")}</Text>
+              </Pressable>
+            </View>
           )}
-
-          <SocialButton
-            icon="logo-google"
-            label={t("Continue with Google")}
-            variant="google"
-            onPress={async () => {
-              try {
-                setLoading(true);
-                const payload = await signInWithGoogleIdToken();
-                await loginToBackend("google", payload);
-              } catch (e: any) {
-                // Alert.alert(t("Google sign-in"), e?.message ?? t("Cancelled"));
-              } finally {
-                setLoading(false);
-              }
-            }}
-            theme={theme}
-            loading={loading}
-          />
         </View>
-
-        <Text style={[styles.footerText, { color: theme.colors.subtext }]}>
-          v1.0.0 (DueView)
-        </Text>
-      </View>
+      </LinearGradient>
     </View>
   );
 }
@@ -222,54 +151,63 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  card: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingVertical: 40,
-    paddingHorizontal: 24,
+  gradient: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 20,
   },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  content: {
+    width: "100%",
+    paddingHorizontal: 32,
+    alignItems: "center",
+  },
+  iconContainer: {
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "900",
-    letterSpacing: 0.5,
+    color: "#FFF",
+    textAlign: "center",
+    marginBottom: 8,
+    letterSpacing: 1,
   },
   subtitle: {
     fontSize: 16,
-    marginTop: 8,
+    color: "rgba(255,255,255,0.7)",
+    textAlign: "center",
     fontWeight: "500",
   },
-  socialBtn: {
+  buttonGroup: {
+    width: "100%",
+    gap: 16,
+  },
+  appleBtn: {
+    width: "100%",
+    height: 50,
+  },
+  googleBtn: {
+    backgroundColor: "#FFF",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    height: 56,
-    borderRadius: 16,
-    borderWidth: 1,
-    width: "100%",
+    height: 50,
+    borderRadius: 14,
+    gap: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  socialBtnText: {
+  googleText: {
     fontSize: 16,
-    fontWeight: "700",
-  },
-  footerText: {
-    marginTop: 32,
-    fontSize: 12,
-    opacity: 0.5,
+    fontWeight: "600",
+    color: "#000",
   },
 });

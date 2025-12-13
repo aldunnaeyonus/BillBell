@@ -30,6 +30,9 @@ async function request(path: string, opts: RequestInit = {}) {
 export const api = {
   authApple: (payload: any) => request("/auth/apple", { method: "POST", body: JSON.stringify(payload) }),
   authGoogle: (payload: any) => request("/auth/google", { method: "POST", body: JSON.stringify(payload) }),
+  // New Delete Account method
+  deleteAccount: () => request("/auth/user", { method: "DELETE" }),
+
   createImportCode: (ttl_minutes: number = 15) =>
   request("/import-code/create", { method: "POST", body: JSON.stringify({ ttl_minutes }) }),
 

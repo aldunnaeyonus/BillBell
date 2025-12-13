@@ -1,6 +1,7 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import * as RNLocalize from "react-native-localize";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import "intl-pluralrules";
 
 import en from "../locales/en.json";
@@ -11,6 +12,7 @@ import ja from '../locales/ja.json';
 import zhHans from '../locales/zh-Hans.json';
 import ptBR from '../locales/pt-BR.json';
 import it from '../locales/it.json';
+// pt is essentially pt-BR in your setup
 import pt from '../locales/pt-BR.json';
 
 const resources = {
@@ -26,25 +28,47 @@ const resources = {
   zh: { translation: zhHans },
 };
 
-// 2. Determine the best available language
-// This creates an array ["en", "es"] to compare against device settings
-const supportedLanguages = Object.keys(resources);
+const MODULE_TYPE = "languageDetector";
 
-// RNLocalize checks the device's full list of preferences (e.g., ["es-MX", "fr-FR", "en-US"])
-// and finds the first one that matches your supported list.
-const bestMatch = RNLocalize.findBestLanguageTag(supportedLanguages);
+const languageDetector = {
+  type: MODULE_TYPE,
+  async: true,
+  init: () => {},
+  detect: async (callback) => {
+    try {
+      // 1. Check AsyncStorage for saved language
+      const savedLanguage = await AsyncStorage.getItem("user-language");
+      if (savedLanguage) {
+        return callback(savedLanguage);
+      }
+    } catch (error) {
+      console.log("Error reading language", error);
+    }
 
-// If a match is found, use it (e.g., "es"). If not, fallback to "en".
-const translationToUse = bestMatch?.languageTag || "en";
-
-i18n.use(initReactI18next).init({
-  compatibilityJSON: "v3",
-  resources,
-  lng: translationToUse, // Uses the detected language
-  fallbackLng: "en",
-  interpolation: {
-    escapeValue: false,
+    // 2. If no saved language, use device locale
+    const supportedLanguages = Object.keys(resources);
+    const bestMatch = RNLocalize.findBestLanguageTag(supportedLanguages);
+    callback(bestMatch?.languageTag || "en");
   },
-});
+  cacheUserLanguage: (language) => {
+    // 3. Save language whenever it changes
+    AsyncStorage.setItem("user-language", language);
+  },
+};
+
+i18n
+  .use(languageDetector) // Add the detector
+  .use(initReactI18next)
+  .init({
+    compatibilityJSON: "v3",
+    resources,
+    fallbackLng: "en",
+    interpolation: {
+      escapeValue: false,
+    },
+    react: {
+      useSuspense: false, // Prevents UI blocking while loading language
+    }
+  });
 
 export default i18n;
