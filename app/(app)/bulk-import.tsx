@@ -212,7 +212,7 @@ export default function BulkImport() {
     try {
       const headers = "name,amount,due_date,notes,recurrence,offset";
       const today = new Date().toISOString().split("T")[0];
-      const sampleRow = `Netflix,15.99,${today},Family Plan,monthly,1`;
+      const sampleRow = `Netflix,15.99,${today},Family Plan,none|weekly|bi-weekly|monthly|annualy|,0|1|2|3`;
       const csvContent = `${headers}\n${sampleRow}`;
 
       const path =
