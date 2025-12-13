@@ -306,49 +306,27 @@ export default function Bills() {
   return (
     <View style={screen(theme)}>
       {/* Header row */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 10,
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <View
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: 5,
-              backgroundColor: theme.colors.accent,
-            }}
-          />
-          <Text
-            style={{
-              fontSize: 22,
-              fontWeight: "900",
-              color: theme.colors.text,
-            }}
-          >
-            Debts
-          </Text>
-        </View>
 
-        <View style={{ flexDirection: "row", gap: 10 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-around", alignItems: "center", gap: 10, marginBottom: 20}}>
+           <Pressable
+            onPress={() => router.push("/(app)/insights")}
+                style={[button(theme, "primary"), { flex: 1 }]}
+          >
+            <Text style={buttonText(theme, "primary")}>Insights</Text>
+          </Pressable>
           <Pressable
             onPress={() => router.push("/(app)/profile")}
-            style={button(theme, "ghost")}
+                style={[button(theme, "primary"), { flex: 1 }]}
           >
-            <Text style={buttonText(theme, "ghost")}>Profile</Text>
+            <Text style={buttonText(theme, "primary")}>Profile</Text>
           </Pressable>
           <Pressable
             onPress={() => router.push("/(app)/bill-edit")}
-            style={button(theme, "primary")}
+                style={[button(theme, "primary"), { flex: 1 }]}
           >
-            <Text style={buttonText(theme, "primary")}>+ Add</Text>
+            <Text style={buttonText(theme, "primary")}>+ Add Debt</Text>
           </Pressable>
         </View>
-      </View>
 
       <FlatList
         data={visibleBills}

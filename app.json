@@ -29,6 +29,12 @@
     },
     "plugins": [
       [
+        "expo-calendar",
+        {
+          "calendarPermission": "The app needs to access your calendar."
+        }
+      ],
+      [
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.YOUR_REVERSED_CLIENT_ID_HERE"

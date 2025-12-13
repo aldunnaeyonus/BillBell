@@ -16,6 +16,7 @@ import { screen, card, button, buttonText } from "../../src/ui/styles";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Slider from "@react-native-community/slider";
 import { useTranslation } from "react-i18next";
+import { addToCalendar } from "../../src/calendar/calendarSync";
 
 function todayISO() {
   const d = new Date();
@@ -73,6 +74,27 @@ export default function BillEdit() {
       setOffsetDays(String(bill.reminder_offset_days ?? 0));
     })().catch(() => {});
   }, [id]);
+
+  const handleCalendarSync = async () => {
+    // We need the bill data. If it's a new bill, warn them to save first.
+    if (!id) {
+      Alert.alert(
+        "Save First",
+        "Please save the bill before syncing to calendar."
+      );
+      return;
+    }
+
+    // Construct the bill object from state
+    const currentBill = {
+      creditor, // from your state
+      amount_cents: Number(amount) * 100, // from your state
+      due_date: dueDate, // from your state
+      notes: "", // from your state
+    };
+
+    await addToCalendar(currentBill);
+  };
 
   async function save() {
     try {
@@ -230,6 +252,26 @@ export default function BillEdit() {
             />
             <Pressable onPress={save} style={button(theme, "primary")}>
               <Text style={buttonText(theme, "danger")}>{t("Save")}</Text>
+            </Pressable>
+            <Pressable
+              onPress={handleCalendarSync}
+              style={[
+                button(theme, "ghost"),
+                {
+                  marginTop: 12,
+                  borderColor: theme.colors.accent,
+                  borderWidth: 1,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  buttonText(theme, "ghost"),
+                  { color: theme.colors.accent },
+                ]}
+              >
+                Add to Device Calendar
+              </Text>
             </Pressable>
           </View>
         </ScrollView>
