@@ -53,8 +53,8 @@
   "Members": "Miembros",
   "Import Codes & Epiration Date": "Código y Expiración",
   "Touch Generate Import Code": "Toque el botón abajo para generar un código.",
-  "Share ID": "Mi ID para Compartir",
-  "+ Add": "+ Añadir",
+  "Share ID": "Mi Share ID",
+  "+ Add": "Añadir",
   "Pending": "Pendiente",
   "Paid": "Pagado",
   "No pending debts": "No hay deudas pendientes 🎉",
@@ -98,9 +98,9 @@
   "Default time (local)": "Hora predeterminada",
   "Ask a family admin to change these.": "Pida a un admin que cambie esto.",
   "Family created": "Familia creada",
-  "`Your Family ID": "ID de Familia: {{family_code}}",
+  "`Your Family ID": "Tu Share ID: {{family_code}}",
   "Create a new Family": "Crear nueva Familia",
-  "Or join with Family ID": "O unirse con ID de Familia",
+  "Or join with Family ID": "O unirse con Share ID",
   "Join Family": "Unirse a Familia",
   "FAQ": "Preguntas Frecuentes",
   "Frequently Asked Questions": "Preguntas Frecuentes",
@@ -146,20 +146,26 @@
   "Financial Insights": "Análisis Financiero",
   "Family setup": "Configurar Familia",
   "e.g. K7P3D9": "ej. K7P3D9",
-  "Family ID": "ID de Familia",
+  "Family ID": "Share ID",
   "Copy": "Copiar",
   "Management": "Gestión",
   "Support": "Soporte",
   "Import via CSV/XLSX": "Importar vía CSV/XLSX",
   "Active": "Activo",
   "Create secure code for upload": "Crear código seguro para subir",
-  "Share ID copied to clipboard.": "ID de Familia copiado.",
+  "Share ID copied to clipboard.": "Share ID copiado.",
   "Code": "Código",
   "Expires": "Expira",
   "Language": "Idioma",
   "Select Language": "Seleccionar Idioma",
   "Are you sure?": "¿Estás seguro?",
   "Version": "Versión",
+  "Remove Member": "Eliminar Miembro",
+  "Are you sure you want to remove {{name}}?": "¿Seguro que quieres eliminar a {{name}}?",
+  "Success": "Éxito",
+  "Member removed.": "Miembro eliminado.",
+  "Failed to remove member.": "Fallo al eliminar miembro.",
+  "Long press to remove member": "Mantener pulsado para eliminar",
   "Import multiple bills via CSV": "Importar facturas vía CSV",
   "Step 1: Preparation": "Paso 1: Preparación",
   "Download Template": "Descargar Plantilla",
@@ -210,12 +216,39 @@
   "Sync bills with your family or housemates.": "Sincroniza facturas con tu familia.",
   "Join a Group": "Unirse a Grupo",
   "Have an ID?": "¿Tienes un ID?",
-  "Enter the Family ID shared with you to join an existing group.": "Ingresa el ID de Familia para unirte.",
+  "Enter the Family ID shared with you to join an existing group.": "Ingresa el Share ID para unirte.",
   "Start Fresh": "Empezar de Nuevo",
   "Create New Family": "Crear Nueva Familia",
   "Become an admin and invite others.": "Conviértete en admin e invita a otros.",
   "OR": "O",
   "Export Data": "Exportar Datos",
   "Download CSV": "Descargar CSV",
-  "Failed to export data": "Fallo al exportar datos"
+  "Failed to export data": "Fallo al exportar datos",
+  "faqSections": [
+    {
+      "title": "Añadir y Gestionar Deudas",
+      "items": [
+        { "q": "¿Cómo añado una deuda?", "a": "Ve a la pantalla de Deudas y toca el botón 'Añadir'. Ingresa acreedor, monto y fecha." },
+        { "q": "¿Cómo edito una deuda?", "a": "Toca cualquier deuda en la lista para editarla." },
+        { "q": "¿Cómo borro una deuda?", "a": "Selecciona una deuda y toca 'Borrar'." },
+        { "q": "¿Qué pasa al marcar como pagada?", "a": "Se mueve a Pagadas y los recordatorios se detienen." }
+      ]
+    },
+    {
+      "title": "Notificaciones",
+      "items": [
+        { "q": "¿Cuándo recibo recordatorios?", "a": "Un día antes de la fecha de vencimiento por defecto." },
+        { "q": "¿Por qué no recibo notificaciones?", "a": "Revisa los ajustes de tu dispositivo." },
+        { "q": "¿Se sincronizan los recordatorios?", "a": "Sí, todos los miembros reciben alertas." }
+      ]
+    },
+    {
+      "title": "Familia y Compartir",
+      "items": [
+        { "q": "¿Puedo compartir mi cuenta?", "a": "Sí, comparte tu Share ID." },
+        { "q": "¿Cómo invito a alguien?", "a": "Comparte tu Share ID desde tu Perfil." },
+        { "q": "¿Pueden otros gestionar deudas?", "a": "Sí, todos los miembros pueden editar." }
+      ]
+    }
+  ]
 }

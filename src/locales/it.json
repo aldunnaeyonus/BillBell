@@ -53,8 +53,8 @@
   "Members": "Membri",
   "Import Codes & Epiration Date": "Codice e Scadenza",
   "Touch Generate Import Code": "Tocca il pulsante in basso per generare un codice.",
-  "Share ID": "Il mio ID Condivisione",
-  "+ Add": "+ Aggiungi",
+  "Share ID": "Il mio Share ID",
+  "+ Add": "Aggiungi",
   "Pending": "In sospeso",
   "Paid": "Pagato",
   "No pending debts": "Nessun debito in sospeso 🎉",
@@ -98,9 +98,9 @@
   "Default time (local)": "Ora predefinita",
   "Ask a family admin to change these.": "Chiedi a un admin di cambiarle.",
   "Family created": "Famiglia creata",
-  "`Your Family ID": "Il tuo ID Famiglia: {{family_code}}",
+  "`Your Family ID": "Il tuo Share ID: {{family_code}}",
   "Create a new Family": "Crea nuova Famiglia",
-  "Or join with Family ID": "O unisciti con ID Famiglia",
+  "Or join with Family ID": "O unisciti con Share ID",
   "Join Family": "Unisciti",
   "FAQ": "FAQ",
   "Frequently Asked Questions": "Domande Frequenti",
@@ -146,20 +146,26 @@
   "Financial Insights": "Approfondimenti Finanziari",
   "Family setup": "Configurazione Famiglia",
   "e.g. K7P3D9": "es. K7P3D9",
-  "Family ID": "ID Famiglia",
+  "Family ID": "Share ID",
   "Copy": "Copia",
   "Management": "Gestione",
   "Support": "Supporto",
   "Import via CSV/XLSX": "Importa tramite CSV/XLSX",
   "Active": "Attivo",
   "Create secure code for upload": "Crea codice sicuro per upload",
-  "Share ID copied to clipboard.": "ID Famiglia copiato.",
+  "Share ID copied to clipboard.": "Share ID copiato.",
   "Code": "Codice",
   "Expires": "Scade",
   "Language": "Lingua",
   "Select Language": "Seleziona Lingua",
   "Are you sure?": "Sei sicuro?",
   "Version": "Versione",
+  "Remove Member": "Rimuovi Membro",
+  "Are you sure you want to remove {{name}}?": "Sei sicuro di voler rimuovere {{name}}?",
+  "Success": "Successo",
+  "Member removed.": "Membro rimosso.",
+  "Failed to remove member.": "Rimozione fallita.",
+  "Long press to remove member": "Premi a lungo per rimuovere",
   "Import multiple bills via CSV": "Importa più fatture tramite CSV",
   "Step 1: Preparation": "Passo 1: Preparazione",
   "Download Template": "Scarica Modello",
@@ -210,12 +216,36 @@
   "Sync bills with your family or housemates.": "Sincronizza fatture con la famiglia.",
   "Join a Group": "Unisciti a un gruppo",
   "Have an ID?": "Hai un ID?",
-  "Enter the Family ID shared with you to join an existing group.": "Inserisci l'ID Famiglia per unirti.",
+  "Enter the Family ID shared with you to join an existing group.": "Inserisci il Share ID per unirti.",
   "Start Fresh": "Inizia",
   "Create New Family": "Crea Nuova Famiglia",
   "Become an admin and invite others.": "Diventa admin e invita altri.",
   "OR": "O",
   "Export Data": "Esporta Dati",
   "Download CSV": "Scarica CSV",
-  "Failed to export data": "Esportazione fallita"
+  "Failed to export data": "Esportazione fallita",
+  "faqSections": [
+    {
+      "title": "Aggiungi e Gestisci",
+      "items": [
+        { "q": "Come aggiungo debiti?", "a": "Tocca 'Aggiungi' nella schermata Debiti." },
+        { "q": "Come modifico?", "a": "Tocca un debito per modificarlo." },
+        { "q": "Cosa succede se pago?", "a": "Si sposta in 'Pagati' e i promemoria si fermano." }
+      ]
+    },
+    {
+      "title": "Notifiche",
+      "items": [
+        { "q": "Quando ricevo i promemoria?", "a": "Un giorno prima della scadenza." },
+        { "q": "Perché non li ricevo?", "a": "Controlla le impostazioni del dispositivo." }
+      ]
+    },
+    {
+      "title": "Famiglia e Condivisione",
+      "items": [
+        { "q": "Posso condividere?", "a": "Sì, condividi il tuo Share ID." },
+        { "q": "Come invito?", "a": "Dai il tuo Share ID." }
+      ]
+    }
+  ]
 }

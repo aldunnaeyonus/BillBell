@@ -53,8 +53,8 @@
   "Members": "Membres",
   "Import Codes & Epiration Date": "Code et Expiration",
   "Touch Generate Import Code": "Touchez le bouton ci-dessous pour générer un code.",
-  "Share ID": "Mon ID de Partage",
-  "+ Add": "+ Ajouter",
+  "Share ID": "Mon Share ID",
+  "+ Add": "Ajouter",
   "Pending": "En attente",
   "Paid": "Payé",
   "No pending debts": "Aucune dette en attente 🎉",
@@ -98,9 +98,9 @@
   "Default time (local)": "Heure par défaut",
   "Ask a family admin to change these.": "Demandez à un admin de changer ceci.",
   "Family created": "Famille créée",
-  "`Your Family ID": "Votre ID Famille : {{family_code}}",
+  "`Your Family ID": "Votre Share ID : {{family_code}}",
   "Create a new Family": "Créer une Famille",
-  "Or join with Family ID": "Ou rejoindre avec un ID",
+  "Or join with Family ID": "Ou rejoindre avec Share ID",
   "Join Family": "Rejoindre Famille",
   "FAQ": "FAQ",
   "Frequently Asked Questions": "Foire Aux Questions",
@@ -146,20 +146,26 @@
   "Financial Insights": "Analyses Financières",
   "Family setup": "Configuration Famille",
   "e.g. K7P3D9": "ex. K7P3D9",
-  "Family ID": "ID Famille",
+  "Family ID": "Share ID",
   "Copy": "Copier",
   "Management": "Gestion",
   "Support": "Support",
   "Import via CSV/XLSX": "Importer via CSV/XLSX",
   "Active": "Actif",
   "Create secure code for upload": "Créer un code sécurisé",
-  "Share ID copied to clipboard.": "ID Famille copié.",
+  "Share ID copied to clipboard.": "Share ID copié.",
   "Code": "Code",
   "Expires": "Expire",
   "Language": "Langue",
   "Select Language": "Choisir la langue",
   "Are you sure?": "Êtes-vous sûr ?",
   "Version": "Version",
+  "Remove Member": "Supprimer Membre",
+  "Are you sure you want to remove {{name}}?": "Voulez-vous supprimer {{name}} ?",
+  "Success": "Succès",
+  "Member removed.": "Membre supprimé.",
+  "Failed to remove member.": "Échec de la suppression.",
+  "Long press to remove member": "Appui long pour supprimer",
   "Import multiple bills via CSV": "Importer plusieurs factures via CSV",
   "Step 1: Preparation": "Étape 1 : Préparation",
   "Download Template": "Télécharger le modèle",
@@ -210,12 +216,37 @@
   "Sync bills with your family or housemates.": "Synchronisez les factures avec votre famille.",
   "Join a Group": "Rejoindre un groupe",
   "Have an ID?": "Avez-vous un ID ?",
-  "Enter the Family ID shared with you to join an existing group.": "Entrez l'ID Famille pour rejoindre.",
+  "Enter the Family ID shared with you to join an existing group.": "Entrez le Share ID pour rejoindre.",
   "Start Fresh": "Commencer",
   "Create New Family": "Créer une Famille",
   "Become an admin and invite others.": "Devenez admin et invitez d'autres.",
   "OR": "OU",
   "Export Data": "Exporter Données",
   "Download CSV": "Télécharger CSV",
-  "Failed to export data": "Échec de l'exportation"
+  "Failed to export data": "Échec de l'exportation",
+  "faqSections": [
+    {
+      "title": "Ajouter et gérer des dettes",
+      "items": [
+        { "q": "Comment ajouter une dette ?", "a": "Allez dans Dettes et touchez 'Ajouter'." },
+        { "q": "Comment modifier une dette ?", "a": "Touchez une dette pour l'éditer." },
+        { "q": "Comment supprimer ?", "a": "Sélectionnez une dette et touchez 'Supprimer'." },
+        { "q": "Que se passe-t-il si je paie ?", "a": "Elle passe en 'Payé' et les rappels s'arrêtent." }
+      ]
+    },
+    {
+      "title": "Notifications",
+      "items": [
+        { "q": "Quand recevrai-je des rappels ?", "a": "Un jour avant par défaut." },
+        { "q": "Pourquoi pas de notifs ?", "a": "Vérifiez les paramètres de votre appareil." }
+      ]
+    },
+    {
+      "title": "Famille et Partage",
+      "items": [
+        { "q": "Puis-je partager mon compte ?", "a": "Oui, partagez votre Share ID." },
+        { "q": "Comment inviter ?", "a": "Donnez votre Share ID." }
+      ]
+    }
+  ]
 }

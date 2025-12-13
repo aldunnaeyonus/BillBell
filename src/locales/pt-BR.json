@@ -53,8 +53,8 @@
   "Members": "Membros",
   "Import Codes & Epiration Date": "Código e Validade",
   "Touch Generate Import Code": "Toque no botão abaixo para gerar um código.",
-  "Share ID": "Meu ID de Compartilhamento",
-  "+ Add": "+ Adicionar",
+  "Share ID": "Meu Share ID",
+  "+ Add": "Adicionar",
   "Pending": "Pendente",
   "Paid": "Pago",
   "No pending debts": "Nenhuma conta pendente 🎉",
@@ -98,9 +98,9 @@
   "Default time (local)": "Hora (padrão)",
   "Ask a family admin to change these.": "Peça a um admin para alterar.",
   "Family created": "Família criada",
-  "`Your Family ID": "ID da Família: {{family_code}}",
+  "`Your Family ID": "Seu Share ID: {{family_code}}",
   "Create a new Family": "Criar nova Família",
-  "Or join with Family ID": "Ou entrar com ID",
+  "Or join with Family ID": "Ou entrar com Share ID",
   "Join Family": "Entrar na Família",
   "FAQ": "FAQ",
   "Frequently Asked Questions": "Perguntas Frequentes",
@@ -139,27 +139,33 @@
   "Choose an action": "Escolha uma ação",
   "Save First": "Salve Primeiro",
   "Please save the bill before syncing to calendar.": "Salve a conta antes de sincronizar.",
-  "Add to Device Calendar": "Adicionar ao Calendario",
+  "Add to Device Calendar": "Adicionar ao Calendário",
   "Notes (Optional)": "Notas (Opcional)",
   "e.g. Account #12345": "ex. Conta #12345",
   "FAQ & Help": "Ajuda e FAQ",
   "Financial Insights": "Análise Financeira",
   "Family setup": "Configuração da Família",
   "e.g. K7P3D9": "ex. K7P3D9",
-  "Family ID": "ID da Família",
+  "Family ID": "Share ID",
   "Copy": "Copiar",
   "Management": "Gerenciamento",
   "Support": "Suporte",
   "Import via CSV/XLSX": "Importar via CSV/XLSX",
   "Active": "Ativo",
   "Create secure code for upload": "Criar código seguro para upload",
-  "Share ID copied to clipboard.": "ID copiado.",
+  "Share ID copied to clipboard.": "Share ID copiado.",
   "Code": "Código",
   "Expires": "Expira",
   "Language": "Idioma",
   "Select Language": "Selecione o Idioma",
   "Are you sure?": "Tem certeza?",
   "Version": "Versão",
+  "Remove Member": "Remover Membro",
+  "Are you sure you want to remove {{name}}?": "Tem certeza de que deseja remover {{name}}?",
+  "Success": "Sucesso",
+  "Member removed.": "Membro removido.",
+  "Failed to remove member.": "Falha ao remover membro.",
+  "Long press to remove member": "Toque longo para remover",
   "Import multiple bills via CSV": "Importar contas via CSV",
   "Step 1: Preparation": "Passo 1: Preparação",
   "Download Template": "Baixar Modelo",
@@ -172,7 +178,7 @@
   "Tap to select CSV/XLSX": "Toque para selecionar CSV/XLSX",
   "Failed to download template": "Falha ao baixar modelo",
   "FeedbackTitle": "Feedback e Bugs",
-  "FeedbackSubtitle": "Encontrou um bug? Avise-nos.",
+  "FeedbackSubtitle": "Achou um bug? Avise-nos.",
   "Title": "Título",
   "TitlePlaceholder": "Resumo (ex. Travamento)",
   "Details": "Detalhes",
@@ -210,12 +216,36 @@
   "Sync bills with your family or housemates.": "Sincronize contas com sua família.",
   "Join a Group": "Entrar no Grupo",
   "Have an ID?": "Tem um ID?",
-  "Enter the Family ID shared with you to join an existing group.": "Insira o ID da Família para entrar.",
+  "Enter the Family ID shared with you to join an existing group.": "Insira o Share ID para entrar.",
   "Start Fresh": "Começar Novo",
   "Create New Family": "Criar Nova Família",
   "Become an admin and invite others.": "Vire admin e convide outros.",
   "OR": "OU",
   "Export Data": "Exportar Dados",
   "Download CSV": "Baixar CSV",
-  "Failed to export data": "Falha ao exportar dados"
+  "Failed to export data": "Falha ao exportar dados",
+  "faqSections": [
+    {
+      "title": "Adicionar e Gerenciar",
+      "items": [
+        { "q": "Como adiciono dívidas?", "a": "Toque em 'Adicionar' na tela de Dívidas." },
+        { "q": "Como edito?", "a": "Toque em uma dívida para editar." },
+        { "q": "O que acontece ao pagar?", "a": "Ela vai para 'Pago' e os lembretes param." }
+      ]
+    },
+    {
+      "title": "Notificações",
+      "items": [
+        { "q": "Quando recebo lembretes?", "a": "Um dia antes do vencimento por padrão." },
+        { "q": "Por que não recebo?", "a": "Verifique as configurações do dispositivo." }
+      ]
+    },
+    {
+      "title": "Família e Compartilhamento",
+      "items": [
+        { "q": "Posso compartilhar?", "a": "Sim, compartilhe seu Share ID." },
+        { "q": "Como convido?", "a": "Dê seu Share ID a alguém." }
+      ]
+    }
+  ]
 }

@@ -9,12 +9,17 @@ import {
   RefreshControl,
   StyleSheet,
   ActivityIndicator,
+  ActionSheetIOS,
   Platform,
+  Modal,
 } from "react-native";
 import { router } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
-import { Ionicons } from "@expo/vector-icons"; // Standard in Expo
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import RNFS from "react-native-fs";
+import Share from "react-native-share";
+
 import { api } from "../../src/api/client";
 import { clearToken } from "../../src/auth/session";
 import { useTheme, Theme } from "../../src/ui/useTheme";
@@ -22,39 +27,76 @@ import { notifyImportCode } from "../../src/notifications/importCode";
 import { copyToClipboard } from "../../src/ui/copy";
 import { googleSignOut } from "../../src/auth/providers";
 
+// --- Helpers ---
+
+function centsToDollars(cents: number) {
+  return (Number(cents || 0) / 100).toFixed(2);
+}
+
+const jsonToCSV = (data: any[]): string => {
+  if (!data || data.length === 0) return "";
+  const headers = Object.keys(data[0]);
+  const escapeField = (field: any) => {
+    if (field === null || field === undefined) return "";
+    const stringField = String(field);
+    if (stringField.match(/["\n,]/)) {
+      return `"${stringField.replace(/"/g, '""')}"`;
+    }
+    return stringField;
+  };
+  const headerRow = headers.map(escapeField).join(",");
+  const rows = data.map((row) =>
+    headers.map((header) => escapeField(row[header])).join(",")
+  );
+  return [headerRow, ...rows].join("\n");
+};
+
 // --- Components ---
 
 function ProfileHeader({
   familyCode,
   theme,
   onCopy,
+  t,
 }: {
   familyCode: string;
   theme: Theme;
   onCopy: () => void;
+  t: any;
 }) {
   return (
-    <LinearGradient
-      colors={[theme.colors.navy, "#1a2c4e"]} // Navy to slightly lighter navy
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.headerCard}
-    >
-      <View>
-        <Text style={styles.headerLabel}>Family ID</Text>
-        <Text style={styles.headerCode}>{familyCode || "..."}</Text>
-      </View>
-      <Pressable
-        onPress={onCopy}
-        style={({ pressed }) => [
-          styles.copyButton,
-          { backgroundColor: pressed ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)" },
-        ]}
+    <View style={styles.headerShadowContainer}>
+      <LinearGradient
+        colors={[theme.colors.navy, "#1a2c4e"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
       >
-        <Ionicons name="copy-outline" size={20} color="#FFF" />
-        <Text style={styles.copyButtonText}>Copy</Text>
-      </Pressable>
-    </LinearGradient>
+        <View style={styles.headerContentLeft}>
+          <Text style={styles.headerLabel}>{t("Family ID")}</Text>
+          <Text 
+            style={styles.headerCode} 
+            numberOfLines={1} 
+            adjustsFontSizeToFit={true}
+            minimumFontScale={0.5}
+          >
+            {familyCode || "..."}
+          </Text>
+        </View>
+
+        <Pressable
+          onPress={onCopy}
+          hitSlop={8}
+          style={({ pressed }) => [
+            styles.copyButton,
+            { backgroundColor: pressed ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)" },
+          ]}
+        >
+          <Ionicons name="copy-outline" size={18} color="#FFF" />
+          <Text style={styles.copyButtonText}>{t("Copy")}</Text>
+        </Pressable>
+      </LinearGradient>
+    </View>
   );
 }
 
@@ -103,7 +145,7 @@ function ActionRow({
           color={danger ? theme.colors.danger : theme.colors.primary}
         />
       </View>
-      <View style={{ flex: 1, gap: 2 }}>
+      <View style={{ flex: 1, gap: 4 }}>
         <Text
           style={[
             styles.actionLabel,
@@ -127,20 +169,41 @@ function ActionRow({
   );
 }
 
-function MemberAvatar({ name, theme }: { name: string; theme: Theme }) {
-  const initial = name ? name.charAt(0).toUpperCase() : "?";
+function MemberAvatar({ 
+  item, 
+  theme, 
+  onRemove,
+  isCurrentUser
+}: { 
+  item: any; 
+  theme: Theme; 
+  onRemove: (item: any) => void;
+  isCurrentUser: boolean;
+}) {
+  const name = item.name || item.email || "User";
+  const initial = name.charAt(0).toUpperCase();
+
   return (
-    <View style={styles.memberContainer}>
-      <View style={[styles.avatarCircle, { backgroundColor: theme.colors.accent }]}>
-        <Text style={[styles.avatarText, { color: theme.colors.navy }]}>{initial}</Text>
+    <Pressable 
+      onLongPress={() => {
+        if (!isCurrentUser) onRemove(item);
+      }}
+      delayLongPress={500}
+      style={({ pressed }) => [
+        styles.memberContainer,
+        { opacity: pressed ? 0.7 : 1 }
+      ]}
+    >
+      <View style={[styles.avatarCircle, { backgroundColor: isCurrentUser ? theme.colors.primary : theme.colors.accent }]}>
+        <Text style={[styles.avatarText, { color: isCurrentUser ? theme.colors.primaryTextButton : theme.colors.navy }]}>{initial}</Text>
       </View>
       <Text
         numberOfLines={1}
         style={[styles.memberName, { color: theme.colors.primaryText }]}
       >
-        {name}
+        {name} {isCurrentUser ? "(You)" : ""}
       </Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -148,12 +211,24 @@ function MemberAvatar({ name, theme }: { name: string; theme: Theme }) {
 
 export default function Profile() {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   const [data, setData] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingCode, setLoadingCode] = useState(false);
   const [importInfo, setImportInfo] = useState<{ code: string; expires: string } | null>(null);
+  const [showLangModal, setShowLangModal] = useState(false);
+
+  const langs = [
+    { code: 'en', label: 'English' },
+    { code: 'es', label: 'Español' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'fr', label: 'Français' },
+    { code: 'it', label: 'Italiano' },
+    { code: 'pt-BR', label: 'Português (BR)' },
+    { code: 'zh-Hans', label: '简体中文' },
+    { code: 'ja', label: '日本語' },
+  ];
 
   const loadData = useCallback(async () => {
     try {
@@ -178,6 +253,71 @@ export default function Profile() {
     if (data?.family_code) {
       await copyToClipboard(data.family_code);
       Alert.alert(t("Copied"), t("Share ID copied to clipboard."));
+    }
+  };
+
+  const handleRemoveMember = (member: any) => {
+    Alert.alert(
+      t("Remove Member"),
+      t("Are you sure you want to remove {{name}}?", { name: member.name || member.email }),
+      [
+        { text: t("Cancel"), style: "cancel" },
+        {
+          text: t("Remove"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.familyMemberRemove(member.id);
+              Alert.alert(t("Success"), t("Member removed."));
+              onRefresh();
+            } catch (e: any) {
+              Alert.alert(t("Error"), e.message || t("Failed to remove member."));
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleLeaveFamily = () => {
+    Alert.alert(
+      t("Leave Family"),
+      t("LeaveFamilyConfirm"),
+      [
+        { text: t("Cancel"), style: "cancel" },
+        {
+          text: t("Leave"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await api.familyLeave();
+              Alert.alert(t("Success"), t("You have left the family."));
+              onRefresh(); // Refresh to show new family info
+            } catch (e: any) {
+              Alert.alert(t("Error"), e.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleChangeLanguage = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...langs.map(l => l.label), t("Cancel")],
+          cancelButtonIndex: langs.length,
+          title: t("Select Language"),
+        },
+        (buttonIndex) => {
+          if (buttonIndex < langs.length) {
+            i18n.changeLanguage(langs[buttonIndex].code);
+          }
+        }
+      );
+    } else {
+      setShowLangModal(true);
     }
   };
 
@@ -207,6 +347,51 @@ export default function Profile() {
     }
   };
 
+  const handleExportData = async () => {
+    try {
+      const res = await api.billsList();
+      const bills = res.bills || [];
+
+      if (bills.length === 0) {
+        Alert.alert(t("No Data"), t("There are no bills to export."));
+        return;
+      }
+
+      const exportData = bills.map((b: any) => ({
+        ID: b.id,
+        Creditor: b.creditor,
+        Amount: centsToDollars(b.amount_cents),
+        DueDate: b.due_date,
+        Status: b.status === "paid" || b.paid_at ? "Paid" : "Pending",
+        Notes: b.notes || "",
+        Recurrence: b.recurrence || "none",
+        OffsetDays: b.reminder_offset_days || "0",
+        Reminder: b.reminder_time_local || "",
+      }));
+
+      const csvString = jsonToCSV(exportData);
+      
+      const path = Platform.OS === "ios"
+          ? `${RNFS.DocumentDirectoryPath}/bills_export.csv`
+          : `${RNFS.CachesDirectoryPath}/bills_export.csv`;
+
+      await RNFS.writeFile(path, csvString, "utf8");
+
+      await Share.open({
+        url: `file://${path}`,
+        type: "text/csv",
+        filename: "bills_export",
+        title: t("Export Bills CSV"),
+      });
+
+    } catch (e: any) {
+      console.log("Export failed", e);
+      if (e?.message !== "User did not share") {
+        Alert.alert(t("Error"), t("Failed to export data"));
+      }
+    }
+  };
+
   const handleLogout = async () => {
     Alert.alert(t("Logout"), t("Are you sure?"), [
       { text: t("Cancel"), style: "cancel" },
@@ -231,109 +416,183 @@ export default function Profile() {
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: theme.colors.bg }]}
-      contentContainerStyle={{ paddingBottom: 40 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <View style={styles.content}>
-        
-        {/* Hero Section */}
-        {data && (
-          <ProfileHeader
-            familyCode={data.family_code}
-            theme={theme}
-            onCopy={handleCopyFamilyID}
-          />
-        )}
+    <>
+      <ScrollView
+        style={[styles.container, { backgroundColor: theme.colors.bg }]}
+        contentContainerStyle={{ paddingBottom: 60 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        <View style={styles.content}>
+          
+          {/* Hero Section */}
+          {data && (
+            <ProfileHeader
+              familyCode={data.family_code}
+              theme={theme}
+              onCopy={handleCopyFamilyID}
+              t={t}
+            />
+          )}
 
-        {/* Members Section */}
-        {data?.members && (
+          {/* Members Section */}
+          {data?.members && (
+            <View style={styles.section}>
+              <SectionTitle title={t("Members")} theme={theme} />
+              <Text style={{color: theme.colors.subtext, fontSize: 12, marginLeft: 6, marginBottom: 4}}>
+                {t("Long press to remove member")}
+              </Text>
+              <FlatList
+                data={data.members}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item) => String(item.id)}
+                contentContainerStyle={{ gap: 16, paddingVertical: 8, paddingHorizontal: 4 }}
+                renderItem={({ item }) => (
+                  <MemberAvatar 
+                    item={item} 
+                    theme={theme} 
+                    onRemove={handleRemoveMember}
+                    isCurrentUser={item.id === data.current_user_id}
+                  />
+                )}
+              />
+            </View>
+          )}
+
+          {/* Management Section */}
           <View style={styles.section}>
-            <SectionTitle title={t("Members")} theme={theme} />
-            <FlatList
-              data={data.members}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item) => String(item.id)}
-              contentContainerStyle={{ gap: 16, paddingVertical: 8 }}
-              renderItem={({ item }) => (
-                <MemberAvatar 
-                  name={item.name || item.email || `User`} 
-                  theme={theme} 
+            <SectionTitle title={t("Management")} theme={theme} />
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+              <ActionRow
+                icon="settings-outline"
+                label={t("Shared Settings")}
+                theme={theme}
+                onPress={() => router.push("/(app)/family-settings")}
+              />
+              <ActionRow
+                icon="globe-outline"
+                label={t("Language")}
+                subLabel={i18n.language.toUpperCase()}
+                theme={theme}
+                onPress={handleChangeLanguage}
+              />
+              <ActionRow
+                icon="cloud-upload-outline"
+                label={t("Bulk Upload")}
+                subLabel={t("Import via CSV/XLSX")}
+                theme={theme}
+                onPress={() => router.push("/(app)/bulk-import")}
+              />
+              <ActionRow
+                icon="download-outline"
+                label={t("Export Data")}
+                subLabel={t("Download CSV")}
+                theme={theme}
+                onPress={handleExportData}
+              />
+              <ActionRow
+                icon="key-outline"
+                label={t("Generate Import Code")}
+                subLabel={importInfo ? `${t("Active")}: ${importInfo.code}` : t("Create secure code for upload")}
+                theme={theme}
+                onPress={handleGenerateCode}
+                isLast={data.members.length < 2} // Remove bottom border if it's the last item
+              />
+              {/* Only show Leave Family if there are other members (otherwise it's redundant, but good to have) */}
+              {data.members.length > 1 && (
+                <ActionRow
+                  icon="exit-outline"
+                  label={t("Leave Family")}
+                  subLabel={t("Start new family with your data")}
+                  theme={theme}
+                  onPress={handleLeaveFamily}
+                  isLast
                 />
               )}
-            />
+            </View>
           </View>
-        )}
 
-        {/* Management Section */}
-        <View style={styles.section}>
-          <SectionTitle title={t("Management")} theme={theme} />
-          <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
-            <ActionRow
-              icon="settings-outline"
-              label={t("Shared Settings")}
-              theme={theme}
-              onPress={() => router.push("/(app)/family-settings")}
-            />
-             <ActionRow
-              icon="cloud-upload-outline"
-              label={t("Bulk Upload")}
-              subLabel="Import via CSV/XLSX"
-              theme={theme}
-              onPress={() => router.push("/(app)/bulk-import")}
-            />
-            <ActionRow
-              icon="key-outline"
-              label={t("Generate Import Code")}
-              subLabel={importInfo ? `${t("Active")}: ${importInfo.code}` : t("Create secure code for upload")}
-              theme={theme}
-              onPress={handleGenerateCode}
-              isLast
-            />
+          {/* Support Section */}
+          <View style={styles.section}>
+            <SectionTitle title={t("Support")} theme={theme} />
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+              <ActionRow
+                icon="help-circle-outline"
+                label={t("FAQ & Help")}
+                theme={theme}
+                onPress={() => router.push("/(app)/faq")}
+              />
+              <ActionRow
+                icon="bug-outline"
+                label={t("Feedback & Bugs")}
+                theme={theme}
+                onPress={() => router.push("/(app)/feedback")}
+                isLast
+              />
+            </View>
           </View>
+
+          {/* Logout */}
+          <View style={[styles.section, { marginTop: 20 }]}>
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+              <ActionRow
+                icon="log-out-outline"
+                label={t("Logout")}
+                theme={theme}
+                danger
+                onPress={handleLogout}
+                isLast
+              />
+            </View>
+            <Text style={{ textAlign: 'center', color: theme.colors.subtext, marginTop: 16, fontSize: 12 }}>
+              {t("Version")} 1.0.0 (DueView)
+            </Text>
+          </View>
+
         </View>
+      </ScrollView>
 
-        {/* Support Section */}
-        <View style={styles.section}>
-          <SectionTitle title={t("Support")} theme={theme} />
-          <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
-            <ActionRow
-              icon="help-circle-outline"
-              label={t("FAQ & Help")}
-              theme={theme}
-              onPress={() => router.push("/(app)/faq")}
-            />
-            <ActionRow
-              icon="bug-outline"
-              label={t("Feedback & Bugs")}
-              theme={theme}
-              onPress={() => router.push("/(app)/feedback")}
-              isLast
-            />
+      {/* Android Language Modal */}
+      <Modal
+        visible={showLangModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLangModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowLangModal(false)}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.primaryText }]}>
+              {t("Select Language")}
+            </Text>
+            {langs.map((l) => (
+              <Pressable
+                key={l.code}
+                onPress={() => {
+                  i18n.changeLanguage(l.code);
+                  setShowLangModal(false);
+                }}
+                style={({ pressed }) => [
+                  styles.modalItem,
+                  { 
+                    backgroundColor: pressed ? theme.colors.border : 'transparent',
+                    borderBottomColor: theme.colors.border
+                  }
+                ]}
+              >
+                <Text style={[styles.modalItemText, { color: theme.colors.primaryText }]}>{l.label}</Text>
+                {i18n.language === l.code && <Ionicons name="checkmark" size={20} color={theme.colors.primary} />}
+              </Pressable>
+            ))}
+            <Pressable 
+              onPress={() => setShowLangModal(false)} 
+              style={[styles.modalCancel, { backgroundColor: theme.colors.border }]}
+            >
+              <Text style={[styles.modalCancelText, { color: theme.colors.text }]}>{t("Cancel")}</Text>
+            </Pressable>
           </View>
-        </View>
-
-        {/* Logout */}
-        <View style={[styles.section, { marginTop: 20 }]}>
-           <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
-            <ActionRow
-              icon="log-out-outline"
-              label={t("Logout")}
-              theme={theme}
-              danger
-              onPress={handleLogout}
-              isLast
-            />
-          </View>
-          <Text style={{ textAlign: 'center', color: theme.colors.subtext, marginTop: 16, fontSize: 12 }}>
-            Version 1.0.0 (DueView)
-          </Text>
-        </View>
-
-      </View>
-    </ScrollView>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 
@@ -345,23 +604,37 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 24,
   },
-  // Header
-  headerCard: {
-    borderRadius: 20,
-    padding: 24,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  headerShadowContainer: {
+    backgroundColor: 'transparent',
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 5,
-    minHeight: 120,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+    margin: 2,
+    borderRadius: 20,
+    width: '100%', 
+  },
+  headerGradient: {
+    borderRadius: 20,
+    height:120,
+    paddingLeft: 24,
+    paddingRight: 24,
+    paddingBottom: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    overflow: "hidden",
+  },
+  headerContentLeft: {
+    flex: 1,
+    marginRight: 10, 
+    justifyContent: 'center',
+    minWidth: 0,
   },
   headerLabel: {
     color: "rgba(255,255,255,0.7)",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "600",
     textTransform: "uppercase",
     letterSpacing: 1,
@@ -369,24 +642,25 @@ const styles = StyleSheet.create({
   },
   headerCode: {
     color: "#FFF",
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: "900",
     letterSpacing: 1,
   },
   copyButton: {
+    paddingRight:30,
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     borderRadius: 20,
     gap: 6,
+    flexShrink: 0,
   },
   copyButtonText: {
     color: "#FFF",
     fontWeight: "700",
-    fontSize: 14,
+    fontSize: 13,
   },
-  // Sections
   section: {
     gap: 12,
   },
@@ -402,7 +676,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: "hidden",
   },
-  // Action Row
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -420,7 +693,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  // Members
   memberContainer: {
     alignItems: "center",
     gap: 8,
@@ -447,4 +719,43 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    borderRadius: 20,
+    padding: 20,
+    gap: 12,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+  },
+  modalItemText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalCancel: {
+    marginTop: 10,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontWeight: '700',
+    fontSize: 15,
+  }
 });

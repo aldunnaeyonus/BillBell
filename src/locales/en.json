@@ -54,7 +54,7 @@
   "Import Codes & Epiration Date": "Import Security Code & Epiration",
   "Touch Generate Import Code": "Touch the \"Generate Import Code\" button below to generate a code.",
   "Share ID": "My Share ID",
-  "+ Add": "+ Add",
+  "+ Add": "Add",
   "Pending": "Pending",
   "Paid": "Paid",
   "No pending debts": "No pending debts 🎉",
@@ -98,9 +98,9 @@
   "Default time (local)": "Default Alert Time",
   "Ask a family admin to change these.": "Ask a family admin to change these.",
   "Family created": "Family created",
-  "`Your Family ID": "Your Family ID: {{family_code}}",
+  "`Your Family ID": "Your Share ID: {{family_code}}",
   "Create a new Family": "Create a new Family",
-  "Or join with Family ID": "Or join with Family ID",
+  "Or join with Family ID": "Or join with Share ID",
   "Join Family": "Join Family",
   "FAQ": "FAQ's",
   "Frequently Asked Questions": "Frequently Asked Questions",
@@ -146,7 +146,7 @@
   "Financial Insights": "Financial Insights",
   "Family setup": "Family setup",
   "e.g. K7P3D9": "e.g. K7P3D9",
-  "Family ID": "Family ID",
+  "Family ID": "Share ID",
   "Copy": "Copy",
   "Management": "Management",
   "Support": "Support",
@@ -159,7 +159,8 @@
   "Language": "Language",
   "Select Language": "Select Language",
   "Are you sure?": "Are you sure?",
-  "Version": "Version",
+  "Version": "Version", "Remove Member": "Remove Member", "Are you sure you want to remove {{name}}?": "Are you sure you want to remove {{name}}?", "Success": "Success", "Member removed.": "Member removed.", "Failed to remove member.": "Failed to remove member.", "Long press to remove member": "Long press to remove member",
+  "Leave Family": "Leave Family", "LeaveFamilyConfirm": "Are you sure you want to leave this family? You will start a new family with your existing bills.", "You have left the family.": "You have left the family.", "Start new family with your data": "Start new family with your data",
   "Import multiple bills via CSV": "Import multiple bills via CSV",
   "Step 1: Preparation": "Step 1: Preparation",
   "Download Template": "Download Template",
@@ -210,7 +211,7 @@
   "Sync bills with your family or housemates.": "Sync bills with your family or housemates.",
   "Join a Group": "Join a Group",
   "Have an ID?": "Have an ID?",
-  "Enter the Family ID shared with you to join an existing group.": "Enter the Family ID shared with you to join an existing group.",
+  "Enter the Family ID shared with you to join an existing group.": "Enter the Share ID shared with you to join an existing group.",
   "Start Fresh": "Start Fresh",
   "Create New Family": "Create New Family",
   "Become an admin and invite others.": "Become an admin and invite others.",
@@ -262,11 +263,11 @@
       "items": [
         {
           "q": "Can I share my account with someone else?",
-          "a": "Yes. Share your Family ID so other users can join your Family group and sync bills."
+          "a": "Yes. Share your Share ID so other users can join your Family group and sync bills."
         },
         {
           "q": "How do I invite someone to my Family?",
-          "a": "Go to your Profile or Family screen to find your Family ID. Give this ID to someone you trust so they can join."
+          "a": "Go to your Profile or Family screen to find your Share ID. Give this ID to someone you trust so they can join."
         },
         {
           "q": "Can multiple people manage the same debts?",
@@ -328,8 +329,8 @@
           "a": "Family admins can update default reminder times in Family Settings."
         },
         {
-          "q": "Can I change my Family ID?",
-          "a": "No. Family IDs are unique system-generated identifiers and cannot be changed."
+          "q": "Can I change my Share ID?",
+          "a": "No. Share IDs are unique system-generated identifiers and cannot be changed."
         }
       ]
     },

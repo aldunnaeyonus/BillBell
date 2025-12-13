@@ -53,8 +53,8 @@
   "Members": "成员",
   "Import Codes & Epiration Date": "代码及有效期",
   "Touch Generate Import Code": "点击下方按钮生成代码。",
-  "Share ID": "我的共享 ID",
-  "+ Add": "+ 添加",
+  "Share ID": "我的共享ID",
+  "+ Add": "添加",
   "Pending": "待处理",
   "Paid": "已支付",
   "No pending debts": "没有待处理的账单 🎉",
@@ -98,9 +98,9 @@
   "Default time (local)": "默认时间",
   "Ask a family admin to change these.": "请联系家庭管理员更改。",
   "Family created": "家庭已创建",
-  "`Your Family ID": "您的家庭 ID: {{family_code}}",
+  "`Your Family ID": "您的共享ID: {{family_code}}",
   "Create a new Family": "创建新家庭",
-  "Or join with Family ID": "或使用 ID 加入",
+  "Or join with Family ID": "或使用共享ID加入",
   "Join Family": "加入家庭",
   "FAQ": "常见问题",
   "Frequently Asked Questions": "常见问题解答",
@@ -146,20 +146,26 @@
   "Financial Insights": "财务分析",
   "Family setup": "家庭设置",
   "e.g. K7P3D9": "例如 K7P3D9",
-  "Family ID": "家庭 ID",
+  "Family ID": "共享ID",
   "Copy": "复制",
   "Management": "管理",
   "Support": "支持",
   "Import via CSV/XLSX": "通过 CSV/XLSX 导入",
   "Active": "有效",
   "Create secure code for upload": "生成安全上传代码",
-  "Share ID copied to clipboard.": "家庭 ID 已复制。",
+  "Share ID copied to clipboard.": "共享ID 已复制。",
   "Code": "代码",
   "Expires": "过期",
   "Language": "语言",
   "Select Language": "选择语言",
   "Are you sure?": "确定吗？",
   "Version": "版本",
+  "Remove Member": "移除成员",
+  "Are you sure you want to remove {{name}}?": "您确定要移除 {{name}} 吗？",
+  "Success": "成功",
+  "Member removed.": "成员已移除。",
+  "Failed to remove member.": "移除成员失败。",
+  "Long press to remove member": "长按移除成员",
   "Import multiple bills via CSV": "通过 CSV 导入多个账单",
   "Step 1: Preparation": "第一步：准备",
   "Download Template": "下载模板",
@@ -210,12 +216,37 @@
   "Sync bills with your family or housemates.": "与家人同步账单。",
   "Join a Group": "加入小组",
   "Have an ID?": "有 ID 吗？",
-  "Enter the Family ID shared with you to join an existing group.": "输入家庭 ID 以加入现有小组。",
+  "Enter the Family ID shared with you to join an existing group.": "输入共享ID以加入现有小组。",
   "Start Fresh": "新建",
   "Create New Family": "创建新家庭",
   "Become an admin and invite others.": "成为管理员并邀请他人。",
   "OR": "或",
   "Export Data": "导出数据",
   "Download CSV": "下载 CSV",
-  "Failed to export data": "导出数据失败"
+  "Failed to export data": "导出数据失败",
+  "faqSections": [
+    {
+      "title": "添加与管理",
+      "items": [
+        { "q": "如何添加账单？", "a": "点击账单屏幕上的 '添加' 按钮。输入债权人、金额和日期。" },
+        { "q": "如何编辑？", "a": "点击列表中的任意账单进行编辑。" },
+        { "q": "如何删除？", "a": "选中账单并点击 '删除'。" },
+        { "q": "付款后会发生什么？", "a": "它会移至 '已付' 列表，提醒将停止。" }
+      ]
+    },
+    {
+      "title": "通知",
+      "items": [
+        { "q": "什么时候收到提醒？", "a": "默认在到期日前一天。" },
+        { "q": "为什么收不到通知？", "a": "请检查您的设备设置。" }
+      ]
+    },
+    {
+      "title": "家庭与共享",
+      "items": [
+        { "q": "我可以共享账户吗？", "a": "可以，分享您的共享ID。" },
+        { "q": "如何邀请他人？", "a": "将您的共享ID提供给他们。" }
+      ]
+    }
+  ]
 }

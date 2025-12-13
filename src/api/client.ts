@@ -15,7 +15,6 @@ async function request(path: string, opts: RequestInit = {}) {
   if (token) headers.Authorization = `Bearer ${token}`;
 
   console.log("API request", path, "token:", token);
-  console.log("API headers", headers);
 
   const res = await fetch(`${API_URL}${path}`, { ...opts, headers });
   const text = await res.text();
@@ -28,7 +27,6 @@ async function request(path: string, opts: RequestInit = {}) {
   return json;
 }
 
-
 export const api = {
   authApple: (payload: any) => request("/auth/apple", { method: "POST", body: JSON.stringify(payload) }),
   authGoogle: (payload: any) => request("/auth/google", { method: "POST", body: JSON.stringify(payload) }),
@@ -38,10 +36,14 @@ export const api = {
   familyCreate: () => request("/family/create", { method: "POST", body: JSON.stringify({}) }),
   familyJoin: (family_code: string) => request("/family/join", { method: "POST", body: JSON.stringify({ family_code }) }),
   familyMembers: () => request("/family/members"),
+  familyMemberRemove: (memberId: number) => request(`/family/members/${memberId}`, { method: "DELETE" }),
+  familyLeave: () => request("/family/leave", { method: "POST" }),
 
   familySettingsGet: () => request("/family/settings"),
   familySettingsUpdate: (payload: { default_reminder_offset_days: number; default_reminder_time_local: string }) => request("/family/settings", { method: "PUT", body: JSON.stringify(payload) }),
+  
   importBills: (import_code: string, bills: any[]) => request("/import/bills", {method: "POST", body: JSON.stringify({ import_code, bills }),}),
+  
   billsList: () => request("/bills"),
   billsCreate: (bill: any) => request("/bills", { method: "POST", body: JSON.stringify(bill) }),
   billsUpdate: (id: number, bill: any) => request(`/bills/${id}`, { method: "PUT", body: JSON.stringify(bill) }),

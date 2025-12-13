@@ -54,7 +54,7 @@
   "Import Codes & Epiration Date": "Import-Code & Ablaufdatum",
   "Touch Generate Import Code": "Tippen Sie unten auf \"Import-Code generieren\".",
   "Share ID": "Meine Share-ID",
-  "+ Add": "+ Hinzufügen",
+  "+ Add": "Hinzufügen",
   "Pending": "Ausstehend",
   "Paid": "Bezahlt",
   "No pending debts": "Keine ausstehenden Schulden 🎉",
@@ -98,9 +98,9 @@
   "Default time (local)": "Standard-Zeit",
   "Ask a family admin to change these.": "Bitten Sie einen Familien-Admin, dies zu ändern.",
   "Family created": "Familie erstellt",
-  "`Your Family ID": "Ihre Familien-ID: {{family_code}}",
+  "`Your Family ID": "Ihre Share-ID: {{family_code}}",
   "Create a new Family": "Neue Familie erstellen",
-  "Or join with Family ID": "Oder mit Familien-ID beitreten",
+  "Or join with Family ID": "Oder mit Share-ID beitreten",
   "Join Family": "Familie beitreten",
   "FAQ": "FAQ",
   "Frequently Asked Questions": "Häufig gestellte Fragen",
@@ -131,7 +131,7 @@
   "Paid Date": "Bezahldatum",
   "All caught up!": "Alles erledigt!",
   "No paid history": "Kein Zahlungsverlauf",
-  "You have no pending bills. Enjoy the Freiheit!",
+  "You have no pending bills. Enjoy the freedom!": "Keine ausstehenden Rechnungen. Genießen Sie die Freiheit!",
   "Bills you mark as paid will appear here.": "Als bezahlt markierte Rechnungen erscheinen hier.",
   "Paid on": "Bezahlt am",
   "OVERDUE": "ÜBERFÄLLIG",
@@ -146,7 +146,7 @@
   "Financial Insights": "Finanzielle Einblicke",
   "Family setup": "Familien-Einrichtung",
   "e.g. K7P3D9": "z.B. K7P3D9",
-  "Family ID": "Familien-ID",
+  "Family ID": "Share-ID",
   "Copy": "Kopieren",
   "Management": "Verwaltung",
   "Support": "Support",
@@ -160,6 +160,12 @@
   "Select Language": "Sprache wählen",
   "Are you sure?": "Sind Sie sicher?",
   "Version": "Version",
+  "Remove Member": "Mitglied entfernen",
+  "Are you sure you want to remove {{name}}?": "Möchten Sie {{name}} wirklich entfernen?",
+  "Success": "Erfolg",
+  "Member removed.": "Mitglied entfernt.",
+  "Failed to remove member.": "Fehler beim Entfernen des Mitglieds.",
+  "Long press to remove member": "Lang drücken zum Entfernen",
   "Import multiple bills via CSV": "Mehrere Rechnungen per CSV importieren",
   "Step 1: Preparation": "Schritt 1: Vorbereitung",
   "Download Template": "Vorlage herunterladen",
@@ -210,12 +216,39 @@
   "Sync bills with your family or housemates.": "Synchronisieren Sie Rechnungen mit Ihrer Familie.",
   "Join a Group": "Gruppe beitreten",
   "Have an ID?": "Haben Sie eine ID?",
-  "Enter the Family ID shared with you to join an existing group.": "Geben Sie die geteilte Familien-ID ein, um beizutreten.",
+  "Enter the Family ID shared with you to join an existing group.": "Geben Sie die geteilte Share-ID ein, um beizutreten.",
   "Start Fresh": "Neu starten",
   "Create New Family": "Neue Familie erstellen",
   "Become an admin and invite others.": "Werden Sie Admin und laden Sie andere ein.",
   "OR": "ODER",
   "Export Data": "Daten exportieren",
   "Download CSV": "CSV herunterladen",
-  "Failed to export data": "Datenexport fehlgeschlagen"
+  "Failed to export data": "Datenexport fehlgeschlagen",
+  "faqSections": [
+    {
+      "title": "Hinzufügen & Verwalten",
+      "items": [
+        { "q": "Wie füge ich Schulden hinzu?", "a": "Tippen Sie auf 'Hinzufügen'. Geben Sie Gläubiger, Betrag und Fälligkeitsdatum ein." },
+        { "q": "Wie bearbeite ich Schulden?", "a": "Tippen Sie auf einen Eintrag, um Details zu bearbeiten." },
+        { "q": "Wie lösche ich Schulden?", "a": "Wählen Sie einen Eintrag und tippen Sie auf 'Löschen'." },
+        { "q": "Was passiert beim Bezahlen?", "a": "Es wird in den Bereich 'Bezahlt' verschoben und Erinnerungen stoppen." }
+      ]
+    },
+    {
+      "title": "Benachrichtigungen",
+      "items": [
+        { "q": "Wann erhalte ich Erinnerungen?", "a": "Standardmäßig einen Tag vor Fälligkeit." },
+        { "q": "Warum erhalte ich keine?", "a": "Prüfen Sie Ihre Geräteeinstellungen." },
+        { "q": "Synchronisieren sich Erinnerungen?", "a": "Ja, alle Familienmitglieder erhalten Erinnerungen." }
+      ]
+    },
+    {
+      "title": "Familie & Teilen",
+      "items": [
+        { "q": "Kann ich mein Konto teilen?", "a": "Ja, teilen Sie Ihre Share-ID." },
+        { "q": "Wie lade ich jemanden ein?", "a": "Geben Sie Ihre Share-ID weiter." },
+        { "q": "Können mehrere Personen verwalten?", "a": "Ja, alle Mitglieder können Änderungen vornehmen." }
+      ]
+    }
+  ]
 }

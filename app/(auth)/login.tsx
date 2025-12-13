@@ -142,7 +142,7 @@ export default function Login() {
             width: 200,
             height: 200,
             resizeMode: "contain",
-            tintColor: "#FFF", // Tints the black logo to white
+            tintColor: "#71E3C3", // Tints the black logo to white
             opacity: 0.95,
           }}
         />

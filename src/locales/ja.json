@@ -54,7 +54,7 @@
   "Import Codes & Epiration Date": "コードと有効期限",
   "Touch Generate Import Code": "下のボタンをタップしてコードを生成してください。",
   "Share ID": "共有ID",
-  "+ Add": "+ 追加",
+  "+ Add": "追加",
   "Pending": "未払い",
   "Paid": "支払い済み",
   "No pending debts": "未払いの請求書はありません 🎉",
@@ -98,9 +98,9 @@
   "Default time (local)": "デフォルトの時間",
   "Ask a family admin to change these.": "ファミリー管理者に変更を依頼してください。",
   "Family created": "ファミリー作成完了",
-  "`Your Family ID": "ファミリーID: {{family_code}}",
+  "`Your Family ID": "あなたの共有ID: {{family_code}}",
   "Create a new Family": "新しいファミリーを作成",
-  "Or join with Family ID": "またはIDで参加",
+  "Or join with Family ID": "または共有IDで参加",
   "Join Family": "ファミリーに参加",
   "FAQ": "よくある質問",
   "Frequently Asked Questions": "よくある質問",
@@ -146,7 +146,7 @@
   "Financial Insights": "財務分析",
   "Family setup": "ファミリー設定",
   "e.g. K7P3D9": "例: K7P3D9",
-  "Family ID": "ファミリーID",
+  "Family ID": "共有ID",
   "Copy": "コピー",
   "Management": "管理",
   "Support": "サポート",
@@ -160,6 +160,12 @@
   "Select Language": "言語を選択",
   "Are you sure?": "よろしいですか？",
   "Version": "バージョン",
+  "Remove Member": "メンバーを削除",
+  "Are you sure you want to remove {{name}}?": "{{name}}を削除してもよろしいですか？",
+  "Success": "成功",
+  "Member removed.": "メンバーを削除しました。",
+  "Failed to remove member.": "メンバーの削除に失敗しました。",
+  "Long press to remove member": "長押しで削除",
   "Import multiple bills via CSV": "CSVで複数の請求書をインポート",
   "Step 1: Preparation": "ステップ1: 準備",
   "Download Template": "テンプレートをダウンロード",
@@ -210,12 +216,37 @@
   "Sync bills with your family or housemates.": "家族や同居人と請求書を同期します。",
   "Join a Group": "グループに参加",
   "Have an ID?": "IDをお持ちですか？",
-  "Enter the Family ID shared with you to join an existing group.": "共有されたファミリーIDを入力してください。",
+  "Enter the Family ID shared with you to join an existing group.": "共有IDを入力して参加してください。",
   "Start Fresh": "新規作成",
   "Create New Family": "新しいファミリーを作成",
   "Become an admin and invite others.": "管理者になり、他の人を招待します。",
   "OR": "または",
   "Export Data": "データのエクスポート",
   "Download CSV": "CSVをダウンロード",
-  "Failed to export data": "データのエクスポートに失敗しました"
+  "Failed to export data": "データのエクスポートに失敗しました",
+  "faqSections": [
+    {
+      "title": "請求書の追加と管理",
+      "items": [
+        { "q": "請求書を追加するには？", "a": "「追加」ボタンをタップし、詳細を入力して保存してください。" },
+        { "q": "編集するには？", "a": "リスト内の項目をタップして編集画面を開きます。" },
+        { "q": "削除するには？", "a": "項目を選択して「削除」をタップします。" },
+        { "q": "支払い済みにすると？", "a": "「支払い済み」リストに移動し、通知が停止します。" }
+      ]
+    },
+    {
+      "title": "通知",
+      "items": [
+        { "q": "いつ通知が届きますか？", "a": "デフォルトでは期日の1日前に届きます。" },
+        { "q": "通知が届かない場合は？", "a": "デバイスの設定を確認してください。" }
+      ]
+    },
+    {
+      "title": "ファミリーと共有",
+      "items": [
+        { "q": "アカウントを共有できますか？", "a": "はい、共有IDを使って共有できます。" },
+        { "q": "招待するには？", "a": "プロフィール画面にある共有IDを伝えてください。" }
+      ]
+    }
+  ]
 }
