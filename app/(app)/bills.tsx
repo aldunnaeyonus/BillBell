@@ -8,7 +8,7 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, Stack } from "expo-router"; // <--- Added Stack
 import { api } from "../../src/api/client";
 import {
   resyncLocalNotificationsFromBills,
@@ -124,7 +124,6 @@ export default function Bills() {
         return;
       }
 
-      // 1. Format Data for CSV (Clean up API response for export)
       const exportData = bills.map((b) => ({
         ID: b.id,
         Creditor: b.creditor,
@@ -135,13 +134,10 @@ export default function Bills() {
         Recurrence: b.recurrence || "none",
         OffsetDays: b.reminder_offset_days || "0",
         Reminder: b.reminder_time_local || "",
-
       }));
 
-      // 2. Generate CSV String
       const csvString = jsonToCSV(exportData);
 
-      // 3. Write file
       const path =
         Platform.OS === "ios"
           ? `${RNFS.DocumentDirectoryPath}/bills_export.csv`
@@ -149,7 +145,6 @@ export default function Bills() {
 
       await RNFS.writeFile(path, csvString, "utf8");
 
-      // 4. Share
       await Share.open({
         url: `file://${path}`,
         type: "text/csv",
@@ -305,65 +300,80 @@ export default function Bills() {
 
   return (
     <View style={screen(theme)}>
-      {/* Header row */}
-{/* Stats row */}
-            <View style={{ flexDirection: "row", gap: 10, marginBottom:20}}>
-              <View style={[card(theme), { flex: 1 }]}>
-                <Text
-                  style={{ color: theme.colors.subtext, fontWeight: "700" }}
-                >
-                  Pending Total
-                </Text>
-                <Text
-                  style={{
-                    color: theme.colors.text,
-                    fontSize: 18,
-                    fontWeight: "900",
-                    marginTop: 6,
-                  }}
-                >
-                  ${centsToDollars(stats.pendingTotal)}
-                </Text>
-              </View>
+      {/* 1. Stack Screen Configuration */}
+      <Stack.Screen
+        options={{
+          headerTitle: "My Bills",
+          headerRight: () => (
+            <Pressable 
+              onPress={() => router.push("/(app)/profile")}
+              style={{ padding: 8 }} // hit slop
+            >
+                 <Text style={{ color: theme.colors.primaryText, fontWeight: '700' }}>Profile</Text> 
+              
+            </Pressable>
+          ),
+        }}
+      />
 
-              <View style={[card(theme), { flex: 1 }]}>
-                <Text
-                  style={{ color: theme.colors.subtext, fontWeight: "700" }}
-                >
-                  Paid Total
-                </Text>
-                <Text
-                  style={{
-                    color: theme.colors.text,
-                    fontSize: 18,
-                    fontWeight: "900",
-                    marginTop: 6,
-                  }}
-                >
-                  ${centsToDollars(stats.paidTotal)}
-                </Text>
-              </View>
-            </View>
-        <View style={{ flexDirection: "row", justifyContent: "space-around", alignItems: "center", gap: 10, marginBottom: 20}}>
-           <Pressable
-            onPress={() => router.push("/(app)/insights")}
-                style={[button(theme, "primary"), { flex: 1 }]}
+      {/* Stats row */}
+      <View style={{ flexDirection: "row", gap: 10, marginBottom: 20 }}>
+        <View style={[card(theme), { flex: 1 }]}>
+          <Text style={{ color: theme.colors.subtext, fontWeight: "700" }}>
+            Pending Total
+          </Text>
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 18,
+              fontWeight: "900",
+              marginTop: 6,
+            }}
           >
-            <Text style={buttonText(theme, "primary")}>Insights</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/(app)/profile")}
-                style={[button(theme, "primary"), { flex: 1 }]}
-          >
-            <Text style={buttonText(theme, "primary")}>Profile</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/(app)/bill-edit")}
-                style={[button(theme, "primary"), { flex: 1 }]}
-          >
-            <Text style={buttonText(theme, "primary")}>+ Add Debt</Text>
-          </Pressable>
+            ${centsToDollars(stats.pendingTotal)}
+          </Text>
         </View>
+
+        <View style={[card(theme), { flex: 1 }]}>
+          <Text style={{ color: theme.colors.subtext, fontWeight: "700" }}>
+            Paid Total
+          </Text>
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 18,
+              fontWeight: "900",
+              marginTop: 6,
+            }}
+          >
+            ${centsToDollars(stats.paidTotal)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Action Buttons Row */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-around",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 20,
+        }}
+      >
+        <Pressable
+          onPress={() => router.push("/(app)/insights")}
+          style={[button(theme, "primary"), { flex: 1 }]}
+        >
+          <Text style={buttonText(theme, "primary")}>Insights</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => router.push("/(app)/bill-edit")}
+          style={[button(theme, "primary"), { flex: 1 }]}
+        >
+          <Text style={buttonText(theme, "primary")}>+ Add</Text>
+        </Pressable>
+      </View>
 
       <FlatList
         data={visibleBills}
@@ -387,22 +397,36 @@ export default function Bills() {
               />
             </View>
 
-            
-
             {/* Sort controls */}
             <View style={[card(theme), { gap: 10 }]}>
-              <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
-                <Text style={{ color: theme.colors.subtext, fontWeight: "800" }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{ color: theme.colors.subtext, fontWeight: "800" }}
+                >
                   Sort
                 </Text>
-                {/* Export Button Added Here for Visibility */}
+                {/* Export Button */}
                 {bills.length > 0 && (
-                   <Pressable onPress={generateAndShareCSV}>
-                      <Text style={{color: theme.colors.accent, fontSize: 12, fontWeight: '700'}}>Export CSV</Text>
-                   </Pressable>
+                  <Pressable onPress={generateAndShareCSV}>
+                    <Text
+                      style={{
+                        color: theme.colors.accent,
+                        fontSize: 12,
+                        fontWeight: "700",
+                      }}
+                    >
+                      Export CSV
+                    </Text>
+                  </Pressable>
                 )}
               </View>
-              
+
               <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
                 <SortPill
                   keyName="due"
@@ -445,9 +469,9 @@ export default function Bills() {
               >
                 <Text style={buttonText(theme, "ghost")}>Import</Text>
               </Pressable>
-              
+
               {/* Keep this fallback just in case lists are empty but data exists elsewhere */}
-               <Pressable
+              <Pressable
                 onPress={generateAndShareCSV}
                 style={[button(theme, "ghost"), { flex: 1 }]}
               >

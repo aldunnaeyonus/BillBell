@@ -7,10 +7,12 @@ import {
   Pressable,
   Alert,
   ScrollView,
+  Platform
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { useTranslation } from "react-i18next";
-
+import RNFS from "react-native-fs"; // <--- Added
+import Share from "react-native-share"; // <--- Added
 import { api } from "../../src/api/client";
 import { useTheme } from "../../src/ui/useTheme";
 import { screen, card, button, buttonText } from "../../src/ui/styles";
@@ -65,56 +67,95 @@ export default function BulkImport() {
   }
 
   function parseCsvToBills(csv: string): any[] {
-    const lines = csv
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
+  const lines = csv
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
 
-    if (!lines.length) return [];
+  if (!lines.length) return [];
 
-    const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+  const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+  const idx = (key: string) => header.indexOf(key);
 
-    const idx = (key: string) => header.indexOf(key);
+  const iName = idx("name");
+  const iAmount = idx("amount");
+  const iDueDate = idx("due_date");
+  const iNotes = idx("notes");
+  // ADD THIS:
+  const iRecurrence = idx("recurrence");
 
-    const iName = idx("name");
-    const iAmount = idx("amount");
-    const iDueDate = idx("due_date");
-    const iNotes = idx("notes");
-    const iAutopay = idx("autopay");
+  const result: any[] = [];
 
-    const result: any[] = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(",").map((c) => c.trim());
-      const name = iName >= 0 ? cols[iName] : "";
-      const amountStr = iAmount >= 0 ? cols[iAmount] : "";
-      const dueDate = iDueDate >= 0 ? cols[iDueDate] : "";
-      const notes = iNotes >= 0 ? cols[iNotes] : "";
-      const autopayStr = iAutopay >= 0 ? cols[iAutopay] : "";
-
-      if (!name || !amountStr || !dueDate) continue;
-
-      const amount = parseFloat(amountStr);
-      if (Number.isNaN(amount)) continue;
-
-      const autopay =
-        autopayStr.toLowerCase() === "1" ||
-        autopayStr.toLowerCase() === "true" ||
-        autopayStr.toLowerCase() === "yes"
-          ? 1
-          : 0;
-
-      result.push({
-        name,
-        amount,
-        due_date: dueDate,
-        notes,
-        autopay,
-      });
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(",").map((c) => c.trim());
+    
+    // Safety checks (same as before)
+    const name = iName >= 0 ? cols[iName] : "";
+    const amountStr = iAmount >= 0 ? cols[iAmount] : "";
+    const dueDate = iDueDate >= 0 ? cols[iDueDate] : "";
+    
+    // Optional fields
+    const notes = iNotes >= 0 ? cols[iNotes] : "";
+    
+    // NEW: Parse recurrence
+    let recurrence = "none";
+    if (iRecurrence >= 0) {
+        const val = cols[iRecurrence].toLowerCase();
+        if (["weekly", "bi-weekly", "monthly", "annually"].includes(val)) {
+            recurrence = val;
+        }
     }
 
-    return result;
+    if (!name || !amountStr || !dueDate) continue;
+    const amount = parseFloat(amountStr);
+    if (Number.isNaN(amount)) continue;
+
+    result.push({
+      name,
+      amount,
+      due_date: dueDate,
+      notes,
+      recurrence, // <-- Include this in the object
+    });
   }
+
+  return result;
+}
+
+// --- New Feature: Download Template ---
+  async function downloadTemplate() {
+    try {
+      // 1. Define the correct headers and a sample row
+      const headers = "name,amount,due_date,notes,recurrence,offset";
+      // Using a dynamic date example so it looks current
+      const today = new Date().toISOString().split('T')[0]; 
+      const sampleRow = `Netflix,15.99,${today},Family Plan,monthly,0`;
+      
+      const csvContent = `${headers}\n${sampleRow}`;
+
+      // 2. Save to device
+      const path = Platform.OS === "ios"
+          ? `${RNFS.DocumentDirectoryPath}/bill_template.csv`
+          : `${RNFS.CachesDirectoryPath}/bill_template.csv`;
+
+      await RNFS.writeFile(path, csvContent, "utf8");
+
+      // 3. Share / Save
+      await Share.open({
+        url: `file://${path}`,
+        type: "text/csv",
+        filename: "bill_import_template", // Android 
+        title: "Download Bill Template", // iOS
+      });
+
+    } catch (error: any) {
+      if (error?.message !== "User did not share") {
+        Alert.alert(t("Error"), t("Failed to download template"));
+        console.error(error);
+      }
+    }
+  }
+  // --------------------------------------
 
   async function doImport() {
     if (!importCode.trim()) {
@@ -155,7 +196,7 @@ export default function BulkImport() {
               color: theme.colors.primaryText,
             }}
           >
-            {t("Import Bills")}
+            {t("Import")}
           </Text>
 
           <Text
@@ -165,17 +206,26 @@ export default function BulkImport() {
               lineHeight: 20,
             }}
           >
-            {t(
-              "Paste the import code you generated (or received), then pick a CSV file with your bills."
-            )}
-            {"\n\n"}
-            {t("CSV columns: name, amount, due_date, notes, autopay")}
-            {"\n\n"}
-            {`Example: Creditor.com, 29.00, ${deviceDate}, Monthly bill, yes`}
-            {"\n"}
+{t("CSV columns: name, amount, due_date, notes, recurrence, offset")}
+  {"\n\n"}
+  {`Example: Netflix, 15.99, 2025-10-15, Family Plan, monthly, 0`}
+  {"\n"}
+    {`Insurance, 115.99, 2025-10-15, 2 Cars, annually, 0`}
+  {"\n\n"}
             {`Time example: ${deviceTime}`}
+              {"\n\n"}
+            {`Offset is when do you want to be reminder days prior to due date.`}
+             {"\n\n"}
+            {`Valid values for the recurrence column: weekly, bi-weekly, monthly, annually, none (or leave blank)`}
           </Text>
-
+<Pressable
+            onPress={downloadTemplate}
+            style={{ margin: 20, alignSelf: 'flex-start' }}
+          >
+             <Text style={{color: theme.colors.accent, fontWeight: '700'}}>
+               📥 {t("Download Clean CSV Template")}
+             </Text>
+          </Pressable>
           <View style={{ height: 14 }} />
 
           <Text
@@ -245,6 +295,7 @@ export default function BulkImport() {
               {loading ? t("Importing...") : t("Import")}
             </Text>
           </Pressable>
+          
         </View>
       </View>
     </ScrollView>
