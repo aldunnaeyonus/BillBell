@@ -51,13 +51,13 @@ export default function Onboarding() {
     },
     {
       id: "3",
-      icon: "people-outline", // Icon for Sharing/Family
+      icon: "people-outline",
       title: t("Share with Family"),
       description: t("Create a Shared Group to manage household expenses and bills together."),
     },
     {
       id: "4",
-      icon: "bar-chart-outline", // Icon for Insights
+      icon: "bar-chart-outline",
       title: t("Financial Insights"),
       description: t("Visualize your spending habits and see exactly where your money goes."),
     },
@@ -88,8 +88,10 @@ export default function Onboarding() {
     router.replace("/(app)/bills");
   };
 
+  // --- FIX: Add safety check for viewableItems ---
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    if (viewableItems.length > 0) {
+    // Check if viewableItems exists before accessing .length
+    if (viewableItems && viewableItems.length > 0) {
       setCurrentIndex(viewableItems[0].index);
     }
   }).current;
