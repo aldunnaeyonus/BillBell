@@ -8,6 +8,7 @@ import {
   Alert,
   Platform,
   StatusBar,
+  Image
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -64,7 +65,10 @@ export default function Login() {
           : null,
       });
       await setToken(res.token);
-      router.replace("/(app)/bills");
+      
+      // CHANGED: Redirect to Onboarding instead of Bills
+      router.replace("/onboarding"); 
+      
     } catch (e: any) {
       if (e.code === "ERR_REQUEST_CANCELED") {
         // user cancelled
@@ -84,7 +88,10 @@ export default function Login() {
         setLoading(true);
         const res = await api.authGoogle({ id_token: userInfo.data?.idToken });
         await setToken(res.token);
-        router.replace("/(app)/bills");
+        
+        // CHANGED: Redirect to Onboarding instead of Bills
+        router.replace("/onboarding");
+        
       }
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -108,7 +115,16 @@ export default function Login() {
         <View style={styles.content}>
           {/* Logo / Icon */}
           <View style={styles.iconContainer}>
-            <Ionicons name="notifications-circle" size={100} color="#FFF" />
+            <Image
+          source={require("../../assets/black_logo.png")}
+          style={{
+            width: 200,
+            height: 200,
+            resizeMode: "contain",
+            tintColor: "#71E3C3", // Tints the black logo to white
+            opacity: 0.95,
+          }}
+        />
           </View>
 
           {/* Title */}

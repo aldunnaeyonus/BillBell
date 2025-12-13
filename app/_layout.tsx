@@ -50,19 +50,23 @@ function AppStack() {
     <>
       <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
       <Stack
-        screenOptions={{
-          headerTitleAlign: "center",
-          headerStyle: { backgroundColor: theme.colors.bg },
-          headerTitleStyle: { color: theme.colors.primaryText },
-          headerTintColor: theme.colors.primaryText,
-          headerShadowVisible: false,
-          contentStyle: { backgroundColor: theme.colors.bg },
-          // @ts-ignore: 'headerBackButtonDisplayMode' is new in React Nav 7 / Expo Router 6
-          headerBackButtonDisplayMode: 'minimal',
-          headerBackTitleVisible: false, 
-        } as any} 
+        screenOptions={
+          {
+            headerTitleAlign: "center",
+            headerStyle: { backgroundColor: theme.colors.bg },
+            headerTitleStyle: { color: theme.colors.primaryText },
+            headerTintColor: theme.colors.primaryText,
+            headerShadowVisible: false,
+            contentStyle: { backgroundColor: theme.colors.bg },
+            // @ts-ignore: 'headerBackButtonDisplayMode' is new in React Nav 7 / Expo Router 6
+            headerBackButtonDisplayMode: "minimal",
+            headerBackTitleVisible: false,
+          } as any
+        }
       >
-         <Stack.Screen
+        {/* ADDED: Onboarding Screen */}
+
+        <Stack.Screen
           name="(app)/bills"
           options={{
             title: "",
@@ -70,13 +74,31 @@ function AppStack() {
           }}
         />
         <Stack.Screen
+          name="onboarding"
+          options={{
+            headerShown: false, // This removes the navigation bar
+            gestureEnabled: false, // This prevents swiping back to the login screen
+            headerBackVisible: false,
+            title: ""
+          }}
+        />
+        <Stack.Screen
           name="(app)/feedback"
           options={{ title: t("Feedback & Bugs") }}
         />
         <Stack.Screen name="(app)/faq" options={{ title: t("FAQ") }} />
-        <Stack.Screen name="(app)/privacy" options={{ title: t("Privacy Policy") || "Privacy Policy" }} />
-        <Stack.Screen name="(app)/terms" options={{ title: t("Terms of Use") || "Terms of Use" }} />
-        <Stack.Screen name="(app)/insights" options={{ title: t("Financial Insights") }} />
+        <Stack.Screen
+          name="(app)/privacy"
+          options={{ title: t("Privacy Policy") || "Privacy Policy" }}
+        />
+        <Stack.Screen
+          name="(app)/terms"
+          options={{ title: t("Terms of Use") || "Terms of Use" }}
+        />
+        <Stack.Screen
+          name="(app)/insights"
+          options={{ title: t("Financial Insights") }}
+        />
         <Stack.Screen name="(app)/browser" options={{ title: t("Browser") }} />
         <Stack.Screen
           name="(app)/bulk-import"
@@ -88,7 +110,7 @@ function AppStack() {
           options={{
             title: "",
             headerBackVisible: false,
-            headerShown: false
+            headerShown: false,
           }}
         />
         <Stack.Screen
@@ -114,7 +136,7 @@ export default function RootLayout() {
   return (
     <I18nextProvider i18n={i18n}>
       <BiometricAuth>
-      <AppStack />
+        <AppStack />
       </BiometricAuth>
     </I18nextProvider>
   );
