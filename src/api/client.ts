@@ -1,5 +1,13 @@
 import * as SecureStore from "expo-secure-store";
-import { encryptData, decryptData } from "../security/EncryptionService";
+import {
+  ensureKeyPair,
+  unwrapMyKey,
+  cacheFamilyKey,
+  pruneFamilyKeys,
+  getCachedFamilyKeyVersion,
+  encryptData,
+  decryptDataWithVersion,
+} from "../security/EncryptionService";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/billMVP";
 
@@ -10,10 +18,21 @@ async function getToken() {
 // --- Generic Request Helper ---
 async function request(path: string, opts: RequestInit = {}) {
   const token = await getToken();
+
+  const isPublic =
+    path.startsWith("/auth/") ||
+    path === "/health" ||
+    path === "/status";
+
+  if (!token && !isPublic) {
+    throw new Error("Not authenticated. Please log in again.");
+  }
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(opts.headers as any),
   };
+
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(`${API_URL}${path}`, { ...opts, headers });
@@ -24,7 +43,6 @@ async function request(path: string, opts: RequestInit = {}) {
     try {
       json = JSON.parse(text);
     } catch {
-      // Non-JSON response (e.g., HTML error page)
       json = null;
     }
   }
@@ -36,8 +54,98 @@ async function request(path: string, opts: RequestInit = {}) {
   return json;
 }
 
-// --- API Definition ---
 
+// --- Key sync (version-history) ---
+// Avoid hammering /keys/shared on every render
+const FAMILY_KEY_SYNC_TS = "billbell_family_key_last_sync_ms";
+const KEY_SYNC_MIN_INTERVAL_MS = 60_000; // 1 min
+
+async function ensureFamilyKeyLoaded() {
+  // If no token, nothing to do
+  const token = await getToken();
+  if (!token) return;
+
+  // Ensure we have RSA keys (needed to unwrap)
+  await ensureKeyPair();
+
+  const now = Date.now();
+  const last = parseInt((await SecureStore.getItemAsync(FAMILY_KEY_SYNC_TS)) || "0", 10);
+
+  // If we already have an active cached key version, respect the sync interval.
+  // If the cached version is missing/null, force a sync even within the interval.
+  const cachedVersion = await getCachedFamilyKeyVersion();
+  if (cachedVersion && Number.isFinite(last) && now - last < KEY_SYNC_MIN_INTERVAL_MS) {
+    return;
+  }
+
+  // Fetch current wrapped key for my user + current family key_version
+  // KeysController returns: { encrypted_key, family_id, key_version }
+  const resp = await request("/keys/shared");
+  const wrapped = resp?.encrypted_key;
+  const keyVersion = Number(resp?.key_version);
+
+  if (!wrapped || !Number.isFinite(keyVersion) || keyVersion <= 0) {
+    throw new Error("Missing encrypted key from server");
+  }
+
+  const familyKeyHex = await unwrapMyKey(String(wrapped));
+  await cacheFamilyKey(familyKeyHex, keyVersion);
+  await pruneFamilyKeys(5);
+
+  await SecureStore.setItemAsync(FAMILY_KEY_SYNC_TS, String(now));
+}
+
+// --- Lazy re-encrypt on read (best-effort) ---
+const REENC_MAX_PER_LOAD = 3;
+const REENC_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+const REENC_LAST_MS = "billbell_reencrypt_last_ms";
+
+async function maybeReencryptBills(bills: any[]) {
+  const currentVersion = await getCachedFamilyKeyVersion();
+  if (!currentVersion) return;
+
+  const last = parseInt((await SecureStore.getItemAsync(REENC_LAST_MS)) || "0", 10);
+  const now = Date.now();
+  if (Number.isFinite(last) && now - last < REENC_COOLDOWN_MS) return;
+
+  let upgraded = 0;
+
+  for (const b of bills) {
+    if (upgraded >= REENC_MAX_PER_LOAD) break;
+
+    const billVersion = Number(b.cipher_version ?? 1);
+    if (!Number.isFinite(billVersion) || billVersion >= currentVersion) continue;
+
+    try {
+      // Decrypt using fallback (will try older cached versions)
+      const creditor = await decryptDataWithVersion(b.creditor || "");
+      const notes = await decryptDataWithVersion(b.notes || "");
+      const amount = b.amount_encrypted ? await decryptDataWithVersion(b.amount_encrypted) : null;
+
+      // Re-encrypt under CURRENT active key (encryptData uses active version)
+      const payload: any = {
+        creditor: await encryptData(creditor.text),
+        notes: await encryptData(notes.text || ""),
+      };
+
+      if (b.amount_encrypted) {
+        const cents = amount?.text ? String(amount.text) : String(b.amount_cents ?? "");
+        if (cents) payload.amount_encrypted = await encryptData(cents);
+      }
+
+      await request(`/bills/${b.id}`, { method: "PUT", body: JSON.stringify(payload) });
+      upgraded++;
+    } catch (e) {
+      console.warn("Re-encrypt failed for bill", b?.id, e);
+    }
+  }
+
+  if (upgraded > 0) {
+    await SecureStore.setItemAsync(REENC_LAST_MS, String(now));
+  }
+}
+
+// --- API Definition ---
 export const api = {
   // Auth
   authApple: (payload: any) => request("/auth/apple", { method: "POST", body: JSON.stringify(payload) }),
@@ -62,23 +170,27 @@ export const api = {
     request("/family/settings", { method: "PUT", body: JSON.stringify(payload) }),
 
   // Devices
-  deviceTokenUpsert: (payload: any) =>
-    request("/devices/token", { method: "POST", body: JSON.stringify(payload) }),
+  deviceTokenUpsert: (payload: any) => request("/devices/token", { method: "POST", body: JSON.stringify(payload) }),
 
   // --- Encrypted Bills Methods ---
-
   billsList: async () => {
+    await ensureFamilyKeyLoaded();
+
     const response = await request("/bills");
     const rawBills = response?.bills || response || [];
 
     const decryptedBills = await Promise.all(
       rawBills.map(async (b: any) => {
         try {
+          const creditor = await decryptDataWithVersion(b.creditor);
+          const notes = await decryptDataWithVersion(b.notes || "");
+          const amount = b.amount_encrypted ? await decryptDataWithVersion(b.amount_encrypted) : null;
+
           return {
             ...b,
-            creditor: await decryptData(b.creditor),
-            amount_cents: b.amount_encrypted ? Number(await decryptData(b.amount_encrypted)) : b.amount_cents,
-            notes: await decryptData(b.notes || ""),
+            creditor: creditor.text,
+            amount_cents: amount ? Number(amount.text) : b.amount_cents,
+            notes: notes.text,
           };
         } catch (e) {
           console.error("Failed to decrypt bill", b.id, e);
@@ -86,6 +198,13 @@ export const api = {
         }
       })
     );
+
+    // Best-effort lazy migration (doesn't block UI)
+    try {
+      await maybeReencryptBills(rawBills);
+    } catch (e) {
+      console.warn("Lazy re-encrypt skipped:", e);
+    }
 
     return { bills: decryptedBills };
   },
@@ -101,17 +220,17 @@ export const api = {
   getMySharedKey: () => request("/keys/shared"),
 
   billsCreate: async (bill: any) => {
+    await ensureFamilyKeyLoaded();
+
     const payload = {
       ...bill,
       creditor: await encryptData(bill.creditor),
       amount_encrypted: await encryptData(String(bill.amount_cents)),
       notes: await encryptData(bill.notes || ""),
 
-      // Keep these plain for server-side logic
       due_date: bill.due_date,
       status: bill.status,
 
-      // FIX: server expects "recurrence", not "recurrence_rule"
       recurrence: bill.recurrence_rule ?? bill.recurrence ?? "none",
     };
 
@@ -119,16 +238,22 @@ export const api = {
   },
 
   billsUpdate: async (id: number, bill: any) => {
+    await ensureFamilyKeyLoaded();
+
     const payload: any = { ...bill };
 
-    if (payload.creditor) payload.creditor = await encryptData(payload.creditor);
-    if (payload.notes) payload.notes = await encryptData(payload.notes);
+    // IMPORTANT: allow empty-string updates (""), not just truthy values
+    if (Object.prototype.hasOwnProperty.call(payload, "creditor")) {
+      payload.creditor = await encryptData(payload.creditor ?? "");
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, "notes")) {
+      payload.notes = await encryptData(payload.notes ?? "");
+    }
 
     if (payload.amount_cents !== undefined && payload.amount_cents !== null) {
       payload.amount_encrypted = await encryptData(String(payload.amount_cents));
     }
 
-    // If UI uses recurrence_rule, map it
     if (payload.recurrence_rule && !payload.recurrence) {
       payload.recurrence = payload.recurrence_rule;
       delete payload.recurrence_rule;

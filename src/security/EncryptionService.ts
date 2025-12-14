@@ -4,7 +4,10 @@ import { Buffer } from "buffer";
 
 const PUBLIC_KEY_ALIAS = "billbell_rsa_public";
 const PRIVATE_KEY_ALIAS = "billbell_rsa_private";
-const FAMILY_KEY_ALIAS = "billbell_family_key_cache";
+
+// Versioned family key storage
+const FAMILY_KEY_PREFIX = "billbell_family_key_cache_v";
+const FAMILY_KEY_VERSION_ALIAS = "billbell_family_key_version";
 
 // --- RSA Key Management ---
 
@@ -57,14 +60,54 @@ export async function unwrapMyKey(wrappedKeyBase64: string): Promise<string> {
   return decrypted.toString("utf8");
 }
 
-export async function cacheFamilyKey(keyHex: string) {
-  await SecureStore.setItemAsync(FAMILY_KEY_ALIAS, keyHex);
+function familyKeyAliasForVersion(version: number) {
+  return `${FAMILY_KEY_PREFIX}${version}`;
 }
 
-async function getActiveFamilyKey(): Promise<Buffer> {
-  const hex = await SecureStore.getItemAsync(FAMILY_KEY_ALIAS);
+export async function cacheFamilyKey(keyHex: string, keyVersion: number) {
+  if (!keyHex) throw new Error("Missing family key hex");
+  if (!Number.isFinite(keyVersion) || keyVersion <= 0) throw new Error("Invalid key version");
+
+  await SecureStore.setItemAsync(familyKeyAliasForVersion(keyVersion), keyHex);
+  await SecureStore.setItemAsync(FAMILY_KEY_VERSION_ALIAS, String(keyVersion));
+}
+
+export async function getCachedFamilyKeyVersion(): Promise<number | null> {
+  const v = await SecureStore.getItemAsync(FAMILY_KEY_VERSION_ALIAS);
+  if (!v) return null;
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+async function getActiveFamilyKeyBuffer(): Promise<Buffer> {
+  const v = await getCachedFamilyKeyVersion();
+  if (!v) throw new Error("Family key not loaded. Please fetch from server.");
+
+  const hex = await SecureStore.getItemAsync(familyKeyAliasForVersion(v));
   if (!hex) throw new Error("Family key not loaded. Please fetch from server.");
   return Buffer.from(hex, "hex");
+}
+
+async function getFallbackKeyHexesWithVersions(maxVersionsToTry: number = 5): Promise<Array<{ v: number; hex: string }>> {
+  const current = await getCachedFamilyKeyVersion();
+  if (!current) return [];
+
+  const out: Array<{ v: number; hex: string }> = [];
+  for (let v = current; v >= 1 && out.length < maxVersionsToTry; v--) {
+    const hex = await SecureStore.getItemAsync(familyKeyAliasForVersion(v));
+    if (hex) out.push({ v, hex });
+  }
+  return out;
+}
+
+export async function pruneFamilyKeys(keepLast: number = 5) {
+  const current = await getCachedFamilyKeyVersion();
+  if (!current) return;
+
+  const minKeep = Math.max(1, current - keepLast + 1);
+  for (let v = 1; v < minKeep; v++) {
+    await SecureStore.deleteItemAsync(familyKeyAliasForVersion(v));
+  }
 }
 
 // --- Data Encryption (AES-GCM) ---
@@ -73,7 +116,7 @@ export async function encryptData(text: string, specificKeyHex?: string): Promis
   if (!text) return "";
 
   try {
-    const key = specificKeyHex ? Buffer.from(specificKeyHex, "hex") : await getActiveFamilyKey();
+    const key = specificKeyHex ? Buffer.from(specificKeyHex, "hex") : await getActiveFamilyKeyBuffer();
     const iv = Crypto.randomBytes(12);
     const cipher = Crypto.createCipheriv("aes-256-gcm", key, iv);
 
@@ -83,31 +126,62 @@ export async function encryptData(text: string, specificKeyHex?: string): Promis
 
     return `${iv.toString("hex")}:${authTag}:${encrypted}`;
   } catch (e) {
-    // FAIL CLOSED: never return plaintext
     console.error("Encryption failed", e);
     throw new Error("Encryption failed");
   }
 }
 
+function tryDecryptWithKey(encryptedString: string, keyHex: string): string {
+  const parts = encryptedString.split(":");
+  if (parts.length !== 3) return encryptedString;
+
+  const [ivHex, authTagHex, encryptedHex] = parts;
+
+  const key = Buffer.from(keyHex, "hex");
+  const decipher = Crypto.createDecipheriv("aes-256-gcm", key, Buffer.from(ivHex, "hex"));
+  decipher.setAuthTag(Buffer.from(authTagHex, "hex") as any);
+
+  let decrypted = decipher.update(encryptedHex, "hex", "utf8");
+  decrypted += decipher.final("utf8");
+  return decrypted;
+}
+
 export async function decryptData(encryptedString: string, specificKeyHex?: string): Promise<string> {
-  if (!encryptedString || !encryptedString.includes(":")) return encryptedString || "";
+  const r = await decryptDataWithVersion(encryptedString, specificKeyHex);
+  return r.text;
+}
+
+/**
+ * NEW: decrypt and tell you which key_version succeeded (or null if not decrypted).
+ * Useful for lazy re-encrypt migrations.
+ */
+export async function decryptDataWithVersion(
+  encryptedString: string,
+  specificKeyHex?: string
+): Promise<{ text: string; usedVersion: number | null }> {
+  if (!encryptedString || !encryptedString.includes(":")) return { text: encryptedString || "", usedVersion: null };
+
+  if (specificKeyHex) {
+    try {
+      return { text: tryDecryptWithKey(encryptedString, specificKeyHex), usedVersion: null };
+    } catch (e) {
+      console.warn("Decryption failed with provided key:", e);
+      return { text: encryptedString, usedVersion: null };
+    }
+  }
 
   try {
-    const parts = encryptedString.split(":");
-    if (parts.length !== 3) return encryptedString;
-
-    const [ivHex, authTagHex, encryptedHex] = parts;
-    const key = specificKeyHex ? Buffer.from(specificKeyHex, "hex") : await getActiveFamilyKey();
-
-    const decipher = Crypto.createDecipheriv("aes-256-gcm", key, Buffer.from(ivHex, "hex"));
-    decipher.setAuthTag(Buffer.from(authTagHex, "hex") as any);
-
-    let decrypted = decipher.update(encryptedHex, "hex", "utf8");
-    decrypted += decipher.final("utf8");
-
-    return decrypted;
+    const candidates = await getFallbackKeyHexesWithVersions(5);
+    for (const c of candidates) {
+      try {
+        return { text: tryDecryptWithKey(encryptedString, c.hex), usedVersion: c.v };
+      } catch {
+        // try next
+      }
+    }
+    return { text: encryptedString, usedVersion: null };
   } catch (e) {
     console.warn("Decryption failed:", e);
-    return encryptedString;
+    return { text: encryptedString, usedVersion: null };
   }
 }

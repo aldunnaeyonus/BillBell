@@ -288,14 +288,18 @@ export default function Profile() {
     { code: 'ja', label: '日本語' },
   ];
 
-  const loadData = useCallback(async () => {
-    try {
-      const res = await api.familyMembers();
-      setData(res);
-    } catch (e) {
-      console.log(e);
+const loadData = useCallback(async () => {
+  try {
+    const res = await api.familyMembers();
+    setData(res);
+  } catch (e: any) {
+    if ((e?.message || "").includes("Not authenticated")) {
+      router.replace("/(auth)/login");
+      return;
     }
-  }, []);
+    console.log(e);
+  }
+}, []);
 
   useEffect(() => {
     loadData();
@@ -348,79 +352,93 @@ export default function Profile() {
 
   // [UPDATED] Secure Leave Logic
   const handleLeaveFamily = () => {
-    Alert.alert(
-      t("Leave Family"),
-      t("You will leave this group and take your data with you. We will re-encrypt your data with a new key."),
-      [
-        { text: t("Cancel"), style: "cancel" },
-        {
-          text: t("Leave & Secure Data"),
-          style: "destructive",
-          onPress: async () => {
-            try {
-              setIsRotatingKeys(true);
+  Alert.alert(
+    t("Leave Family"),
+    t("You will leave this group and take your data with you. We will re-encrypt your data with a new key."),
+    [
+      { text: t("Cancel"), style: "cancel" },
+      {
+        text: t("Leave & Secure Data"),
+        style: "destructive",
+        onPress: async () => {
+          try {
+            setIsRotatingKeys(true);
 
-              // 1. Fetch current bills (still encrypted with OLD family key)
-              const { bills } = await api.billsList();
+            // 1) Fetch bills (api.billsList() already returns DECRYPTED fields)
+            const { bills } = await api.billsList();
 
-              // 2. Decrypt locally so we have raw data
-              const decryptedBills = await Promise.all(
-                bills.map(async (b: any) => ({
-                  ...b,
-                  creditor: await EncryptionService.decryptData(b.creditor),
-                  notes: await EncryptionService.decryptData(b.notes),
-                }))
-              );
+            // Keep plaintext copies for re-encryption
+            const plaintextBills = bills.map((b: any) => ({
+              ...b,
+              creditor_plain: b.creditor || "",
+              notes_plain: b.notes || "",
+              amount_cents_plain: b.amount_cents, // already numeric
+            }));
 
-              // 3. Leave the family on Server
-              // This moves user + bills to a new Family ID in the database
-              const leaveRes = await api.familyLeave(); 
-              // Expecting: { success: true, new_family_code: '...', new_family_id: 123 }
+            // 2) Leave the family on Server (moves your rows to a new family)
+            const leaveRes = await api.familyLeave();
+            // Expecting: { success: true, new_family_code: '...', new_family_id: 123 }
 
-              // 4. Generate a NEW Family Key
-              const newKey = EncryptionService.generateNewFamilyKey();
+            // 3) Generate a NEW family key (hex)
+            const newKeyHex = EncryptionService.generateNewFamilyKey();
 
-              // 5. Re-Encrypt bills with the NEW Key
-              // We must loop and update them on the server
-              for (const b of decryptedBills) {
-                const newCreditor = await EncryptionService.encryptData(b.creditor, newKey);
-                const newNotes = await EncryptionService.encryptData(b.notes, newKey);
+            // 4) Re-encrypt bills with the NEW key and write back
+            // IMPORTANT: your api.billsUpdate will encrypt AGAIN if you pass plaintext,
+            // so we must pass ALREADY-ENCRYPTED strings and avoid re-encryption in client.
+            //
+            // Easiest: call the lower-level request layer (not exposed), OR:
+            // pass fields that api.billsUpdate will not re-encrypt. But it always encrypts when it sees "creditor"/"notes".
+            //
+            // So: directly call EncryptionService.encryptData(...) with specificKeyHex AND
+            // call the server update endpoint via api.billsUpdateRaw (not currently in your client).
+            //
+            // If you DON'T have a raw update method, the safe workaround is:
+            // - temporarily disable the auto-encrypt in api.billsUpdate for this path, OR
+            // - add api.billsUpdateEncrypted(...) that does not wrap encryptData().
+            //
+            // For now, here's the simplest approach: use api.billsUpdate but pass PLAINTEXT and let it encrypt
+            // with the ACTIVE key. That means we must temporarily set the ACTIVE cached key to the new key first.
 
-                // Assuming api.billUpdate exists in your client.ts
-                await api.billsUpdate(b.id, {
-                  creditor: newCreditor,
-                  notes: newNotes,
-                  // Pass other fields if they were modified, or if your update endpoint requires them
-                });
-              }
+            // Cache new key as active for the new family.
+            // New family should start at key_version=1 unless your backend increments differently.
+            const NEW_FAMILY_KEY_VERSION = 1;
+            await EncryptionService.cacheFamilyKey(newKeyHex, NEW_FAMILY_KEY_VERSION);
 
-              // 6. Securely Share the New Key with the Server (Wrapped in your RSA Public Key)
-              const myKeys = await EncryptionService.ensureKeyPair();
-              const wrappedKey = EncryptionService.wrapKeyForUser(newKey, myKeys.publicKey);
-
-              // Assuming api.shareKey exists in your client.ts
-              await api.shareKey({
-                family_id: leaveRes.new_family_id,
-                target_user_id: data.current_user_id, // Your ID
-                encrypted_key: wrappedKey,
+            for (const b of plaintextBills) {
+              await api.billsUpdate(b.id, {
+                creditor: b.creditor_plain,          // plaintext -> api.billsUpdate encrypts with new active key
+                notes: b.notes_plain,                // plaintext -> encrypts with new active key
+                amount_cents: b.amount_cents_plain,  // api.billsUpdate will set amount_encrypted too
               });
-
-              // 7. Cache the new key locally for immediate use
-              await EncryptionService.cacheFamilyKey(newKey);
-
-              Alert.alert(t("Success"), t("You have left the family and your data has been re-secured."));
-              onRefresh();
-            } catch (e: any) {
-              console.error("Leave failed", e);
-              Alert.alert(t("Error"), e.message || t("Failed to leave family securely."));
-            } finally {
-              setIsRotatingKeys(false);
             }
-          },
+
+            // 5) Share the NEW key to the server for your user (wrapped with your RSA public key)
+            const myKeys = await EncryptionService.ensureKeyPair();
+            const wrappedKey = EncryptionService.wrapKeyForUser(
+              newKeyHex,
+              myKeys.publicKey as unknown as string // types: KeyPairKey -> string
+            );
+
+            await api.shareKey({
+              family_id: leaveRes.new_family_id,
+              target_user_id: data.current_user_id,
+              encrypted_key: wrappedKey,
+            });
+
+            Alert.alert(t("Success"), t("You have left the family and your data has been re-secured."));
+            onRefresh();
+          } catch (e: any) {
+            console.error("Leave failed", e);
+            Alert.alert(t("Error"), e.message || t("Failed to leave family securely."));
+          } finally {
+            setIsRotatingKeys(false);
+          }
         },
-      ]
-    );
-  };
+      },
+    ]
+  );
+};
+
   
   const handleDeleteAccount = async () => {
     Alert.alert(
