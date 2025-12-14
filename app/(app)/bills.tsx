@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -207,6 +207,24 @@ export default function Bills() {
   const [tab, setTab] = useState<"pending" | "paid">("pending");
   const [sort, setSort] = useState<SortKey>("due");
 
+  // Prevent double notification syncing
+  const syncedBillsHash = useRef("");
+
+  // --- Notification Sync Logic ---
+  useEffect(() => {
+    // We create a hash of the critical data points. 
+    // This ensures we ONLY sync if the bills have actually changed (e.g. status update, new bill),
+    // and NOT just because the screen was refocused or refreshed with identical data.
+    const currentHash = JSON.stringify(bills.map(b => b.id + b.status + b.due_date));
+    
+    if (syncedBillsHash.current !== currentHash && bills.length > 0) {
+      // console.log("Bills changed, syncing notifications...");
+      resyncLocalNotificationsFromBills(bills);
+      syncedBillsHash.current = currentHash;
+    }
+  }, [bills]);
+
+
   // --- Status Bar Management ---
   useFocusEffect(
     useCallback(() => {
@@ -219,7 +237,6 @@ export default function Bills() {
 
       return () => {
         // When leaving Bills (to Profile etc) -> Revert to theme default
-        // If Light Mode -> Dark Text. If Dark Mode -> Light Text.
         const defaultStyle = theme.mode === "dark" ? "light-content" : "dark-content";
         StatusBar.setBarStyle(defaultStyle);
       };
@@ -263,7 +280,8 @@ export default function Bills() {
   const load = useCallback(async () => {
     const res = await api.billsList();
     setBills(res.bills);
-    await resyncLocalNotificationsFromBills(res.bills);
+    // REMOVED: await resyncLocalNotificationsFromBills(res.bills);
+    // This is now handled by the useEffect above to prevent duplicate firing on focus.
   }, []);
 
   useFocusEffect(
@@ -280,6 +298,15 @@ export default function Bills() {
     try {
       await api.billsMarkPaid(item.id);
       await cancelBillReminderLocal(item.id);
+      
+      // Check for recurrence and alert user
+      if (item.recurrence_rule || item.is_recurring) {
+        Alert.alert(
+          t("Bill Paid"),
+          t("Since this bill is recurring, we went ahead and recreated it for the next period.")
+        );
+      }
+      
       await load();
     } catch (e: any) {
       Alert.alert(t("Error"), e.message);
@@ -413,6 +440,16 @@ export default function Bills() {
                 {tab === "pending" ? t("You have no pending bills. Enjoy the freedom!") : t("No paid history")}
               </Text>
             </View>
+          }
+          // ADDED: Footer hint for long press
+          ListFooterComponent={
+            bills.length > 0 ? (
+              <View style={{ padding: 20, alignItems: "center", opacity: 0.6 }}>
+                <Text style={{ fontSize: 12, color: theme.colors.subtext, textAlign: "center" }}>
+                  {t("Tip: Long press a bill to see more actions")}
+                </Text>
+              </View>
+            ) : null
           }
           renderItem={({ item }) => (
             <BillItem item={item} theme={theme} t={t} onLongPress={() => onLongPressBill(item)} />
