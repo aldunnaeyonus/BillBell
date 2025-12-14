@@ -7,6 +7,7 @@ import {
   removeNotificationIdForBill,
   getAllBillNotificationPairs,
 } from "./notificationStore";
+import { SchedulableTriggerInputTypes } from "expo-notifications"; // <--- ADD THIS
 
 // REMOVED: const { t } = useTranslation(); -> Hooks cannot be used in non-component files.
 
@@ -91,12 +92,12 @@ export async function scheduleBillReminderLocal(bill: {
     if (s > now) return;
   }
 
-  const fireAt = nextFireDateForBill(bill.due_date, bill.reminder_offset_days ?? 1, bill.reminder_time_local ?? "09:00:00");
+  const fireAt = nextFireDateForBill(bill.due_date, bill.reminder_offset_days ?? 0, bill.reminder_time_local ?? "09:00:00");
+  
   if (fireAt <= now) return;
 
   const amount = (bill.amount_cents / 100).toFixed(2);
   
-  // Use i18n.t() directly here
   const notificationId = await Notifications.scheduleNotificationAsync({
     content: {
       title: i18n.t("Bill reminder"),
@@ -104,14 +105,13 @@ export async function scheduleBillReminderLocal(bill: {
       data: { bill_id: bill.id },
       sound: "default",
       categoryIdentifier: "bill-due-actions",
-      // MOVED: channelId belongs in content for Android, not trigger
-      // Ensure you have created this channel elsewhere using setNotificationChannelAsync
-      color: "#ffffff", 
+      color: "#ffffff",
     },
-trigger: {
-date: fireAt,
-channelId: 'bill-due-actions',
-},
+    // FIX: Add the 'type' property explicitly
+    trigger: { 
+      type: SchedulableTriggerInputTypes.DATE,
+      date: fireAt 
+    },
   });
 
   await setNotificationIdForBill(bill.id, notificationId);
