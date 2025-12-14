@@ -16,7 +16,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
-
+import * as EncryptionService from '../../src/security/EncryptionService';
 // --- Components ---
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {

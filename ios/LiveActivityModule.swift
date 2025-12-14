@@ -5,48 +5,63 @@ import React
 @objc(LiveActivityModule)
 class LiveActivityModule: NSObject {
   
-  @objc(startActivity:amount:dueDate:resolver:rejecter:)
-  func startActivity(_ billName: String, amount: String, dueDate: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+    // --- FIX: Update this string to match the new arguments exactly ---
+  @objc(startActivity:overdueCount:monthTotal:monthCount:resolve:reject:)
+  func startActivity(_ overdueTotal: String, overdueCount: Int, monthTotal: String, monthCount: Int, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
     
-      // Check if iOS 16.1+
     if #available(iOS 16.1, *) {
-        // Guard: Check permissions
+        // ... (Rest of your code remains the same) ...
       guard ActivityAuthorizationInfo().areActivitiesEnabled else {
         reject("not_enabled", "Live Activities are not enabled", nil)
         return
       }
       
-        // --- FIX: Use 'BillBellWidgetsAttributes' to match your widget file ---
-      let attributes = BillBellWidgetsAttributes(billId: UUID().uuidString)
-      
+      let attributes = BillBellWidgetsAttributes(billId: "bill_summary")
       let contentState = BillBellWidgetsAttributes.ContentState(
-        billName: billName,
-        amount: amount,
-        dueDate: dueDate
+        overdueTotal: overdueTotal,
+        overdueCount: overdueCount,
+        monthTotal: monthTotal,
+        monthCount: monthCount
       )
       
       do {
-          // Request Activity
-        let activity = try Activity<BillBellWidgetsAttributes>.request(
-          attributes: attributes,
-          content: .init(state: contentState, staleDate: nil)
-        )
-        resolve(activity.id)
+        if let currentActivity = Activity<BillBellWidgetsAttributes>.activities.first {
+          if #available(iOS 16.2, *) {
+            let content = ActivityContent(state: contentState, staleDate: nil)
+            Task { await currentActivity.update(content) }
+          } else {
+            Task { await currentActivity.update(using: contentState) }
+          }
+          resolve(currentActivity.id)
+        } else {
+          let activity: Activity<BillBellWidgetsAttributes>
+          if #available(iOS 16.2, *) {
+            let content = ActivityContent(state: contentState, staleDate: nil)
+            activity = try Activity.request(attributes: attributes, content: content, pushType: nil)
+          } else {
+            activity = try Activity.request(attributes: attributes, contentState: contentState, pushType: nil)
+          }
+          resolve(activity.id)
+        }
       } catch {
-        reject("error", "Failed to start: \(error.localizedDescription)", error)
+        reject("error", error.localizedDescription, error)
       }
     } else {
-      resolve(nil) // Not supported on this version
+      resolve(nil)
     }
   }
   
   @objc(endAllActivities)
   func endAllActivities() {
+      // ... (Your existing endAllActivities code) ...
     if #available(iOS 16.1, *) {
       Task {
-          // --- FIX: Use 'BillBellWidgetsAttributes' here too ---
         for activity in Activity<BillBellWidgetsAttributes>.activities {
-          await activity.end(nil, dismissalPolicy: .immediate)
+          if #available(iOS 16.2, *) {
+            await activity.end(nil, dismissalPolicy: .immediate)
+          } else {
+            await activity.end(using: nil, dismissalPolicy: .immediate)
+          }
         }
       }
     }

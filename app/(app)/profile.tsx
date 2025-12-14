@@ -12,7 +12,7 @@ import {
   ActionSheetIOS,
   Platform,
   Modal,
-  Switch, // <--- ADDED
+  Switch,
 } from "react-native";
 import { router } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -27,8 +27,9 @@ import { useTheme, Theme } from "../../src/ui/useTheme";
 import { notifyImportCode } from "../../src/notifications/importCode";
 import { copyToClipboard } from "../../src/ui/copy";
 import { googleSignOut } from "../../src/auth/providers";
+import * as EncryptionService from "../../src/security/EncryptionService"; // <--- ADDED
 
-// [NEW] Imports for Live Activity Logic
+// Imports for Live Activity Logic
 import { userSettings } from "../../src/storage/userSettings";
 import { stopActivity } from "../../src/native/LiveActivity";
 
@@ -174,7 +175,6 @@ function ActionRow({
   );
 }
 
-// [NEW] Component for Toggle Switch Rows
 function SwitchRow({
   icon,
   label,
@@ -271,10 +271,10 @@ export default function Profile() {
   const [data, setData] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingCode, setLoadingCode] = useState(false);
+  const [isRotatingKeys, setIsRotatingKeys] = useState(false); // <--- ADDED
   const [importInfo, setImportInfo] = useState<{ code: string; expires: string } | null>(null);
   const [showLangModal, setShowLangModal] = useState(false);
 
-  // [NEW] State for Live Activities
   const [liveActivityEnabled, setLiveActivityEnabled] = useState(true);
 
   const langs = [
@@ -299,7 +299,6 @@ export default function Profile() {
 
   useEffect(() => {
     loadData();
-    // [NEW] Load preference on mount
     userSettings.getLiveActivityEnabled().then(setLiveActivityEnabled);
   }, [loadData]);
 
@@ -316,12 +315,9 @@ export default function Profile() {
     }
   };
 
-  // [NEW] Handler for Live Activity Toggle
   const handleToggleLiveActivity = async (val: boolean) => {
     setLiveActivityEnabled(val);
     await userSettings.setLiveActivityEnabled(val);
-
-    // If turning off, kill the lock screen widget immediately
     if (!val && Platform.OS === 'ios') {
       stopActivity();
     }
@@ -350,22 +346,75 @@ export default function Profile() {
     );
   };
 
+  // [UPDATED] Secure Leave Logic
   const handleLeaveFamily = () => {
     Alert.alert(
       t("Leave Family"),
-      t("LeaveFamilyConfirm"),
+      t("You will leave this group and take your data with you. We will re-encrypt your data with a new key."),
       [
         { text: t("Cancel"), style: "cancel" },
         {
-          text: t("Leave"),
+          text: t("Leave & Secure Data"),
           style: "destructive",
           onPress: async () => {
             try {
-              await api.familyLeave();
-              Alert.alert(t("Success"), t("You have left the family."));
+              setIsRotatingKeys(true);
+
+              // 1. Fetch current bills (still encrypted with OLD family key)
+              const { bills } = await api.billsList();
+
+              // 2. Decrypt locally so we have raw data
+              const decryptedBills = await Promise.all(
+                bills.map(async (b: any) => ({
+                  ...b,
+                  creditor: await EncryptionService.decryptData(b.creditor),
+                  notes: await EncryptionService.decryptData(b.notes),
+                }))
+              );
+
+              // 3. Leave the family on Server
+              // This moves user + bills to a new Family ID in the database
+              const leaveRes = await api.familyLeave(); 
+              // Expecting: { success: true, new_family_code: '...', new_family_id: 123 }
+
+              // 4. Generate a NEW Family Key
+              const newKey = EncryptionService.generateNewFamilyKey();
+
+              // 5. Re-Encrypt bills with the NEW Key
+              // We must loop and update them on the server
+              for (const b of decryptedBills) {
+                const newCreditor = await EncryptionService.encryptData(b.creditor, newKey);
+                const newNotes = await EncryptionService.encryptData(b.notes, newKey);
+
+                // Assuming api.billUpdate exists in your client.ts
+                await api.billsUpdate(b.id, {
+                  creditor: newCreditor,
+                  notes: newNotes,
+                  // Pass other fields if they were modified, or if your update endpoint requires them
+                });
+              }
+
+              // 6. Securely Share the New Key with the Server (Wrapped in your RSA Public Key)
+              const myKeys = await EncryptionService.ensureKeyPair();
+              const wrappedKey = EncryptionService.wrapKeyForUser(newKey, myKeys.publicKey);
+
+              // Assuming api.shareKey exists in your client.ts
+              await api.shareKey({
+                family_id: leaveRes.new_family_id,
+                target_user_id: data.current_user_id, // Your ID
+                encrypted_key: wrappedKey,
+              });
+
+              // 7. Cache the new key locally for immediate use
+              await EncryptionService.cacheFamilyKey(newKey);
+
+              Alert.alert(t("Success"), t("You have left the family and your data has been re-secured."));
               onRefresh();
             } catch (e: any) {
-              Alert.alert(t("Error"), e.message);
+              console.error("Leave failed", e);
+              Alert.alert(t("Error"), e.message || t("Failed to leave family securely."));
+            } finally {
+              setIsRotatingKeys(false);
             }
           },
         },
@@ -453,17 +502,17 @@ export default function Profile() {
         return;
       }
 
-      const exportData = bills.map((b: any) => ({
+      const exportData = await Promise.all(bills.map(async (b: any) => ({
         ID: b.id,
-        Creditor: b.creditor,
+        Creditor: await EncryptionService.decryptData(b.creditor),
         Amount: centsToDollars(b.amount_cents),
         DueDate: b.due_date,
         Status: b.status === "paid" || b.paid_at ? "Paid" : "Pending",
-        Notes: b.notes || "",
+        Notes: await EncryptionService.decryptData(b.notes || ""),
         Recurrence: b.recurrence || "none",
         OffsetDays: b.reminder_offset_days || "0",
         Reminder: b.reminder_time_local || "",
-      }));
+      })));
 
       const csvString = jsonToCSV(exportData);
       
@@ -560,7 +609,6 @@ export default function Profile() {
             <SectionTitle title={t("Management")} theme={theme} />
             <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
               
-              {/* [NEW] iOS Only: Live Activity Toggle */}
               {Platform.OS === 'ios' && (
                 <SwitchRow 
                   icon="notifications-outline"
@@ -678,6 +726,16 @@ export default function Profile() {
         </View>
       </ScrollView>
 
+      {/* Loading Overlay for Key Rotation */}
+      {isRotatingKeys && (
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 999 }]}>
+          <View style={{ backgroundColor: theme.colors.card, padding: 24, borderRadius: 16, alignItems: 'center', gap: 16 }}>
+             <ActivityIndicator size="large" color={theme.colors.primary} />
+             <Text style={{ color: theme.colors.primaryText, fontWeight: '600' }}>{t("Securing your data...")}</Text>
+          </View>
+        </View>
+      )}
+
       <Modal
         visible={showLangModal}
         transparent
@@ -722,7 +780,6 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
-  // ... (Styles remain unchanged)
   container: {
     flex: 1,
   },

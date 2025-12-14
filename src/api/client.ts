@@ -85,6 +85,18 @@ export const api = {
     return { bills: decryptedBills };
   },
 
+  uploadPublicKey: (public_key: string) => 
+    request("/keys/public", { method: "POST", body: JSON.stringify({ public_key }) }),
+
+  getPublicKey: (userId: number) => 
+    request(`/keys/public/${userId}`),
+
+  shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: string }) =>
+    request("/keys/shared", { method: "POST", body: JSON.stringify(payload) }),
+
+  getMySharedKey: () => 
+    request("/keys/shared"),
+
   billsCreate: async (bill: any) => {
     // Encrypt sensitive fields before sending
     const payload = {
@@ -102,15 +114,26 @@ export const api = {
     return request("/bills", { method: "POST", body: JSON.stringify(payload) });
   },
 
-  billsUpdate: async (id: number, bill: any) => {
+billsUpdate: async (id: number, bill: any) => {
     const payload = { ...bill };
 
-    // Encrypt if these fields are present in the update object
-    if (payload.creditor) payload.creditor = await encryptData(payload.creditor);
-    if (payload.notes) payload.notes = await encryptData(payload.notes);
-    if (payload.amount_cents !== undefined) {
+    // 1. Encrypt Creditor
+    if (payload.creditor) {
+      payload.creditor = await encryptData(payload.creditor);
+    }
+
+    // 2. Encrypt Notes
+    if (payload.notes) {
+      payload.notes = await encryptData(payload.notes);
+    }
+
+    // 3. Encrypt Amount (convert to string first)
+    if (payload.amount_cents !== undefined && payload.amount_cents !== null) {
       payload.amount_encrypted = await encryptData(String(payload.amount_cents));
-      // Optionally remove raw amount_cents if you don't want it sent at all
+      
+      // OPTIONAL: If your server has been updated to ONLY use amount_encrypted, 
+      // you can delete payload.amount_cents here. 
+      // Otherwise, keep it for backward compatibility if the DB column is still used.
       // delete payload.amount_cents; 
     }
 

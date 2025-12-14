@@ -2,32 +2,87 @@ import * as SecureStore from 'expo-secure-store';
 import Crypto from 'react-native-quick-crypto';
 import { Buffer } from 'buffer';
 
-const KEY_ALIAS = 'billbell_master_key_v1';
+const PUBLIC_KEY_ALIAS = 'billbell_rsa_public';
+const PRIVATE_KEY_ALIAS = 'billbell_rsa_private';
+const FAMILY_KEY_ALIAS = 'billbell_family_key_cache';
 
-// 1. Get or Generate the Master Key
-async function getMasterKey(): Promise<Buffer> {
-  let hexKey = await SecureStore.getItemAsync(KEY_ALIAS);
+// --- RSA Key Management ---
+
+export async function ensureKeyPair() {
+  let pub = await SecureStore.getItemAsync(PUBLIC_KEY_ALIAS);
   
-  if (!hexKey) {
-    console.log("Creating new encryption key...");
-    // Generate a random 256-bit key
-    const key = Crypto.randomBytes(32); 
-    hexKey = key.toString('hex');
-    await SecureStore.setItemAsync(KEY_ALIAS, hexKey);
+  if (!pub) {
+    // FIX: Use 'generateKeyPairSync' (Sync version)
+    const { privateKey, publicKey } = Crypto.generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    });
+    
+    // Cast to string is safe because format is 'pem'
+    await SecureStore.setItemAsync(PUBLIC_KEY_ALIAS, publicKey as string);
+    await SecureStore.setItemAsync(PRIVATE_KEY_ALIAS, privateKey as string);
+    
+    return { publicKey, privateKey };
   }
   
-  return Buffer.from(hexKey, 'hex');
+  return { 
+    publicKey: pub, 
+    privateKey: await SecureStore.getItemAsync(PRIVATE_KEY_ALIAS) 
+  };
 }
 
-// 2. Encrypt (AES-256-GCM)
-// RENAMED from encryptText -> encryptData
-export async function encryptData(text: string): Promise<string> {
+// --- Family Key Management ---
+
+// Generate a NEW random AES key (used when creating/leaving family)
+export function generateNewFamilyKey(): string {
+  return Crypto.randomBytes(32).toString('hex');
+}
+
+// Encrypt the AES Family Key using a User's Public RSA Key (to share it)
+export function wrapKeyForUser(familyKeyHex: string, recipientPublicKeyPem: string): string {
+  const bufferToEncrypt = Buffer.from(familyKeyHex, 'utf8');
+  const encrypted = Crypto.publicEncrypt(
+    { key: recipientPublicKeyPem, padding: Crypto.constants.RSA_PKCS1_OAEP_PADDING },
+    bufferToEncrypt
+  );
+  return encrypted.toString('base64');
+}
+
+// Decrypt a received AES Family Key using My Private RSA Key
+export async function unwrapMyKey(wrappedKeyBase64: string): Promise<string> {
+  const privateKeyPem = await SecureStore.getItemAsync(PRIVATE_KEY_ALIAS);
+  if (!privateKeyPem) throw new Error("No private key found");
+
+  const bufferToDecrypt = Buffer.from(wrappedKeyBase64, 'base64');
+  const decrypted = Crypto.privateDecrypt(
+    { key: privateKeyPem, padding: Crypto.constants.RSA_PKCS1_OAEP_PADDING },
+    bufferToDecrypt
+  );
+  return decrypted.toString('utf8');
+}
+
+// Store Family Key locally for session use
+export async function cacheFamilyKey(keyHex: string) {
+  await SecureStore.setItemAsync(FAMILY_KEY_ALIAS, keyHex);
+}
+
+async function getActiveFamilyKey(): Promise<Buffer> {
+  const hex = await SecureStore.getItemAsync(FAMILY_KEY_ALIAS);
+  if (!hex) throw new Error("Family key not loaded. Please fetch from server.");
+  return Buffer.from(hex, 'hex');
+}
+
+// --- Data Encryption (AES-GCM) ---
+
+// Accepts optional key for rotation scenarios
+export async function encryptData(text: string, specificKeyHex?: string): Promise<string> {
   if (!text) return "";
   try {
-    const key = await getMasterKey();
-    const iv = Crypto.randomBytes(12); 
+    const key = specificKeyHex ? Buffer.from(specificKeyHex, 'hex') : await getActiveFamilyKey();
+    const iv = Crypto.randomBytes(12);
     const cipher = Crypto.createCipheriv('aes-256-gcm', key, iv);
-    
+
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
     const authTag = cipher.getAuthTag().toString('hex');
@@ -35,52 +90,30 @@ export async function encryptData(text: string): Promise<string> {
     return `${iv.toString('hex')}:${authTag}:${encrypted}`;
   } catch (e) {
     console.error("Encryption failed", e);
-    return text; 
+    return text;
   }
 }
 
-// 3. Decrypt
-// RENAMED from decryptText -> decryptData
-export async function decryptData(encryptedString: string): Promise<string> {
-  // 1. Fast check: If it doesn't look like our format "iv:tag:cipher", it's definitely plain text.
-  if (!encryptedString || typeof encryptedString !== 'string' || !encryptedString.includes(':')) {
-    return encryptedString || "";
-  }
-  
+// Accepts optional key for rotation scenarios
+export async function decryptData(encryptedString: string, specificKeyHex?: string): Promise<string> {
+  if (!encryptedString || !encryptedString.includes(':')) return encryptedString || "";
+
   try {
     const parts = encryptedString.split(':');
-    
-    // 2. Formatting Check: Must have exactly 3 parts for our AES-GCM format
-    if (parts.length !== 3) {
-        return encryptedString; // Return original if it's just a note like "Re: Subject"
-    }
+    if (parts.length !== 3) return encryptedString;
 
     const [ivHex, authTagHex, encryptedHex] = parts;
-    const key = await getMasterKey();
-    
-    const decipher = Crypto.createDecipheriv(
-      'aes-256-gcm', 
-      key, 
-      Buffer.from(ivHex, 'hex')
-    );
-    
+    const key = specificKeyHex ? Buffer.from(specificKeyHex, 'hex') : await getActiveFamilyKey();
+
+    const decipher = Crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(ivHex, 'hex'));
     decipher.setAuthTag(Buffer.from(authTagHex, 'hex') as any);
-    
+
     let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
-
   } catch (e) {
-    // 3. FALLBACK: If decryption crashes (e.g., wrong key, or it was actually plain text),
-    // strictly return the original string so the user can see their data.
-    console.warn("Decryption failed, displaying raw text:", encryptedString.substring(0, 10) + "..."); 
-    return encryptedString; 
+    console.warn("Decryption failed:", e);
+    return encryptedString;
   }
-}
-
-// 4. Key Export
-export async function exportKeyForBackup(): Promise<string> {
-    const key = await SecureStore.getItemAsync(KEY_ALIAS);
-    return key || "";
 }
