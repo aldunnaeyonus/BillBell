@@ -249,6 +249,8 @@
   "Next Month": "来月",
   "Future": "将来",
   "Bill Overdue": "請求書 期限切れ",
+  "Max size: 5MB": "最大サイズ：5MB",
+  "Save Changes": "変更を保存",
   "faqSections": [
     {
       "title": "債務の追加と管理",

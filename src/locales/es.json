@@ -249,6 +249,8 @@
   "Next Month": "Próximo Mes",
   "Future": "Futuro",
   "Bill Overdue": "Factura Vencida",
+  "Max size: 5MB": "Tamaño máx.: 5 MB",
+  "Save Changes": "Guardar Cambios",
   "faqSections": [
     {
       "title": "Añadir y Gestionar Deudas",

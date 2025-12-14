@@ -249,6 +249,8 @@
   "Next Month": "Le Mois Prochain",
   "Future": "Futur",
   "Bill Overdue": "Facture en Retard",
+  "Max size: 5MB": "Taille max. : 5 Mo",
+  "Save Changes": "Enregistrer les Modifications",
   "faqSections": [
     {
       "title": "Ajouter et Gérer les Dettes",

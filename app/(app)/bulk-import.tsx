@@ -62,6 +62,7 @@ function FileDropZone({
   theme: Theme;
   parsedCount: number;
 }) {
+  const { t } = useTranslation();
   return (
     <Pressable
       onPress={onPress}
@@ -80,21 +81,21 @@ function FileDropZone({
         color={filename ? theme.colors.primary : theme.colors.subtext}
       />
       <View style={{ alignItems: "center", gap: 4 }}>
-        <Text
-          style={[
-            styles.dropZoneTitle,
-            { color: filename ? theme.colors.primaryText : theme.colors.subtext },
-          ]}
-        >
-          {filename || "Tap to select CSV/XLSX"}
-        </Text>
+<Text
+  style={[
+    styles.dropZoneTitle,
+    { color: filename ? theme.colors.primaryText : theme.colors.subtext },
+  ]}
+>
+  {filename || t("Tap to select CSV/XLSX")}
+</Text>
         {filename ? (
           <Text style={{ color: theme.colors.accent, fontWeight: "700" }}>
             {parsedCount} items found
           </Text>
         ) : (
           <Text style={{ color: theme.colors.subtext, fontSize: 12 }}>
-            Max size: 5MB
+            {t("Max size: 5MB")}
           </Text>
         )}
       </View>

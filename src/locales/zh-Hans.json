@@ -249,6 +249,8 @@
   "Next Month": "下个月",
   "Future": "未来",
   "Bill Overdue": "账单已逾期",
+  "Max size: 5MB": "最大大小: 5MB",
+  "Save Changes": "保存更改",
   "faqSections": [
     {
       "title": "添加和管理债务",
