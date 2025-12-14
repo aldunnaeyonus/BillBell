@@ -12,7 +12,9 @@ import {
 import { useTranslation, I18nextProvider } from "react-i18next";
 import { BiometricAuth } from "../src/auth/BiometricAuth";
 import { LogBox } from "react-native";
+import { Buffer } from "buffer";
 
+(globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
 // --- Configuration ---
 // Explicitly ignore all logs in Production (Release builds), but keep them in Dev.
 if (!__DEV__) {
