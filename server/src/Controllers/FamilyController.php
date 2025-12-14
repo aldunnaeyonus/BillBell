@@ -44,7 +44,7 @@ class FamilyController {
     $stmt = $pdo->prepare("UPDATE bills SET family_id = ? WHERE family_id = ? AND created_by_user_id = ?");
     $stmt->execute([$newFamilyId, $currentFamilyId, $userId]);
 
-    return $newCode;
+    return ["code" => $newCode, "id" => $newFamilyId];
   }
 
   // --- Endpoints ---
@@ -174,27 +174,27 @@ class FamilyController {
     }
   }
 
-  public static function leave() {
+public static function leave() {
     $userId = Auth::requireUserId();
     $pdo = DB::pdo();
 
-    // Check current status
-    $stmt = $pdo->prepare("SELECT family_id FROM family_members WHERE user_id = ?");
-    $stmt->execute([$userId]);
-    $currentUser = $stmt->fetch();
-
-    if (!$currentUser) Utils::json(['error' => 'You are not in a family'], 400);
-    
-    $currentFamilyId = $currentUser['family_id'];
+    // ... (existing checks) ...
 
     try {
         $pdo->beginTransaction();
-        $newCode = self::moveUserToNewFamily($userId, $currentFamilyId);
+        // Capture the result which contains the ID now
+        $result = self::moveUserToNewFamily($userId, $currentFamilyId); 
         $pdo->commit();
-        Utils::json(['success' => true, 'message' => 'You have left the family.', 'new_family_code' => $newCode]);
+        
+        // Return both code and ID
+        Utils::json([
+            'success' => true, 
+            'message' => 'You have left the family.', 
+            'new_family_code' => $result['code'],
+            'new_family_id' => $result['id']
+        ]);
     } catch (\Exception $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
-        Utils::json(['error' => 'Failed to leave family: ' . $e->getMessage()], 500);
+        // ...
     }
-  }
+}
 }

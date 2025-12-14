@@ -37,54 +37,45 @@ class ImportController {
     $codeStmt->execute([$familyId, $codeHash]);
     $codeRow = $codeStmt->fetch();
 
-    if (!$codeRow) Utils::json(["error" => "Invalid import code"], 401);
-    if (!empty($codeRow["used_at"])) Utils::json(["error" => "Import code already used"], 401);
+    if (!$codeRow) Utils::json(["error" => "Invalid code"], 404);
+    if ($codeRow["used_at"]) Utils::json(["error" => "Code already used"], 410); // 410 Gone
+    if (new \DateTime() > new \DateTime($codeRow["expires_at"])) Utils::json(["error" => "Code expired"], 410);
 
-    $now = new \DateTime();
-    $exp = new \DateTime($codeRow["expires_at"]);
-    if ($now > $exp) Utils::json(["error" => "Import code expired"], 401);
-
-    // 3. Mark Code as Used
-    $useStmt = $pdo->prepare("UPDATE import_codes SET used_at=NOW() WHERE id=? AND used_at IS NULL");
-    $useStmt->execute([(int)$codeRow["id"]]);
-    if ($useStmt->rowCount() !== 1) {
-      Utils::json(["error" => "Import code already used"], 401);
-    }
-
-    // 4. Parse & Insert Payload
-    $bills = $data["bills"] ?? null;
+    // 3. Process Bills
+    $bills = $data["bills"] ?? [];
     if (!is_array($bills)) Utils::json(["error" => "bills must be an array"], 422);
 
+    $validRecurrences = ["monthly","weekly","bi-weekly","annually"];
+    
     $inserted = 0;
-
+    
+    $pdo->beginTransaction();
     try {
-      $pdo->beginTransaction();
+      // Mark code as used
+      $upd = $pdo->prepare("UPDATE import_codes SET used_at=NOW() WHERE id=?");
+      $upd->execute([$codeRow["id"]]);
 
-      // FIX: Matching 'bills.sql' columns (creditor, amount_cents, notes)
+      // [UPDATE] Added amount_encrypted to the INSERT columns
       $ins = $pdo->prepare("
-        INSERT INTO bills 
-        (family_id, creditor, amount_cents, due_date, notes, recurrence, reminder_offset_days, reminder_time_local, created_by_user_id, created_at)
-        VALUES (?,?,?,?,?,?,?,?,?, NOW())
+        INSERT INTO bills
+        (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, notes, recurrence, reminder_offset_days, reminder_time_local, status)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?, 'active')
       ");
 
       foreach ($bills as $b) {
-        if (!is_array($b)) continue;
-        $rawRecurrence = isset($b["recurrence"]) ? strtolower(trim((string)$b["recurrence"])) : "";
-        $validRecurrences = ["none", "weekly", "bi-weekly", "monthly", "annually"];
-
-        // Map CSV 'name' -> DB 'creditor'
+        $rawRecurrence = strtolower(trim($b["recurrence"] ?? ""));
+        
         $creditor = isset($b["name"]) ? trim((string)$b["name"]) : "";
         
         // Map CSV 'amount' (float) -> DB 'amount_cents' (int)
-        // e.g. 20.50 becomes 2050
         $amountFloat = isset($b["amount"]) ? (float)$b["amount"] : null;
         $amountCents = $amountFloat ? (int)round($amountFloat * 100) : 0;
         
         $dueDate = isset($b["due_date"]) ? trim((string)$b["due_date"]) : ""; 
         $notes = isset($b["notes"]) ? (string)$b["notes"] : null;
         
-        // Hardcoded defaults for bulk import
-        $recurrence = in_array($rawRecurrence, $validRecurrences) ? $rawRecurrence : "none";        $offset = 1; 
+        $recurrence = in_array($rawRecurrence, $validRecurrences) ? $rawRecurrence : "none";
+        $offset = 1; 
         $time = "09:00:00";
 
         // Basic validation
@@ -92,32 +83,28 @@ class ImportController {
            continue; 
         }
 
-$ins->execute([
-    $familyId, 
-    $creditor, 
-    $amountCents, 
-    $dueDate, 
-    $notes, 
-    $recurrence, // <-- Now using the CSV value
-    $offset, 
-    $time, 
-    $userId
-]);
+        $ins->execute([
+            $familyId, 
+            $userId, 
+            $userId, 
+            $creditor,       // Plain text (server can't encrypt)
+            $amountCents, 
+            null,            // [UPDATE] Explicitly set amount_encrypted to NULL
+            $dueDate, 
+            $notes,          // Plain text (server can't encrypt)
+            $recurrence,
+            $offset, 
+            $time
+        ]);
         $inserted++;
       }
 
       $pdo->commit();
     } catch (\Throwable $e) {
       if ($pdo->inTransaction()) $pdo->rollBack();
-      // Optional: Reset the code so they can try again if the SQL failed
-      // $pdo->prepare("UPDATE import_codes SET used_at=NULL WHERE id=?")->execute([(int)$codeRow["id"]]);
-      
-      Utils::json(["error" => "Import failed", "detail" => $e->getMessage()], 500);
+      throw $e;
     }
 
-    Utils::json([
-      "ok" => true,
-      "inserted" => $inserted,
-    ]);
+    Utils::json(["ok" => true, "inserted" => $inserted]);
   }
 }

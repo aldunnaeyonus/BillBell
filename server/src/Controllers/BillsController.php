@@ -45,25 +45,32 @@ class BillsController {
     if (strlen($reminderTime) === 5) $reminderTime .= ":00";
 
     $recurrence = $data["recurrence"] ?? "none";
-    // CHANGE 1: Added "weekly" and "bi-weekly" to validation allow list
     if (!in_array($recurrence, ["none","monthly","weekly","bi-weekly","annually"], true)) Utils::json(["error" => "Invalid recurrence"], 422);
+
+    // [E2EE] Capture the encrypted amount if provided
+    $amountEncrypted = $data["amount_encrypted"] ?? null;
+
     $stmt = $pdo->prepare("
-  INSERT INTO bills
-  (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes)
-  VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-");
-$stmt->execute([
-  $familyId, $userId, $userId,
-  $data["creditor"],
-  (int)$data["amount_cents"],
-  $data["due_date"],
-  "active",
-  null,
-  $recurrence,
-  $reminderOffset,
-  $reminderTime,
-  $data["notes"] ?? null // Add this line
-]);
+      INSERT INTO bills
+      (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+    ");
+    
+    $stmt->execute([
+      $familyId, 
+      $userId, 
+      $userId,
+      $data["creditor"],             // Encrypted String (via Client)
+      (int)$data["amount_cents"],    // Integer (via Client)
+      $amountEncrypted,              // Encrypted String (via Client)
+      $data["due_date"],
+      "active",
+      null,
+      $recurrence,
+      $reminderOffset,
+      $reminderTime,
+      $data["notes"] ?? null         // Encrypted String (via Client)
+    ]);
 
     Utils::json(["id" => (int)$pdo->lastInsertId()], 201);
   }
@@ -78,8 +85,9 @@ $stmt->execute([
     $stmt->execute([$id, $familyId]);
     if (!$stmt->fetch()) Utils::json(["error" => "Not found"], 404);
 
-$fields = ["creditor","amount_cents","due_date","recurrence","reminder_offset_days","reminder_time_local","status", "notes"];
-$sets = [];
+    // [E2EE] Added 'amount_encrypted' to the allowed fields list
+    $fields = ["creditor","amount_cents","amount_encrypted","due_date","recurrence","reminder_offset_days","reminder_time_local","status", "notes"];
+    $sets = [];
     $vals = [];
     foreach ($fields as $f) {
       if (array_key_exists($f, $data)) { $sets[] = "$f=?"; $vals[] = $data[$f]; }
@@ -123,7 +131,6 @@ $sets = [];
     $upd = $pdo->prepare("UPDATE bills SET status='paid', snoozed_until=NULL, updated_by_user_id=? WHERE id=? AND family_id=?");
     $upd->execute([$userId, $id, $familyId]);
 
-    // CHANGE 2: Determine date modifier based on recurrence type
     $dateModifier = null;
     if ($bill["recurrence"] === "weekly") $dateModifier = "+1 week";
     elseif ($bill["recurrence"] === "bi-weekly") $dateModifier = "+2 weeks";
@@ -135,29 +142,32 @@ $sets = [];
       $dt->modify($dateModifier);
       $nextDue = $dt->format("Y-m-d");
 
+      // Check duplicates (Note: dedupe might be weaker with randomized encryption)
       $chk = $pdo->prepare("SELECT id FROM bills WHERE family_id=? AND creditor=? AND amount_cents=? AND due_date=? LIMIT 1");
       $chk->execute([(int)$bill["family_id"], $bill["creditor"], (int)$bill["amount_cents"], $nextDue]);
 
       if (!$chk->fetch()) {
+        // [E2EE] Added amount_encrypted to the recurring bill creation
         $ins = $pdo->prepare("
-  INSERT INTO bills
-  (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes)
-  VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-");
-$ins->execute([
-  (int)$bill["family_id"],
-  (int)$bill["created_by_user_id"],
-  $userId,
-  $bill["creditor"],
-  (int)$bill["amount_cents"],
-  $nextDue,
-  "active",
-  null,
-  $bill["recurrence"],
-  (int)$bill["reminder_offset_days"],
-  $bill["reminder_time_local"],
-  $bill["notes"] // Copy notes to the new bill
-]);
+          INSERT INTO bills
+          (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ");
+        $ins->execute([
+          (int)$bill["family_id"],
+          (int)$bill["created_by_user_id"],
+          $userId,
+          $bill["creditor"],          // Inherit encrypted creditor
+          (int)$bill["amount_cents"], // Inherit amount int
+          $bill["amount_encrypted"],  // [E2EE] Inherit encrypted amount
+          $nextDue,
+          "active",
+          null,
+          $bill["recurrence"],
+          (int)$bill["reminder_offset_days"],
+          $bill["reminder_time_local"],
+          $bill["notes"]              // Inherit encrypted notes
+        ]);
       }
     }
 

@@ -35,6 +35,14 @@ class Routes {
     }
 
 // ... inside dispatch() ...
+
+
+
+    if ($method === "POST" && $path === "/keys/public") { KeysController::uploadPublicKey(); return; }
+    if ($method === "GET" && $path === "/keys/public/{id}") { KeysController::getUserPublicKey(); return; }
+    if ($method === "POST" && $path === "/keys/shared ") { KeysController::storeSharedKey(); return; }
+    if ($method === "GET" && $path === "/keys/shared ") { KeysController::getMySharedKey(); return; }
+
     if ($method === "DELETE" && $path === "/auth/user") { AuthController::delete(); return; }
 
     if ($method === "GET" && $path === "/health") { Utils::json(["ok" => true]); return; }
