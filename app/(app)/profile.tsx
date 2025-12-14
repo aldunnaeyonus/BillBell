@@ -12,6 +12,7 @@ import {
   ActionSheetIOS,
   Platform,
   Modal,
+  Switch, // <--- ADDED
 } from "react-native";
 import { router } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -26,6 +27,10 @@ import { useTheme, Theme } from "../../src/ui/useTheme";
 import { notifyImportCode } from "../../src/notifications/importCode";
 import { copyToClipboard } from "../../src/ui/copy";
 import { googleSignOut } from "../../src/auth/providers";
+
+// [NEW] Imports for Live Activity Logic
+import { userSettings } from "../../src/storage/userSettings";
+import { stopActivity } from "../../src/native/LiveActivity";
 
 // --- Helpers ---
 
@@ -169,6 +174,56 @@ function ActionRow({
   );
 }
 
+// [NEW] Component for Toggle Switch Rows
+function SwitchRow({
+  icon,
+  label,
+  value,
+  onValueChange,
+  theme,
+  isLast = false,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: boolean;
+  onValueChange: (val: boolean) => void;
+  theme: Theme;
+  isLast?: boolean;
+}) {
+  return (
+    <View
+      style={[
+        styles.actionRow,
+        {
+          backgroundColor: theme.colors.card,
+          borderBottomWidth: isLast ? 0 : 1,
+          borderBottomColor: theme.colors.border,
+        },
+      ]}
+    >
+      <View style={[styles.iconBox, { backgroundColor: theme.mode === 'dark' ? '#1E293B' : '#F1F5F9' }]}>
+        <Ionicons
+          name={icon}
+          size={22}
+          color={theme.colors.primary}
+        />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.actionLabel, { color: theme.colors.primaryText }]}>
+          {label}
+        </Text>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ false: "#767577", true: theme.colors.primary }}
+        thumbColor={"#f4f3f4"}
+        ios_backgroundColor="#3e3e3e"
+      />
+    </View>
+  );
+}
+
 function MemberAvatar({ 
   item, 
   theme, 
@@ -219,6 +274,9 @@ export default function Profile() {
   const [importInfo, setImportInfo] = useState<{ code: string; expires: string } | null>(null);
   const [showLangModal, setShowLangModal] = useState(false);
 
+  // [NEW] State for Live Activities
+  const [liveActivityEnabled, setLiveActivityEnabled] = useState(true);
+
   const langs = [
     { code: 'en', label: 'English' },
     { code: 'es', label: 'Español' },
@@ -241,6 +299,8 @@ export default function Profile() {
 
   useEffect(() => {
     loadData();
+    // [NEW] Load preference on mount
+    userSettings.getLiveActivityEnabled().then(setLiveActivityEnabled);
   }, [loadData]);
 
   const onRefresh = async () => {
@@ -253,6 +313,17 @@ export default function Profile() {
     if (data?.family_code) {
       await copyToClipboard(data.family_code);
       Alert.alert(t("Copied"), t("Share ID copied to clipboard."));
+    }
+  };
+
+  // [NEW] Handler for Live Activity Toggle
+  const handleToggleLiveActivity = async (val: boolean) => {
+    setLiveActivityEnabled(val);
+    await userSettings.setLiveActivityEnabled(val);
+
+    // If turning off, kill the lock screen widget immediately
+    if (!val && Platform.OS === 'ios') {
+      stopActivity();
     }
   };
 
@@ -488,6 +559,18 @@ export default function Profile() {
           <View style={styles.section}>
             <SectionTitle title={t("Management")} theme={theme} />
             <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+              
+              {/* [NEW] iOS Only: Live Activity Toggle */}
+              {Platform.OS === 'ios' && (
+                <SwitchRow 
+                  icon="notifications-outline"
+                  label={t("Show Overdue on Lock Screen")}
+                  value={liveActivityEnabled}
+                  onValueChange={handleToggleLiveActivity}
+                  theme={theme}
+                />
+              )}
+
               <ActionRow
                 icon="settings-outline"
                 label={t("Shared Settings")}
@@ -552,7 +635,6 @@ export default function Profile() {
                 theme={theme}
                 onPress={() => router.push("/(app)/feedback")}
               />
-              {/* NEW LEGAL LINKS */}
               <ActionRow
                 icon="shield-checkmark-outline"
                 label={t("Privacy Policy")}
@@ -640,6 +722,7 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
+  // ... (Styles remain unchanged)
   container: {
     flex: 1,
   },

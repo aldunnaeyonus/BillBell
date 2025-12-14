@@ -2,13 +2,14 @@ import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  SectionList, // <--- CHANGED: Used SectionList instead of FlatList
+  SectionList,
   Pressable,
   RefreshControl,
   Alert,
   Platform,
   StyleSheet,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import { router, useFocusEffect, Stack } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -17,8 +18,8 @@ import { useTranslation } from "react-i18next";
 import RNFS from "react-native-fs";
 import Share from "react-native-share";
 import { SafeAreaView } from "react-native-safe-area-context";
-// NEW IMPORTS for date logic
 import { isSameMonth, addMonths, parseISO, startOfDay } from "date-fns"; 
+import { userSettings } from "../../src/storage/userSettings"; // Import the helper
 
 import { api } from "../../src/api/client";
 import {
@@ -26,6 +27,9 @@ import {
   cancelBillReminderLocal,
 } from "../../src/notifications/notifications";
 import { useTheme, Theme } from "../../src/ui/useTheme";
+
+// [NEW] Import the Live Activity Wrapper
+import { startOverdueActivity, stopActivity } from "../../src/native/LiveActivity";
 
 // --- Types ---
 type SortKey = "due" | "amount" | "name";
@@ -46,7 +50,6 @@ function isOverdue(item: any) {
   );
   if (isPaid) return false;
   
-  // Use date-fns for safer comparison (ignoring time)
   const due = parseISO(item.due_date);
   const today = startOfDay(new Date());
   return due < today;
@@ -208,11 +211,11 @@ export default function Bills() {
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<"pending" | "paid">("pending");
   const [sort, setSort] = useState<SortKey>("due");
+  const [isExporting, setIsExporting] = useState(false);
 
-  // Prevent double notification syncing
   const syncedBillsHash = useRef("");
 
-  // --- Notification Sync Logic ---
+  // 1. Notification Sync
   useEffect(() => {
     const currentHash = JSON.stringify(bills.map(b => b.id + b.status + b.due_date));
     if (syncedBillsHash.current !== currentHash && bills.length > 0) {
@@ -221,7 +224,33 @@ export default function Bills() {
     }
   }, [bills]);
 
-  // --- Status Bar Management ---
+  // 2. [NEW] Live Activity Sync (iOS Only)
+useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+
+    const syncLiveActivity = async () => {
+      // CHECK SETTING FIRST
+      const isEnabled = await userSettings.getLiveActivityEnabled();
+      if (!isEnabled) {
+        stopActivity(); // Ensure it's off if user disabled it
+        return;
+      }
+
+      // Existing Logic
+      const overdueBills = bills.filter(b => isOverdue(b));
+
+      if (overdueBills.length > 0) {
+          const mostUrgent = overdueBills.sort((a,b) => safeDateNum(a.due_date) - safeDateNum(b.due_date))[0];
+          const amt = centsToDollars(mostUrgent.amount_cents);
+          startOverdueActivity(mostUrgent.creditor, `$${amt}`, mostUrgent.due_date);
+      } else {
+          stopActivity();
+      }
+    };
+
+    syncLiveActivity();
+  }, [bills]);
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle("light-content");
@@ -245,11 +274,9 @@ export default function Bills() {
     [bills]
   );
 
-  // --- NEW SECTION: Grouping Logic ---
   const sections = useMemo(() => {
     const list = tab === "pending" ? pendingBills : paidBills;
 
-    // 1. Sort the list first
     const sorted = [...list].sort((a: any, b: any) => {
       if (sort === "name") return String(a.creditor || "").localeCompare(String(b.creditor || ""));
       if (sort === "amount") return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
@@ -260,14 +287,11 @@ export default function Bills() {
       return tab === "pending" ? dateA - dateB : dateB - dateA;
     });
 
-    // 2. If sorting by Name or Amount, do not bucket by time (it looks confusing)
     if (sort !== "due") {
         return [{ title: t("All Bills"), data: sorted }];
     }
 
-    // 3. Date Bucketing Logic
     const today = new Date();
-    const currentMonth = today.getMonth();
     const nextMonthDate = addMonths(today, 1);
 
     const buckets: Record<string, any[]> = {
@@ -279,7 +303,6 @@ export default function Bills() {
 
     sorted.forEach((bill) => {
       const dateStr = tab === "pending" ? bill.due_date : (bill.paid_at || bill.due_date);
-      // Use date-fns parseISO to avoid timezone shifts
       const billDate = parseISO(dateStr);
 
       if (tab === "pending" && isOverdue(bill)) {
@@ -304,7 +327,13 @@ export default function Bills() {
   }, [tab, pendingBills, paidBills, sort, t]);
 
   const stats = useMemo(() => {
-    const pendingTotal = pendingBills.reduce((sum, b) => sum + Number(b.amount_cents || 0), 0);
+    const today = new Date();
+    const pendingTotal = pendingBills.reduce((sum, b) => {
+      const due = parseISO(b.due_date);
+      const shouldInclude = isOverdue(b) || isSameMonth(due, today);
+      return shouldInclude ? sum + Number(b.amount_cents || 0) : sum;
+    }, 0);
+
     const paidTotal = paidBills.reduce((sum, b) => sum + Number(b.amount_cents || 0), 0);
     return { pendingTotal, paidTotal };
   }, [pendingBills, paidBills]);
@@ -334,15 +363,9 @@ export default function Bills() {
     try {
       await api.billsMarkPaid(item.id);
       await cancelBillReminderLocal(item.id);
-      
-      // Check for recurrence and alert user
       if (item.recurrence_rule || item.is_recurring) {
-        Alert.alert(
-          t("Bill Paid"),
-          t("Since this bill is recurring, we went ahead and recreated it for the next period.")
-        );
+        Alert.alert(t("Bill Paid"), t("Since this bill is recurring, we went ahead and recreated it for the next period."));
       }
-      
       await load();
     } catch (e: any) {
       Alert.alert(t("Error"), e.message);
@@ -366,11 +389,13 @@ export default function Bills() {
   }
 
   const generateAndShareCSV = async () => {
+    if (isExporting) return;
     try {
       if (bills.length === 0) {
         Alert.alert(t("No Data"), t("There are no bills to export."));
         return;
       }
+      setIsExporting(true);
       const exportData = bills.map((b) => ({
         ID: b.id,
         Creditor: b.creditor,
@@ -378,6 +403,8 @@ export default function Bills() {
         DueDate: b.due_date,
         Status: b.status === "paid" ? "Paid" : "Pending",
         Notes: b.notes || "",
+        Recurrence: b.recurrence || "none",
+        Offset: b.reminder_offset_days || "0"
       }));
       const csvString = jsonToCSV(exportData);
       const path = Platform.OS === "ios"
@@ -392,6 +419,8 @@ export default function Bills() {
       });
     } catch (error) {
       console.log("Share cancelled or failed", error);
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -415,29 +444,23 @@ export default function Bills() {
 
       <View style={{ flex: 1, marginTop: -24, borderTopLeftRadius: 24, borderTopRightRadius: 24, backgroundColor: theme.colors.bg, paddingHorizontal: 16, overflow: "hidden" }}>
         
-        {/* REPLACED: FlatList -> SectionList */}
         <SectionList
           sections={sections}
           keyExtractor={(item) => String(item.id)}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
           contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
           showsVerticalScrollIndicator={false}
-          
-          // Sticky headers usually look cleaner disabled in this specific card design, 
-          // but you can set true if you want them pinned to top.
           stickySectionHeadersEnabled={false}
 
           ListHeaderComponent={
             <View style={{ gap: 16, marginBottom: 16 }}>
-              {/* Summary Card */}
               <SummaryCard 
                 theme={theme} 
-                label={tab === "pending" ? t("Pending") : t("Paid")} 
+                label={tab === "pending" ? t("Pending (This Month)") : t("Paid")} 
                 amount={tab === "pending" ? stats.pendingTotal : stats.paidTotal} 
                 t={t}
               />
 
-              {/* Action Buttons */}
               <View style={{ flexDirection: "row", gap: 12 }}>
                 <Pressable onPress={() => router.push("/(app)/insights")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
                   <Ionicons name="bar-chart" size={18} color={theme.colors.primaryTextButton} />
@@ -453,7 +476,6 @@ export default function Bills() {
                 </Pressable>
               </View>
 
-              {/* Tabs */}
               <TabSegment 
                 theme={theme}
                 activeTab={tab}
@@ -464,23 +486,31 @@ export default function Bills() {
                 ]}
               />
 
-              {/* Sort & Export Row */}
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 4 }}>
                 <Pressable onPress={cycleSort} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                   <Text style={{ color: theme.colors.subtext, fontSize: 13 }}>{t("Sort by")}:</Text>
                   <Text style={{ color: theme.colors.text, fontWeight: "700", fontSize: 13 }}>{sortLabel}</Text>
                   <Ionicons name="chevron-down" size={12} color={theme.colors.text} />
                 </Pressable>
+                
                 {bills.length > 0 && (
-                  <Pressable onPress={generateAndShareCSV}>
-                    <Text style={{ color: theme.colors.accent, fontWeight: "700", fontSize: 13 }}>{t("Export CSV")}</Text>
+                  <Pressable 
+                    onPress={generateAndShareCSV}
+                    disabled={isExporting}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                  >
+                    {isExporting ? (
+                      <ActivityIndicator size="small" color={theme.colors.accent} />
+                    ) : null}
+                    <Text style={{ color: theme.colors.accent, fontWeight: "700", fontSize: 13 }}>
+                      {isExporting ? t("Exporting...") : t("Export CSV")}
+                    </Text>
                   </Pressable>
                 )}
               </View>
             </View>
           }
 
-          // NEW: Section Headers
           renderSectionHeader={({ section: { title, special } }) => (
              <View style={{ paddingVertical: 12, backgroundColor: theme.colors.bg, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Text style={{ 
