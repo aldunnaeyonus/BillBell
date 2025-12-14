@@ -8,7 +8,7 @@ import {
   Alert,
   Platform,
   StatusBar,
-  Image
+  Image,
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -34,7 +34,7 @@ export default function Login() {
     useCallback(() => {
       // Force status bar to be white (light content) on this screen
       StatusBar.setBarStyle("light-content");
-      if (Platform.OS === 'android') {
+      if (Platform.OS === "android") {
         StatusBar.setBackgroundColor("transparent");
         StatusBar.setTranslucent(true);
       }
@@ -43,8 +43,10 @@ export default function Login() {
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: "233875745320-icjvn6gi8726vroeq7o8r9s0hg4t731r.apps.googleusercontent.com", // Replace if needed or env var
-      iosClientId: "233875745320-8u6mbqhrcal1mc9jocnij2bhg5decs6t.apps.googleusercontent.com",
+      webClientId:
+        "233875745320-icjvn6gi8726vroeq7o8r9s0hg4t731r.apps.googleusercontent.com", // Replace if needed or env var
+      iosClientId:
+        "233875745320-8u6mbqhrcal1mc9jocnij2bhg5decs6t.apps.googleusercontent.com",
     });
   }, []);
 
@@ -65,10 +67,15 @@ export default function Login() {
           : null,
       });
       await setToken(res.token);
-      
+
       // CHANGED: Redirect to Onboarding instead of Bills
-      router.replace("/onboarding"); 
-      
+      //router.replace("/onboarding");
+      try {
+        await api.familyMembers();
+        router.replace("/onboarding");
+      } catch {
+        router.replace("/(app)/family");
+      }
     } catch (e: any) {
       if (e.code === "ERR_REQUEST_CANCELED") {
         // user cancelled
@@ -88,10 +95,14 @@ export default function Login() {
         setLoading(true);
         const res = await api.authGoogle({ id_token: userInfo.data?.idToken });
         await setToken(res.token);
-        
+
         // CHANGED: Redirect to Onboarding instead of Bills
-        router.replace("/onboarding");
-        
+        try {
+          await api.familyMembers();
+          router.replace("/onboarding");
+        } catch {
+          router.replace("/(app)/family");
+        }
       }
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -116,15 +127,15 @@ export default function Login() {
           {/* Logo / Icon */}
           <View style={styles.iconContainer}>
             <Image
-          source={require("../../assets/black_logo.png")}
-          style={{
-            width: 200,
-            height: 200,
-            resizeMode: "contain",
-            tintColor: "#71E3C3", // Tints the black logo to white
-            opacity: 0.95,
-          }}
-        />
+              source={require("../../assets/black_logo.png")}
+              style={{
+                width: 200,
+                height: 200,
+                resizeMode: "contain",
+                tintColor: "#71E3C3", // Tints the black logo to white
+                opacity: 0.95,
+              }}
+            />
           </View>
 
           {/* Title */}
@@ -143,8 +154,12 @@ export default function Login() {
             <View style={styles.buttonGroup}>
               {Platform.OS === "ios" && (
                 <AppleAuthentication.AppleAuthenticationButton
-                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-                  buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+                  buttonType={
+                    AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+                  }
+                  buttonStyle={
+                    AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                  }
                   cornerRadius={14}
                   style={styles.appleBtn}
                   onPress={handleAppleLogin}
@@ -153,7 +168,9 @@ export default function Login() {
 
               <Pressable onPress={handleGoogleLogin} style={styles.googleBtn}>
                 <Ionicons name="logo-google" size={20} color="#000" />
-                <Text style={styles.googleText}>{t("Continue with Google")}</Text>
+                <Text style={styles.googleText}>
+                  {t("Continue with Google")}
+                </Text>
               </Pressable>
             </View>
           )}

@@ -35,22 +35,29 @@ async function request(path: string, opts: RequestInit = {}) {
   }
 
   // ---- FORCE LOGOUT CASES ----
-  const errMsg = (json?.error || text || "").toString();
-  if (!res.ok) {
-    const shouldForceLogout =
-      res.status === 401 ||
-      errMsg.includes("Missing Authorization header") ||
-      errMsg.includes("Invalid token") ||
-      errMsg.includes("User not in family");
+const errMsg = (json?.error || text || "").toString();
+if (!res.ok) {
+  const shouldForceLogout =
+    res.status === 401 ||
+    errMsg.includes("Missing Authorization header") ||
+    errMsg.includes("Invalid token");
 
-    if (shouldForceLogout) {
-      await clearToken();
-      router.replace("/(auth)/login");
-      throw new Error("Session ended. Please log in again.");
-    }
-
-    throw new Error(errMsg || `Request failed (${res.status})`);
+  // real auth failures only
+  if (shouldForceLogout) {
+    await clearToken();
+    router.replace("/(auth)/login");
+    throw new Error("Session ended. Please log in again.");
   }
+
+  // onboarding case: user is authenticated but hasn't created/joined a family
+  if (res.status === 409 && errMsg.includes("User not in family")) {
+    // send them to your create/join family screen (pick the correct route)
+    router.replace("/(app)/family"); // <-- change to your actual screen path
+    throw new Error("User not in family");
+  }
+
+  throw new Error(errMsg || `Request failed (${res.status})`);
+}
 
   return json;
 }
@@ -161,8 +168,7 @@ export const api = {
 
   // Family
   familyCreate: () => request("/family/create", { method: "POST", body: JSON.stringify({}) }),
-  familyJoin: (family_code: string) =>
-    request("/family/join", { method: "POST", body: JSON.stringify({ family_code }) }),
+  familyJoin: (family_code: string) => request("/family/join", { method: "POST", body: JSON.stringify({ family_code }) }),
   familyMembers: () => request("/family/members"),
   familyMemberRemove: (memberId: number) => request(`/family/members/${memberId}`, { method: "DELETE" }),
   familyLeave: () => request("/family/leave", { method: "POST" }),

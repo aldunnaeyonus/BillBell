@@ -71,60 +71,63 @@ function AppStack() {
           options={{
             title: "",
             headerBackVisible: false,
+            gestureEnabled: true
           }}
         />
         <Stack.Screen
           name="(app)/onboarding"
           options={{
+            gestureEnabled: true,
             headerShown: false, // This removes the navigation bar
-            gestureEnabled: false, // This prevents swiping back to the login screen
             headerBackVisible: false,
             title: ""
           }}
         />
         <Stack.Screen
           name="(app)/feedback"
-          options={{ title: t("Feedback & Bugs") }}
+          options={{ title: t("Feedback & Bugs"), gestureEnabled: true }}
         />
-        <Stack.Screen name="(app)/faq" options={{ title: t("FAQ") }} />
+        <Stack.Screen name="(app)/faq" options={{ title: t("FAQ"), gestureEnabled: true }} />
         <Stack.Screen
           name="(app)/privacy"
-          options={{ title: t("Privacy Policy") || "Privacy Policy" }}
+          options={{ title: t("Privacy Policy") || "Privacy Policy", gestureEnabled: true }}
         />
         <Stack.Screen
           name="(app)/terms"
-          options={{ title: t("Terms of Use") || "Terms of Use" }}
+          options={{ title: t("Terms of Use") || "Terms of Use", gestureEnabled: true }}
         />
         <Stack.Screen
           name="(app)/insights"
-          options={{ title: t("Financial Insights") }}
+          options={{ title: t("Financial Insights"), gestureEnabled: true }}
         />
-        <Stack.Screen name="(app)/browser" options={{ title: t("Browser") }} />
+        <Stack.Screen name="(app)/browser" options={{ title: t("Browser"), gestureEnabled: true }} />
         <Stack.Screen
           name="(app)/bulk-import"
-          options={{ title: t("Bulk Upload") }}
+          options={{ title: t("Bulk Upload"), gestureEnabled: true }}
         />
-        <Stack.Screen name="index" options={{ title: t("Debts") }} />
+        <Stack.Screen name="index" options={{ title: t("Debts"), gestureEnabled: true }} />
         <Stack.Screen
           name="(auth)/login"
           options={{
             title: "",
             headerBackVisible: false,
             headerShown: false,
+            gestureEnabled: true
           }}
         />
         <Stack.Screen
           name="(app)/family"
-          options={{ title: t("Shared Group") }}
+          options={{ title: "",             
+            headerBackVisible: false, gestureEnabled: true }}
         />
         <Stack.Screen
           name="(app)/bill-edit"
-          options={{ title: t("Edit Debts") }}
+          options={{ title: t("Edit Debts"), gestureEnabled: true }}
         />
-        <Stack.Screen name="(app)/profile" options={{ title: t("Profile") }} />
+        <Stack.Screen name="(app)/profile" options={{ title: t("Profile"), gestureEnabled: true }} />
         <Stack.Screen
           name="(app)/family-settings"
-          options={{ title: t("Shared Settings") }}
+          options={{ title: t("Shared Settings"), gestureEnabled: true }}
         />
       </Stack>
     </>

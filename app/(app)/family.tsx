@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,9 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  StatusBar
 } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -49,20 +50,41 @@ export default function Family() {
   const theme = useTheme();
   const { t } = useTranslation();
 
+useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle("dark-content");
+      if (Platform.OS === "android") {
+        StatusBar.setBackgroundColor("black");
+        StatusBar.setTranslucent(true);
+      }
+      return () => {
+        const defaultStyle =
+          theme.mode === "dark" ? "light-content" : "dark-content";
+        StatusBar.setBarStyle(defaultStyle);
+      };
+    }, [theme.mode])
+  );
+
   async function handleCreate() {
-    try {
-      setLoading(true);
-      const res = await api.familyCreate();
-      Alert.alert(
-        t("Family created"),
-        t("Your Family ID", { family_code: res.family_code }),
-        [{ text: "OK", onPress: () => router.replace("/(app)/bills") }]
-      );
-    } catch (e: any) {
-      Alert.alert(t("Error"), e.message);
-      setLoading(false);
-    }
+  setLoading(true);
+  try {
+    const res: any = await api.familyCreate();
+    console.log("familyCreate:", res);
+
+    const code = res?.family_code;
+    if (!code) throw new Error("family_code missing from server response");
+
+    Alert.alert(
+      t("Family created"),
+      `${t("Family ID")}: ${code}`,
+      [{ text: "OK", onPress: () => router.push("/(app)/bills") }]
+    );
+  } catch (e: any) {
+    Alert.alert(t("Error"), e?.message || "Failed");
+  } finally {
+    setLoading(false);
   }
+}
 
   async function handleJoin() {
     if (!code.trim()) {
@@ -73,7 +95,7 @@ export default function Family() {
     try {
       setLoading(true);
       await api.familyJoin(code.trim().toUpperCase());
-      router.replace("/(app)/bills");
+      router.replace("/onboarding");
     } catch (e: any) {
       Alert.alert(t("Error"), e.message);
       setLoading(false);
