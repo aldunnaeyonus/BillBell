@@ -401,6 +401,10 @@ export default function Bills() {
                   <Ionicons name="bar-chart" size={18} color={theme.colors.primaryTextButton} />
                   <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("Insights")}</Text>
                 </Pressable>
+                 <Pressable onPress={() => router.push("/(app)/bulk-import")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
+                  <Ionicons name="cloud-upload-outline" size={20} color={theme.colors.primaryTextButton} />
+                  <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("Upload")}</Text>
+                </Pressable>
                 <Pressable onPress={() => router.push("/(app)/bill-edit")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
                   <Ionicons name="add" size={20} color={theme.colors.primaryTextButton} />
                   <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("+ Add")}</Text>

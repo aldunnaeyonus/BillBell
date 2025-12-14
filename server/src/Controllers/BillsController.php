@@ -46,24 +46,24 @@ class BillsController {
 
     $recurrence = $data["recurrence"] ?? "none";
     // CHANGE 1: Added "weekly" and "bi-weekly" to validation allow list
-    if (!in_array($recurrence, ["none","monthly","weekly","bi-weekly"], true)) Utils::json(["error" => "Invalid recurrence"], 422);
-
+    if (!in_array($recurrence, ["none","monthly","weekly","bi-weekly","annually"], true)) Utils::json(["error" => "Invalid recurrence"], 422);
     $stmt = $pdo->prepare("
-      INSERT INTO bills
-      (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?)
-    ");
-    $stmt->execute([
-      $familyId, $userId, $userId,
-      $data["creditor"],
-      (int)$data["amount_cents"],
-      $data["due_date"],
-      "active",
-      null,
-      $recurrence,
-      $reminderOffset,
-      $reminderTime
-    ]);
+  INSERT INTO bills
+  (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes)
+  VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+");
+$stmt->execute([
+  $familyId, $userId, $userId,
+  $data["creditor"],
+  (int)$data["amount_cents"],
+  $data["due_date"],
+  "active",
+  null,
+  $recurrence,
+  $reminderOffset,
+  $reminderTime,
+  $data["notes"] ?? null // Add this line
+]);
 
     Utils::json(["id" => (int)$pdo->lastInsertId()], 201);
   }
@@ -78,8 +78,8 @@ class BillsController {
     $stmt->execute([$id, $familyId]);
     if (!$stmt->fetch()) Utils::json(["error" => "Not found"], 404);
 
-    $fields = ["creditor","amount_cents","due_date","recurrence","reminder_offset_days","reminder_time_local","status"];
-    $sets = [];
+$fields = ["creditor","amount_cents","due_date","recurrence","reminder_offset_days","reminder_time_local","status", "notes"];
+$sets = [];
     $vals = [];
     foreach ($fields as $f) {
       if (array_key_exists($f, $data)) { $sets[] = "$f=?"; $vals[] = $data[$f]; }
@@ -140,23 +140,24 @@ class BillsController {
 
       if (!$chk->fetch()) {
         $ins = $pdo->prepare("
-          INSERT INTO bills
-          (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?)
-        ");
-        $ins->execute([
-          (int)$bill["family_id"],
-          (int)$bill["created_by_user_id"],
-          $userId,
-          $bill["creditor"],
-          (int)$bill["amount_cents"],
-          $nextDue,
-          "active",
-          null,
-          $bill["recurrence"], // Use the current bill's recurrence for the new one
-          (int)$bill["reminder_offset_days"],
-          $bill["reminder_time_local"]
-        ]);
+  INSERT INTO bills
+  (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes)
+  VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+");
+$ins->execute([
+  (int)$bill["family_id"],
+  (int)$bill["created_by_user_id"],
+  $userId,
+  $bill["creditor"],
+  (int)$bill["amount_cents"],
+  $nextDue,
+  "active",
+  null,
+  $bill["recurrence"],
+  (int)$bill["reminder_offset_days"],
+  $bill["reminder_time_local"],
+  $bill["notes"] // Copy notes to the new bill
+]);
       }
     }
 

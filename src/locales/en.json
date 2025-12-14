@@ -4,6 +4,7 @@
   "Error marking bill as paid": "Error marking bill as paid.",
   "Browser": "Browser",
   "Bulk Upload": "Bulk Upload",
+  "Upload":"Upload",
   "Debts": "Debts",
   "Sign in": "Sign in",
   "Shared Group": "Shared Group",
@@ -281,7 +282,8 @@
       "items": [
         { "q": "How do I sign in?", "a": "You can sign in using Apple Sign-In or Google Sign-In depending on your device." },
         { "q": "Is my data secure?", "a": "Yes. Your data is protected with encrypted authentication tokens and stored securely on the server." },
-        { "q": "Will my data sync across devices?", "a": "Yes. As long as you sign in with the same Apple or Google account, your data syncs automatically." }
+        { "q": "Will my data sync across devices?", "a": "Yes. As long as you sign in with the same Apple or Google account, your data syncs automatically." },
+        { "q": "If I import bills via CSV, are they encrypted immediately?", "a":"To ensure maximum privacy, BillBell uses 'End-to-End Encryption.' This means the encryption key lives only on your device, not on our servers. When you upload a CSV file for bulk import, our server processes it to create the bills. Since our server does not (and should not) have your private encryption key, it cannot encrypt the data of these imported bills. They are stored as plain text initially. How to secure them: Once you open the app and your phone downloads the new imported bills, they will work normally. If you edit and save an imported bill, the app will automatically encrypt it using the key on your device, securing it from that point forward."}
       ]
     },
     {

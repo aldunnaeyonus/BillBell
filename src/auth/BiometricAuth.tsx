@@ -10,31 +10,47 @@ import { useTheme } from '../ui/useTheme';
 export function BiometricAuth({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hasHardware, setHasHardware] = useState(false);
+  
+  // Ref to track successful auth (to avoid re-renders)
   const isAuthedRef = useRef(false);
+  
+  // FIX 1: Ref to track if the system prompt is CURRENTLY open
+  const isAuthenticatingRef = useRef(false);
+  
   const theme = useTheme();
   const { t } = useTranslation();
   const segments = useSegments(); 
 
   useEffect(() => {
     checkHardware();
+
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      // Fix: Only lock on background. 'inactive' is triggered by the Biometric Prompt itself.
+      // Lock only on background
       if (nextAppState === 'background') {
         setIsAuthenticated(false);
         isAuthedRef.current = false;
+        // Note: We do NOT reset isAuthenticatingRef here, as a background event
+        // might happen while the prompt is open.
       }
+
+      // FIX 2: Only trigger auth on 'active' if we aren't already authenticated
+      // AND we aren't currently in the middle of an auth attempt.
       if (nextAppState === 'active') {
-        if (!isAuthedRef.current) {
-            setTimeout(() => authenticate(), 200);
+        if (!isAuthedRef.current && !isAuthenticatingRef.current) {
+            // slightly longer timeout to allow iOS animation to settle
+            setTimeout(() => authenticate(), 500);
         }
       }
     });
+
     return () => subscription.remove();
   }, []);
 
   async function checkHardware() {
     const compatible = await LocalAuthentication.hasHardwareAsync();
     setHasHardware(compatible);
+    
+    // If no hardware, bypass auth completely
     if (!compatible) {
         setIsAuthenticated(true);
         isAuthedRef.current = true;
@@ -44,9 +60,15 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
   }
 
   async function authenticate() {
-    if (isAuthedRef.current) return;
+    // FIX 3: Guard clause - stop if already authed or currently scanning
+    if (isAuthedRef.current || isAuthenticatingRef.current) return;
+
+    // Don't auth on login screens
+    if (segments[0] === '(auth)') return;
 
     try {
+        isAuthenticatingRef.current = true; // Lock
+
         const hasRecords = await LocalAuthentication.isEnrolledAsync();
         if (!hasRecords) {
             setIsAuthenticated(true);
@@ -54,13 +76,11 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        if (segments[0] === '(auth)') {
-            return;
-        }
-
         const result = await LocalAuthentication.authenticateAsync({
             promptMessage: t('Unlock App') || 'Unlock App',
             fallbackLabel: 'Use Passcode',
+            disableDeviceFallback: false,
+            cancelLabel: t('Cancel')
         });
 
         if (result.success) {
@@ -68,10 +88,17 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
             isAuthedRef.current = true;
         }
     } catch (e) {
-        console.log(e);
+        console.log("Auth Error", e);
+    } finally {
+        // FIX 4: Always release the lock, even if it failed/cancelled
+        // Short delay to prevent the 'active' listener from firing immediately after failure
+        setTimeout(() => {
+            isAuthenticatingRef.current = false;
+        }, 500);
     }
   }
 
+  // Allow public routes to bypass the lock screen render
   const isPublicRoute = segments[0] === '(auth)'; 
   if (isPublicRoute) {
       return <>{children}</>;

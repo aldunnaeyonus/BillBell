@@ -34,22 +34,30 @@ class Routes {
       exit;
     }
 
+// ... inside dispatch() ...
+    if ($method === "DELETE" && $path === "/auth/user") { AuthController::delete(); return; }
+
     if ($method === "GET" && $path === "/health") { Utils::json(["ok" => true]); return; }
 
     if ($method === "POST" && $path === "/import-code/create") { ImportCodeController::create(); return; }
     if ($method === "POST" && $path === "/import/bills") { ImportController::upload(); return; }
+    
     if ($method === "GET" && $path === "/auth/apple") { Utils::json(["ok"=>false,"hint"=>"POST /auth/apple"], 405); return; }
     if ($method === "GET" && $path === "/auth/google") { Utils::json(["ok"=>false,"hint"=>"POST /auth/google"], 405); return; }
     if ($method === "POST" && $path === "/auth/apple") { AuthController::apple(); return; }
     if ($method === "POST" && $path === "/auth/google") { AuthController::google(); return; }
 
+    // --- Family Routes ---
     if ($method === "POST" && $path === "/family/create") { FamilyController::create(); return; }
     if ($method === "POST" && $path === "/family/join") { FamilyController::join(); return; }
+    if ($method === "POST" && $path === "/family/leave") { FamilyController::leave(); return; }
     if ($method === "GET"  && $path === "/family/members") { FamilyController::members(); return; }
+    if ($method === "DELETE" && preg_match('#^/family/members/(\d+)$#', $path, $m)) { FamilyController::removeMember((int)$m[1]); return; }
 
     if ($method === "GET" && $path === "/family/settings") { FamilySettingsController::get(); return; }
     if ($method === "PUT" && $path === "/family/settings") { FamilySettingsController::update(); return; }
 
+    // --- Bill Routes ---
     if ($method === "GET" && $path === "/bills") { BillsController::list(); return; }
     if ($method === "POST" && $path === "/bills") { BillsController::create(); return; }
     if ($method === "PUT" && preg_match('#^/bills/(\d+)$#', $path, $m)) { BillsController::update((int)$m[1]); return; }

@@ -16,6 +16,13 @@
       "**/*"
     ],
     "ios": {
+      "infoPlist": {
+      "NSCalendarsFullAccessUsageDescription:":"BillBell uses full calendar access to view, add, and manage your bill due dates alongside your personal schedule.",
+      "NSCalendarsUsageDescription:":"BillBell uses calendar access to add bill due dates and sync payment schedules.",
+      "NSFaceIDUsageDescription:":"BillBell uses Face ID to securely authenticate you and protect your financial data.",
+      "NSRemindersFullAccessUsageDescription:":"BillBell needs access to reminders to alert you when bills are due.",
+      "NSRemindersUsageDescription:":"BillBell needs access to reminders to alert you when bills are due."
+},
       "supportsTablet": true,
       "bundleIdentifier": "com.dunn.carabali.billbell",
       "appleTeamId": "2899NRK28S"
