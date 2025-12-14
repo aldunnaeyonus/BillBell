@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, AppState, Pressable, StatusBar, Platform } from 'react-native';
+import { View, Text, StyleSheet, AppState, Pressable, StatusBar } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useSegments } from 'expo-router';
 import LinearGradient from 'react-native-linear-gradient';
@@ -14,7 +14,7 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
   // Ref to track successful auth (to avoid re-renders)
   const isAuthedRef = useRef(false);
   
-  // FIX 1: Ref to track if the system prompt is CURRENTLY open
+  // Ref to track if the system prompt is CURRENTLY open
   const isAuthenticatingRef = useRef(false);
   
   const theme = useTheme();
@@ -25,17 +25,18 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
     checkHardware();
 
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      // Lock only on background
+      // FIX 1: Lock only on background, BUT ONLY if we aren't currently scanning.
+      // The system biometric prompt often triggers a temporary 'background' or 'inactive' state.
+      // If we lock here, we unmount the app underneath the prompt, causing the white screen flash.
       if (nextAppState === 'background') {
-        setIsAuthenticated(false);
-        isAuthedRef.current = false;
-        // Note: We do NOT reset isAuthenticatingRef here, as a background event
-        // might happen while the prompt is open.
+        if (!isAuthenticatingRef.current) {
+            setIsAuthenticated(false);
+            isAuthedRef.current = false;
+        }
       }
 
-      // FIX 2: Only trigger auth on 'active' if we aren't already authenticated
-      // AND we aren't currently in the middle of an auth attempt.
       if (nextAppState === 'active') {
+        // Retry auth if we came back and aren't authed, and aren't already trying
         if (!isAuthedRef.current && !isAuthenticatingRef.current) {
             // slightly longer timeout to allow iOS animation to settle
             setTimeout(() => authenticate(), 500);
@@ -60,7 +61,7 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
   }
 
   async function authenticate() {
-    // FIX 3: Guard clause - stop if already authed or currently scanning
+    // Guard clause - stop if already authed or currently scanning
     if (isAuthedRef.current || isAuthenticatingRef.current) return;
 
     // Don't auth on login screens
@@ -90,7 +91,7 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
     } catch (e) {
         console.log("Auth Error", e);
     } finally {
-        // FIX 4: Always release the lock, even if it failed/cancelled
+        // Always release the lock, even if it failed/cancelled
         // Short delay to prevent the 'active' listener from firing immediately after failure
         setTimeout(() => {
             isAuthenticatingRef.current = false;
