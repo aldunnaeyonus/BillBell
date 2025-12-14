@@ -340,7 +340,8 @@ export default function BillEdit() {
                 
                 {/* Date Picker Row */}
                 <Pressable
-                  onPress={() => setShowDatePicker(true)}
+                  // CHANGE: Use toggle (prev => !prev) instead of true
+                  onPress={() => setShowDatePicker((prev) => !prev)}
                   style={[
                     styles.inputContainer,
                     {
@@ -353,7 +354,12 @@ export default function BillEdit() {
                   <Text style={[styles.inputText, { color: theme.colors.primaryText }]}>
                     {reminderDateObj.toDateString()}
                   </Text>
-                  <Ionicons name="chevron-down" size={16} color={theme.colors.subtext} />
+                  {/* Visual indicator that it can be closed (optional chevron flip could be added here) */}
+                  <Ionicons 
+                    name={showDatePicker ? "chevron-up" : "chevron-down"} 
+                    size={16} 
+                    color={theme.colors.subtext} 
+                  />
                 </Pressable>
                 {showDatePicker && (
                   <DateTimePicker
@@ -432,7 +438,8 @@ export default function BillEdit() {
                 <View style={styles.divider} />
 
                 <Pressable
-                  onPress={() => setShowTimePicker(true)}
+                  // CHANGE: Use toggle for Time Picker as well for consistency
+                  onPress={() => setShowTimePicker((prev) => !prev)}
                   style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 8 }}
                 >
                   <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("Alert Time")}</Text>
@@ -603,6 +610,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
+    minHeight: 120,
   },
   divider: {
     height: 1,

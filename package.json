@@ -16,6 +16,7 @@
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-native-community/slider": "5.0.1",
     "@react-native-google-signin/google-signin": "^16.0.0",
+    "date-fns": "^4.1.0",
     "expo": "~54.0.29",
     "expo-apple-authentication": "~8.0.8",
     "expo-auth-session": "~7.0.10",

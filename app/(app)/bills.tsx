@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  FlatList,
+  SectionList, // <--- CHANGED: Used SectionList instead of FlatList
   Pressable,
   RefreshControl,
   Alert,
@@ -17,6 +17,8 @@ import { useTranslation } from "react-i18next";
 import RNFS from "react-native-fs";
 import Share from "react-native-share";
 import { SafeAreaView } from "react-native-safe-area-context";
+// NEW IMPORTS for date logic
+import { isSameMonth, addMonths, parseISO, startOfDay } from "date-fns"; 
 
 import { api } from "../../src/api/client";
 import {
@@ -43,11 +45,11 @@ function isOverdue(item: any) {
     item.paid_at || item.is_paid || item.status === "paid"
   );
   if (isPaid) return false;
-  const due = safeDateNum(item.due_date);
-  if (!due) return false;
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  return due < now.getTime();
+  
+  // Use date-fns for safer comparison (ignoring time)
+  const due = parseISO(item.due_date);
+  const today = startOfDay(new Date());
+  return due < today;
 }
 
 const jsonToCSV = (data: any[]): string => {
@@ -212,31 +214,22 @@ export default function Bills() {
 
   // --- Notification Sync Logic ---
   useEffect(() => {
-    // We create a hash of the critical data points. 
-    // This ensures we ONLY sync if the bills have actually changed (e.g. status update, new bill),
-    // and NOT just because the screen was refocused or refreshed with identical data.
     const currentHash = JSON.stringify(bills.map(b => b.id + b.status + b.due_date));
-    
     if (syncedBillsHash.current !== currentHash && bills.length > 0) {
-      // console.log("Bills changed, syncing notifications...");
       resyncLocalNotificationsFromBills(bills);
       syncedBillsHash.current = currentHash;
     }
   }, [bills]);
 
-
   // --- Status Bar Management ---
   useFocusEffect(
     useCallback(() => {
-      // When entering Bills (Dark Blue Header) -> White Text
       StatusBar.setBarStyle("light-content");
       if (Platform.OS === 'android') {
         StatusBar.setBackgroundColor("transparent");
         StatusBar.setTranslucent(true);
       }
-
       return () => {
-        // When leaving Bills (to Profile etc) -> Revert to theme default
         const defaultStyle = theme.mode === "dark" ? "light-content" : "dark-content";
         StatusBar.setBarStyle(defaultStyle);
       };
@@ -252,9 +245,12 @@ export default function Bills() {
     [bills]
   );
 
-  const visibleBills = useMemo(() => {
+  // --- NEW SECTION: Grouping Logic ---
+  const sections = useMemo(() => {
     const list = tab === "pending" ? pendingBills : paidBills;
-    return [...list].sort((a: any, b: any) => {
+
+    // 1. Sort the list first
+    const sorted = [...list].sort((a: any, b: any) => {
       if (sort === "name") return String(a.creditor || "").localeCompare(String(b.creditor || ""));
       if (sort === "amount") return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
       
@@ -263,7 +259,49 @@ export default function Bills() {
       
       return tab === "pending" ? dateA - dateB : dateB - dateA;
     });
-  }, [tab, pendingBills, paidBills, sort]);
+
+    // 2. If sorting by Name or Amount, do not bucket by time (it looks confusing)
+    if (sort !== "due") {
+        return [{ title: t("All Bills"), data: sorted }];
+    }
+
+    // 3. Date Bucketing Logic
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const nextMonthDate = addMonths(today, 1);
+
+    const buckets: Record<string, any[]> = {
+      overdue: [],
+      thisMonth: [],
+      nextMonth: [],
+      future: [],
+    };
+
+    sorted.forEach((bill) => {
+      const dateStr = tab === "pending" ? bill.due_date : (bill.paid_at || bill.due_date);
+      // Use date-fns parseISO to avoid timezone shifts
+      const billDate = parseISO(dateStr);
+
+      if (tab === "pending" && isOverdue(bill)) {
+        buckets.overdue.push(bill);
+      } else if (isSameMonth(billDate, today)) {
+        buckets.thisMonth.push(bill);
+      } else if (isSameMonth(billDate, nextMonthDate)) {
+        buckets.nextMonth.push(bill);
+      } else {
+        buckets.future.push(bill);
+      }
+    });
+
+    const result = [];
+    if (buckets.overdue.length > 0) result.push({ title: t("Overdue"), data: buckets.overdue, special: 'danger' });
+    if (buckets.thisMonth.length > 0) result.push({ title: t("This Month"), data: buckets.thisMonth });
+    if (buckets.nextMonth.length > 0) result.push({ title: t("Next Month"), data: buckets.nextMonth });
+    if (buckets.future.length > 0) result.push({ title: t("Future"), data: buckets.future });
+
+    return result;
+
+  }, [tab, pendingBills, paidBills, sort, t]);
 
   const stats = useMemo(() => {
     const pendingTotal = pendingBills.reduce((sum, b) => sum + Number(b.amount_cents || 0), 0);
@@ -280,8 +318,6 @@ export default function Bills() {
   const load = useCallback(async () => {
     const res = await api.billsList();
     setBills(res.bills);
-    // REMOVED: await resyncLocalNotificationsFromBills(res.bills);
-    // This is now handled by the useEffect above to prevent duplicate firing on focus.
   }, []);
 
   useFocusEffect(
@@ -379,12 +415,18 @@ export default function Bills() {
 
       <View style={{ flex: 1, marginTop: -24, borderTopLeftRadius: 24, borderTopRightRadius: 24, backgroundColor: theme.colors.bg, paddingHorizontal: 16, overflow: "hidden" }}>
         
-        <FlatList
-          data={visibleBills}
+        {/* REPLACED: FlatList -> SectionList */}
+        <SectionList
+          sections={sections}
           keyExtractor={(item) => String(item.id)}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
           contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
           showsVerticalScrollIndicator={false}
+          
+          // Sticky headers usually look cleaner disabled in this specific card design, 
+          // but you can set true if you want them pinned to top.
+          stickySectionHeadersEnabled={false}
+
           ListHeaderComponent={
             <View style={{ gap: 16, marginBottom: 16 }}>
               {/* Summary Card */}
@@ -437,6 +479,21 @@ export default function Bills() {
               </View>
             </View>
           }
+
+          // NEW: Section Headers
+          renderSectionHeader={({ section: { title, special } }) => (
+             <View style={{ paddingVertical: 12, backgroundColor: theme.colors.bg, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text style={{ 
+                   fontSize: 18, 
+                   fontWeight: "800", 
+                   color: special === 'danger' ? theme.colors.danger : theme.colors.text 
+                }}>
+                 {title}
+                </Text>
+                {special === 'danger' && <Ionicons name="warning" size={16} color={theme.colors.danger} />}
+             </View>
+          )}
+
           ListEmptyComponent={
             <View style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}>
               <Ionicons name={tab === "pending" ? "checkmark-done-circle-outline" : "wallet-outline"} size={64} color={theme.colors.border} />
@@ -445,7 +502,7 @@ export default function Bills() {
               </Text>
             </View>
           }
-          // ADDED: Footer hint for long press
+          
           ListFooterComponent={
             bills.length > 0 ? (
               <View style={{ padding: 20, alignItems: "center", opacity: 0.6 }}>

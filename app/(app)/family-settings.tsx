@@ -229,7 +229,8 @@ export default function FamilySettings() {
           <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Default time (local)")}</Text>
           <Pressable
             disabled={!editable}
-            onPress={() => setShowReminderDatePicker(true)}
+            // CHANGED: Use toggle (prev => !prev) instead of true
+            onPress={() => setShowReminderDatePicker((prev) => !prev)}
             style={({ pressed }) => [
               styles.timeRow,
               { 
@@ -252,7 +253,14 @@ export default function FamilySettings() {
               <Text style={[styles.timeValue, { color: theme.colors.accent }]}>
                 {reminderDateObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
               </Text>
-              {editable && <Ionicons name="chevron-down" size={16} color={theme.colors.subtext} />}
+              {editable && (
+                <Ionicons 
+                  // OPTIONAL: Flip chevron if open
+                  name={showReminderDatePicker ? "chevron-up" : "chevron-down"} 
+                  size={16} 
+                  color={theme.colors.subtext} 
+                />
+              )}
             </View>
           </Pressable>
 
