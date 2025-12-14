@@ -8,6 +8,8 @@ import {
   encryptData,
   decryptDataWithVersion,
 } from "../security/EncryptionService";
+import { clearToken } from "../auth/session";
+import { router } from "expo-router";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/billMVP";
 
@@ -18,21 +20,10 @@ async function getToken() {
 // --- Generic Request Helper ---
 async function request(path: string, opts: RequestInit = {}) {
   const token = await getToken();
-
-  const isPublic =
-    path.startsWith("/auth/") ||
-    path === "/health" ||
-    path === "/status";
-
-  if (!token && !isPublic) {
-    throw new Error("Not authenticated. Please log in again.");
-  }
-
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(opts.headers as any),
   };
-
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(`${API_URL}${path}`, { ...opts, headers });
@@ -40,17 +31,27 @@ async function request(path: string, opts: RequestInit = {}) {
 
   let json: any = null;
   if (text) {
-    try {
-      json = JSON.parse(text);
-    } catch {
-      json = null;
-    }
+    try { json = JSON.parse(text); } catch { json = null; }
   }
 
+  // ---- FORCE LOGOUT CASES ----
+  const errMsg = (json?.error || text || "").toString();
   if (!res.ok) {
-    const msg = json?.error || text || `Request failed (${res.status})`;
-    throw new Error(msg);
+    const shouldForceLogout =
+      res.status === 401 ||
+      errMsg.includes("Missing Authorization header") ||
+      errMsg.includes("Invalid token") ||
+      errMsg.includes("User not in family");
+
+    if (shouldForceLogout) {
+      await clearToken();
+      router.replace("/(auth)/login");
+      throw new Error("Session ended. Please log in again.");
+    }
+
+    throw new Error(errMsg || `Request failed (${res.status})`);
   }
+
   return json;
 }
 
