@@ -627,7 +627,7 @@ const loadData = useCallback(async () => {
             <SectionTitle title={t("Management")} theme={theme} />
             <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
               
-              {/* {Platform.OS === 'ios' && (
+              {Platform.OS === 'ios' && (
                 <SwitchRow 
                   icon="notifications-outline"
                   label={t("Show Overdue on Lock Screen")}
@@ -635,7 +635,7 @@ const loadData = useCallback(async () => {
                   onValueChange={handleToggleLiveActivity}
                   theme={theme}
                 />
-              )} */}
+              )}
 
               <ActionRow
                 icon="settings-outline"
