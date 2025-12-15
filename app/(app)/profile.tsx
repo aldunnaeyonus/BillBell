@@ -520,23 +520,22 @@ const loadData = useCallback(async () => {
         return;
       }
 
+      // FIX: Changed all keys to match the expected lowercase import keys:
+      // name, amount, due_date, notes, recurrence, offset.
+      // Removed non-importable fields (ID, Status, Reminder) for a clean template match.
       const exportData = await Promise.all(bills.map(async (b: any) => ({
-        ID: b.id,
-        Creditor: await EncryptionService.decryptData(b.creditor),
-        Amount: centsToDollars(b.amount_cents),
-        DueDate: b.due_date,
-        Status: b.status === "paid" || b.paid_at ? "Paid" : "Pending",
-        Notes: await EncryptionService.decryptData(b.notes || ""),
-        Recurrence: b.recurrence || "none",
-        OffsetDays: b.reminder_offset_days || "0",
-        Reminder: b.reminder_time_local || "",
+        name: await EncryptionService.decryptData(b.creditor),
+        amount: centsToDollars(b.amount_cents),
+        due_date: b.due_date,
+        notes: await EncryptionService.decryptData(b.notes || ""),
+        recurrence: b.recurrence || "none",
+        offset: b.reminder_offset_days || "0",
       })));
 
       const csvString = jsonToCSV(exportData);
       
-      const path = Platform.OS === "ios"
-          ? `${RNFS.DocumentDirectoryPath}/bills_export.csv`
-          : `${RNFS.CachesDirectoryPath}/bills_export.csv`;
+      // Pathing fix already applied, keeping it here for completeness:
+      const path = `${RNFS.CachesDirectoryPath}/bills_export.csv`;
 
       await RNFS.writeFile(path, csvString, "utf8");
 

@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\DB;
 use App\Utils;
 use App\Auth;
+use App\Controllers\KeysController;
 
 class FamilyController {
 
@@ -58,6 +59,10 @@ public static function rotateKey() {
     $stmt = $pdo->prepare("INSERT INTO families (family_code, created_by_user_id) VALUES (?, ?)");
     $stmt->execute([$newCode, $userId]);
     $newFamilyId = (int)$pdo->lastInsertId();
+    
+    // NEW: Insert default family settings
+    $settings = $pdo->prepare("INSERT INTO family_settings (family_id) VALUES (?)");
+    $settings->execute([$newFamilyId]);
 
     // 3. Move User (Set as Admin of new family)
     $stmt = $pdo->prepare("UPDATE family_members SET family_id = ?, role = 'admin' WHERE user_id = ?");
@@ -83,7 +88,12 @@ public static function rotateKey() {
       $pdo->beginTransaction();
 
       $code = null;
-      // ... (Family code generation logic) ...
+      for ($i=0; $i<10; $i++) {
+        $try = \App\Utils::randomFamilyCode(6);
+        $check = $pdo->prepare("SELECT id FROM families WHERE family_code=? LIMIT 1");
+        $check->execute([$try]);
+        if (!$check->fetch()) { $code = $try; break; }
+      }
       if (!$code) throw new \Exception("Failed to generate family code");
 
       $ins = $pdo->prepare("INSERT INTO families (family_code, created_by_user_id) VALUES (?,?)");
@@ -92,23 +102,18 @@ public static function rotateKey() {
 
       $mem = $pdo->prepare("INSERT INTO family_members (family_id, user_id, role) VALUES (?,?, 'admin')");
       $mem->execute([$familyId, $userId]);
-
-      // NEW: Also insert default family settings
+      
+      // NEW: Insert default family settings (dependency for BillsController)
       $settings = $pdo->prepare("INSERT INTO family_settings (family_id) VALUES (?)");
       $settings->execute([$familyId]);
 
       $pdo->commit();
       
-      // NEW: Fetch the creator's public key for the client to wrap the key
-      $publicKeyResp = KeysController::getUserPublicKey($userId);
-      $publicKey = Utils::bodyJson($publicKeyResp)["public_key"] ?? null;
-
-      // The client MUST now generate a key, wrap it with this public key, and call POST /keys/shared
+      // Return current user ID to allow client to orchestrate key exchange
       Utils::json([
-        "family_id" => $familyId,
+        "family_id" => $familyId, 
         "family_code" => $code,
-        "key_exchange_needed" => true, // Flag for the client
-        "creator_public_key" => $publicKey // Client needs this to wrap the key
+        "current_user_id" => $userId
       ]);
     } catch (\Exception $e) {
       if ($pdo->inTransaction()) $pdo->rollBack();
@@ -129,10 +134,10 @@ public static function rotateKey() {
     $stmt->execute([$data["family_code"]]);
     $family = $stmt->fetch();
     if (!$family) Utils::json(["error" => "Family not found"], 404);
-
-    $familyId = (int)$family["id"];
     
-    // Find an active admin
+    $familyId = (int)$family["id"];
+
+    // Find an active admin (the key sharer)
     $adminStmt = $pdo->prepare("
         SELECT user_id 
         FROM family_members 
@@ -145,12 +150,11 @@ public static function rotateKey() {
     $ins = $pdo->prepare("INSERT INTO family_members (family_id, user_id, role) VALUES (?,?, 'member')");
     $ins->execute([$familyId, $userId]);
 
+    // Return necessary IDs for client to orchestrate the key share
     Utils::json([
       "family_id" => $familyId,
-      "key_exchange_needed" => true, // Flag for the client
-      // NEW: Tell the client who the key should be requested from
-      "key_sharer_admin_id" => (int)($admin["user_id"] ?? $family["created_by_user_id"] ?? 0),
-      "new_member_public_key_api" => "/keys/public/{$userId}" // API endpoint for the key
+      "new_member_id" => $userId, 
+      "key_sharer_admin_id" => (int)($admin["user_id"] ?? $family["created_by_user_id"] ?? 0), 
     ]);
   }
 

@@ -7,6 +7,8 @@ import {
   getCachedFamilyKeyVersion,
   encryptData,
   decryptDataWithVersion,
+  generateNewFamilyKey,
+  wrapKeyForUser,
 } from "../security/EncryptionService";
 import { clearToken } from "../auth/session";
 import { router } from "expo-router";
@@ -19,6 +21,7 @@ async function getToken() {
 
 // --- Generic Request Helper ---
 async function request(path: string, opts: RequestInit = {}) {
+// ... (rest of request function is unchanged)
   const token = await getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -62,6 +65,22 @@ if (!res.ok) {
   return json;
 }
 
+async function ensureRsaKeyUploaded() {
+    const { publicKey } = await ensureKeyPair();
+    
+    // Check if the key exists and is a string
+    if (typeof publicKey !== 'string' || !publicKey) {
+        throw new Error("Local RSA Public Key is missing or invalid.");
+    }
+    
+    try {
+        // Pass the string value directly
+        await api.uploadPublicKey(publicKey); 
+    } catch (e: any) {
+        throw new Error(`Failed to upload local RSA Public Key: ${String(e.message)}`);
+    }
+}
+
 
 // --- Key sync (version-history) ---
 // Avoid hammering /keys/shared on every render
@@ -73,8 +92,14 @@ async function ensureFamilyKeyLoaded() {
   const token = await getToken();
   if (!token) return;
 
-  // Ensure we have RSA keys (needed to unwrap)
-  await ensureKeyPair();
+  // 1. CRITICAL FIX: Ensure RSA keys are generated AND uploaded before sync attempt
+  try {
+      await ensureRsaKeyUploaded();
+  } catch (e: any) {
+      // If public key upload failed, we can't proceed to sync family key
+      console.warn("Stopping family key sync due to RSA Public Key upload failure:", e);
+      return; 
+  }
 
   const now = Date.now();
   const last = parseInt((await SecureStore.getItemAsync(FAMILY_KEY_SYNC_TS)) || "0", 10);
@@ -153,6 +178,44 @@ async function maybeReencryptBills(bills: any[]) {
   }
 }
 
+/**
+ * Orchestrates the creation of a new family key, wraps it for the target user, 
+ * stores it on the server, and caches it locally. This is for the CREATOR only.
+ */
+async function orchestrateFamilyKeyExchange(
+  familyId: number, 
+  targetUserId: number, 
+): Promise<void> {
+    // 1. Get the recipient's public key (the creator's key)
+    const pubKeyResponse = await api.getPublicKey(targetUserId);
+    // Note: If this fails, the error is thrown up to the caller (familyCreate)
+
+    const recipientPublicKeyPem = pubKeyResponse.public_key;
+    
+    if (!recipientPublicKeyPem) {
+        throw new Error("Could not retrieve creator's Public Key for key exchange.");
+    }
+    
+    // 2. Generate a new, random Family Key (Master Key)
+    const newFamilyKeyHex = generateNewFamilyKey();
+    
+    // 3. Wrap the Master Key with the Creator's Public Key (Client-side encryption)
+    const wrappedKeyBase64 = wrapKeyForUser(newFamilyKeyHex, recipientPublicKeyPem);
+    
+    // 4. Store the wrapped key on the server via POST /keys/shared
+    const sharePayload = {
+      family_id: familyId,
+      target_user_id: targetUserId,
+      encrypted_key: wrappedKeyBase64,
+    };
+    
+    // api.shareKey is defined below
+    await api.shareKey(sharePayload);
+    
+    // 5. Cache the raw key locally for immediate use. Key version is 1 for a new family.
+    await cacheFamilyKey(newFamilyKeyHex, 1);
+}
+
 // --- API Definition ---
 export const api = {
   // Auth
@@ -167,7 +230,28 @@ export const api = {
     request("/import/bills", { method: "POST", body: JSON.stringify({ import_code, bills }) }),
 
   // Family
-  familyCreate: () => request("/family/create", { method: "POST", body: JSON.stringify({}) }),
+  familyCreate: async () => {
+    // CRITICAL FIX: Guarantee Public Key is on server before creation starts.
+    // If this fails, it throws a non-409 error, allowing the user to retry the button.
+    await ensureRsaKeyUploaded(); 
+
+    // 1. Create the family on the server
+    const response = await request("/family/create", { method: "POST", body: JSON.stringify({}) });
+    
+    const familyId = response.family_id;
+    const currentUserId = response.current_user_id;
+
+    if (familyId && currentUserId) {
+        // 2. Orchestrate the key exchange (generate, wrap, store, and cache)
+        await orchestrateFamilyKeyExchange(familyId, currentUserId);
+    } else {
+        // If the server didn't return IDs, it's a fatal error
+        throw new Error("Family created, but required data (ID or UserID) was missing for key setup.");
+    }
+
+    return response;
+  },
+  
   familyJoin: (family_code: string) => request("/family/join", { method: "POST", body: JSON.stringify({ family_code }) }),
   familyMembers: () => request("/family/members"),
   familyMemberRemove: (memberId: number) => request(`/family/members/${memberId}`, { method: "DELETE" }),
@@ -228,8 +312,8 @@ export const api = {
 
   billsCreate: async (bill: any) => {
     await ensureFamilyKeyLoaded();
-
-    // 🔑 NEW: Explicitly check for the key post-load attempt to give a better error message
+    
+    // Safety check for key presence before encrypting
     const currentVersion = await getCachedFamilyKeyVersion();
     if (!currentVersion) {
       throw new Error("Local Encryption Key Missing. Please log out and back in.");
@@ -250,7 +334,7 @@ export const api = {
 
       return request("/bills", { method: "POST", body: JSON.stringify(payload) });
     } catch (e: any) {
-      // NEW: Catch specific encryption failures and re-throw with a clear message
+      // Clearer error message if encryption fails
       const message = String(e.message);
       if (message.includes("Encryption failed") || message.includes("Family key not loaded")) {
          throw new Error("Security Key Missing: The app could not find the required encryption key locally to create the bill. Please log out and back in.");
@@ -262,7 +346,7 @@ export const api = {
   billsUpdate: async (id: number, bill: any) => {
     await ensureFamilyKeyLoaded();
 
-    // 🔑 NEW: Explicitly check for the key post-load attempt to give a better error message
+    // Safety check for key presence before encrypting
     const currentVersion = await getCachedFamilyKeyVersion();
     if (!currentVersion) {
       throw new Error("Local Encryption Key Missing for update. Please log out and back in.");
@@ -290,7 +374,7 @@ export const api = {
 
       return request(`/bills/${id}`, { method: "PUT", body: JSON.stringify(payload) });
     } catch (e: any) {
-      // NEW: Catch specific encryption failures and re-throw with a clear message
+      // Clearer error message if encryption fails
       const message = String(e.message);
       if (message.includes("Encryption failed") || message.includes("Family key not loaded")) {
          throw new Error("Security Key Missing: The app could not find the required encryption key locally to update the bill. Please log out and back in.");

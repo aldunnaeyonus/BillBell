@@ -13,13 +13,17 @@ import {
 } from "react-native";
 import { router, useFocusEffect, Stack } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
+// FIX 1: Import MaterialCommunityIcons
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import RNFS from "react-native-fs";
 import Share from "react-native-share";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isSameMonth, addMonths, parseISO, startOfDay } from "date-fns";
 import { userSettings } from "../../src/storage/userSettings";
+
+// FIX 2: Import Swipeable components
+import { Swipeable, RectButton } from 'react-native-gesture-handler';
 
 import { api } from "../../src/api/client";
 import {
@@ -75,6 +79,69 @@ const jsonToCSV = (data: any[]): string => {
   );
   return [headerRow, ...rows].join("\n");
 };
+
+// FIX 3: MASSIVE EXPANDED ICON MAPPING LOGIC (Kept from previous step)
+const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
+  // --- Streaming/Entertainment ---
+  { regex: /netflix/i, icon: "netflix", color: "#E50914" },
+  { regex: /spotify/i, icon: "spotify", color: "#1DB954" },
+  { regex: /hulu/i, icon: "hulu", color: "#1CE783" },
+  { regex: /disney|plus/i, icon: "movie-open", color: "#0D2593" },
+  { regex: /hbo|max|prime video|amc/i, icon: "movie-open", color: "#532386" },
+  { regex: /apple|music|itunes/i, icon: "apple", color: "#A2AAAD" },
+  { regex: /youtube|twitch/i, icon: "youtube", color: "#FF0000" },
+  { regex: /sirius|audible|podcast|radio/i, icon: "radio", color: "#F07241" },
+  
+  // --- Banking/Finance/Credit ---
+  { regex: /visa|mastercard|amex|discover|capital one|bofa/i, icon: "credit-card-multiple-outline", color: "#1F618D" },
+  { regex: /chase|citi|wells fargo|pnc|td bank|us bank/i, icon: "bank", color: "#005691" },
+  { regex: /paypal|venmo|cash app|zelle|crypto/i, icon: "hand-coin-outline", color: "#003087" },
+  { regex: /loan|mortgage|rent|lease|property/i, icon: "home-city", color: "#9D174D" },
+  { regex: /student loan|fedloan/i, icon: "school", color: "#2ECC71" },
+  { regex: /insurance|geico|statefarm|allstate|progressive|liberty/i, icon: "shield-car", color: "#3498DB" },
+  
+  // --- Utilities/Home Services ---
+  { regex: /power|electric|utility|pge|con edison|duke energy/i, icon: "lightning-bolt", color: "#FBBF24" },
+  { regex: /gas|heating|propane|ng|national grid/i, icon: "fire", color: "#E74C3C" },
+  { regex: /water|sewer|waterworks|sanitation/i, icon: "water", color: "#0E7490" },
+  { regex: /trash|waste|republic services|wm/i, icon: "trash-can", color: "#839192" },
+  { regex: /security|alarm|adt|ring/i, icon: "security", color: "#E67E22" },
+  { regex: /hoa|community fees/i, icon: "home-group", color: "#6C3483" },
+  
+  // --- Telecom/Internet/Mobile ---
+  { regex: /att|t-mobile|verizon|sprint|mobile|cellular/i, icon: "cellphone", color: "#E7008A" },
+  { regex: /xfinity|comcast|spectrum|fios|cox|internet/i, icon: "router-wireless", color: "#1D4ED8" },
+  { regex: /phone|landline/i, icon: "phone", color: "#3F51B5" },
+
+  // --- Software/Tech/Gaming ---
+  { regex: /amazon|aws|cloud/i, icon: "amazon", color: "#FF9900" },
+  { regex: /microsoft|azure|office|xbox/i, icon: "microsoft", color: "#F25022" },
+  { regex: /adobe|creative cloud/i, icon: "adobe", color: "#FF0000" },
+  { regex: /zoom|webex|teams/i, icon: "video-outline", color: "#2D8CFF" },
+  { regex: /dropbox|onedrive|storage/i, icon: "cloud-upload", color: "#0061FF" },
+  { regex: /steam|playstation|nintendo|xbox live/i, icon: "gamepad-variant", color: "#6A5ACD" },
+  { regex: /github|gitlab|bitbucket/i, icon: "github", color: "#181717" },
+
+  // --- Retail/Shopping ---
+  { regex: /walmart|target|costco|sams club/i, icon: "shopping", color: "#0071C5" },
+  { regex: /home depot|lowes|hardware/i, icon: "home-assistant", color: "#F96302" },
+  { regex: /etsy|ebay|shopify/i, icon: "cart", color: "#546E7A" },
+  
+  // --- Transportation/Auto ---
+  { regex: /car loan|auto payment|lease payment/i, icon: "car", color: "#16A085" },
+  { regex: /toll|ezpass|highway|sunpass/i, icon: "highway", color: "#F4D03F" },
+  { regex: /uber|lyft|taxi/i, icon: "taxi", color: "#000000" },
+];
+
+function getBillIcon(creditor: string): { name: string; color: string; type: 'MaterialCommunityIcons' | 'Ionicons' } {
+  const match = BILL_ICON_MAP.find(m => creditor.match(m.regex));
+  if (match) {
+    return { name: match.icon, color: match.color, type: 'MaterialCommunityIcons' };
+  }
+  // Default fallback icon
+  return { name: "receipt-outline", color: "#808080", type: 'Ionicons' };
+}
+// END FIX 3
 
 // --- Components ---
 
@@ -191,16 +258,24 @@ function TabSegment({
   );
 }
 
+
+// FIX 4: Refactor BillItem to accept separate action handlers
 function BillItem({
   item,
   theme,
   t,
   onLongPress,
+  onEdit, // NEW
+  onMarkPaid, // NEW
+  onDelete, // NEW
 }: {
   item: any;
   theme: Theme;
   t: any;
   onLongPress: () => void;
+  onEdit: () => void;
+  onMarkPaid: () => void;
+  onDelete: () => void;
 }) {
   const amt = centsToDollars(item.amount_cents);
   const isPaid = Boolean(
@@ -208,7 +283,51 @@ function BillItem({
   );
   const overdue = isOverdue(item);
 
-  return (
+  const iconData = getBillIcon(item.creditor);
+  const IconComponent = iconData.type === 'Ionicons' ? Ionicons : MaterialCommunityIcons;
+
+  // FIX 5: Define Render Right Actions for Swipe
+  const renderRightActions = useCallback(() => {
+    // Component for a single swipe button
+    const ActionButton = ({ icon, color, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; color: string; label: string; onPress: () => void }) => (
+      <RectButton style={[{ backgroundColor: color }, styles.swipeAction]} onPress={onPress}>
+          <Ionicons name={icon} size={24} color="#FFF" />
+          <Text style={styles.actionText}>{label}</Text>
+      </RectButton>
+    );
+
+    return (
+      <View style={styles.rightActionsContainer}>
+        {/* EDIT Button */}
+        <ActionButton 
+            icon="create-outline" 
+            color="#3498DB" 
+            label={t("Edit")} 
+            onPress={onEdit} 
+        />
+        
+        {/* MARK PAID Button (Only if not paid) */}
+        {!isPaid && (
+          <ActionButton 
+            icon="checkmark-done-circle-outline" 
+            color="#2ECC71" 
+            label={t("Paid")} 
+            onPress={onMarkPaid} 
+          />
+        )}
+        
+        {/* DELETE Button */}
+        <ActionButton 
+            icon="trash-outline" 
+            color="#E74C3C" 
+            label={t("Delete")} 
+            onPress={onDelete} 
+        />
+      </View>
+    );
+  }, [isPaid, onEdit, onMarkPaid, onDelete, t]);
+
+  const BillContent = (
     <Pressable
       onLongPress={onLongPress}
       delayLongPress={350}
@@ -229,71 +348,99 @@ function BillItem({
           alignItems: "center",
         }}
       >
-        <View style={{ flex: 1 }}>
-          <Text
-            style={[styles.billCreditor, { color: theme.colors.primaryText }]}
-            numberOfLines={1}
-          >
-            {item.creditor}
-          </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 4,
-              marginTop: 4,
-            }}
-          >
-            <Ionicons
-              name={isPaid ? "checkmark-circle" : "calendar-outline"}
-              size={14}
-              color={isPaid ? theme.colors.accent : theme.colors.subtext}
+        {/* Icon Box */}
+        <View style={[styles.iconBox, { backgroundColor: iconData.color + '20' }]}>
+            <IconComponent 
+                name={iconData.name as any} 
+                size={20} 
+                color={iconData.color} 
             />
-            <Text
-              style={{
-                color: isPaid ? theme.colors.accent : theme.colors.subtext,
-                fontSize: 13,
-                fontWeight: "500",
-              }}
-            >
-              {isPaid
-                ? `${t("Paid on")} ${item.paid_at || item.due_date}`
-                : `${t("Due")} ${item.due_date}`}
-            </Text>
-          </View>
         </View>
 
-        <View style={{ alignItems: "flex-end" }}>
-          <Text
-            style={[styles.billAmount, { color: theme.colors.primaryText }]}
-          >
-            ${amt}
-          </Text>
-          {overdue && (
-            <View
-              style={{
-                backgroundColor: "#FFE5E5",
-                paddingHorizontal: 6,
-                paddingVertical: 2,
-                borderRadius: 4,
-                marginTop: 4,
-              }}
-            >
+        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flexShrink: 1 }}>
               <Text
+                style={[styles.billCreditor, { color: theme.colors.primaryText }]}
+                numberOfLines={1}
+              >
+                {item.creditor}
+              </Text>
+              <View
                 style={{
-                  color: theme.colors.danger,
-                  fontSize: 10,
-                  fontWeight: "800",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                  marginTop: 4,
                 }}
               >
-                {t("OVERDUE")}
-              </Text>
+                <Ionicons
+                  name={isPaid ? "checkmark-circle" : "calendar-outline"}
+                  size={14}
+                  color={isPaid ? theme.colors.accent : theme.colors.subtext}
+                />
+                <Text
+                  style={{
+                    color: isPaid ? theme.colors.accent : theme.colors.subtext,
+                    fontSize: 13,
+                    fontWeight: "500",
+                  }}
+                >
+                  {isPaid
+                    ? `${t("Paid on")} ${item.paid_at || item.due_date}`
+                    : `${t("Due")} ${item.due_date}`}
+                </Text>
+              </View>
             </View>
-          )}
+
+            <View style={{ alignItems: "flex-end", marginLeft: 10, flexShrink: 0 }}>
+              <Text
+                style={[styles.billAmount, { color: theme.colors.primaryText }]}
+              >
+                ${amt}
+              </Text>
+              {overdue && (
+                <View
+                  style={{
+                    backgroundColor: "#FFE5E5",
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 4,
+                    marginTop: 4,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: theme.colors.danger,
+                      fontSize: 10,
+                      fontWeight: "800",
+                    }}
+                  >
+                    {t("OVERDUE")}
+                  </Text>
+                </View>
+              )}
+            </View>
         </View>
       </View>
     </Pressable>
   );
+
+  // FIX 6: Conditionally wrap content in Swipeable for iOS
+  if (Platform.OS === 'ios') {
+    return (
+      <Swipeable
+        friction={2}
+        rightThreshold={40}
+        renderRightActions={renderRightActions}
+        // Setting container style to remove default padding/margins
+        containerStyle={{ marginVertical: 0 }}
+      >
+        {BillContent}
+      </Swipeable>
+    );
+  }
+
+  return BillContent;
 }
 
 // --- Main Screen ---
@@ -533,6 +680,37 @@ export default function Bills() {
       Alert.alert(t("Error"), e.message);
     }
   }
+  
+  // FIX 7: Create action wrappers to be passed to BillItem
+  const onDeleteBill = useCallback((item: any) => {
+    Alert.alert(
+      t("Delete Bill"),
+      t("Are you sure you want to delete this bill?"),
+      [
+        { text: t("Cancel"), style: "cancel" },
+        { text: t("Delete"), style: "destructive", onPress: () => deleteBill(item) },
+      ]
+    );
+  }, [deleteBill, t]);
+
+  const onMarkPaidBill = useCallback((item: any) => {
+    Alert.alert(
+      t("Mark Paid"),
+      t("Mark {{creditor}} as paid?", { creditor: item.creditor }),
+      [
+        { text: t("Cancel"), style: "cancel" },
+        { text: t("Mark Paid"), onPress: () => markPaid(item) },
+      ]
+    );
+  }, [markPaid, t]);
+
+  const onEditBill = useCallback((item: any) => {
+    router.push({
+      pathname: "/(app)/bill-edit",
+      params: { id: String(item.id) },
+    });
+  }, []);
+  // END FIX 7
 
   function cycleSort() {
     if (sort === "due") setSort("amount");
@@ -584,19 +762,15 @@ export default function Bills() {
     const actions: any[] = [
       {
         text: t("Edit"),
-        onPress: () =>
-          router.push({
-            pathname: "/(app)/bill-edit",
-            params: { id: String(item.id) },
-          }),
+        onPress: () => onEditBill(item), // Use reusable function
       },
     ];
     if (!isPaid)
-      actions.push({ text: t("Mark Paid"), onPress: () => markPaid(item) });
+      actions.push({ text: t("Mark Paid"), onPress: () => onMarkPaidBill(item) }); // Use reusable function
     actions.push({
       text: t("Delete"),
       style: "destructive",
-      onPress: () => deleteBill(item),
+      onPress: () => onDeleteBill(item), // Use reusable function
     });
     actions.push({ text: t("Cancel"), style: "cancel" });
     Alert.alert(item.creditor || t("Bill"), t("Choose an action"), actions);
@@ -778,7 +952,7 @@ export default function Bills() {
                         fontSize: 13,
                       }}
                     >
-                      {isExporting ? t("Exporting...") : t("Export CSV")}
+                      {t("Exporting...")}
                     </Text>
                   </Pressable>
                 )}
@@ -863,6 +1037,10 @@ export default function Bills() {
               theme={theme}
               t={t}
               onLongPress={() => onLongPressBill(item)}
+              // FIX 8: Pass down action handlers
+              onEdit={() => onEditBill(item)}
+              onMarkPaid={() => onMarkPaidBill(item)}
+              onDelete={() => onDeleteBill(item)}
             />
           )}
         />
@@ -952,10 +1130,12 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
   },
+  // NOTE: This style definition is for the content *inside* the Swipeable.
   billCard: {
     padding: 16,
     borderRadius: 16,
-    marginBottom: 12,
+    // When using Swipeable, the margin/padding must be managed by the parent SectionList's item separator or in renderItem's wrapper
+    marginBottom: 12, 
     borderWidth: 1,
   },
   billCreditor: {
@@ -965,5 +1145,34 @@ const styles = StyleSheet.create({
   billAmount: {
     fontSize: 18,
     fontWeight: "800",
+  },
+  iconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  // FIX 9: New styles for swipe actions
+  rightActionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginBottom: 12, // Match billCard's marginBottom
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  swipeAction: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    height: '100%',
+  },
+  actionText: {
+    color: "#FFF",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 4,
   },
 });

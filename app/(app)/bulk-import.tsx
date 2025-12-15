@@ -158,7 +158,22 @@ export default function BulkImport() {
 
     if (!lines.length) return [];
 
-    const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+    const headerLine = lines[0];
+    
+    // NEW FIX: DYNAMICALLY DETECT SEPARATOR BY COUNTING FREQUENCY
+    const commaCount = (headerLine.match(/,/g) || []).length;
+    const semicolonCount = (headerLine.match(/;/g) || []).length;
+    const tabCount = (headerLine.match(/\t/g) || []).length;
+
+    let separator = ',';
+    if (semicolonCount > commaCount && semicolonCount > tabCount) {
+        separator = ';';
+    } else if (tabCount > commaCount && tabCount > semicolonCount) {
+        separator = '\t';
+    }
+    // If commaCount is the highest or tied, separator remains ','.
+    
+    const header = headerLine.split(separator).map((h) => h.trim().toLowerCase());
     const idx = (key: string) => header.indexOf(key);
 
     const iName = idx("name");
@@ -167,19 +182,22 @@ export default function BulkImport() {
     const iNotes = idx("notes");
     const iRecurrence = idx("recurrence");
     const iOffset = idx("offset");
+    const ireminder = idx("reminder"); 
 
     const result: any[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(",").map((c) => c.trim());
+      // USE DYNAMIC SEPARATOR
+      const cols = lines[i].split(separator).map((c) => c.trim()); 
 
-      const name = iName >= 0 ? cols[iName] : "";
-      const amountStr = iAmount >= 0 ? cols[iAmount] : "";
-      const dueDate = iDueDate >= 0 ? cols[iDueDate] : "";
-      const notes = iNotes >= 0 ? cols[iNotes] : "";
+      // Safely extract column data
+      const name = iName >= 0 && cols.length > iName ? cols[iName] : "";
+      const amountStr = iAmount >= 0 && cols.length > iAmount ? cols[iAmount] : "";
+      const dueDate = iDueDate >= 0 && cols.length > iDueDate ? cols[iDueDate] : "";
+      const notes = iNotes >= 0 && cols.length > iNotes ? cols[iNotes] : "";
       
       let recurrence = "none";
-      if (iRecurrence >= 0) {
+      if (iRecurrence >= 0 && cols.length > iRecurrence) {
         const val = cols[iRecurrence].toLowerCase();
         if (["weekly", "bi-weekly", "monthly", "annually"].includes(val)) {
           recurrence = val;
@@ -187,14 +205,15 @@ export default function BulkImport() {
       }
 
       let offset = 0;
-      if (iOffset >= 0) {
+      if (iOffset >= 0 && cols.length > iOffset) {
           const val = parseInt(cols[iOffset]);
           if (!isNaN(val) && val >= 0 && val <= 3) offset = val;
       }
 
+      // Basic validation for required fields
       if (!name || !amountStr || !dueDate) continue;
       const amount = parseFloat(amountStr);
-      if (Number.isNaN(amount)) continue;
+      if (Number.isNaN(amount) || amount <= 0) continue;
 
       result.push({
         name,
@@ -211,9 +230,9 @@ export default function BulkImport() {
 
   async function downloadTemplate() {
     try {
-      const headers = "name,amount,due_date,notes,recurrence,offset";
+      const headers = "name,amount,due_date,notes,recurrence,offset"; 
       const today = new Date().toISOString().split("T")[0];
-      const sampleRow = `Netflix,15.99,${today},Family Plan,none|weekly|bi-weekly|monthly|annualy|,0|1|2|3`;
+      const sampleRow = `Netflix,15.99,${today},Family Plan,none,0`;
       const csvContent = `${headers}\n${sampleRow}`;
 
       const path =
