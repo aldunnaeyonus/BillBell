@@ -1,1 +1,10 @@
-InfoPlist.strings
+/* Calendar Access */
+"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
+"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
+
+/* Face ID Access */
+"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) uses Face ID to securely unlock the app and authorize quick access to your shared bill data.";
+
+/* Reminders Access */
+"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
+"NSRemindersUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";

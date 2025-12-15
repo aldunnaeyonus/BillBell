@@ -15,7 +15,7 @@ import {
 } from "../security/EncryptionService";
 import { clearToken } from "../auth/session";
 import { router } from "expo-router";
-
+import { getDeviceId } from '../security/device'; // <--- NEW IMPORT
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/billMVP";
 
 async function getToken() {
@@ -89,10 +89,26 @@ async function ensureRsaKeyUploaded() {
         throw new Error("Local RSA Public Key is missing or invalid.");
     }
     
-    // Attempt the upload. The API call is defined at the end of the file: 
-    // uploadPublicKey: (public_key: string) => request("/keys/public", { method: "POST", body: JSON.stringify({ public_key }) }),
     try {
-        await api.uploadPublicKey(publicKey); 
+        // --- START FIX: 1. Get Device ID ---
+        const deviceId = await getDeviceId();
+        // --- END FIX ---
+
+        // 2. Upload the Public Key and the Device ID
+        // Note: We are replacing the original call to api.uploadPublicKey(publicKey) 
+        // with the explicit request body here to include the new field immediately.
+        
+        // This is a direct call to the underlying request function:
+        await request("/keys/public", { 
+            method: "POST", 
+            body: JSON.stringify({ 
+                public_key: publicKey,
+                device_id: deviceId // <--- CRITICAL NEW FIELD
+            }) 
+        });
+        
+        console.info("RSA Public Key and Device ID uploaded successfully.");
+        
     } catch (e: any) {
         const errMsg = String(e.message);
         if (errMsg.includes("Session ended. Please log in again.")) {
@@ -448,17 +464,17 @@ export const api = {
 
   // --- Encrypted Bills Methods ---
   billsList: async () => {
-    try { // FIX: Added try/catch to prevent crash from ensureFamilyKeyLoaded errors
-      await ensureFamilyKeyLoaded();
+try {
+      await ensureFamilyKeyLoaded(); // Fetches key if needed
     } catch (e) {
       throw e;
     }
 
     // --- CRITICAL FIX: Mandatory Key Presence Check ---
-    const currentVersion = await getCachedFamilyKeyVersion();
+    const currentVersion = await getCachedFamilyKeyVersion(); // Check local cache
     if (!currentVersion) {
       // Throw a clean, user-facing error if key is still missing
-      throw new Error("Cannot load family data. A Key Rotation is required by a family Admin to restore access on this device.");
+      throw new Error("Cannot load family data. A Key Rotation is required by a family Admin to restore access on this device."); // <--- HITS HERE
     }
     // --------------------------------------------------
 
@@ -532,9 +548,7 @@ try {
     return { bills: decryptedBills };
   },
 
-  uploadPublicKey: (public_key: string) =>
-    request("/keys/public", { method: "POST", body: JSON.stringify({ public_key }) }),
-
+  uploadPublicKey: (public_key: string) => request("/keys/public", { method: "POST", body: JSON.stringify({ public_key }) }),
   getPublicKey: (userId: number) => request(`/keys/public/${userId}`),
 
   shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: string }) =>
@@ -622,7 +636,6 @@ try {
       throw e;
     }
   },
-
   billsDelete: (id: number) => request(`/bills/${id}`, { method: "DELETE" }),
 
   billsMarkPaid: (id: number) => request(`/bills/${id}/mark-paid`, { method: "POST", body: JSON.stringify({}) }),
