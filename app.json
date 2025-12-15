@@ -17,7 +17,6 @@
     ],
     "ios": {
       "infoPlist": {
-
       "NSCalendarsFullAccessUsageDescription:":"BillBell uses full calendar access to view, add, and manage your bill due dates alongside your personal schedule.",
       "NSCalendarsUsageDescription:":"BillBell uses calendar access to add bill due dates and sync payment schedules.",
       "NSFaceIDUsageDescription:":"BillBell uses Face ID to securely authenticate you and protect your financial data.",

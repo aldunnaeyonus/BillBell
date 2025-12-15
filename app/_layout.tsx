@@ -13,6 +13,7 @@ import { useTranslation, I18nextProvider } from "react-i18next";
 import { BiometricAuth } from "../src/auth/BiometricAuth";
 import { LogBox } from "react-native";
 import { Buffer } from "buffer";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
 // --- Configuration ---
@@ -139,10 +140,12 @@ function AppStack() {
 // 2. Export the RootLayout which strictly provides the Context
 export default function RootLayout() {
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <I18nextProvider i18n={i18n}>
       <BiometricAuth>
         <AppStack />
       </BiometricAuth>
     </I18nextProvider>
+    </GestureHandlerRootView>
   );
 }
