@@ -21,7 +21,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 if (!__DEV__) {
   LogBox.ignoreAllLogs();
 }
-
+//api.orchestrateKeyRotation();
+//api.hardReset();
 // 1. Create a child component for the actual App logic
 function AppStack() {
   const theme = useTheme();
@@ -141,9 +142,11 @@ function AppStack() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <BiometricAuth>
     <I18nextProvider i18n={i18n}>
         <AppStack />
     </I18nextProvider>
+    </BiometricAuth>
     </GestureHandlerRootView>
   );
 }

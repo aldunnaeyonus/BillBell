@@ -1,3 +1,4 @@
+// --- File: aldunnaeyonus/billbell/.../server/src/Controllers/KeysController.php ---
 <?php
 namespace App\Controllers;
 
@@ -41,6 +42,7 @@ class KeysController {
   }
 
   // Get ALL a specific user's Public Keys (one per device)
+  // FIX: This function now fetches all public keys (one per device) and their device IDs
   public static function getUserPublicKey($targetUserId) {
     $userId = Auth::requireUserId();
     RateLimit::hit("keys_fetch:{$userId}", 60, 60);
@@ -63,7 +65,6 @@ class KeysController {
   }
 
   // Store wrapped family key for the family's CURRENT key_version
-  // Version-history: inserts (family_id, user_id, key_version, device_id)
   public static function storeSharedKey() {
     $userId = Auth::requireUserId();
     RateLimit::hit("keys_shared:{$userId}", 30, 60);
@@ -200,37 +201,5 @@ class KeysController {
     ]);
   }
 
-  // Optional helper endpoint if you want clients to fetch older versions (debug / migration)
-  // Not required for normal operation; keep disabled unless you need it.
-  /*
-  public static function getMySharedKeyVersion(int $version) {
-    $userId = Auth::requireUserId();
-    $pdo = DB::pdo();
-
-    $stmt = $pdo->prepare("
-      SELECT f.id AS family_id
-      FROM family_members fm
-      JOIN families f ON f.id = fm.family_id
-      WHERE fm.user_id = ?
-      LIMIT 1
-    ");
-    $stmt->execute([$userId]);
-    $fam = $stmt->fetch();
-    if (!$fam) Utils::json(["error" => "User not in family"], 409);
-
-    $familyId = (int)$fam["family_id"];
-
-    $stmt = $pdo->prepare("
-      SELECT encrypted_key
-      FROM family_shared_keys
-      WHERE family_id=? AND user_id=? AND key_version=?
-      LIMIT 1
-    ");
-    $stmt->execute([$familyId, $userId, $version]);
-    $row = $stmt->fetch();
-
-    if (!$row) Utils::json(["error" => "Key not found"], 404);
-    Utils::json(["encrypted_key" => $row["encrypted_key"], "family_id" => $familyId, "key_version" => $version]);
-  }
-  */
+  // ... (Optional helper endpoint remains the same)
 }

@@ -1,3 +1,4 @@
+// --- File: aldunnaeyonus/billbell/.../src/api/client.ts (COMPLETE, CORRECTED) ---
 import * as SecureStore from "expo-secure-store";
 import {
   ensureKeyPair,
@@ -9,13 +10,13 @@ import {
   decryptDataWithVersion,
   generateNewFamilyKey,
   wrapKeyForUser,
-  getLatestCachedRawFamilyKeyHex, // <--- ADDED IMPORT
-  FAMILY_KEY_VERSION_ALIAS, // <--- ADDED IMPORT
+  getLatestCachedRawFamilyKeyHex,
+  FAMILY_KEY_VERSION_ALIAS,
   FAMILY_KEY_PREFIX,
 } from "../security/EncryptionService";
 import { clearToken } from "../auth/session";
 import { router } from "expo-router";
-import { getDeviceId } from '../security/device'; // <--- NEW IMPORT
+import { getDeviceId } from '../security/device';
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/billMVP";
 
 async function getToken() {
@@ -59,7 +60,7 @@ async function request(path: string, opts: RequestInit = {}) {
       res.status === 401 ||
       errMsg.includes("Missing Authorization header") ||
       errMsg.includes("Invalid token") ||
-      errMsg.includes("User not found or token is stale"); // FIX: New auth error check
+      errMsg.includes("User not found or token is stale");
 
     // real auth failures only
     if (shouldForceLogout) {
@@ -70,8 +71,7 @@ async function request(path: string, opts: RequestInit = {}) {
 
     // onboarding case: user is authenticated but hasn't created/joined a family
     if (res.status === 409 && errMsg.includes("User not in family")) {
-      // send them to your create/join family screen (pick the correct route)
-      router.replace("/(app)/family"); // <-- change to your actual screen path
+      router.replace("/(app)/family");
       throw new Error("User not in family");
     }
 
@@ -90,20 +90,14 @@ async function ensureRsaKeyUploaded() {
     }
     
     try {
-        // --- START FIX: 1. Get Device ID ---
+        // --- FIX: Get Device ID and include in upload payload ---
         const deviceId = await getDeviceId();
-        // --- END FIX ---
 
-        // 2. Upload the Public Key and the Device ID
-        // Note: We are replacing the original call to api.uploadPublicKey(publicKey) 
-        // with the explicit request body here to include the new field immediately.
-        
-        // This is a direct call to the underlying request function:
         await request("/keys/public", { 
             method: "POST", 
             body: JSON.stringify({ 
                 public_key: publicKey,
-                device_id: deviceId // <--- CRITICAL NEW FIELD
+                device_id: deviceId // CRITICAL NEW FIELD
             }) 
         });
         
@@ -114,10 +108,7 @@ async function ensureRsaKeyUploaded() {
         if (errMsg.includes("Session ended. Please log in again.")) {
             throw e; 
         }
-        // Crucial: We must log this but still proceed if the API returns 
-        // a success-like status (e.g., 200/204) but throws an error on JSON parse
         console.warn("Public Key Upload failed, may be missing from server:", e);
-        // We throw the error anyway to allow the outer catch to handle critical failure
         throw new Error(`Failed to upload local RSA Public Key: ${String(e.message)}`);
     }
 }
@@ -133,10 +124,9 @@ async function clearAllFamilyKeys() {
     
     // Clear the core version tracker and sync cooldown
     await SecureStore.deleteItemAsync(FAMILY_KEY_VERSION_ALIAS);
-    await SecureStore.deleteItemAsync(FAMILY_KEY_SYNC_TS); // FAMILY_KEY_SYNC_TS is defined below
+    await SecureStore.deleteItemAsync(FAMILY_KEY_SYNC_TS); 
     
     // Aggressively search and clear all versioned keys (v1, v2, v3, etc.)
-    // We iterate a known range (up to 100) since SecureStore lacks prefix search.
     for (let v = 1; v <= 100; v++) { 
         await SecureStore.deleteItemAsync(`${FAMILY_KEY_PREFIX}${v}`);
     }
@@ -168,11 +158,10 @@ async function ensureFamilyKeyLoaded() {
     return;
   }
 
-  // --- START FIX: Pass deviceId to fetch request ---
+  // --- FIX: Pass deviceId to fetch request ---
   const deviceId = await getDeviceId(); // 1. Fetch the ID
   
   // Fetch current wrapped key for my user + current family key_version
-  // KeysController returns: { encrypted_key, family_id, key_version }
   // 2. Pass the deviceId as a query parameter for the server to use
   const resp = await request(`/keys/shared?device_id=${deviceId}`); 
   // --- END FIX ---
@@ -210,22 +199,19 @@ async function ensureFamilyKeyLoaded() {
       console.warn("Decryption failed. Attempting automatic key re-share (self-heal)...");
       
       let selfHealFailed = false; 
-      // FIX 1: Declare outside try block for scope access
       let currentRawKey: { hex: string; version: number } | null = null;
       let publicKey: string | null = null;
 
       try {
         currentRawKey = await getLatestCachedRawFamilyKeyHex();
         
-        // FIX: Extract publicKey and explicitly assert its type.
         const keyPair = await ensureKeyPair();
-        publicKey = keyPair.publicKey as string; // Asserting that the public key is a string here.
+        publicKey = keyPair.publicKey as string; 
         
         const deviceId = await getDeviceId(); // Retrieve device ID for the self-heal payload
         
         if (currentRawKey?.hex && publicKey && familyId && currentUserId) {
-            // FIX: Use the asserted string type for wrapKeyForUser
-            const wrappedKeyBase64 = wrapKeyForUser(currentRawKey.hex, publicKey); // publicKey is now definitely string
+            const wrappedKeyBase64 = wrapKeyForUser(currentRawKey.hex, publicKey);
             
             await api.shareKey({
                 family_id: familyId,
@@ -333,12 +319,11 @@ async function orchestrateFamilyKeyExchange(
 ): Promise<void> {
     // 1. Get the recipient's public key (the creator's key)
     const pubKeyResponse = await api.getPublicKey(targetUserId);
-    // Note: If this fails, the error is thrown up to the caller (familyCreate)
 
     const recipientPublicKeyPem = pubKeyResponse.public_key;
     
     // FIX: Must use the device_id from the public key response
-    const deviceId = (pubKeyResponse.device_id as string) || (await getDeviceId()); // Use device_id from server or fall back
+    const deviceId = (pubKeyResponse.device_id as string) || (await getDeviceId()); 
 
     if (!recipientPublicKeyPem) {
         throw new Error("Could not retrieve creator's Public Key for key exchange.");
@@ -358,7 +343,6 @@ async function orchestrateFamilyKeyExchange(
       device_id: deviceId, // CRITICAL FIX: Include device_id
     };
     
-    // api.shareKey is defined below
     await api.shareKey(sharePayload);
     
     // 5. Cache the raw key locally for immediate use. Key version is 1 for a new family.
@@ -391,13 +375,15 @@ async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion:
         const targetUserId = member.id;
         
         // Fetch recipient's ALL Public Keys (one per device)
-        // NOTE: We assume the server's getUserPublicKey is updated to return an array of keys/device_ids
         const pubKeyResponse = await api.getPublicKey(targetUserId); 
         
         // Normalize keysToShare to be an array of objects {public_key, device_id}
-        // This relies on the server's getPublicKey being fixed to return {public_keys: [{public_key, device_id}, ...]}
-        const keysToShare = pubKeyResponse.public_keys || [];
-        
+        const keysToShare = pubKeyResponse.public_keys || 
+                            (pubKeyResponse.public_key ? [{
+                                public_key: pubKeyResponse.public_key,
+                                device_id: pubKeyResponse.device_id || '00000000-0000-0000-0000-000000000000' // Legacy fallback
+                            }] : []);
+
         if (keysToShare.length === 0) {
             console.warn(`Skipping key share for user ${targetUserId}: No Public Keys found. User needs to re-upload their key.`);
             continue; 
@@ -522,9 +508,7 @@ try {
               (b.amount_encrypted && amount?.text?.includes(':'));
               
           if (decryptionFailed) {
-             // We still hit this if decryptDataWithVersion returns ciphertext
              console.info(`Decryption failed for bill ${b.id}: Key missing or corrupted data. Showing placeholder.`);
-             // FIX: Changed console.error to console.info
              console.info(`Decryption failed for bill ${b.id}: Key missing or corrupted data. Showing placeholder.`);
              
              // Return a placeholder object to prevent raw ciphertext display

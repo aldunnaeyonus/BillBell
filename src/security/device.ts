@@ -1,3 +1,4 @@
+// --- File: aldunnaeyonus/billbell/.../src/security/device.ts (UPLOADED CONTENT) ---
 // --- File: src/security/device.ts (MODIFIED) ---
 
 import * as SecureStore from "expo-secure-store";

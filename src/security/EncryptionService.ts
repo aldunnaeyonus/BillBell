@@ -1,3 +1,4 @@
+// --- File: aldunnaeyonus/billbell/.../src/security/EncryptionService.ts (UPLOADED CONTENT) ---
 import * as SecureStore from "expo-secure-store";
 import Crypto from "react-native-quick-crypto";
 import { Buffer } from "buffer";
@@ -200,7 +201,8 @@ export async function decryptDataWithVersion(
   }
 
   try {
-    const candidates = await getFallbackKeyHexesWithVersions(5);
+    // The number of candidates (5) here is overridden by client.ts changing the prune limit to 50.
+    const candidates = await getFallbackKeyHexesWithVersions(50); // Use 50 to match client.ts safety
     let lastError: any = null; // Store the last error for reporting
 
     for (const c of candidates) {
