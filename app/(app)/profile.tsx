@@ -20,7 +20,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import RNFS from "react-native-fs";
 import Share from "react-native-share";
-
+import { getDeviceId } from "../../src/security/device"; // <--- ADD THIS IMPORT
 import { api } from "../../src/api/client";
 import { clearToken } from "../../src/auth/session";
 import { useTheme, Theme } from "../../src/ui/useTheme";
@@ -418,11 +418,12 @@ const loadData = useCallback(async () => {
               newKeyHex,
               myKeys.publicKey as unknown as string // types: KeyPairKey -> string
             );
-
+              const deviceId = await getDeviceId(); // <--- NEW CALL
             await api.shareKey({
               family_id: leaveRes.new_family_id,
               target_user_id: data.current_user_id,
               encrypted_key: wrappedKey,
+              device_id: deviceId, // <--- MISSING DEVICE_ID ADDED HERE
             });
 
             Alert.alert(t("Success"), t("You have left the family and your data has been re-secured."));
@@ -626,7 +627,7 @@ const loadData = useCallback(async () => {
             <SectionTitle title={t("Management")} theme={theme} />
             <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
               
-              {Platform.OS === 'ios' && (
+              {/* {Platform.OS === 'ios' && (
                 <SwitchRow 
                   icon="notifications-outline"
                   label={t("Show Overdue on Lock Screen")}
@@ -634,7 +635,7 @@ const loadData = useCallback(async () => {
                   onValueChange={handleToggleLiveActivity}
                   theme={theme}
                 />
-              )}
+              )} */}
 
               <ActionRow
                 icon="settings-outline"

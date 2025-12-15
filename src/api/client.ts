@@ -564,8 +564,8 @@ try {
   getPublicKey: (userId: number) => request(`/keys/public/${userId}`),
 
   // FIX: Update shareKey payload definition to include device_id
-  shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: string; device_id: string }) =>
-    request("/keys/shared", { method: "POST", body: JSON.stringify(payload) }),
+shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: string; device_id: string }) => // <--- CORRECT PAYLOAD
+  request("/keys/shared", { method: "POST", body: JSON.stringify(payload) }),
 
   getMySharedKey: () => request("/keys/shared"),
 
