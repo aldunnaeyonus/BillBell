@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { router, useFocusEffect, Stack } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
-// FIX 1: Import MaterialCommunityIcons
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import RNFS from "react-native-fs";
@@ -22,7 +21,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { isSameMonth, addMonths, parseISO, startOfDay } from "date-fns";
 import { userSettings } from "../../src/storage/userSettings";
 
-// FIX 2: Import Swipeable components
 import { Swipeable, RectButton } from 'react-native-gesture-handler';
 
 import { api } from "../../src/api/client";
@@ -32,7 +30,6 @@ import {
 } from "../../src/notifications/notifications";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 
-// [UPDATED] Import the new Summary function
 import {
   startSummaryActivity,
   stopActivity,
@@ -80,7 +77,7 @@ const jsonToCSV = (data: any[]): string => {
   return [headerRow, ...rows].join("\n");
 };
 
-// FIX 3: MASSIVE EXPANDED ICON MAPPING LOGIC (Kept from previous step)
+// ICON MAPPING LOGIC
 const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
   // --- Streaming/Entertainment ---
   { regex: /netflix/i, icon: "netflix", color: "#E50914" },
@@ -141,7 +138,7 @@ function getBillIcon(creditor: string): { name: string; color: string; type: 'Ma
   // Default fallback icon
   return { name: "receipt-outline", color: "#808080", type: 'Ionicons' };
 }
-// END FIX 3
+// END ICON MAPPING
 
 // --- Components ---
 
@@ -258,16 +255,14 @@ function TabSegment({
   );
 }
 
-
-// FIX 4: Refactor BillItem to accept separate action handlers
 function BillItem({
   item,
   theme,
   t,
   onLongPress,
-  onEdit, // NEW
-  onMarkPaid, // NEW
-  onDelete, // NEW
+  onEdit, 
+  onMarkPaid,
+  onDelete,
 }: {
   item: any;
   theme: Theme;
@@ -286,9 +281,7 @@ function BillItem({
   const iconData = getBillIcon(item.creditor);
   const IconComponent = iconData.type === 'Ionicons' ? Ionicons : MaterialCommunityIcons;
 
-  // FIX 5: Define Render Right Actions for Swipe
   const renderRightActions = useCallback(() => {
-    // Component for a single swipe button
     const ActionButton = ({ icon, color, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; color: string; label: string; onPress: () => void }) => (
       <RectButton style={[{ backgroundColor: color }, styles.swipeAction]} onPress={onPress}>
           <Ionicons name={icon} size={24} color="#FFF" />
@@ -298,7 +291,6 @@ function BillItem({
 
     return (
       <View style={styles.rightActionsContainer}>
-        {/* EDIT Button */}
         <ActionButton 
             icon="create-outline" 
             color="#3498DB" 
@@ -306,7 +298,6 @@ function BillItem({
             onPress={onEdit} 
         />
         
-        {/* MARK PAID Button (Only if not paid) */}
         {!isPaid && (
           <ActionButton 
             icon="checkmark-done-circle-outline" 
@@ -316,7 +307,6 @@ function BillItem({
           />
         )}
         
-        {/* DELETE Button */}
         <ActionButton 
             icon="trash-outline" 
             color="#E74C3C" 
@@ -425,14 +415,12 @@ function BillItem({
     </Pressable>
   );
 
-  // FIX 6: Conditionally wrap content in Swipeable for iOS
   if (Platform.OS === 'ios') {
     return (
       <Swipeable
         friction={2}
         rightThreshold={40}
         renderRightActions={renderRightActions}
-        // Setting container style to remove default padding/margins
         containerStyle={{ marginVertical: 0 }}
       >
         {BillContent}
@@ -442,6 +430,7 @@ function BillItem({
 
   return BillContent;
 }
+// END BillItem
 
 // --- Main Screen ---
 
@@ -468,26 +457,23 @@ export default function Bills() {
     }
   }, [bills]);
 
-  // 2. [UPDATED] Live Activity Sync (Overdue + This Month)
+  // 2. Live Activity Sync (Overdue + This Month)
   useEffect(() => {
     if (Platform.OS !== "ios") return;
 
     const syncLiveActivity = async () => {
       const isEnabled = await userSettings.getLiveActivityEnabled();
       
-      // Filter Pending Bills
       const pending = bills.filter(
         (b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"
       );
 
-      // A. Calculate Overdue
       const overdueBills = pending.filter((b: any) => isOverdue(b));
       const overdueSum = overdueBills.reduce(
         (sum: number, b: any) => sum + Number(b.amount_cents || 0),
         0
       );
 
-      // B. Calculate This Month (Excluding overdue)
       const today = new Date();
       const thisMonthBills = pending.filter((b: any) => {
         const due = parseISO(b.due_date);
@@ -498,7 +484,6 @@ export default function Bills() {
         0
       );
 
-      // C. Logic: Stop if nothing to show, otherwise Update/Start
       if (overdueBills.length === 0 && thisMonthBills.length === 0) {
         stopActivity();
         return;
@@ -509,7 +494,6 @@ export default function Bills() {
         return;
       }
 
-      // D. Send to Native
       startSummaryActivity(
         `$${centsToDollars(overdueSum)}`,
         overdueBills.length,
@@ -681,7 +665,6 @@ export default function Bills() {
     }
   }
   
-  // FIX 7: Create action wrappers to be passed to BillItem
   const onDeleteBill = useCallback((item: any) => {
     Alert.alert(
       t("Delete Bill"),
@@ -710,7 +693,6 @@ export default function Bills() {
       params: { id: String(item.id) },
     });
   }, []);
-  // END FIX 7
 
   function cycleSort() {
     if (sort === "due") setSort("amount");
@@ -762,15 +744,15 @@ export default function Bills() {
     const actions: any[] = [
       {
         text: t("Edit"),
-        onPress: () => onEditBill(item), // Use reusable function
+        onPress: () => onEditBill(item),
       },
     ];
     if (!isPaid)
-      actions.push({ text: t("Mark Paid"), onPress: () => onMarkPaidBill(item) }); // Use reusable function
+      actions.push({ text: t("Mark Paid"), onPress: () => onMarkPaidBill(item) });
     actions.push({
       text: t("Delete"),
       style: "destructive",
-      onPress: () => onDeleteBill(item), // Use reusable function
+      onPress: () => onDeleteBill(item),
     });
     actions.push({ text: t("Cancel"), style: "cancel" });
     Alert.alert(item.creditor || t("Bill"), t("Choose an action"), actions);
@@ -822,12 +804,13 @@ export default function Bills() {
                 t={t}
               />
 
-              <View style={{ flexDirection: "row", gap: 12 }}>
+              {/* FIX 1: Action Buttons Layout - Use flexWrap and remove flex: 1 from buttons */}
+              <View style={{ flexDirection: "row", gap: 12, flexWrap: 'wrap', justifyContent: 'flex-start' }}>
                 <Pressable
                   onPress={() => router.push("/(app)/insights")}
                   style={[
                     styles.actionBtn,
-                    { backgroundColor: theme.colors.primary, flex: 1 },
+                    { backgroundColor: theme.colors.primary, flex:1 }, // RESTORE STYLE
                   ]}
                 >
                   <Ionicons
@@ -844,32 +827,12 @@ export default function Bills() {
                     {t("Insights")}
                   </Text>
                 </Pressable>
-                <Pressable
-                  onPress={() => router.push("/(app)/bulk-import")}
-                  style={[
-                    styles.actionBtn,
-                    { backgroundColor: theme.colors.primary, flex: 1 },
-                  ]}
-                >
-                  <Ionicons
-                    name="cloud-upload-outline"
-                    size={20}
-                    color={theme.colors.primaryTextButton}
-                  />
-                  <Text
-                    style={[
-                      styles.actionBtnText,
-                      { color: theme.colors.primaryTextButton },
-                    ]}
-                  >
-                    {t("Import")}
-                  </Text>
-                </Pressable>
+               
                 <Pressable
                   onPress={() => router.push("/(app)/bill-edit")}
                   style={[
                     styles.actionBtn,
-                    { backgroundColor: theme.colors.primary, flex: 1 },
+                    { backgroundColor: theme.colors.primary, flex:1 }, // RESTORE STYLE
                   ]}
                 >
                   <Ionicons
@@ -887,6 +850,7 @@ export default function Bills() {
                   </Text>
                 </Pressable>
               </View>
+              {/* END FIX 1 */}
 
               <TabSegment
                 theme={theme}
@@ -897,15 +861,17 @@ export default function Bills() {
                   { key: "paid", label: t("Paid") },
                 ]}
               />
-
+              
+              {/* Export Button Relocation Fix (from previous step) */}
               <View
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
                   paddingHorizontal: 4,
+                  gap: 8,
                 }}
               >
+                {/* Sort By Control (Left aligned) */}
                 <Pressable
                   onPress={cycleSort}
                   style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
@@ -929,34 +895,39 @@ export default function Bills() {
                   />
                 </Pressable>
 
+                {/* Export Button (Below Sort By, Right aligned) */}
                 {bills.length > 0 && (
-                  <Pressable
-                    onPress={generateAndShareCSV}
-                    disabled={isExporting}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    {isExporting ? (
-                      <ActivityIndicator
-                        size="small"
-                        color={theme.colors.accent}
-                      />
-                    ) : null}
-                    <Text
+                  <View style={{ width: '100%', alignItems: 'flex-end' }}>
+                    <Pressable
+                      onPress={generateAndShareCSV}
+                      disabled={isExporting}
                       style={{
-                        color: theme.colors.accent,
-                        fontWeight: "700",
-                        fontSize: 13,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
                       }}
                     >
-                      {t("Exporting...")}
-                    </Text>
-                  </Pressable>
+                      {isExporting ? (
+                        <ActivityIndicator
+                          size="small"
+                          color={theme.colors.accent}
+                        />
+                      ) : null}
+                      <Text
+                        style={{
+                          color: theme.colors.accent,
+                          fontWeight: "700",
+                          fontSize: 13,
+                        }}
+                      >
+                        {isExporting ? t("Exporting...") : t("Export CSV")}
+                      </Text>
+                    </Pressable>
+                  </View>
                 )}
               </View>
+              {/* END Export Button Relocation Fix */}
+
             </View>
           }
           renderSectionHeader={({ section: { title, special } }) => (
@@ -1037,7 +1008,6 @@ export default function Bills() {
               theme={theme}
               t={t}
               onLongPress={() => onLongPressBill(item)}
-              // FIX 8: Pass down action handlers
               onEdit={() => onEditBill(item)}
               onMarkPaid={() => onMarkPaidBill(item)}
               onDelete={() => onDeleteBill(item)}
@@ -1099,6 +1069,8 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   actionBtn: {
+    // FIX: Restored background color and padding, ensuring flexible width
+    paddingHorizontal: 16, 
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -1110,6 +1082,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    backgroundColor: 'transparent',
   },
   actionBtnText: {
     fontSize: 15,
@@ -1130,11 +1103,9 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
   },
-  // NOTE: This style definition is for the content *inside* the Swipeable.
   billCard: {
     padding: 16,
     borderRadius: 16,
-    // When using Swipeable, the margin/padding must be managed by the parent SectionList's item separator or in renderItem's wrapper
     marginBottom: 12, 
     borderWidth: 1,
   },
@@ -1154,12 +1125,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 10,
   },
-  // FIX 9: New styles for swipe actions
   rightActionsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    marginBottom: 12, // Match billCard's marginBottom
+    marginBottom: 12,
     borderRadius: 16,
     overflow: 'hidden',
   },

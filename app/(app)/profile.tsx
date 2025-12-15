@@ -818,8 +818,8 @@ const styles = StyleSheet.create({
   headerGradient: {
     borderRadius: 20,
     height:120,
-    paddingLeft: 24,
-    paddingRight: 24,
+    paddingLeft: 10,
+    paddingRight: 10,
     paddingBottom: 24,
     flexDirection: "row",
     alignItems: "center",
@@ -854,7 +854,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
     flexShrink: 0,
-    paddingRight:30
+    paddingRight:50
   },
   copyButtonText: {
     color: "#FFF",

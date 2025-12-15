@@ -231,11 +231,9 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     borderRadius: 20,
   },
-  headerGradient: {
+headerGradient: {
     borderRadius: 20,
     height:120,
-    paddingLeft: 24,
-    paddingRight: 24,
     paddingBottom: 24,
     flexDirection: "row",
     alignItems: "center",
@@ -249,6 +247,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.15)",
     justifyContent: "center",
     alignItems: "center",
+    marginLeft:10
   },
   headerTitle: {
     fontSize: 22,

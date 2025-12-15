@@ -268,6 +268,7 @@
   "No data to display in this category.": "此类别中没有可显示的数据。",
   "Loading and decrypting bills...": "正在加载和解密账单...",
   "N/A": "不适用",
+  "Search questions...": "搜索问题...",
   "faqSections": [
     {
       "title": "添加和管理债务",

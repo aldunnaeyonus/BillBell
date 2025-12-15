@@ -323,11 +323,9 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     borderRadius: 20, 
   },
-  headerGradient: {
+headerGradient: {
     borderRadius: 20,
     height:120,
-    paddingLeft: 24,
-    paddingRight: 24,
     paddingBottom: 24,
     flexDirection: "row",
     alignItems: "center",
@@ -335,12 +333,13 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   headerIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft:10
   },
   headerTitle: {
     fontSize: 20,
