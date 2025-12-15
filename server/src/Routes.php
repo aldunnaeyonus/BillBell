@@ -38,10 +38,7 @@ class Routes {
     // --- Keys Routes ---
     if ($method === "POST" && $path === "/keys/public") { KeysController::uploadPublicKey(); return; }
 
-    if ($method === "GET" && preg_match('#^/keys/public/(\d+)$#', $path, $m)) {
-      KeysController::getUserPublicKey((int)$m[1]);
-      return;
-    }
+    if ($method === "GET" && preg_match('#^/keys/public/(\d+)$#', $path, $m)) { KeysController::getUserPublicKey((int)$m[1]); return; }
 
     if ($method === "POST" && $path === "/keys/shared") { KeysController::storeSharedKey(); return; }
     if ($method === "GET"  && $path === "/keys/shared") { KeysController::getMySharedKey(); return; }

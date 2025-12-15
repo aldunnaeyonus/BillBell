@@ -14,9 +14,11 @@ class KeysController {
     RateLimit::hit("keys_public:{$userId}", 20, 60);
 
     $data = Utils::bodyJson();
-    Utils::requireFields($data, ["public_key"]);
+    // FIX: Require both public_key AND the new device_id
+    Utils::requireFields($data, ["public_key", "device_id"]); 
 
     $publicKey = (string)$data["public_key"];
+    $deviceId = (string)$data["device_id"]; // <-- Extract device_id
 
     if (strlen($publicKey) < 200 || strlen($publicKey) > 10000) {
       Utils::json(["error" => "public_key size invalid"], 422);
@@ -26,50 +28,54 @@ class KeysController {
     }
 
     $pdo = DB::pdo();
+    
+    // FIX: Insert/Update now uses both user_id and device_id for uniqueness
     $stmt = $pdo->prepare("
-      INSERT INTO user_public_keys (user_id, public_key)
-      VALUES (?, ?)
+      INSERT INTO user_public_keys (user_id, device_id, public_key)
+      VALUES (?, ?, ?)
       ON DUPLICATE KEY UPDATE public_key = VALUES(public_key)
     ");
-    $stmt->execute([$userId, $publicKey]);
+    $stmt->execute([$userId, $deviceId, $publicKey]); // <-- EXECUTE with device_id
 
     Utils::json(["status" => "ok"]);
   }
 
-  // Get a specific user's Public Key
+  // Get ALL a specific user's Public Keys (one per device)
   public static function getUserPublicKey($targetUserId) {
     $userId = Auth::requireUserId();
     RateLimit::hit("keys_fetch:{$userId}", 60, 60);
 
     $pdo = DB::pdo();
     $stmt = $pdo->prepare("
-      SELECT public_key
+      SELECT public_key, device_id
       FROM user_public_keys
       WHERE user_id = ?
-      LIMIT 1
-    ");
+    "); // FIX: Removed LIMIT 1 and added device_id selection
     $stmt->execute([(int)$targetUserId]);
-    $row = $stmt->fetch();
+    $rows = $stmt->fetchAll(); // FIX: Changed fetch() to fetchAll()
 
-    if (!$row) {
-      Utils::json(["error" => "Public key not found for user"], 404);
+    if (!$rows) {
+      Utils::json(["error" => "Public keys not found for user"], 404);
     }
 
-    Utils::json(["public_key" => $row["public_key"]]);
+    // FIX: Return an array of keys for multi-device support
+    Utils::json(["public_keys" => $rows]);
   }
 
   // Store wrapped family key for the family's CURRENT key_version
-  // Version-history: inserts (family_id, user_id, key_version)
+  // Version-history: inserts (family_id, user_id, key_version, device_id)
   public static function storeSharedKey() {
     $userId = Auth::requireUserId();
     RateLimit::hit("keys_shared:{$userId}", 30, 60);
 
     $data = Utils::bodyJson();
-    Utils::requireFields($data, ["family_id", "target_user_id", "encrypted_key"]);
+    // FIX 1: Require the new device_id field
+    Utils::requireFields($data, ["family_id", "target_user_id", "encrypted_key", "device_id"]); 
 
     $familyId = (int)$data["family_id"];
     $targetUserId = (int)$data["target_user_id"];
     $encryptedKey = (string)$data["encrypted_key"];
+    $deviceId = (string)$data["device_id"]; // FIX 2: Extract device ID
 
     if (strlen($encryptedKey) < 50 || strlen($encryptedKey) > 4096) {
       Utils::json(["error" => "encrypted_key size invalid"], 422);
@@ -121,20 +127,21 @@ class KeysController {
     }
     $keyVersion = (int)($fam["key_version"] ?? 1);
 
-    // Insert versioned row; if the same version already exists, update encrypted_key
-    // (requires PRIMARY KEY / UNIQUE on (family_id,user_id,key_version))
+    // FIX 3: Insert versioned row using device_id for uniqueness
     $stmt = $pdo->prepare("
-      INSERT INTO family_shared_keys (family_id, user_id, key_version, encrypted_key)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO family_shared_keys (family_id, user_id, key_version, encrypted_key, device_id)
+      VALUES (?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE encrypted_key = VALUES(encrypted_key)
     ");
-    $stmt->execute([$familyId, $targetUserId, $keyVersion, $encryptedKey]);
+    // FIX 4: Execute with device_id
+    $stmt->execute([$familyId, $targetUserId, $keyVersion, $encryptedKey, $deviceId]);
 
     Utils::json([
       "status" => "ok",
       "family_id" => $familyId,
       "user_id" => $targetUserId,
-      "key_version" => $keyVersion
+      "key_version" => $keyVersion,
+      "device_id" => $deviceId // Include for clarity
     ]);
   }
 
@@ -162,15 +169,19 @@ class KeysController {
 
     $familyId = (int)$fam["family_id"];
     $keyVersion = (int)($fam["key_version"] ?? 1);
+    
+    // FIX 1: Retrieve device_id from the query parameters (sent by client)
+    $deviceId = $_GET['device_id'] ?? '00000000-0000-0000-0000-000000000000'; // Default to legacy ID
 
-    // Fetch versioned shared key row
+    // FIX 2: Fetch versioned shared key row using device_id
     $stmt = $pdo->prepare("
       SELECT encrypted_key
       FROM family_shared_keys
-      WHERE family_id = ? AND user_id = ? AND key_version = ?
+      WHERE family_id = ? AND user_id = ? AND key_version = ? AND device_id = ?
       LIMIT 1
     ");
-    $stmt->execute([$familyId, $userId, $keyVersion]);
+    // Execute with the new device ID
+    $stmt->execute([$familyId, $userId, $keyVersion, $deviceId]);
     $row = $stmt->fetch();
 
     if (!$row) {
