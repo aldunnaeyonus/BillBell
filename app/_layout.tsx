@@ -142,7 +142,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
     <I18nextProvider i18n={i18n}>
-      <BiometricAuth>
+    <BiometricAuth>
         <AppStack />
       </BiometricAuth>
     </I18nextProvider>

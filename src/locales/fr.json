@@ -269,6 +269,38 @@
   "Loading and decrypting bills...": "Chargement et déchiffrement des factures...",
   "N/A": "N/D",
    "Search questions...": "Rechercher des questions...",
+   "title": "Paramètres de la Famille",
+    "section_encryption": "Gestion du Chiffrement",
+    "section_members": "Membres de la Famille",
+    "section_reminders": "Rappels par Défaut",
+
+    "rotation_title": "Rotation de la Clé de Chiffrement",
+    "rotation_description": "Utilisez cette fonction si un membre de la famille ne peut pas accéder aux factures chiffrées après l'installation d'un nouvel appareil ou une nouvelle connexion. Ce processus est sécurisé, mais nécessite que le membre redémarre l'application.",
+    "rotation_button": "Rotation de la Clé de Chiffrement Familiale",
+    "rotation_success_title": "Rotation de Clé Réussie",
+    "rotation_success_message": "Une nouvelle clé a été générée et partagée avec tous les membres. Les membres concernés doivent relancer l'application pour synchroniser.",
+    "rotation_error": "Échec de la rotation de la clé. Veuillez réessayer ou contacter le support.",
+
+    "members_admin": "Admin",
+    "members_member": "Membre",
+    "members_current_user": "(Vous)",
+    "members_remove_button": "Retirer",
+    "members_remove_confirm_title": "Retirer un membre ?",
+    "members_remove_confirm_message": "Êtes-vous sûr de vouloir retirer {name} de la famille ?",
+    "members_remove_success": "{name} a été retiré.",
+    "members_remove_error": "Échec du retrait du membre.",
+    "members_leave_button": "Quitter la Famille",
+    "members_leave_confirm_title": "Quitter la Famille ?",
+    "members_leave_confirm_message": "Êtes-vous sûr de vouloir quitter la famille ? Vous perdrez l'accès à toutes les factures partagées.",
+    "members_leave_success": "Vous avez quitté la famille.",
+    
+    "reminders_offset_label": "Délai de Rappel par Défaut (Jours)",
+    "reminders_offset_description": "Combien de jours avant la date d'échéance le rappel doit-il être envoyé ?",
+    "reminders_time_label": "Heure de Rappel par Défaut",
+    "reminders_time_description": "L'heure de la journée à laquelle la notification de rappel doit être envoyée (heure locale).",
+    "reminders_save_button": "Enregistrer les Paramètres",
+    "reminders_save_success": "Paramètres mis à jour avec succès.",
+    "reminders_save_error": "Échec de l'enregistrement des paramètres.",
   "faqSections": [
     {
       "title": "Ajouter et Gérer les Dettes",
@@ -311,7 +343,15 @@
         { "q": "Comment me connecter?", "a": "Vous pouvez vous connecter en utilisant la Connexion Apple ou la Connexion Google, selon votre appareil." },
         { "q": "Mes données sont-elles sécurisées?", "a": "Oui. Vos données sont protégées par des jetons d'authentification chiffrés et stockées en toute sécurité sur le serveur." },
         { "q": "Mes données se synchroniseront-elles sur tous les appareils?", "a": "Oui. Tant que vous vous connectez avec le même compte Apple ou Google, vos données se synchronisent automatiquement." },
-        { "q": "Si j'importe des factures via CSV, sont-elles chiffrées immédiatement?", "a": "Pour garantir une confidentialité maximale, BillBell utilise le 'Chiffrement de Bout en Bout'. Cela signifie que la clé de chiffrement réside uniquement sur votre appareil, et non sur nos serveurs. Lorsque vous téléchargez un fichier CSV pour l'importation en masse, notre serveur le traite pour créer les factures. Étant donné que notre serveur n'a pas (et ne devrait pas avoir) votre clé de chiffrement privée, il ne peut pas chiffrer les données de ces factures importées. Elles sont initialement stockées en texte brut. Comment les sécuriser : Une fois que vous ouvrez l'application et que votre téléphone télécharge les nouvelles factures importées, elles fonctionneront normalement. Si vous modifiez et enregistrez une facture importée, l'application la chiffrera automatiquement en utilisant la clé sur votre appareil, la sécurisant à partir de ce moment."}
+        { "q": "Si j'importe des factures via CSV, sont-elles chiffrées immédiatement?", "a": "Pour garantir une confidentialité maximale, BillBell utilise le 'Chiffrement de Bout en Bout'. Cela signifie que la clé de chiffrement réside uniquement sur votre appareil, et non sur nos serveurs. Lorsque vous téléchargez un fichier CSV pour l'importation en masse, notre serveur le traite pour créer les factures. Étant donné que notre serveur n'a pas (et ne devrait pas avoir) votre clé de chiffrement privée, il ne peut pas chiffrer les données de ces factures importées. Elles sont initialement stockées en texte brut. Comment les sécuriser : Une fois que vous ouvrez l'application et que votre téléphone télécharge les nouvelles factures importées, elles fonctionneront normalement. Si vous modifiez et enregistrez une facture importée, l'application la chiffrera automatiquement en utilisant la clé sur votre appareil, la sécurisant à partir de ce moment."},
+        {
+    "q": "Pourquoi ne puis-je plus voir mes factures (Échec du déchiffrement) ?",
+    "a": "Ce problème survient généralement sur un nouvel appareil ou immédiatement après la réinstallation de l'application, lorsque votre appareil n'a pas la clé de chiffrement familiale actuelle stockée. L'application utilise un ensemble unique de clés cryptographiques pour protéger les données de votre famille. Si la clé publique de votre nouvel appareil n'a pas été synchronisée avec le serveur avant la génération de la dernière clé, l'application ne peut pas déchiffrer la clé de la famille."
+  },
+  {
+    "q": "Comment corriger l'échec du déchiffrement ?",
+    "a": "Le problème ne peut être résolu que par un administrateur de la famille effectuant une rotation de clé : **Action de l'administrateur :** Un utilisateur ayant le rôle d'administrateur doit se rendre dans les Paramètres de la Famille et sélectionner « Rotation de la Clé de Chiffrement Familiale ». **Ce que fait la rotation :** Ce processus génère une toute nouvelle clé et rechiffre cette clé spécifiquement pour chaque membre en utilisant sa dernière Clé Publique enregistrée. **Votre action :** Une fois que l'administrateur a terminé la rotation, fermez complètement et relancez l'application sur votre appareil problématique. L'application téléchargera la nouvelle clé et vos factures réapparaîtront. **Remarque :** Si le problème persiste après la rotation de la clé par l'administrateur, vous devrez peut-être vous déconnecter et vous reconnecter pour forcer une réinitialisation complète de vos clés locales."
+  }
       ]
     },
     {

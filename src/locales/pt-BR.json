@@ -269,6 +269,38 @@
   "Loading and decrypting bills...": "Carregando e descriptografando faturas...",
   "N/A": "N/A",
   "Search questions...": "Pesquisar perguntas...",
+  "title": "Configurações da Família",
+    "section_encryption": "Gerenciamento de Criptografia",
+    "section_members": "Membros da Família",
+    "section_reminders": "Lembretes Padrão",
+
+    "rotation_title": "Rotação da Chave de Criptografia",
+    "rotation_description": "Use esta função se um membro da família não puder acessar faturas criptografadas após uma nova instalação ou novo login em um novo dispositivo. Este processo é seguro, mas exige que o membro reinicie o aplicativo.",
+    "rotation_button": "Rotacionar Chave de Criptografia da Família",
+    "rotation_success_title": "Rotação de Chave Bem-sucedida",
+    "rotation_success_message": "Uma nova chave foi gerada e compartilhada com todos os membros. Os membros afetados devem reiniciar o aplicativo para sincronizar.",
+    "rotation_error": "Falha ao rotacionar a chave. Tente novamente ou entre em contato com o suporte.",
+
+    "members_admin": "Admin",
+    "members_member": "Membro",
+    "members_current_user": "(Você)",
+    "members_remove_button": "Remover",
+    "members_remove_confirm_title": "Remover Membro?",
+    "members_remove_confirm_message": "Tem certeza de que deseja remover {name} da família?",
+    "members_remove_success": "{name} foi removido.",
+    "members_remove_error": "Falha ao remover membro.",
+    "members_leave_button": "Sair da Família",
+    "members_leave_confirm_title": "Sair da Família?",
+    "members_leave_confirm_message": "Tem certeza de que deseja sair da família? Você perderá o acesso a todas as faturas compartilhadas.",
+    "members_leave_success": "Você saiu da família.",
+    
+    "reminders_offset_label": "Antecedência do Lembrete Padrão (Dias)",
+    "reminders_offset_description": "Quantos dias antes da data de vencimento o lembrete deve ser enviado?",
+    "reminders_time_label": "Hora do Lembrete Padrão",
+    "reminders_time_description": "A hora do dia em que a notificação de lembrete deve ser enviada (hora local).",
+    "reminders_save_button": "Salvar Configurações",
+    "reminders_save_success": "Configurações atualizadas com sucesso.",
+    "reminders_save_error": "Falha ao salvar as configurações.",
   "faqSections": [
     {
       "title": "Adicionar e Gerenciar Dívidas",
@@ -302,8 +334,16 @@
         { "q": "Como funciona o Código de Importação?", "a": "Os administradores de grupo podem gerar um código de importação de uso único. Use-o na tela Upload em Massa para importar dívidas com segurança de um arquivo CSV." },
         { "q": "Que tipo de arquivo posso importar?", "a": "Você pode importar arquivos CSV contendo os campos: nome, valor, data_de_vencimento, notas, pagamento_automático." },
         { "q": "Posso importar várias dívidas de uma vez?", "a": "Sim. Use o recurso Upload em Massa para importar muitas dívidas de uma planilha em uma única etapa." },
-        { "q": "Por que minha importação falhou?", "a": "Verifique se o seu CSV usa formatação válida e se o seu Código de Importação não expirou ou já foi usado." }
-      ]
+        { "q": "Por que minha importação falhou?", "a": "Verifique se o seu CSV usa formatação válida e se o seu Código de Importação não expirou ou já foi usado." },
+      {
+    "q": "Por que não consigo mais ver minhas faturas (Falha na Descriptografia)?",
+    "a": "Este problema geralmente acontece em um novo dispositivo ou imediatamente após reinstalar o aplicativo, onde seu dispositivo não tem a Chave de Criptografia Familiar atual armazenada. O aplicativo usa um conjunto exclusivo de chaves criptográficas para proteger os dados de sua família. Se a Chave Pública do seu novo dispositivo não foi sincronizada com o servidor antes que a chave mais recente fosse gerada, o aplicativo não consegue descriptografar a Chave Familiar."
+  },
+  {
+    "q": "Como corrigir a Falha na Descriptografia?",
+    "a": "O problema só pode ser resolvido por um Admin da família executando uma Rotação de Chave: **Ação do Admin:** Um usuário com função de Admin deve ir em Configurações da Família e selecionar 'Rotacionar Chave de Criptografia da Família'. **O que a Rotação faz:** Este processo gera uma chave totalmente nova e recriptografa essa chave especificamente para cada membro usando sua Chave Pública mais recente no arquivo. **Sua Ação:** Depois que o Admin concluir a rotação, feche completamente e reinicie o aplicativo em seu dispositivo problemático. O aplicativo baixará a nova chave e suas faturas reaparecerão. **Observação:** Se o problema persistir após o Admin rotacionar a chave, pode ser necessário Sair e Entrar novamente para forçar uma redefinição completa das chaves locais do seu dispositivo."
+  }
+]
     },
     {
       "title": "Conta, Login e Segurança",

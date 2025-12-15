@@ -269,6 +269,38 @@
   "Loading and decrypting bills...": "Caricamento e decifrazione delle fatture...",
   "N/A": "N/D",
   "Search questions...": "Cerca domande...",
+  "title": "Impostazioni Famiglia",
+    "section_encryption": "Gestione della Crittografia",
+    "section_members": "Membri della Famiglia",
+    "section_reminders": "Promemoria Predefiniti",
+
+    "rotation_title": "Rotazione della Chiave di Crittografia",
+    "rotation_description": "Utilizzare questa funzione se un membro della famiglia non riesce ad accedere alle fatture crittografate dopo l'installazione di un nuovo dispositivo o un nuovo accesso. Questo processo è sicuro, ma richiede che il membro riavvii l'app.",
+    "rotation_button": "Ruota Chiave di Crittografia Familiare",
+    "rotation_success_title": "Rotazione Chiave Riuscita",
+    "rotation_success_message": "È stata generata e condivisa una nuova chiave con tutti i membri. I membri interessati devono riavviare l'app per sincronizzare.",
+    "rotation_error": "Impossibile ruotare la chiave. Riprovare o contattare l'assistenza.",
+
+    "members_admin": "Amministratore",
+    "members_member": "Membro",
+    "members_current_user": "(Tu)",
+    "members_remove_button": "Rimuovi",
+    "members_remove_confirm_title": "Rimuovere Membro?",
+    "members_remove_confirm_message": "Sei sicuro di voler rimuovere {name} dalla famiglia?",
+    "members_remove_success": "{name} è stato rimosso.",
+    "members_remove_error": "Impossibile rimuovere il membro.",
+    "members_leave_button": "Lascia la Famiglia",
+    "members_leave_confirm_title": "Lasciare la Famiglia?",
+    "members_leave_confirm_message": "Sei sicuro di voler lasciare la famiglia? Perderai l'accesso a tutte le fatture condivise.",
+    "members_leave_success": "Hai lasciato la famiglia.",
+    
+    "reminders_offset_label": "Anticipo Promemoria Predefinito (Giorni)",
+    "reminders_offset_description": "Quanti giorni prima della data di scadenza deve essere inviato il promemoria?",
+    "reminders_time_label": "Ora Promemoria Predefinita",
+    "reminders_time_description": "L'ora del giorno in cui deve essere inviata la notifica di promemoria (ora locale).",
+    "reminders_save_button": "Salva Impostazioni",
+    "reminders_save_success": "Impostazioni aggiornate con successo.",
+    "reminders_save_error": "Impossibile salvare le impostazioni.",
   "faqSections": [
     {
       "title": "Aggiungere e Gestire i Debiti",
@@ -311,7 +343,15 @@
         { "q": "Come accedo?", "a": "Puoi accedere utilizzando l'Accesso con Apple o l'Accesso con Google a seconda del tuo dispositivo." },
         { "q": "I miei dati sono al sicuro?", "a": "Sì. I tuoi dati sono protetti con token di autenticazione crittografati e archiviati in modo sicuro sul server." },
         { "q": "I miei dati si sincronizzeranno tra i dispositivi?", "a": "Sì. A condizione che tu acceda con lo stesso account Apple o Google, i tuoi dati si sincronizzeranno automaticamente." },
-        { "q": "Se importo fatture tramite CSV, vengono crittografate immediatamente?", "a": "Per garantire la massima privacy, BillBell utilizza la 'Crittografia End-to-End'. Ciò significa che la chiave di crittografia risiede solo sul tuo dispositivo, non sui nostri server. Quando carichi un file CSV per l'importazione massiva, il nostro server lo elabora per creare le fatture. Poiché il nostro server non ha (e non dovrebbe avere) la tua chiave di crittografia privata, non può crittografare i dati di queste fatture importate. Vengono inizialmente archiviate come testo in chiaro. Come proteggerle: Una volta aperta l'app e scaricate le nuove fatture importate sul tuo telefono, funzioneranno normalmente. Se modifichi e salvi una fattura importata, l'app la crittograferà automaticamente utilizzando la chiave sul tuo dispositivo, proteggendola da quel momento in poi."}
+        { "q": "Se importo fatture tramite CSV, vengono crittografate immediatamente?", "a": "Per garantire la massima privacy, BillBell utilizza la 'Crittografia End-to-End'. Ciò significa che la chiave di crittografia risiede solo sul tuo dispositivo, non sui nostri server. Quando carichi un file CSV per l'importazione massiva, il nostro server lo elabora per creare le fatture. Poiché il nostro server non ha (e non dovrebbe avere) la tua chiave di crittografia privata, non può crittografare i dati di queste fatture importate. Vengono inizialmente archiviate come testo in chiaro. Come proteggerle: Una volta aperta l'app e scaricate le nuove fatture importate sul tuo telefono, funzioneranno normalmente. Se modifichi e salvi una fattura importata, l'app la crittograferà automaticamente utilizzando la chiave sul tuo dispositivo, proteggendola da quel momento in poi."},
+      {
+    "q": "Perché non riesco più a vedere le mie fatture (Decrittazione fallita)?",
+    "a": "Questo problema si verifica di solito su un nuovo dispositivo o immediatamente dopo aver reinstallato l'app, quando il dispositivo non ha memorizzato la chiave di crittografia familiare attuale. L'app utilizza un set unico di chiavi crittografiche per proteggere i dati della tua famiglia. Se la chiave pubblica del tuo nuovo dispositivo non è stata sincronizzata con il server prima che fosse generata l'ultima chiave, l'app non può decrittare la chiave della famiglia."
+  },
+  {
+    "q": "Come risolvere il fallimento della decrittazione?",
+    "a": "Il problema può essere risolto solo da un Amministratore della famiglia eseguendo una Rotazione della Chiave: **Azione dell'Amministratore:** Un utente con ruolo di Amministratore deve andare su Impostazioni Famiglia e selezionare 'Ruota Chiave di Crittografia Familiare'. **Cosa fa la Rotazione:** Questo processo genera una chiave completamente nuova e ricripta tale chiave specificamente per ogni membro utilizzando la loro ultima Chiave Pubblica in archivio. **La tua azione:** Dopo che l'Amministratore ha completato la rotazione, chiudi completamente e riavvia l'app sul tuo dispositivo problematico. L'app scaricherà la nuova chiave e le tue fatture riappariranno. **Nota:** Se il problema persiste dopo che l'Amministratore ha ruotato la chiave, potrebbe essere necessario disconnettersi e accedere di nuovo per forzare un ripristino completo delle chiavi locali del dispositivo."
+  }
       ]
     },
     {

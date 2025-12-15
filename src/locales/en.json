@@ -270,6 +270,38 @@
   "Loading and decrypting bills...": "Loading and decrypting bills...",
   "N/A": "N/A",
   "Search questions...":"Search questions...",
+  "title": "Family Settings",
+    "section_encryption": "Encryption Management",
+    "section_members": "Family Members",
+    "section_reminders": "Default Reminders",
+
+    "rotation_title": "Encryption Key Rotation",
+    "rotation_description": "Use this function if a family member cannot access encrypted bills after a new device install or re-login. This process is secure but requires the member to log in again.",
+    "rotation_button": "Rotate Family Encryption Key",
+    "rotation_success_title": "Key Rotation Successful",
+    "rotation_success_message": "A new key has been generated and shared with all members. Affected members must relaunch the app to sync.",
+    "rotation_error": "Failed to rotate key. Please try again or contact support.",
+
+    "members_admin": "Admin",
+    "members_member": "Member",
+    "members_current_user": "(You)",
+    "members_remove_button": "Remove",
+    "members_remove_confirm_title": "Remove Member?",
+    "members_remove_confirm_message": "Are you sure you want to remove {name} from the family?",
+    "members_remove_success": "{name} has been removed.",
+    "members_remove_error": "Failed to remove member.",
+    "members_leave_button": "Leave Family",
+    "members_leave_confirm_title": "Leave Family?",
+    "members_leave_confirm_message": "Are you sure you want to leave the family? You will lose access to all shared bills.",
+    "members_leave_success": "You have left the family.",
+    
+    "reminders_offset_label": "Default Reminder Offset (Days)",
+    "reminders_offset_description": "How many days before the due date should the reminder be sent?",
+    "reminders_time_label": "Default Reminder Time",
+    "reminders_time_description": "The time of day the reminder notification should be sent (local time).",
+    "reminders_save_button": "Save Settings",
+    "reminders_save_success": "Settings updated successfully.",
+    "reminders_save_error": "Failed to save settings.",
   "faqSections": [
     {
       "title": "Adding & Managing Debts",
@@ -312,7 +344,9 @@
         { "q": "How do I sign in?", "a": "You can sign in using Apple Sign-In or Google Sign-In depending on your device." },
         { "q": "Is my data secure?", "a": "Yes. Your data is protected with encrypted authentication tokens and stored securely on the server." },
         { "q": "Will my data sync across devices?", "a": "Yes. As long as you sign in with the same Apple or Google account, your data syncs automatically." },
-        { "q": "If I import bills via CSV, are they encrypted immediately?", "a":"To ensure maximum privacy, BillBell uses 'End-to-End Encryption.' This means the encryption key lives only on your device, not on our servers. When you upload a CSV file for bulk import, our server processes it to create the bills. Since our server does not (and should not) have your private encryption key, it cannot encrypt the data of these imported bills. They are stored as plain text initially. How to secure them: Once you open the app and your phone downloads the new imported bills, they will work normally. If you edit and save an imported bill, the app will automatically encrypt it using the key on your device, securing it from that point forward."}
+        { "q": "If I import bills via CSV, are they encrypted immediately?", "a":"To ensure maximum privacy, BillBell uses 'End-to-End Encryption.' This means the encryption key lives only on your device, not on our servers. When you upload a CSV file for bulk import, our server processes it to create the bills. Since our server does not (and should not) have your private encryption key, it cannot encrypt the data of these imported bills. They are stored as plain text initially. How to secure them: Once you open the app and your phone downloads the new imported bills, they will work normally. If you edit and save an imported bill, the app will automatically encrypt it using the key on your device, securing it from that point forward."},
+        { "q": "Why Can't I See My Bills Anymore (Decryption Failed)?", "a": "This issue usually happens on a new device or immediately after reinstalling the app, where your device doesn't have the current Family Encryption Key stored. The app uses a unique set of cryptographic keys to protect your family's data. If your new device's Public Key was not synchronized with the server before the latest key was generated, the app cannot decrypt the Family Key."},
+        { "q": "How to Fix Decryption Failure", "a": "The problem can only be resolved by a family Admin running a Key Rotation: Admin Action: A user with an Admin role must go to Family Settings and select 'Rotate Family Encryption Key'. What Rotation Does: This process generates a brand new key and re-encrypts that key specifically for every member using their latest Public Key on file. Your Action: After the Admin completes the rotation, fully close and relaunch the app on your problematic device. The app will download the new key and your bills will reappear. Note: If the issue persists after the Admin rotates the key, you may need to Log Out and Log In again to force a complete reset of your local device keys."}
       ]
     },
     {

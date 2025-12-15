@@ -269,6 +269,38 @@
   "Loading and decrypting bills...": "Laden und Entschlüsseln der Rechnungen...",
   "N/A": "N.A.",
   "Search questions...": "Fragen suchen...",
+    "title": "Familieneinstellungen",
+    "section_encryption": "Verschlüsselungsverwaltung",
+    "section_members": "Familienmitglieder",
+    "section_reminders": "Standard-Erinnerungen",
+
+    "rotation_title": "Verschlüsselungsschlüssel-Rotation",
+    "rotation_description": "Verwenden Sie diese Funktion, wenn ein Familienmitglied nach einer Neuinstallation oder Neuanmeldung auf einem neuen Gerät nicht auf verschlüsselte Rechnungen zugreifen kann. Dieser Prozess ist sicher, erfordert jedoch, dass das Mitglied die App neu startet.",
+    "rotation_button": "Verschlüsselungsschlüssel rotieren",
+    "rotation_success_title": "Schlüssel-Rotation erfolgreich",
+    "rotation_success_message": "Ein neuer Schlüssel wurde generiert und mit allen Mitgliedern geteilt. Betroffene Mitglieder müssen die App neu starten, um zu synchronisieren.",
+    "rotation_error": "Schlüssel-Rotation fehlgeschlagen. Bitte versuchen Sie es erneut oder wenden Sie sich an den Support.",
+
+    "members_admin": "Admin",
+    "members_member": "Mitglied",
+    "members_current_user": "(Sie)",
+    "members_remove_button": "Entfernen",
+    "members_remove_confirm_title": "Mitglied entfernen?",
+    "members_remove_confirm_message": "Sind Sie sicher, dass Sie {name} aus der Familie entfernen möchten?",
+    "members_remove_success": "{name} wurde entfernt.",
+    "members_remove_error": "Entfernen des Mitglieds fehlgeschlagen.",
+    "members_leave_button": "Familie verlassen",
+    "members_leave_confirm_title": "Familie verlassen?",
+    "members_leave_confirm_message": "Sind Sie sicher, dass Sie die Familie verlassen möchten? Sie verlieren den Zugriff auf alle geteilten Rechnungen.",
+    "members_leave_success": "Sie haben die Familie verlassen.",
+    
+    "reminders_offset_label": "Standard-Erinnerungsvorlauf (Tage)",
+    "reminders_offset_description": "Wie viele Tage vor dem Fälligkeitsdatum soll die Erinnerung gesendet werden?",
+    "reminders_time_label": "Standard-Erinnerungszeit",
+    "reminders_time_description": "Die Tageszeit, zu der die Erinnerungsbenachrichtigung gesendet werden soll (lokale Zeit).",
+    "reminders_save_button": "Einstellungen speichern",
+    "reminders_save_success": "Einstellungen erfolgreich aktualisiert.",
+    "reminders_save_error": "Speichern der Einstellungen fehlgeschlagen.",
   "faqSections": [
     {
       "title": "Schulden hinzufügen & verwalten",
@@ -311,7 +343,14 @@
         { "q": "Wie melde ich mich an?", "a": "Sie können sich je nach Gerät mit Apple Sign-In oder Google Sign-In anmelden." },
         { "q": "Sind meine Daten sicher?", "a": "Ja. Ihre Daten sind mit verschlüsselten Authentifizierungs-Token geschützt und sicher auf dem Server gespeichert." },
         { "q": "Werden meine Daten über Geräte hinweg synchronisiert?", "a": "Ja. Solange Sie sich mit demselben Apple- oder Google-Konto anmelden, werden Ihre Daten automatisch synchronisiert." },
-        { "q": "Wenn ich Rechnungen über CSV importiere, werden sie sofort verschlüsselt?", "a": "Um maximale Privatsphäre zu gewährleisten, verwendet BillBell 'End-to-End-Verschlüsselung'. Das bedeutet, der Verschlüsselungsschlüssel befindet sich nur auf Ihrem Gerät, nicht auf unseren Servern. Wenn Sie eine CSV-Datei für den Massenimport hochladen, verarbeitet unser Server diese, um die Rechnungen zu erstellen. Da unser Server Ihren privaten Verschlüsselungsschlüssel nicht besitzt (und auch nicht besitzen sollte), kann er die Daten dieser importierten Rechnungen nicht verschlüsseln. Sie werden zunächst als Klartext gespeichert. So sichern Sie sie: Sobald Sie die App öffnen und Ihr Telefon die neu importierten Rechnungen herunterlädt, funktionieren diese normal. Wenn Sie eine importierte Rechnung bearbeiten und speichern, verschlüsselt die App sie automatisch mit dem Schlüssel auf Ihrem Gerät und sichert sie von diesem Zeitpunkt an."}
+        { "q": "Wenn ich Rechnungen über CSV importiere, werden sie sofort verschlüsselt?", "a": "Um maximale Privatsphäre zu gewährleisten, verwendet BillBell 'End-to-End-Verschlüsselung'. Das bedeutet, der Verschlüsselungsschlüssel befindet sich nur auf Ihrem Gerät, nicht auf unseren Servern. Wenn Sie eine CSV-Datei für den Massenimport hochladen, verarbeitet unser Server diese, um die Rechnungen zu erstellen. Da unser Server Ihren privaten Verschlüsselungsschlüssel nicht besitzt (und auch nicht besitzen sollte), kann er die Daten dieser importierten Rechnungen nicht verschlüsseln. Sie werden zunächst als Klartext gespeichert. So sichern Sie sie: Sobald Sie die App öffnen und Ihr Telefon die neu importierten Rechnungen herunterlädt, funktionieren diese normal. Wenn Sie eine importierte Rechnung bearbeiten und speichern, verschlüsselt die App sie automatisch mit dem Schlüssel auf Ihrem Gerät und sichert sie von diesem Zeitpunkt an."},
+        { "q": "Warum kann ich meine Rechnungen nicht mehr sehen (Entschlüsselung fehlgeschlagen)?", "a": "Dieses Problem tritt normalerweise auf einem neuen Gerät oder unmittelbar nach der Neuinstallation der App auf, wenn Ihr Gerät den aktuellen Familien-Verschlüsselungsschlüssel nicht gespeichert hat. Die App verwendet einen eindeutigen Satz kryptografischer Schlüssel zum Schutz der Daten Ihrer Familie. Wenn der öffentliche Schlüssel Ihres neuen Geräts vor der Generierung des neuesten Schlüssels nicht mit dem Server synchronisiert wurde, kann die App den Familienschlüssel nicht entschlüsseln."
+  },
+  {
+    "q": "Wie behebt man den Entschlüsselungsfehler?",
+    "a": "Das Problem kann nur durch einen Familien-Admin durchführen einer Schlüssel-Rotation gelöst werden: **Admin-Aktion:** Ein Benutzer mit Admin-Rolle muss zu den Familieneinstellungen gehen und „Verschlüsselungsschlüssel rotieren“ auswählen. **Was die Rotation bewirkt:** Dieser Prozess generiert einen brandneuen Schlüssel und verschlüsselt diesen Schlüssel speziell für jedes Mitglied unter Verwendung seines neuesten öffentlichen Schlüssels. **Ihre Aktion:** Nachdem der Admin die Rotation abgeschlossen hat, schließen Sie die App auf Ihrem problematischen Gerät vollständig und starten Sie sie neu. Die App lädt den neuen Schlüssel herunter und Ihre Rechnungen werden wieder angezeigt. **Hinweis:** Wenn das Problem nach der Schlüssel-Rotation durch den Admin weiterhin besteht, müssen Sie sich möglicherweise abmelden und erneut anmelden, um ein vollständiges Zurücksetzen Ihrer lokalen Geräteschlüssel zu erzwingen."
+  }
+      
       ]
     },
     {

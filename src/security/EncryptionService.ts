@@ -6,8 +6,8 @@ const PUBLIC_KEY_ALIAS = "billbell_rsa_public";
 const PRIVATE_KEY_ALIAS = "billbell_rsa_private";
 
 // Versioned family key storage
-const FAMILY_KEY_PREFIX = "billbell_family_key_cache_v";
-const FAMILY_KEY_VERSION_ALIAS = "billbell_family_key_version";
+export const FAMILY_KEY_PREFIX = "billbell_family_key_cache_v";
+export const FAMILY_KEY_VERSION_ALIAS = "billbell_family_key_version";
 
 // --- RSA Key Management ---
 
@@ -53,11 +53,24 @@ export async function unwrapMyKey(wrappedKeyBase64: string): Promise<string> {
   if (!privateKeyPem) throw new Error("No private key found");
 
   const bufferToDecrypt = Buffer.from(wrappedKeyBase64, "base64");
-  const decrypted = Crypto.privateDecrypt(
-    { key: privateKeyPem, padding: Crypto.constants.RSA_PKCS1_OAEP_PADDING },
-    bufferToDecrypt
-  );
-  return decrypted.toString("utf8");
+  
+  // --- FIX START: Add try/catch for native decryption errors ---
+  try {
+    // Line 56: Crypto.privateDecrypt
+    const decrypted = Crypto.privateDecrypt(
+      { key: privateKeyPem, padding: Crypto.constants.RSA_PKCS1_OAEP_PADDING },
+      bufferToDecrypt
+    );
+    return decrypted.toString("utf8");
+  } catch (e: any) {
+    // Catch the low-level native error and throw a recognizable JS error
+    const errMsg = String(e.message);
+    if (errMsg.includes("oaep decoding error") || errMsg.includes("privateDecrypt failed")) {
+      throw new Error("KEY_DECRYPTION_FAILED: The family key on the server cannot be decrypted by this device's private key. Your Public Key on the server is stale.");
+    }
+    throw e;
+  }
+  // --- FIX END ---
 }
 
 function familyKeyAliasForVersion(version: number) {
@@ -78,6 +91,22 @@ export async function getCachedFamilyKeyVersion(): Promise<number | null> {
   const n = parseInt(v, 10);
   return Number.isFinite(n) && n > 0 ? n : null;
 }
+
+// --- ADDED FOR KEY ROTATION ---
+/**
+ * Retrieves the raw family key hex from the latest cached version.
+ * Used for self-healing re-wrapping when public key is updated on a new device.
+ */
+export async function getLatestCachedRawFamilyKeyHex(): Promise<{ hex: string; version: number } | null> {
+  const v = await getCachedFamilyKeyVersion();
+  if (!v) return null;
+
+  const hex = await SecureStore.getItemAsync(familyKeyAliasForVersion(v));
+  if (!hex) return null;
+  
+  return { hex, version: v };
+}
+// --------------------------------
 
 async function getActiveFamilyKeyBuffer(): Promise<Buffer> {
   const v = await getCachedFamilyKeyVersion();
@@ -152,8 +181,7 @@ export async function decryptData(encryptedString: string, specificKeyHex?: stri
 }
 
 /**
- * NEW: decrypt and tell you which key_version succeeded (or null if not decrypted).
- * Useful for lazy re-encrypt migrations.
+ * NEW: decrypt and tell you which key_version succeeded (or null if not decrypted.
  */
 export async function decryptDataWithVersion(
   encryptedString: string,
@@ -166,22 +194,32 @@ export async function decryptDataWithVersion(
       return { text: tryDecryptWithKey(encryptedString, specificKeyHex), usedVersion: null };
     } catch (e) {
       console.warn("Decryption failed with provided key:", e);
-      return { text: encryptedString, usedVersion: null };
+      // FIX 1: Throw a specific error if decryption with the provided key fails
+      throw new Error("DECRYPT_FAILED_SPECIFIC_KEY");
     }
   }
 
   try {
     const candidates = await getFallbackKeyHexesWithVersions(5);
+    let lastError: any = null; // Store the last error for reporting
+
     for (const c of candidates) {
       try {
         return { text: tryDecryptWithKey(encryptedString, c.hex), usedVersion: c.v };
-      } catch {
-        // try next
+      } catch (e) {
+        lastError = e; // Store the error from this candidate key
+        // continue to try the next key
       }
     }
+    
+    // FIX 2: If we ran out of keys and failed, throw the last decryption error
+    if (lastError) {
+        throw new Error(`DECRYPT_FAILED_ALL_KEYS: ${lastError.message}`);
+    }
+
     return { text: encryptedString, usedVersion: null };
   } catch (e) {
-    console.warn("Decryption failed:", e);
-    return { text: encryptedString, usedVersion: null };
+    // Catch any error thrown within this block, including the specific error from FIX 2
+    throw e;
   }
 }

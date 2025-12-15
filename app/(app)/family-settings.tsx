@@ -16,7 +16,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
-import * as EncryptionService from '../../src/security/EncryptionService';
+
 // --- Components ---
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
@@ -90,6 +90,10 @@ export default function FamilySettings() {
   const [loading, setLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   
+  // NEW: State for admin check and key rotation
+  const [isRotating, setIsRotating] = useState(false);
+  const [familyInfo, setFamilyInfo] = useState<{ members: { id: number; role: string; }[]; current_user_id: number; } | null>(null);
+
   const theme = useTheme();
   const { t } = useTranslation();
   
@@ -107,9 +111,17 @@ export default function FamilySettings() {
     { label: t("3 day before"), value: 3 },
   ];
 
+  // Logic to determine if the current user is an admin
+  const currentUserRole = familyInfo?.members.find(
+    m => m.id === familyInfo.current_user_id
+  )?.role;
+  const isAdmin = currentUserRole === 'admin';
+
+
   useEffect(() => {
     (async () => {
       try {
+        // Fetch Settings
         const s = await api.familySettingsGet();
         setOffset(Number(s.default_reminder_offset_days ?? 1));
         setTime(String(s.default_reminder_time_local ?? "09:00:00"));
@@ -121,6 +133,10 @@ export default function FamilySettings() {
         d.setHours(Number(h), Number(m), 0, 0);
         setReminderDateObj(d);
         
+        // NEW: Fetch Members for role check
+        const membersData = await api.familyMembers();
+        setFamilyInfo(membersData);
+
       } catch (e: any) {
         Alert.alert(t("Error"), e.message);
       } finally {
@@ -177,6 +193,41 @@ export default function FamilySettings() {
       setLoading(false);
     }
   }
+
+  // NEW: Key Rotation Handler
+  const handleKeyRotation = async () => {
+    if (!isAdmin || isRotating) return;
+    
+    Alert.alert(
+      t("Confirm Key Rotation"),
+      t("This will generate a new encryption key for your family. All members must be able to sync to continue accessing data. Proceed?"),
+      [
+        { text: t("Cancel"), style: 'cancel' },
+        { 
+          text: t("Rotate Key"), 
+          style: 'destructive',
+          onPress: async () => {
+            setIsRotating(true);
+            try {
+            await api.orchestrateKeyRotation();              
+              Alert.alert(t("Success"), t("Family encryption key successfully rotated. All members will sync automatically."));
+              
+              // Force a re-fetch of member data to reflect any changes if needed, and to refresh bills
+              router.replace("/(app)/bills"); // Navigate to Bills screen for sync/refresh
+
+            } catch (e: any) {
+              console.error("Key Rotation Failed:", e);
+              Alert.alert(t("Rotation Failed"), e.message || t("An unknown error occurred during key rotation. Check console for details."));
+            } finally {
+              setIsRotating(false);
+            }
+          }
+        },
+      ]
+    );
+  };
+  // END NEW: Key Rotation Handler
+
 
   if (!dataLoaded) {
     return (
@@ -299,6 +350,48 @@ export default function FamilySettings() {
           </Pressable>
         )}
 
+        {/* NEW: Key Rotation Button (Admin Only) */}
+        {isAdmin && (
+            <View style={{ marginTop: 40, borderTopWidth: StyleSheet.hairlineWidth, borderColor: theme.colors.border, paddingBottom: 30 }}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary, marginTop: 20 }]}>
+                {t("Encryption Management")}
+              </Text>
+              
+              <Pressable 
+                onPress={handleKeyRotation} 
+                disabled={isRotating}
+                style={({ pressed }) => [
+                  styles.row, 
+                  { 
+                    backgroundColor: theme.colors.card, 
+                    borderColor: theme.colors.border,
+                    borderWidth: StyleSheet.hairlineWidth,
+                    padding: 16,
+                    borderRadius: 16,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginTop: 10,
+                    opacity: pressed || isRotating ? 0.6 : 1
+                  }
+                ]}
+              >
+                <Text style={[styles.rowText, { color: theme.colors.destructive, fontWeight: '600' }]}>
+                  {isRotating ? t("Rotating Key...") : t("Rotate Family Encryption Key")}
+                </Text>
+                <Ionicons 
+                  name={isRotating ? "reload-circle-outline" : "key-outline"} 
+                  size={24} 
+                  color={theme.colors.destructive} 
+                  // Simple spin animation for loading state
+                  style={isRotating ? { transform: [{ rotate: "360deg" }] } : {}}
+                />
+              </Pressable>
+              <Text style={[styles.helpText, { color: theme.colors.textTertiary, paddingHorizontal: 16, marginTop: 10, fontSize: 12 }]}>
+                  {t("Only use this if a member cannot sync bills or receives a decryption error after using a new device.")}
+              </Text>
+            </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -383,7 +476,7 @@ headerGradient: {
   chipText: {
     fontSize: 14,
   },
-  // Time Row
+  // Time Row / Generic Row for Key Rotation
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -391,6 +484,15 @@ headerGradient: {
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
+  },
+  row: {
+    // Shared style for both timeRow and key rotation button
+  },
+  rowText: {
+    // Shared text style
+  },
+  helpText: {
+    // Style for explanatory text under rotation button
   },
   iconBox: {
     width: 36,

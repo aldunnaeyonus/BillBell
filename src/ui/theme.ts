@@ -22,6 +22,10 @@ export const palette = {
 export type Theme = {
   mode: "light" | "dark";
   colors: {
+    textSecondary: ColorValue | undefined;
+    destructive: ColorValue | undefined;
+    destructive: string | OpaqueColorValue | undefined;
+    textTertiary: ColorValue | undefined;
     bg: string;
     card: string;
     text: string;
