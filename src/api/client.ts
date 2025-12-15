@@ -229,44 +229,74 @@ export const api = {
   billsCreate: async (bill: any) => {
     await ensureFamilyKeyLoaded();
 
-    const payload = {
-      ...bill,
-      creditor: await encryptData(bill.creditor),
-      amount_encrypted: await encryptData(String(bill.amount_cents)),
-      notes: await encryptData(bill.notes || ""),
+    // 🔑 NEW: Explicitly check for the key post-load attempt to give a better error message
+    const currentVersion = await getCachedFamilyKeyVersion();
+    if (!currentVersion) {
+      throw new Error("Local Encryption Key Missing. Please log out and back in.");
+    }
 
-      due_date: bill.due_date,
-      status: bill.status,
+    try {
+      const payload = {
+        ...bill,
+        creditor: await encryptData(bill.creditor),
+        amount_encrypted: await encryptData(String(bill.amount_cents)),
+        notes: await encryptData(bill.notes || ""),
 
-      recurrence: bill.recurrence_rule ?? bill.recurrence ?? "none",
-    };
+        due_date: bill.due_date,
+        status: bill.status,
 
-    return request("/bills", { method: "POST", body: JSON.stringify(payload) });
+        recurrence: bill.recurrence_rule ?? bill.recurrence ?? "none",
+      };
+
+      return request("/bills", { method: "POST", body: JSON.stringify(payload) });
+    } catch (e: any) {
+      // NEW: Catch specific encryption failures and re-throw with a clear message
+      const message = String(e.message);
+      if (message.includes("Encryption failed") || message.includes("Family key not loaded")) {
+         throw new Error("Security Key Missing: The app could not find the required encryption key locally to create the bill. Please log out and back in.");
+      }
+      throw e;
+    }
   },
 
   billsUpdate: async (id: number, bill: any) => {
     await ensureFamilyKeyLoaded();
 
-    const payload: any = { ...bill };
-
-    // IMPORTANT: allow empty-string updates (""), not just truthy values
-    if (Object.prototype.hasOwnProperty.call(payload, "creditor")) {
-      payload.creditor = await encryptData(payload.creditor ?? "");
+    // 🔑 NEW: Explicitly check for the key post-load attempt to give a better error message
+    const currentVersion = await getCachedFamilyKeyVersion();
+    if (!currentVersion) {
+      throw new Error("Local Encryption Key Missing for update. Please log out and back in.");
     }
-    if (Object.prototype.hasOwnProperty.call(payload, "notes")) {
-      payload.notes = await encryptData(payload.notes ?? "");
-    }
+    
+    try {
+      const payload: any = { ...bill };
 
-    if (payload.amount_cents !== undefined && payload.amount_cents !== null) {
-      payload.amount_encrypted = await encryptData(String(payload.amount_cents));
-    }
+      // IMPORTANT: allow empty-string updates (""), not just truthy values
+      if (Object.prototype.hasOwnProperty.call(payload, "creditor")) {
+        payload.creditor = await encryptData(payload.creditor ?? "");
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, "notes")) {
+        payload.notes = await encryptData(payload.notes ?? "");
+      }
 
-    if (payload.recurrence_rule && !payload.recurrence) {
-      payload.recurrence = payload.recurrence_rule;
-      delete payload.recurrence_rule;
-    }
+      if (payload.amount_cents !== undefined && payload.amount_cents !== null) {
+        payload.amount_encrypted = await encryptData(String(payload.amount_cents));
+      }
 
-    return request(`/bills/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+      if (payload.recurrence_rule && !payload.recurrence) {
+        payload.recurrence = payload.recurrence_rule;
+        delete payload.recurrence_rule;
+      }
+
+      return request(`/bills/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+    } catch (e: any) {
+      // NEW: Catch specific encryption failures and re-throw with a clear message
+      const message = String(e.message);
+      if (message.includes("Encryption failed") || message.includes("Family key not loaded")) {
+         throw new Error("Security Key Missing: The app could not find the required encryption key locally to update the bill. Please log out and back in.");
+      }
+      throw e;
+    }
   },
 
   billsDelete: (id: number) => request(`/bills/${id}`, { method: "DELETE" }),

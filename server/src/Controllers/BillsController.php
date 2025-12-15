@@ -15,6 +15,14 @@ class BillsController {
     return (int)$row["family_id"];
   }
 
+  private static function getFamilyKeyVersion(int $familyId): int {
+    $pdo = DB::pdo();
+    $stmt = $pdo->prepare("SELECT key_version FROM families WHERE id=? LIMIT 1");
+    $stmt->execute([$familyId]);
+    $row = $stmt->fetch();
+    return (int)($row["key_version"] ?? 1);
+  }
+
   public static function list() {
     $userId = Auth::requireUserId();
     $familyId = self::requireFamilyId($userId);
@@ -47,18 +55,20 @@ class BillsController {
     $recurrence = $data["recurrence"] ?? "none";
     if (!in_array($recurrence, ["none","monthly","weekly","bi-weekly","annually"], true)) Utils::json(["error" => "Invalid recurrence"], 422);
 
-    // [E2EE] Capture the encrypted amount if provided
     $amountEncrypted = $data["amount_encrypted"] ?? null;
+
+    // NEW: store which family key_version this ciphertext corresponds to
+    $cipherVersion = self::getFamilyKeyVersion($familyId);
 
     $stmt = $pdo->prepare("
       INSERT INTO bills
-      (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+      (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     ");
-    
+
     $stmt->execute([
-      $familyId, 
-      $userId, 
+      $familyId,
+      $userId,
       $userId,
       $data["creditor"],             // Encrypted String (via Client)
       (int)$data["amount_cents"],    // Integer (via Client)
@@ -69,10 +79,11 @@ class BillsController {
       $recurrence,
       $reminderOffset,
       $reminderTime,
-      $data["notes"] ?? null         // Encrypted String (via Client)
+      $data["notes"] ?? null,        // Encrypted String (via Client)
+      $cipherVersion
     ]);
 
-    Utils::json(["id" => (int)$pdo->lastInsertId()], 201);
+    Utils::json(["id" => (int)$pdo->lastInsertId(), "cipher_version" => $cipherVersion], 201);
   }
 
   public static function update(int $id) {
@@ -85,14 +96,41 @@ class BillsController {
     $stmt->execute([$id, $familyId]);
     if (!$stmt->fetch()) Utils::json(["error" => "Not found"], 404);
 
-    // [E2EE] Added 'amount_encrypted' to the allowed fields list
-    $fields = ["creditor","amount_cents","amount_encrypted","due_date","recurrence","reminder_offset_days","reminder_time_local","status", "notes"];
+    $fields = ["creditor","amount_cents","amount_encrypted","due_date","recurrence","reminder_offset_days","reminder_time_local","status","notes","cipher_version"];
     $sets = [];
     $vals = [];
+
     foreach ($fields as $f) {
-      if (array_key_exists($f, $data)) { $sets[] = "$f=?"; $vals[] = $data[$f]; }
+      if (array_key_exists($f, $data)) {
+        // validate cipher_version if provided
+        if ($f === "cipher_version") {
+          $cv = (int)$data[$f];
+          if ($cv < 1) Utils::json(["error" => "Invalid cipher_version"], 422);
+          $sets[] = "$f=?";
+          $vals[] = $cv;
+        } else {
+          $sets[] = "$f=?";
+          $vals[] = $data[$f];
+        }
+      }
     }
+
     if (!$sets) Utils::json(["ok" => true]);
+
+    // NEW: If ciphertext fields are being updated and caller didn't set cipher_version,
+    // auto-bump to current family key_version.
+    $touchingCiphertext =
+      array_key_exists("creditor", $data) ||
+      array_key_exists("amount_encrypted", $data) ||
+      array_key_exists("notes", $data);
+
+    $hasCipherVersion = array_key_exists("cipher_version", $data);
+
+    if ($touchingCiphertext && !$hasCipherVersion) {
+      $current = self::getFamilyKeyVersion($familyId);
+      $sets[] = "cipher_version=?";
+      $vals[] = $current;
+    }
 
     $sets[] = "updated_by_user_id=?";
     $vals[] = $userId;
@@ -142,31 +180,30 @@ class BillsController {
       $dt->modify($dateModifier);
       $nextDue = $dt->format("Y-m-d");
 
-      // Check duplicates (Note: dedupe might be weaker with randomized encryption)
       $chk = $pdo->prepare("SELECT id FROM bills WHERE family_id=? AND creditor=? AND amount_cents=? AND due_date=? LIMIT 1");
       $chk->execute([(int)$bill["family_id"], $bill["creditor"], (int)$bill["amount_cents"], $nextDue]);
 
       if (!$chk->fetch()) {
-        // [E2EE] Added amount_encrypted to the recurring bill creation
         $ins = $pdo->prepare("
           INSERT INTO bills
-          (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+          (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ");
         $ins->execute([
           (int)$bill["family_id"],
           (int)$bill["created_by_user_id"],
           $userId,
-          $bill["creditor"],          // Inherit encrypted creditor
-          (int)$bill["amount_cents"], // Inherit amount int
-          $bill["amount_encrypted"],  // [E2EE] Inherit encrypted amount
+          $bill["creditor"],
+          (int)$bill["amount_cents"],
+          $bill["amount_encrypted"],
           $nextDue,
           "active",
           null,
           $bill["recurrence"],
           (int)$bill["reminder_offset_days"],
           $bill["reminder_time_local"],
-          $bill["notes"]              // Inherit encrypted notes
+          $bill["notes"],
+          (int)($bill["cipher_version"] ?? 1)
         ]);
       }
     }

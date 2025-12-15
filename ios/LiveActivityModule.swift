@@ -16,8 +16,8 @@ class LiveActivityModule: NSObject {
         return
       }
       
-      let attributes = BillBellWidgetsAttributes(billId: "bill_summary")
-      let contentState = BillBellWidgetsAttributes.ContentState(
+      let attributes = BillBellWidgetAttributes(billId: "bill_summary")
+      let contentState = BillBellWidgetAttributes.ContentState(
         overdueTotal: overdueTotal,
         overdueCount: overdueCount,
         monthTotal: monthTotal,
@@ -25,7 +25,7 @@ class LiveActivityModule: NSObject {
       )
       
       do {
-        if let currentActivity = Activity<BillBellWidgetsAttributes>.activities.first {
+        if let currentActivity = Activity<BillBellWidgetAttributes>.activities.first {
           if #available(iOS 16.2, *) {
             let content = ActivityContent(state: contentState, staleDate: nil)
             Task { await currentActivity.update(content) }
@@ -34,7 +34,7 @@ class LiveActivityModule: NSObject {
           }
           resolve(currentActivity.id)
         } else {
-          let activity: Activity<BillBellWidgetsAttributes>
+          let activity: Activity<BillBellWidgetAttributes>
           if #available(iOS 16.2, *) {
             let content = ActivityContent(state: contentState, staleDate: nil)
             activity = try Activity.request(attributes: attributes, content: content, pushType: nil)
@@ -56,7 +56,7 @@ class LiveActivityModule: NSObject {
       // ... (Your existing endAllActivities code) ...
     if #available(iOS 16.1, *) {
       Task {
-        for activity in Activity<BillBellWidgetsAttributes>.activities {
+        for activity in Activity<BillBellWidgetAttributes>.activities {
           if #available(iOS 16.2, *) {
             await activity.end(nil, dismissalPolicy: .immediate)
           } else {

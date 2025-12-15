@@ -7,6 +7,11 @@ use App\Auth;
 
 class ImportController {
 
+  // Backwards-compatible entrypoint expected by Routes.php
+  public static function upload() {
+    return self::run();
+  }
+
   // POST /import/bills
   public static function run() {
     $userId = Auth::requireUserId();
@@ -45,17 +50,16 @@ class ImportController {
     $bills = $data["bills"] ?? [];
     if (!is_array($bills)) Utils::json(["error" => "bills must be an array"], 422);
 
-    $validRecurrences = ["monthly","weekly","bi-weekly","annually"];
-    
+    $validRecurrences = ["monthly","weekly","bi-weekly","annually","none"];
+
     $inserted = 0;
-    
+
     $pdo->beginTransaction();
     try {
       // Mark code as used
       $upd = $pdo->prepare("UPDATE import_codes SET used_at=NOW() WHERE id=?");
       $upd->execute([$codeRow["id"]]);
 
-      // [UPDATE] Added amount_encrypted to the INSERT columns
       $ins = $pdo->prepare("
         INSERT INTO bills
         (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, notes, recurrence, reminder_offset_days, reminder_time_local, status)
@@ -63,38 +67,38 @@ class ImportController {
       ");
 
       foreach ($bills as $b) {
-        $rawRecurrence = strtolower(trim($b["recurrence"] ?? ""));
-        
+        $rawRecurrence = strtolower(trim($b["recurrence"] ?? "none"));
+
         $creditor = isset($b["name"]) ? trim((string)$b["name"]) : "";
-        
+
         // Map CSV 'amount' (float) -> DB 'amount_cents' (int)
         $amountFloat = isset($b["amount"]) ? (float)$b["amount"] : null;
         $amountCents = $amountFloat ? (int)round($amountFloat * 100) : 0;
-        
-        $dueDate = isset($b["due_date"]) ? trim((string)$b["due_date"]) : ""; 
+
+        $dueDate = isset($b["due_date"]) ? trim((string)$b["due_date"]) : "";
         $notes = isset($b["notes"]) ? (string)$b["notes"] : null;
-        
-        $recurrence = in_array($rawRecurrence, $validRecurrences) ? $rawRecurrence : "none";
-        $offset = 1; 
+
+        $recurrence = in_array($rawRecurrence, $validRecurrences, true) ? $rawRecurrence : "none";
+        $offset = 1;
         $time = "09:00:00";
 
         // Basic validation
         if ($creditor === "" || $amountCents <= 0 || $dueDate === "") {
-           continue; 
+          continue;
         }
 
         $ins->execute([
-            $familyId, 
-            $userId, 
-            $userId, 
-            $creditor,       // Plain text (server can't encrypt)
-            $amountCents, 
-            null,            // [UPDATE] Explicitly set amount_encrypted to NULL
-            $dueDate, 
-            $notes,          // Plain text (server can't encrypt)
-            $recurrence,
-            $offset, 
-            $time
+          $familyId,
+          $userId,
+          $userId,
+          $creditor,       // Plain text (server can't encrypt)
+          $amountCents,
+          null,            // amount_encrypted left NULL for imports
+          $dueDate,
+          $notes,          // Plain text (server can't encrypt)
+          $recurrence,
+          $offset,
+          $time
         ]);
         $inserted++;
       }

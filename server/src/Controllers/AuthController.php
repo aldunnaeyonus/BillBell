@@ -9,6 +9,7 @@ use Firebase\JWT\JWK;
 
 class AuthController {
   // ... existing apple() and google() methods ...
+
   public static function apple() {
     $data = Utils::bodyJson();
     Utils::requireFields($data, ["identity_token"]);
@@ -36,8 +37,8 @@ class AuthController {
 
     Utils::json(self::upsertUser("google", $providerUserId, $email, $name));
   }
-  
-  // --- NEW DELETE METHOD ---
+
+  // --- UPDATED DELETE METHOD ---
   public static function delete() {
     $userId = Auth::requireUserId();
     $pdo = DB::pdo();
@@ -45,60 +46,109 @@ class AuthController {
     try {
       $pdo->beginTransaction();
 
-      // 1. Check Family Membership
-      $stmt = $pdo->prepare("SELECT family_id, role FROM family_members WHERE user_id = ?");
+      // Lock my membership (if any)
+      $stmt = $pdo->prepare("
+        SELECT family_id, role
+        FROM family_members
+        WHERE user_id = ?
+        LIMIT 1
+        FOR UPDATE
+      ");
       $stmt->execute([$userId]);
       $membership = $stmt->fetch();
 
       if ($membership) {
-        $familyId = $membership['family_id'];
-        $role = $membership['role'];
+        $familyId = (int)$membership["family_id"];
+        $myRole = (string)($membership["role"] ?? "member");
 
-        // 2. Check for an Heir (Next oldest member)
-        $stmt = $pdo->prepare("SELECT user_id FROM family_members WHERE family_id = ? AND user_id != ? ORDER BY created_at ASC LIMIT 1");
-        $stmt->execute([$familyId, $userId]);
-        $heir = $stmt->fetch();
+        // Lock all members of the family so it can't change mid-delete
+        $stmt = $pdo->prepare("
+          SELECT user_id, role, created_at
+          FROM family_members
+          WHERE family_id = ?
+          ORDER BY (role='admin') DESC, created_at ASC
+          FOR UPDATE
+        ");
+        $stmt->execute([$familyId]);
+        $members = $stmt->fetchAll();
 
-        if (!$heir) {
-          // CASE A: User is the last member. Delete everything.
-          // Delete bills first (Constraint: bills -> families)
+        $memberCount = count($members);
+
+        if ($memberCount <= 1) {
+          // CASE A: last member -> delete family + dependent rows (FK-safe order)
+          $pdo->prepare("DELETE FROM family_settings WHERE family_id = ?")->execute([$familyId]);
+          $pdo->prepare("DELETE FROM family_shared_keys WHERE family_id = ?")->execute([$familyId]);
+          $pdo->prepare("DELETE FROM import_codes WHERE family_id = ?")->execute([$familyId]);
           $pdo->prepare("DELETE FROM bills WHERE family_id = ?")->execute([$familyId]);
-          // Delete membership
           $pdo->prepare("DELETE FROM family_members WHERE family_id = ?")->execute([$familyId]);
-          // Delete family (Constraint: families -> users)
           $pdo->prepare("DELETE FROM families WHERE id = ?")->execute([$familyId]);
+
         } else {
-          // CASE B: Other members exist. Transfer ownership.
-          $heirId = $heir['user_id'];
+          // CASE B: other members exist -> choose successor + transfer if needed
 
-          // 1. Reassign Bills (created/updated by user -> heir)
-          $pdo->prepare("UPDATE bills SET created_by_user_id = ? WHERE created_by_user_id = ?")->execute([$heirId, $userId]);
-          $pdo->prepare("UPDATE bills SET updated_by_user_id = ? WHERE updated_by_user_id = ?")->execute([$heirId, $userId]);
+          // Prefer an existing admin (not me). Otherwise oldest remaining member.
+          $successorId = null;
 
-          // 2. Reassign Family Ownership (created_by_user_id -> heir)
-          $pdo->prepare("UPDATE families SET created_by_user_id = ? WHERE created_by_user_id = ?")->execute([$heirId, $userId]);
+          foreach ($members as $m) {
+            $uid = (int)$m["user_id"];
+            if ($uid === $userId) continue;
+            if ((string)$m["role"] === "admin") { $successorId = $uid; break; }
+          }
+          if ($successorId === null) {
+            foreach ($members as $m) {
+              $uid = (int)$m["user_id"];
+              if ($uid === $userId) continue;
+              $successorId = $uid;
+              break;
+            }
+          }
+          if (!$successorId) throw new \Exception("No successor found");
 
-          // 3. Promote Heir if User was Admin
-          if ($role === 'admin') {
-            $pdo->prepare("UPDATE family_members SET role = 'admin' WHERE user_id = ?")->execute([$heirId]);
+          // If I'm admin and I'm the last admin, promote successor
+          if ($myRole === "admin") {
+            $admins = $pdo->prepare("
+              SELECT COUNT(*) AS c
+              FROM family_members
+              WHERE family_id = ? AND role = 'admin' AND user_id <> ?
+            ");
+            $admins->execute([$familyId, $userId]);
+            $adminCount = (int)($admins->fetch()["c"] ?? 0);
+
+            if ($adminCount === 0) {
+              $pdo->prepare("UPDATE family_members SET role = 'admin' WHERE family_id = ? AND user_id = ? LIMIT 1")
+                  ->execute([$familyId, $successorId]);
+            }
           }
 
-          // 4. Remove User from Family
-          $pdo->prepare("DELETE FROM family_members WHERE user_id = ?")->execute([$userId]);
+          // Reassign bills referencing me so deleting users row won't violate FK
+          $pdo->prepare("UPDATE bills SET created_by_user_id = ? WHERE family_id = ? AND created_by_user_id = ?")
+              ->execute([$successorId, $familyId, $userId]);
+          $pdo->prepare("UPDATE bills SET updated_by_user_id = ? WHERE family_id = ? AND updated_by_user_id = ?")
+              ->execute([$successorId, $familyId, $userId]);
+
+          // Reassign family "creator" to successor (avoid FK issues / nicer semantics)
+          $pdo->prepare("UPDATE families SET created_by_user_id = ? WHERE id = ? AND created_by_user_id = ?")
+              ->execute([$successorId, $familyId, $userId]);
+
+          // Remove me from family
+          $pdo->prepare("DELETE FROM family_members WHERE family_id = ? AND user_id = ? LIMIT 1")
+              ->execute([$familyId, $userId]);
         }
       }
 
-      // 3. Delete Device Tokens (if you have a table for them linked to user)
-      // Assuming 'device_tokens' table exists or similar logic in DevicesController
-      // $pdo->prepare("DELETE FROM device_tokens WHERE user_id = ?")->execute([$userId]);
+      // Delete device tokens (you have FK from device_tokens.user_id -> users.id)
+      $pdo->prepare("DELETE FROM device_tokens WHERE user_id = ?")->execute([$userId]);
 
-      // 4. Finally, Delete the User
-      $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$userId]);
+      // user_public_keys has ON DELETE CASCADE, but explicit delete is fine
+      $pdo->prepare("DELETE FROM user_public_keys WHERE user_id = ?")->execute([$userId]);
+
+      // Finally delete user
+      $pdo->prepare("DELETE FROM users WHERE id = ? LIMIT 1")->execute([$userId]);
 
       $pdo->commit();
       Utils::json(["success" => true]);
 
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
       if ($pdo->inTransaction()) $pdo->rollBack();
       Utils::json(["error" => "Account deletion failed: " . $e->getMessage()], 500);
     }

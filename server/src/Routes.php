@@ -9,6 +9,7 @@ use App\Controllers\DevicesController;
 use App\Controllers\FamilySettingsController;
 use App\Controllers\ImportCodeController;
 use App\Controllers\ImportController;
+use App\Controllers\KeysController;
 
 class Routes {
   private static function normalizedPath(): string {
@@ -34,22 +35,26 @@ class Routes {
       exit;
     }
 
-// ... inside dispatch() ...
-
-
-
+    // --- Keys Routes ---
     if ($method === "POST" && $path === "/keys/public") { KeysController::uploadPublicKey(); return; }
-    if ($method === "GET" && $path === "/keys/public/{id}") { KeysController::getUserPublicKey(); return; }
-    if ($method === "POST" && $path === "/keys/shared ") { KeysController::storeSharedKey(); return; }
-    if ($method === "GET" && $path === "/keys/shared ") { KeysController::getMySharedKey(); return; }
 
+    if ($method === "GET" && preg_match('#^/keys/public/(\d+)$#', $path, $m)) {
+      KeysController::getUserPublicKey((int)$m[1]);
+      return;
+    }
+
+    if ($method === "POST" && $path === "/keys/shared") { KeysController::storeSharedKey(); return; }
+    if ($method === "GET"  && $path === "/keys/shared") { KeysController::getMySharedKey(); return; }
+
+    // --- Account / Health ---
     if ($method === "DELETE" && $path === "/auth/user") { AuthController::delete(); return; }
-
     if ($method === "GET" && $path === "/health") { Utils::json(["ok" => true]); return; }
 
+    // --- Import / Export ---
     if ($method === "POST" && $path === "/import-code/create") { ImportCodeController::create(); return; }
     if ($method === "POST" && $path === "/import/bills") { ImportController::upload(); return; }
-    
+    if ($method === "POST" && $path === "/family/rotate-key") { FamilyController::rotateKey(); return; }
+    // --- Auth ---
     if ($method === "GET" && $path === "/auth/apple") { Utils::json(["ok"=>false,"hint"=>"POST /auth/apple"], 405); return; }
     if ($method === "GET" && $path === "/auth/google") { Utils::json(["ok"=>false,"hint"=>"POST /auth/google"], 405); return; }
     if ($method === "POST" && $path === "/auth/apple") { AuthController::apple(); return; }
@@ -73,6 +78,7 @@ class Routes {
     if ($method === "POST" && preg_match('#^/bills/(\d+)/mark-paid$#', $path, $m)) { BillsController::markPaid((int)$m[1]); return; }
     if ($method === "POST" && preg_match('#^/bills/(\d+)/snooze$#', $path, $m)) { BillsController::snooze((int)$m[1]); return; }
 
+    // --- Devices ---
     if ($method === "POST" && $path === "/devices/token") { DevicesController::upsert(); return; }
 
     Utils::json(["error" => "Not found", "method" => $method, "path" => $path], 404);
