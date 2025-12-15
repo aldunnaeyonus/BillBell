@@ -168,9 +168,15 @@ async function ensureFamilyKeyLoaded() {
     return;
   }
 
+  // --- START FIX: Pass deviceId to fetch request ---
+  const deviceId = await getDeviceId(); // 1. Fetch the ID
+  
   // Fetch current wrapped key for my user + current family key_version
   // KeysController returns: { encrypted_key, family_id, key_version }
-  const resp = await request("/keys/shared");
+  // 2. Pass the deviceId as a query parameter for the server to use
+  const resp = await request(`/keys/shared?device_id=${deviceId}`); 
+  // --- END FIX ---
+  
   const wrapped = resp?.encrypted_key;
   const keyVersion = Number(resp?.key_version);
   const familyId = Number(resp?.family_id);
@@ -192,7 +198,7 @@ async function ensureFamilyKeyLoaded() {
     // Attempt to unwrap the key fetched from the server
     const familyKeyHex = await unwrapMyKey(String(wrapped));
     await cacheFamilyKey(familyKeyHex, keyVersion);
-    await pruneFamilyKeys(5);
+    await pruneFamilyKeys(50); // FIX: Increased limit from 5 to 50 for safe migration
 
     await SecureStore.setItemAsync(FAMILY_KEY_SYNC_TS, String(now));
     
@@ -215,6 +221,8 @@ async function ensureFamilyKeyLoaded() {
         const keyPair = await ensureKeyPair();
         publicKey = keyPair.publicKey as string; // Asserting that the public key is a string here.
         
+        const deviceId = await getDeviceId(); // Retrieve device ID for the self-heal payload
+        
         if (currentRawKey?.hex && publicKey && familyId && currentUserId) {
             // FIX: Use the asserted string type for wrapKeyForUser
             const wrappedKeyBase64 = wrapKeyForUser(currentRawKey.hex, publicKey); // publicKey is now definitely string
@@ -223,6 +231,7 @@ async function ensureFamilyKeyLoaded() {
                 family_id: familyId,
                 target_user_id: currentUserId,
                 encrypted_key: wrappedKeyBase64,
+                device_id: deviceId, // CRITICAL FIX: Include device_id in self-heal share payload
             });
             
             await cacheFamilyKey(currentRawKey.hex, keyVersion);
@@ -328,6 +337,9 @@ async function orchestrateFamilyKeyExchange(
 
     const recipientPublicKeyPem = pubKeyResponse.public_key;
     
+    // FIX: Must use the device_id from the public key response
+    const deviceId = (pubKeyResponse.device_id as string) || (await getDeviceId()); // Use device_id from server or fall back
+
     if (!recipientPublicKeyPem) {
         throw new Error("Could not retrieve creator's Public Key for key exchange.");
     }
@@ -343,6 +355,7 @@ async function orchestrateFamilyKeyExchange(
       family_id: familyId,
       target_user_id: targetUserId,
       encrypted_key: wrappedKeyBase64,
+      device_id: deviceId, // CRITICAL FIX: Include device_id
     };
     
     // api.shareKey is defined below
@@ -377,33 +390,48 @@ async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion:
     for (const member of members) {
         const targetUserId = member.id;
         
-        // Fetch recipient's current Public Key
-        const pubKeyResponse = await api.getPublicKey(targetUserId);
-        const recipientPublicKeyPem = pubKeyResponse.public_key;
+        // Fetch recipient's ALL Public Keys (one per device)
+        // NOTE: We assume the server's getUserPublicKey is updated to return an array of keys/device_ids
+        const pubKeyResponse = await api.getPublicKey(targetUserId); 
         
-        if (!recipientPublicKeyPem) {
-            console.warn(`Skipping key share for user ${targetUserId}: Public Key not found. User needs to re-upload their key.`);
+        // Normalize keysToShare to be an array of objects {public_key, device_id}
+        // This relies on the server's getPublicKey being fixed to return {public_keys: [{public_key, device_id}, ...]}
+        const keysToShare = pubKeyResponse.public_keys || [];
+        
+        if (keysToShare.length === 0) {
+            console.warn(`Skipping key share for user ${targetUserId}: No Public Keys found. User needs to re-upload their key.`);
             continue; 
         }
 
-        // Wrap the new Master Key with the member's Public Key
-        const wrappedKeyBase64 = wrapKeyForUser(newFamilyKeyHex, recipientPublicKeyPem);
-        
-        // Share the key with the new key version
-        const sharePayload = {
-            family_id: familyId,
-            target_user_id: targetUserId,
-            encrypted_key: wrappedKeyBase64,
-        };
-        
-        // 5. Store the wrapped key on the server
-        await api.shareKey(sharePayload);
-        console.log(`Key shared for user ${targetUserId} at version ${newKeyVersion}`);
+        for (const keyInfo of keysToShare) {
+            const recipientPublicKeyPem = keyInfo.public_key;
+            const deviceId = keyInfo.device_id;
+            
+            if (!recipientPublicKeyPem || !deviceId) {
+                 console.warn(`Skipping key share for user ${targetUserId}: Missing Public Key or Device ID in server response.`);
+                 continue;
+            }
+
+            // Wrap the new Master Key with the member's Public Key
+            const wrappedKeyBase64 = wrapKeyForUser(newFamilyKeyHex, recipientPublicKeyPem);
+            
+            // Share the key with the new key version
+            const sharePayload = {
+                family_id: familyId,
+                target_user_id: targetUserId,
+                encrypted_key: wrappedKeyBase64,
+                device_id: deviceId, // CRITICAL FIX: Include device_id in share payload
+            };
+            
+            // 5. Store the wrapped key on the server
+            await api.shareKey(sharePayload);
+            console.log(`Key shared for user ${targetUserId} device ${deviceId} at version ${newKeyVersion}`);
+        }
     }
 
     // 6. Cache the raw key locally for the admin's device
     await cacheFamilyKey(newFamilyKeyHex, newKeyVersion);
-    await pruneFamilyKeys(5);
+    await pruneFamilyKeys(50); // FIX: Increased limit from 5 to 50 for safe migration
     console.info(`Key Rotation successful. Cached key version ${newKeyVersion} locally.`);
     
     return { familyId, keyVersion: newKeyVersion };
@@ -551,7 +579,8 @@ try {
   uploadPublicKey: (public_key: string) => request("/keys/public", { method: "POST", body: JSON.stringify({ public_key }) }),
   getPublicKey: (userId: number) => request(`/keys/public/${userId}`),
 
-  shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: string }) =>
+  // FIX: Update shareKey payload definition to include device_id
+  shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: string; device_id: string }) =>
     request("/keys/shared", { method: "POST", body: JSON.stringify(payload) }),
 
   getMySharedKey: () => request("/keys/shared"),
