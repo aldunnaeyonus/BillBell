@@ -17,6 +17,8 @@ import {
 import { clearToken } from "../auth/session";
 import { router } from "expo-router";
 import { getDeviceId } from '../security/device';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/billMVP";
 
 async function getToken() {
@@ -24,7 +26,7 @@ async function getToken() {
 }
 async function hardReset() {
     await clearAllFamilyKeys();
-    
+    await AsyncStorage.removeItem("billbell_bills_list_cache");
     // Clear the Public and Private RSA keys as well
     await SecureStore.deleteItemAsync("billbell_rsa_public"); 
     await SecureStore.deleteItemAsync("billbell_rsa_private"); 

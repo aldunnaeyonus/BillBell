@@ -24,7 +24,7 @@ import ReanimatedSwipeable, {
   SwipeableMethods 
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { RectButton } from 'react-native-gesture-handler';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from "../../src/api/client";
 import {
   resyncLocalNotificationsFromBills,
@@ -473,7 +473,8 @@ export default function Bills() {
   const [sort, setSort] = useState<SortKey>("due");
   const [isExporting, setIsExporting] = useState(false);
   const syncedBillsHash = useRef("");
-
+  const BILLS_CACHE_KEY = "billbell_bills_list_cache";
+  
   // 1. Notification Sync
   useEffect(() => {
     const currentHash = JSON.stringify(
@@ -649,10 +650,23 @@ export default function Bills() {
   }, [sort, tab, t]);
 
   const load = useCallback(async () => {
-    const res = await api.billsList();
-    setBills(res.bills);
-  }, []);
+    try {
+      // 1. Attempt to load from persistent storage first for instant display
+      const cachedData = await AsyncStorage.getItem(BILLS_CACHE_KEY);
+      if (cachedData) {
+        setBills(JSON.parse(cachedData));
+      }
 
+      // 2. Fetch fresh data from the API in the background
+      const res = await api.billsList();
+      setBills(res.bills);
+
+      // 3. Update the cache with the new data for the next launch
+      await AsyncStorage.setItem(BILLS_CACHE_KEY, JSON.stringify(res.bills));
+    } catch (e) {
+      console.error("Failed to load bills:", e);
+    }
+  }, []);
   useFocusEffect(
     useCallback(() => {
       load().catch(() => {});
