@@ -1,6 +1,7 @@
 import { NativeModules, Platform } from 'react-native';
 import BackgroundFetch from "react-native-background-fetch";
 import { api } from "../../src/api/client";
+import * as Notifications from 'expo-notifications';
 
 const { LiveActivityModule } = NativeModules;
 
@@ -9,32 +10,40 @@ if (LiveActivityModule?.clearAllSavedBills) {
   //LiveActivityModule.clearAllSavedBills();
 }
 
-/**
- * Shared logic to fetch data and tell the native side to reload widgets.
- */
 export async function syncAndRefresh() {
   try {
-    // 1. Fetch and Decrypt: billsList handles the key loading automatically
-    const { bills } = await api.billsList(); 
+    const { bills } = await api.billsList();
 
-    // 2. Filter: Only send unpaid bills to the widget/Live Activity for summary
     const unpaidBills = bills.filter((b: any) => b.status !== 'paid');
 
-    // 3. Save to Native Store: Bridge the data to the App Group
     if (NativeModules.LiveActivityModule?.saveBillsToStore) {
       await NativeModules.LiveActivityModule.saveBillsToStore(JSON.stringify(unpaidBills));
     }
 
-    // 4. Update the Widget View
     if (NativeModules.LiveActivityModule?.refreshWidget) {
       NativeModules.LiveActivityModule.refreshWidget();
     }
     
-    console.log("Sync complete: Data updated in background.");
-  } catch (e) {
-    console.error("Sync failed:", e);
+
+    
+  } catch (e: any) {
+    const errorMsg = String(e.message);
+    
+    if (errorMsg.includes("A Key Rotation is required")) {
+      // Trigger a Local Notification for background awareness
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Action Required: Encryption Out of Sync",
+          body: "Please open the app and contact an Admin to perform a Key Rotation. Your widgets cannot update until this is resolved.",
+          data: { type: 'key_rotation_needed' },
+        },
+        trigger: null, // Send immediately
+      });
+    }
   }
 }
+
+
 
 /**
  * Initializes the background fetch listener.

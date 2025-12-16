@@ -11,7 +11,7 @@ import {
 } from "../src/notifications/notifications";
 import { useTranslation, I18nextProvider } from "react-i18next";
 import { BiometricAuth } from "../src/auth/BiometricAuth";
-import { LogBox } from "react-native";
+import { LogBox, Platform } from "react-native";
 import { Buffer } from "buffer";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { initBackgroundFetch, syncAndRefresh } from '../src/native/LiveActivity';
@@ -22,6 +22,8 @@ import { initBackgroundFetch, syncAndRefresh } from '../src/native/LiveActivity'
 if (!__DEV__) {
   LogBox.ignoreAllLogs();
 }
+
+
 //api.orchestrateKeyRotation();
 //api.hardReset();
 // 1. Create a child component for the actual App logic
@@ -30,11 +32,14 @@ function AppStack() {
   const { t } = useTranslation();
 
   useEffect(() => {
+    if (Platform.OS == 'ios') {
     // Initialize background listener
     initBackgroundFetch();
 
     // Also perform an initial sync when the user opens the app
     syncAndRefresh();
+    }
+    
   }, []);
   
   useEffect(() => {
@@ -59,6 +64,7 @@ function AppStack() {
     return () => subscription.remove();
   }, []);
 
+  
   return (
     <>
       <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
@@ -146,6 +152,17 @@ function AppStack() {
     </>
   );
 }
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    // Add these two properties to satisfy the new type requirements:
+    shouldShowBanner: true, 
+    shouldShowList: true,
+  }),
+});
 
 // 2. Export the RootLayout which strictly provides the Context
 export default function RootLayout() {

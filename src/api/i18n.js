@@ -12,6 +12,8 @@ import ja from '../locales/ja.json';
 import zhHans from '../locales/zh-Hans.json';
 import ptBR from '../locales/pt-BR.json';
 import it from '../locales/it.json';
+import zhHant from '../locales/zh-Hans.json';
+import zhHK from '../locales/zh-Hans.json';
 
 const resources = {
   en: { translation: en },
@@ -24,6 +26,8 @@ const resources = {
   pt: { translation: ptBR }, // Reuse the variable
   it: { translation: it },
   zh: { translation: zhHans },
+  zh: { translation: zhHant },
+  zh: { translation: zhHK },
 };
 
 const MODULE_TYPE = "languageDetector";
