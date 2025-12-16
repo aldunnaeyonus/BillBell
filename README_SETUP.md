@@ -19,3 +19,6 @@ From `frontend/`:
 
 4) Run:
    npx expo start
+
+5) Notes:
+   Note: Adding Libraries, with the widget causes POD to crash, delete IOS filer, copy BillBellWidget and recreate the widgert.
