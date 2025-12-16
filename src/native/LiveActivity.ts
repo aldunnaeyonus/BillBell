@@ -23,7 +23,8 @@ export async function syncAndRefresh() {
       due_date: toNoonUtcIso(b.due_date), 
       amount_cents: Math.round(Number(b.amount_cents)), 
       is_paid: b.status === 'paid',
-      notes: b.notes || ""
+      notes: b.notes || "",
+      payment_method: b.payment_method
     }));
 
     if (LiveActivityModule?.saveBillsToStore) {

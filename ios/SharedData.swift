@@ -8,12 +8,14 @@ public struct Bill: Codable, Identifiable {
   public let amountCents: Int
   public var isPaid: Bool
   public let notes: String
-  
+  public let payment_method: String
+
   enum CodingKeys: String, CodingKey {
     case id, creditor, notes
     case dueDate = "due_date"
     case amountCents = "amount_cents"
     case isPaid = "is_paid"
+    case payment_method = "payment_method"
   }
 }
 

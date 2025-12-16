@@ -132,7 +132,8 @@ class LiveActivityModule: RCTEventEmitter {
           let id = dict["id"] as? Int,
           let creditor = dict["creditor"] as? String,
           let dueStr = dict["due_date"] as? String,
-          let isPaid = dict["is_paid"] as? Bool
+          let isPaid = dict["is_paid"] as? Bool,
+          let payment_method = dict["payment_method"] as? String
         else {
           return nil
         }
@@ -150,7 +151,8 @@ class LiveActivityModule: RCTEventEmitter {
           dueDate: due,
           amountCents: amountCents,
           isPaid: isPaid,
-          notes: ""
+          notes: "",
+          payment_method: payment_method
         )
       }
       
