@@ -302,6 +302,7 @@ const closeSwipe = () => {
 
     return (
       <View style={styles.rightActionsContainer}>
+        
         <ActionButton 
             icon="create-outline" 
             color="#3498DB" 
@@ -364,8 +365,24 @@ const closeSwipe = () => {
                 style={[styles.billCreditor, { color: theme.colors.primaryText }]}
                 numberOfLines={1}
               >
-                {item.creditor}
+                {item.creditor} 
               </Text>
+             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+    <MaterialCommunityIcons 
+      name={item.payment_method === "auto" ? "refresh-auto" : "hand-pointing-right"} 
+      size={14} 
+      color={item.payment_method === "auto" ? theme.colors.accent : theme.colors.subtext} 
+    />
+    <Text style={{ 
+      color: item.payment_method === "auto" ? theme.colors.accent : theme.colors.subtext, 
+      fontSize: 11, 
+      fontWeight: '600', 
+      marginLeft: 4,
+      textTransform: 'uppercase'
+    }}>
+      {item.payment_method === "auto" ? t("Auto-Draft") : t("Manual Pay")}
+    </Text>
+  </View>
               <View
                 style={{
                   flexDirection: "row",
@@ -455,7 +472,6 @@ export default function Bills() {
   const [tab, setTab] = useState<"pending" | "paid">("pending");
   const [sort, setSort] = useState<SortKey>("due");
   const [isExporting, setIsExporting] = useState(false);
-
   const syncedBillsHash = useRef("");
 
   // 1. Notification Sync

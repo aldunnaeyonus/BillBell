@@ -302,6 +302,9 @@
     "reminders_save_button": "Save Settings",
     "reminders_save_success": "Settings updated successfully.",
     "reminders_save_error": "Failed to save settings.",
+    "Auto-Draft":"Auto-Draft",
+    "Manual Pay":"Manual Pay",
+
   "faqSections": [
     {
       "title": "Adding & Managing Debts",

@@ -186,6 +186,7 @@ export default function BillEdit() {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"manual" | "auto">("manual");
 
   // Time object for the TimePicker
   const timeObj = useMemo(() => {
@@ -226,6 +227,7 @@ export default function BillEdit() {
         setAmount((bill.amount_cents / 100).toFixed(2));
         setDueDate(bill.due_date);
         setRecurrence(bill.recurrence);
+        setPaymentMethod(bill.payment_method);
         setOffsetDays(String(bill.reminder_offset_days ?? 0));
         setNotes(bill.notes || "");
         if (bill.reminder_time_local) {
@@ -268,6 +270,7 @@ export default function BillEdit() {
         reminder_offset_days: Number(offsetDays),
         reminder_time_local: reminderTime,
         notes: notes.trim(),
+        payment_method: paymentMethod,
       };
 
       if (!id) await api.billsCreate(payload);
@@ -381,7 +384,21 @@ export default function BillEdit() {
                 />
               </View>
             </View>
-
+<View style={styles.section}>
+  <SectionTitle title={t("Payment Method")} theme={theme} />
+  <View style={styles.chipsContainer}>
+    {["manual", "auto"].map((m) => (
+      <RecurrenceChip
+        key={m}
+        label={m === "auto" ? t("Auto Draft") : t("Manual")}
+        value={m}
+        active={paymentMethod === m}
+        onPress={() => setPaymentMethod(m as any)}
+        theme={theme}
+      />
+    ))}
+  </View>
+</View>
             {/* Recurrence Section */}
             <View style={styles.section}>
               <SectionTitle title={t("Frequency")} theme={theme} />

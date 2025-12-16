@@ -622,6 +622,10 @@ shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: 
     try {
       const payload: any = { ...bill };
 
+      if (bill.payment_method) {
+      payload.payment_method = bill.payment_method;
+    }
+    
       // IMPORTANT: allow empty-string updates (""), not just truthy values
       if (Object.prototype.hasOwnProperty.call(payload, "creditor")) {
         payload.creditor = await encryptData(payload.creditor ?? "");
