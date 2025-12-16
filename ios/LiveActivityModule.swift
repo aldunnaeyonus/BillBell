@@ -95,14 +95,14 @@ class LiveActivityModule: RCTEventEmitter {
   
     // MARK: - Save Bills from JS (CRITICAL for widget population)
   
-  @objc(consumeLastPaidBillIdWithResolver:rejecter:)
+  @objc(consumeLastPaidBillId:rejecter:)
   func consumeLastPaidBillId(_ resolve: RCTPromiseResolveBlock, _ reject: RCTPromiseRejectBlock) {
     let prefs = UserDefaults(suiteName: BillDataStore.suiteName)
     let key = "last_paid_bill_id"
     
     let id = prefs?.string(forKey: key)
     if id != nil {
-      prefs?.removeObject(forKey: key) // consume it so it only fires once
+      prefs?.removeObject(forKey: key)
       prefs?.synchronize()
     }
     

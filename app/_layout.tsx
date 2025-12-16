@@ -33,7 +33,10 @@ function AppStack() {
 const appState = useRef(AppState.currentState);
 
 async function handlePendingPaidBill() {
+
   try {
+      console.log("LiveActivityModule keys:", Object.keys(LiveActivityModule || {}));
+
     const billIdStr = await LiveActivityModule.consumeLastPaidBillId();
     const billId = Number(billIdStr);
 
@@ -44,18 +47,19 @@ async function handlePendingPaidBill() {
 
     await syncAndRefresh();
   } catch (e) {
+
     console.warn("handlePendingPaidBill failed", e);
   }
 }
 
- useEffect(() => {
+   useEffect(() => {
     if (Platform.OS !== "ios") return;
-
+    handlePendingPaidBill();
     initBackgroundFetch();
 
     // initial load
     (async () => {
-      await handlePendingPaidBill();
+      const didMark = await handlePendingPaidBill();
       await syncAndRefresh(); // always refresh once on startup
     })();
 
@@ -76,7 +80,7 @@ async function handlePendingPaidBill() {
     const appStateSub = AppState.addEventListener("change", (nextState: AppStateStatus) => {
       if (appState.current.match(/inactive|background/) && nextState === "active") {
         (async () => {
-          const didMark = await handlePendingPaidBill();
+          await handlePendingPaidBill();
           await syncAndRefresh();
         })();
       }
