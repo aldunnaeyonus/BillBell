@@ -364,7 +364,7 @@ async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion:
     if (!familyId || !newKeyVersion) {
         throw new Error("Server did not return Family ID or new Key Version.");
     }
-    
+    await AsyncStorage.removeItem("billbell_bills_list_cache");
     // 2. Generate a new, random Family Key (Master Key)
     const newFamilyKeyHex = generateNewFamilyKey();
 
