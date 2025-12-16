@@ -6,6 +6,11 @@ import WidgetKit
 @objc(LiveActivityModule)
 class LiveActivityModule: NSObject {
   
+  @objc(refreshWidget)
+  func refreshWidget() {
+      // This tells the widget to wake up and look at the shared data store immediately
+    WidgetCenter.shared.reloadTimelines(ofKind: "BillBellWidget")
+  }
   
   @objc(clearAllSavedBills)
   func clearAllSavedBills() {

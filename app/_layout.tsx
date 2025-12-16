@@ -14,6 +14,7 @@ import { BiometricAuth } from "../src/auth/BiometricAuth";
 import { LogBox } from "react-native";
 import { Buffer } from "buffer";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { initBackgroundFetch, syncAndRefresh } from '../src/native/LiveActivity';
 
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
 // --- Configuration ---
@@ -28,6 +29,14 @@ function AppStack() {
   const theme = useTheme();
   const { t } = useTranslation();
 
+  useEffect(() => {
+    // Initialize background listener
+    initBackgroundFetch();
+
+    // Also perform an initial sync when the user opens the app
+    syncAndRefresh();
+  }, []);
+  
   useEffect(() => {
     registerNotificationCategories();
     const subscription = Notifications.addNotificationResponseReceivedListener(

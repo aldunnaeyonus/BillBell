@@ -24,7 +24,7 @@ RCT_EXPORT_METHOD(getSummaryDataWithResolver:(RCTPromiseResolveBlock)resolve
 }
 
 RCT_EXTERN_METHOD(clearAllSavedBills)
-
+RCT_EXTERN_METHOD(refreshWidget)
 RCT_EXTERN_METHOD(endAllActivities)
 
 @end
