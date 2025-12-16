@@ -20,8 +20,10 @@ import Share from "react-native-share";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isSameMonth, addMonths, parseISO, startOfDay } from "date-fns";
 import { userSettings } from "../../src/storage/userSettings";
-
-import { Swipeable, RectButton } from 'react-native-gesture-handler';
+import ReanimatedSwipeable, { 
+  SwipeableMethods 
+} from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { RectButton } from 'react-native-gesture-handler';
 
 import { api } from "../../src/api/client";
 import {
@@ -277,13 +279,22 @@ function BillItem({
     item.paid_at || item.is_paid || item.status === "paid"
   );
   const overdue = isOverdue(item);
+const swipeableRef = useRef<SwipeableMethods>(null);
 
+const closeSwipe = () => {
+  swipeableRef.current?.close(); //
+};
   const iconData = getBillIcon(item.creditor);
   const IconComponent = iconData.type === 'Ionicons' ? Ionicons : MaterialCommunityIcons;
 
   const renderRightActions = useCallback(() => {
     const ActionButton = ({ icon, color, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; color: string; label: string; onPress: () => void }) => (
-      <RectButton style={[{ backgroundColor: color }, styles.swipeAction]} onPress={onPress}>
+      <RectButton style={[{ backgroundColor: color }, styles.swipeAction]} 
+      onPress={() => {
+        closeSwipe(); // Close the slide
+        onPress();    // Execute the action
+      }}
+      >
           <Ionicons name={icon} size={24} color="#FFF" />
           <Text style={styles.actionText}>{label}</Text>
       </RectButton>
@@ -417,14 +428,15 @@ function BillItem({
 
   if (Platform.OS === 'ios') {
     return (
-      <Swipeable
+      <ReanimatedSwipeable
+        ref={swipeableRef} // Attach the reference here
         friction={2}
         rightThreshold={40}
         renderRightActions={renderRightActions}
         containerStyle={{ marginVertical: 0 }}
       >
         {BillContent}
-      </Swipeable>
+      </ReanimatedSwipeable>
     );
   }
 
