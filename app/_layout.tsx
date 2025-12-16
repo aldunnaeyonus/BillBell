@@ -32,43 +32,61 @@ function AppStack() {
   const { t } = useTranslation();
 const appState = useRef(AppState.currentState);
 
-  useEffect(() => {
-    if (Platform.OS === 'ios') {
-      initBackgroundFetch();
-      syncAndRefresh();
-
-      
-const subscription = eventEmitter?.addListener("onBillMarkedPaid", async (e) => {
+async function handlePendingPaidBill() {
   try {
-    const billIdStr = e?.billId;
+    const billIdStr = await LiveActivityModule.consumeLastPaidBillId();
     const billId = Number(billIdStr);
 
     if (Number.isFinite(billId) && billId > 0) {
+      console.log("Consuming widget-paid bill:", billId);
       await api.billsMarkPaid(billId);
-      console.log("billId", billId)
     }
-      console.log("billId", billId)
 
     await syncAndRefresh();
-  } catch (err) {
-    console.warn("onBillMarkedPaid handler failed:", err);
-    // still try to refresh
-    await syncAndRefresh();
+  } catch (e) {
+    console.warn("handlePendingPaidBill failed", e);
   }
-});
+}
 
-      const appStateSub = AppState.addEventListener("change", (nextState: AppStateStatus) => {
-        if (appState.current.match(/inactive|background/) && nextState === "active") {
-          syncAndRefresh();
+ useEffect(() => {
+    if (Platform.OS !== "ios") return;
+
+    initBackgroundFetch();
+
+    // initial load
+    (async () => {
+      await handlePendingPaidBill();
+      await syncAndRefresh(); // always refresh once on startup
+    })();
+
+    const subscription = eventEmitter?.addListener("onBillMarkedPaid", async (e) => {
+      try {
+        const billId = Number(e?.billId);
+        if (Number.isFinite(billId) && billId > 0) {
+          await api.billsMarkPaid(billId);
+          console.log("Marked paid from event:", billId);
         }
-        appState.current = nextState;
-      });
+      } catch (err) {
+        console.warn("onBillMarkedPaid handler failed:", err);
+      } finally {
+        await syncAndRefresh();
+      }
+    });
 
-      return () => {
-        subscription?.remove();
-        appStateSub.remove();
-      };
-    }
+    const appStateSub = AppState.addEventListener("change", (nextState: AppStateStatus) => {
+      if (appState.current.match(/inactive|background/) && nextState === "active") {
+        (async () => {
+          const didMark = await handlePendingPaidBill();
+          await syncAndRefresh();
+        })();
+      }
+      appState.current = nextState;
+    });
+
+    return () => {
+      subscription?.remove();
+      appStateSub.remove();
+    };
   }, []);
 
   return (

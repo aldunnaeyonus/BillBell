@@ -14,6 +14,9 @@ struct MarkBillPaidIntent: AppIntent {
   func perform() async throws -> some IntentResult {
     var bills = BillDataStore.loadBills()
     
+    UserDefaults(suiteName: BillDataStore.suiteName)?
+      .set(billID, forKey: "last_paid_bill_id")
+    
     if let index = bills.firstIndex(where: { String($0.id) == billID }) {
       bills[index].isPaid = true
       BillDataStore.saveBills(bills)
