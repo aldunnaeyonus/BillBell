@@ -2,6 +2,12 @@ import { NativeModules, Platform } from 'react-native';
 
 const { LiveActivityModule } = NativeModules;
 
+// Call this once after your app loads:
+if (LiveActivityModule?.clearAllSavedBills) {
+  //LiveActivityModule.clearAllSavedBills();
+}
+
+
 /**
  * Starts (or updates) the Live Activity with summary data.
  * @param overdueTotal - Formatted string (e.g. "$150.00")
