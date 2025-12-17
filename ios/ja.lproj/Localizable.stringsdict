@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>overdue_bills_plural %lld</key>
+    <dict>
+      <key>NSStringLocalizedFormatKey</key>
+      <string>%#@num_bills@</string>
+      <key>num_bills</key>
+      <dict>
+        <key>NSStringFormatSpecifierQuoted</key>
+        <string>lld</string>
+        <key>NSStringFormatValueTypeKey</key>
+        <string>lld</string>
+        <key>other</key>
+        <string>%lld 件の請求書</string>
+      </dict>
+    </dict>
+    <key>month_left_plural %lld</key>
+    <dict>
+      <key>NSStringLocalizedFormatKey</key>
+      <string>%#@num_left@</string>
+      <key>num_left</key>
+      <dict>
+        <key>NSStringFormatSpecifierQuoted</key>
+        <string>lld</string>
+        <key>NSStringFormatValueTypeKey</key>
+        <string>lld</string>
+        <key>other</key>
+        <string>残り %lld 件</string>
+      </dict>
+    </dict>
+  </dict>
+</plist>

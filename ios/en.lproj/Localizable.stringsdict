@@ -1,0 +1,16 @@
+<key>month_left_plural</key>
+<dict>
+  <key>NSStringLocalizedFormatKey</key>
+  <string>%#@num_left@</string>
+  <key>num_left</key>
+  <dict>
+    <key>NSStringFormatSpecifierQuoted</key>
+    <string>d</string>
+    <key>NSStringFormatValueTypeKey</key>
+    <string>d</string>
+    <key>one</key>
+    <string>1 left</string>
+    <key>other</key>
+    <string>%d left</string>
+  </dict>
+</dict>
