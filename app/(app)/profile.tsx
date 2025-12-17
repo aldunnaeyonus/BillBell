@@ -288,26 +288,25 @@ export default function Profile() {
     { code: 'ja', label: '日本語' },
   ];
 
-const shareInvite = async (familyCode: string) => {
-  // 1. Create the deep link using your app's scheme ('billbell')
-  // This produces: billbell://family?code=K7P3D9
-  const url = Linking.createURL('family', {
-    queryParams: { code: familyCode },
-  });
+  const shareInvite = async (familyCode: string) => {
+  if (!familyCode) {
+    return Alert.alert(t("Error"), t("Family ID not found."));
+  }
+  // Your server link with the code attached
+  const inviteLink = `https://dunn-carabali.com/billMVP/?code=${familyCode}`;
 
   const shareOptions = {
-    title: 'Join my Family',
-    message: `Join my family on BillBell to sync our bills! Use code: ${familyCode} or click the link:`,
-    url: url, // Some apps prefer the link in the URL field
-    subject: 'Family Invite - BillBell', // For email sharing
+    title: t('Invite to Group'),
+    message: `${t("Join my family on BillBell to sync our bills!")}\n\n` +
+             `${t("Click to join or download")}: ${inviteLink}\n\n` +
+             `${t("Use Code")}: ${familyCode}`,
   };
 
   try {
     await Share.open(shareOptions);
   } catch (error: any) {
-    // react-native-share throws an error if the user cancels the share sheet
     if (error && error.message !== 'User did not share') {
-      Alert.alert("Error", error.message);
+      Alert.alert(t("Error"), error.message);
     }
   }
 };

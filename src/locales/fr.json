@@ -320,6 +320,10 @@
     "data_management": "Gestion des données",
     "Invite Members": "Inviter des membres",
   "Invite to Group": "Inviter au groupe",
+  "Join my family on BillBell to sync our bills!": "Rejoignez ma famille sur BillBell pour synchroniser nos factures !",
+  "Click to join or download": "Cliquez pour rejoindre ou télécharger",
+  "Use Code": "Utiliser le code",
+  "Family ID not found.": "ID de famille introuvable.",
   "faqSections": [
     {
       "title": "Ajouter et Gérer les Dettes",

@@ -320,6 +320,10 @@
     "data_management": "数据管理",
     "Invite Members": "邀请成员",
   "Invite to Group": "邀请加入群组",
+  "Join my family on BillBell to sync our bills!": "加入我的 BillBell 家庭来同步我们的账单！",
+  "Click to join or download": "点击加入或下载",
+  "Use Code": "使用代码",
+  "Family ID not found.": "未找到家庭 ID。",
   "faqSections": [
     {
       "title": "添加和管理债务",
