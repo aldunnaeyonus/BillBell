@@ -316,6 +316,8 @@
         "step_3_title": "ステップ 3: 認証",
         "enter_code_placeholder": "インポートコードを入力",
         "generate_code_hint": "プロファイルでインポートコードを生成してください。",
+        "policies": "ポリシー",
+    "data_management": "データ管理",
   "faqSections": [
     {
       "title": "債務の追加と管理",

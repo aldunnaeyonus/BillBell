@@ -316,6 +316,8 @@
         "step_3_title": "Schritt 3: Autorisierung",
         "enter_code_placeholder": "Import-Code eingeben",
         "generate_code_hint": "Erstellen Sie einen Import-Code in Ihrem Profil.",
+        "policies": "Richtlinien",
+    "data_management": "Datenverwaltung",
   "faqSections": [
     {
       "title": "Schulden hinzufügen & verwalten",

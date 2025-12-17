@@ -316,6 +316,8 @@
         "step_3_title": "Passo 3: Autorização",
         "enter_code_placeholder": "Digite o código de importação",
         "generate_code_hint": "Gere um código de importação no seu perfil.",
+        "policies": "Políticas",
+    "data_management": "Gerenciamento de dados",
   "faqSections": [
     {
       "title": "Adicionar e Gerenciar Dívidas",

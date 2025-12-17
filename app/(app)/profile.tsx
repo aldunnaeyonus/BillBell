@@ -650,6 +650,12 @@ const loadData = useCallback(async () => {
                 theme={theme}
                 onPress={handleChangeLanguage}
               />
+                                        </View>
+          </View>
+       <View style={styles.section}>
+            <SectionTitle title={t("Data")} theme={theme} />
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+
               <ActionRow
                 icon="cloud-upload-outline"
                 label={t("Bulk Upload")}
@@ -672,16 +678,7 @@ const loadData = useCallback(async () => {
                 onPress={handleGenerateCode}
                 isLast={data.members.length < 2} 
               />
-              {data.members.length > 1 && (
-                <ActionRow
-                  icon="exit-outline"
-                  label={t("Leave Family")}
-                  subLabel={t("Start new family with your data")}
-                  theme={theme}
-                  onPress={handleLeaveFamily}
-                  isLast
-                />
-              )}
+
             </View>
           </View>
 
@@ -701,6 +698,12 @@ const loadData = useCallback(async () => {
                 theme={theme}
                 onPress={() => router.push("/(app)/feedback")}
               />
+                          </View>
+          </View>
+       <View style={styles.section}>
+            <SectionTitle title={t("Policies")} theme={theme} />
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+
               <ActionRow
                 icon="shield-checkmark-outline"
                 label={t("Privacy Policy")}
@@ -720,6 +723,15 @@ const loadData = useCallback(async () => {
           {/* Logout & Delete */}
           <View style={[styles.section, { marginTop: 20 }]}>
             <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+              {data.members.length > 1 && (
+                <ActionRow
+                  icon="exit-outline"
+                  label={t("Leave Family")}
+                  subLabel={t("Start new family with your data")}
+                  theme={theme}
+                  onPress={handleLeaveFamily}
+                />
+              )}
               <ActionRow
                 icon="log-out-outline"
                 label={t("Logout")}

@@ -316,6 +316,8 @@
         "step_3_title": "第 3 步：授权",
         "enter_code_placeholder": "输入导入代码",
         "generate_code_hint": "在个人资料中生成导入代码。",
+        "policies": "政策",
+    "data_management": "数据管理",
   "faqSections": [
     {
       "title": "添加和管理债务",

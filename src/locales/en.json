@@ -319,6 +319,8 @@
         "enter_code_placeholder": "Enter Import Code",
         "generate_code_hint": "Generate an Import code in your Profile.",
         "step_3_title":"Step 3: Authorization",
+        "Policies":"Policies", 
+        "Data":"Data Management",
   "faqSections": [
     {
       "title": "Adding & Managing Debts",

@@ -316,6 +316,8 @@
         "step_3_title": "Étape 3 : Autorisation",
         "enter_code_placeholder": "Entrez le code d'importation",
         "generate_code_hint": "Générez un code d'importation dans votre profil.",
+        "policies": "Politiques",
+    "data_management": "Gestion des données",
   "faqSections": [
     {
       "title": "Ajouter et Gérer les Dettes",

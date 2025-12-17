@@ -1,42 +1,172 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Bulk Upload Bills</title>
+    <title>BillBell | Bulk Upload Bills</title>
     <style>
-      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
-      .card { max-width: 520px; border: 1px solid #ddd; border-radius: 14px; padding: 16px; }
-      label { display:block; margin-top: 12px; font-weight: 600; }
-      input { width: 100%; padding: 10px; margin-top: 6px; }
-      button { margin-top: 16px; width: 100%; padding: 12px; border: 0; border-radius: 12px; background: #0B1F3B; color:#fff; font-weight:700; }
-      small { color: #555; }
-      pre { white-space: pre-wrap; background: #f6f6f6; padding: 12px; border-radius: 12px; }
+      :root {
+        --navy: #0b1f3b;
+        --navy-light: #1a2c4e;
+        --bg: #f7f9fc;
+        --card-bg: #ffffff;
+        --primary-text: #0f172a;
+        --subtext: #64748b;
+        --border: #e2e8f0;
+        --accent: #2563eb;
+      }
+
+      body {
+        font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+        background-color: var(--bg);
+        color: var(--primary-text);
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        padding: 40px 16px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+
+      .header-gradient {
+        background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+        padding: 24px;
+        color: #fff;
+      }
+
+      .header-gradient h2 { margin: 0; font-size: 20px; font-weight: 800; }
+      .header-gradient p { margin: 4px 0 0; font-size: 13px; color: rgba(255, 255, 255, 0.7); }
+
+      .content { padding: 24px; }
+
+      /* Instructions Table Style */
+      .template-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: var(--accent);
+        font-weight: 700;
+        text-decoration: none;
+        padding: 8px 12px;
+        background: #eff6ff;
+        border-radius: 8px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-top: 8px;
+        color: var(--subtext);
+      }
+
+      th { text-align: left; padding: 8px; border-bottom: 2px solid var(--border); color: var(--navy); }
+      td { padding: 8px; border-bottom: 1px solid var(--border); }
+
+      label {
+        display: block;
+        margin-top: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--subtext);
+      }
+
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px;
+        margin-top: 6px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--bg);
+      }
+
+      button {
+        margin-top: 24px;
+        width: 100%;
+        padding: 16px;
+        border: 0;
+        border-radius: 16px;
+        background: var(--navy);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      pre {
+        background: #f1f5f9;
+        padding: 16px;
+        border-radius: 12px;
+        font-size: 13px;
+        border: 1px dashed var(--border);
+        overflow-x: auto;
+      }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h2>Bulk Upload Bills</h2>
-      <p><small>Upload a CSV or XLSX with columns: Creditor, Amount, Due Date. Optional: Recurrence, Reminder Offset Days, Reminder Time.</small></p>
+    <div class="container">
+      <div class="card">
+        <div class="content">
+          <h3 style="margin-top:0; color: var(--navy);">1. Preparation</h3>
+          <a href="./bill_template.csv" class="template-link">📥 Download CSV Template</a>
+          <p style="font-size: 13px; color: var(--subtext);">Ensure your file uses these exact headers:</p>
+          
+          <table>
+            <thead>
+              <tr><th>Header</th><th>Required</th><th>Format</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>name</td><td>Yes</td><td>Netflix</td></tr>
+              <tr><td>amount</td><td>Yes</td><td>15.99</td></tr>
+              <tr><td>due_date</td><td>Yes</td><td>YYYY-MM-DD</td></tr>
+              <tr><td>notes</td><td>No</td><td>Text of what you want to add</td></tr>
+              <tr><td>offset (Reminder Advance Days)</td><td>No</td><td>0,1,2,3</td></tr>
+              <tr><td>reminder</td><td>No</td><td>09:00:00</td></tr>
+              <tr><td>recurrence</td><td>No</td><td>monthly, weekly, bi-weekly, none, annualy</td></tr>
+              <tr><td>payment_method</td><td>No</td><td>auto_pay, manual</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-      <form id="f">
-        <label>Family ID</label>
-        <input name="family_code" placeholder="e.g. K7P3D9" required />
+      <div class="card">
+        <div class="header-gradient">
+          <h2>2. Bulk Upload</h2>
+          <p>Securely link bills to your family account</p>
+        </div>
 
-        <label>Email Address</label>
-        <input name="email" type="email" placeholder="you@email.com" required />
+        <div class="content">
+          <form id="f">
+            <label>Family Share ID (Found in App Profile Page)</label>
+            <input name="family_code" placeholder="e.g. K7P3D9" required />
 
-        <label>File (CSV or XLSX)</label>
-        <input name="file" type="file" accept=".csv,.xlsx" required />
+            <label>Import Code (Generated in App Profile Page)</label>
+            <input name="import_code" placeholder="Generated in your App Profile" required />
 
-<label>Import Code</label>
-<input name="import_code" placeholder="e.g. 8-char code" required />
+            <label>File (CSV or XLSX)</label>
+            <input name="file" type="file" accept=".csv,.xlsx" required />
 
-        <button type="submit">Upload</button>
-      </form>
+            <button type="submit">Start Upload</button>
+          </form>
 
-      <h3>Result</h3>
-      <pre id="out">—</pre>
+          <h3 style="font-size: 12px; color: var(--subtext); text-transform: uppercase; margin-top: 32px;">Result</h3>
+          <pre id="out">—</pre>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -44,12 +174,16 @@
       const out = document.getElementById("out");
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        out.textContent = "Uploading...";
+        out.textContent = "Processing...";
         const fd = new FormData(form);
-        const res = await fetch("/import/bills", { method: "POST", body: fd });
-        const text = await res.text();
-        try { out.textContent = JSON.stringify(JSON.parse(text), null, 2); }
-        catch { out.textContent = text; }
+        try {
+          const res = await fetch("/import/bills", { method: "POST", body: fd });
+          const text = await res.text();
+          try { out.textContent = JSON.stringify(JSON.parse(text), null, 2); }
+          catch { out.textContent = text; }
+        } catch (err) {
+          out.textContent = "Connection error.";
+        }
       });
     </script>
   </body>
