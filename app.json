@@ -12,41 +12,58 @@
       "resizeMode": "contain",
       "backgroundColor": "#F7F9FC"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "newArchEnabled": true,
     "ios": {
-      "infoPlist": {
-      "NSCalendarsFullAccessUsageDescription":"$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.",
-      "NSCalendarsUsageDescription":"$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.",
-      "NSFaceIDUsageDescription":"$(PRODUCT_NAME) uses Face ID to securely unlock the app and authorize quick access to your shared bill data.",
-      "NSRemindersFullAccessUsageDescription":"$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.",
-      "NSRemindersUsageDescription":"$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.",
-      "NSSupportsLiveActivities":true
-},
-      "supportsTablet": true,
-      "statusBarStyle": "light",
       "bundleIdentifier": "com.dunn.carabali.billbell",
-      "appleTeamId": "2899NRK28S"
+      "appleTeamId": "2899NRK28S",
+      "supportsTablet": true,
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true,
+        "NSCalendarsFullAccessUsageDescription": "BillBell needs access to your Calendar to schedule automatic reminders.",
+        "NSCalendarsUsageDescription": "BillBell needs access to your Calendar to schedule automatic reminders.",
+        "NSFaceIDUsageDescription": "BillBell uses Face ID to securely unlock the app.",
+        "NSRemindersFullAccessUsageDescription": "BillBell needs access to your Reminders to schedule tasks.",
+        "NSRemindersUsageDescription": "BillBell needs access to your Reminders to schedule tasks.",
+        "NSSupportsLiveActivities": true
+      }
     },
     "android": {
-      "statusBar": {
-        "barStyle": "light-content",
-        "backgroundColor": "#00000000",
-        "translucent": true
-      },
       "package": "com.dunn.carabali.billbell",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#F7F9FC"
-      }
+      },
+      "permissions": [
+        "READ_CALENDAR",
+        "WRITE_CALENDAR",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "POST_NOTIFICATIONS",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "WAKE_LOCK",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-apple-authentication",
+      "expo-local-authentication",
+      "expo-localization",
       [
         "expo-calendar",
         {
           "calendarPermission": "The app needs to access your calendar."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#0B1F3B"
         }
       ],
       [
@@ -55,16 +72,13 @@
           "iosUrlScheme": "com.googleusercontent.apps.233875745320-8u6mbqhrcal1mc9jocnij2bhg5decs6t"
         }
       ],
-      "expo-router",
       [
-        "expo-notifications",
+        "react-native-share",
         {
-          "icon": "./assets/notification-icon.png",
-          "color": "#0B1F3B",
-          "mode": "production"
+          "ios": ["whatsapp", "instagram", "fb"],
+          "android": ["com.whatsapp", "com.instagram.android"]
         }
-      ],
-      "expo-secure-store"
+      ]
     ],
     "extra": {
       "eas": {

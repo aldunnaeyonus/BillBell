@@ -15,23 +15,23 @@ import { router, useFocusEffect, Stack } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import RNFS from "react-native-fs";
+import * as FileSystem from "expo-file-system";
 import Share from "react-native-share";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isSameMonth, addMonths, parseISO, startOfDay } from "date-fns";
 import { userSettings } from "../../src/storage/userSettings";
-import ReanimatedSwipeable, { 
-  SwipeableMethods 
-} from 'react-native-gesture-handler/ReanimatedSwipeable';
-import { RectButton } from 'react-native-gesture-handler';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import ReanimatedSwipeable, {
+  SwipeableMethods,
+} from "react-native-gesture-handler/ReanimatedSwipeable";
+import { RectButton } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../../src/api/client";
 import {
   resyncLocalNotificationsFromBills,
   cancelBillReminderLocal,
 } from "../../src/notifications/notifications";
 import { useTheme, Theme } from "../../src/ui/useTheme";
-
+import { File, Paths } from "expo-file-system";
 import {
   startSummaryActivity,
   stopActivity,
@@ -90,55 +90,131 @@ const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
   { regex: /apple|music|itunes/i, icon: "apple", color: "#A2AAAD" },
   { regex: /youtube|twitch/i, icon: "youtube", color: "#FF0000" },
   { regex: /sirius|audible|podcast|radio/i, icon: "radio", color: "#F07241" },
-  
+
   // --- Banking/Finance/Credit ---
-  { regex: /visa|mastercard|amex|discover|capital one|bofa/i, icon: "credit-card-multiple-outline", color: "#1F618D" },
-  { regex: /chase|citi|wells fargo|pnc|td bank|us bank/i, icon: "bank", color: "#005691" },
-  { regex: /paypal|venmo|cash app|zelle|crypto/i, icon: "hand-coin-outline", color: "#003087" },
-  { regex: /loan|mortgage|rent|lease|property/i, icon: "home-city", color: "#9D174D" },
+  {
+    regex: /visa|mastercard|amex|discover|capital one|bofa/i,
+    icon: "credit-card-multiple-outline",
+    color: "#1F618D",
+  },
+  {
+    regex: /chase|citi|wells fargo|pnc|td bank|us bank/i,
+    icon: "bank",
+    color: "#005691",
+  },
+  {
+    regex: /paypal|venmo|cash app|zelle|crypto/i,
+    icon: "hand-coin-outline",
+    color: "#003087",
+  },
+  {
+    regex: /loan|mortgage|rent|lease|property/i,
+    icon: "home-city",
+    color: "#9D174D",
+  },
   { regex: /student loan|fedloan/i, icon: "school", color: "#2ECC71" },
-  { regex: /insurance|geico|statefarm|allstate|progressive|liberty/i, icon: "shield-car", color: "#3498DB" },
-  
+  {
+    regex: /insurance|geico|statefarm|allstate|progressive|liberty/i,
+    icon: "shield-car",
+    color: "#3498DB",
+  },
+
   // --- Utilities/Home Services ---
-  { regex: /power|electric|utility|pge|con edison|duke energy/i, icon: "lightning-bolt", color: "#FBBF24" },
-  { regex: /gas|heating|propane|ng|national grid/i, icon: "fire", color: "#E74C3C" },
-  { regex: /water|sewer|waterworks|sanitation/i, icon: "water", color: "#0E7490" },
-  { regex: /trash|waste|republic services|wm/i, icon: "trash-can", color: "#839192" },
+  {
+    regex: /power|electric|utility|pge|con edison|duke energy/i,
+    icon: "lightning-bolt",
+    color: "#FBBF24",
+  },
+  {
+    regex: /gas|heating|propane|ng|national grid/i,
+    icon: "fire",
+    color: "#E74C3C",
+  },
+  {
+    regex: /water|sewer|waterworks|sanitation/i,
+    icon: "water",
+    color: "#0E7490",
+  },
+  {
+    regex: /trash|waste|republic services|wm/i,
+    icon: "trash-can",
+    color: "#839192",
+  },
   { regex: /security|alarm|adt|ring/i, icon: "security", color: "#E67E22" },
   { regex: /hoa|community fees/i, icon: "home-group", color: "#6C3483" },
-  
+
   // --- Telecom/Internet/Mobile ---
-  { regex: /att|t-mobile|verizon|sprint|mobile|cellular/i, icon: "cellphone", color: "#E7008A" },
-  { regex: /xfinity|comcast|spectrum|fios|cox|internet/i, icon: "router-wireless", color: "#1D4ED8" },
+  {
+    regex: /att|t-mobile|verizon|sprint|mobile|cellular/i,
+    icon: "cellphone",
+    color: "#E7008A",
+  },
+  {
+    regex: /xfinity|comcast|spectrum|fios|cox|internet/i,
+    icon: "router-wireless",
+    color: "#1D4ED8",
+  },
   { regex: /phone|landline/i, icon: "phone", color: "#3F51B5" },
 
   // --- Software/Tech/Gaming ---
   { regex: /amazon|aws|cloud/i, icon: "amazon", color: "#FF9900" },
-  { regex: /microsoft|azure|office|xbox/i, icon: "microsoft", color: "#F25022" },
+  {
+    regex: /microsoft|azure|office|xbox/i,
+    icon: "microsoft",
+    color: "#F25022",
+  },
   { regex: /adobe|creative cloud/i, icon: "adobe", color: "#FF0000" },
   { regex: /zoom|webex|teams/i, icon: "video-outline", color: "#2D8CFF" },
-  { regex: /dropbox|onedrive|storage/i, icon: "cloud-upload", color: "#0061FF" },
-  { regex: /steam|playstation|nintendo|xbox live/i, icon: "gamepad-variant", color: "#6A5ACD" },
+  {
+    regex: /dropbox|onedrive|storage/i,
+    icon: "cloud-upload",
+    color: "#0061FF",
+  },
+  {
+    regex: /steam|playstation|nintendo|xbox live/i,
+    icon: "gamepad-variant",
+    color: "#6A5ACD",
+  },
   { regex: /github|gitlab|bitbucket/i, icon: "github", color: "#181717" },
 
   // --- Retail/Shopping ---
-  { regex: /walmart|target|costco|sams club/i, icon: "shopping", color: "#0071C5" },
-  { regex: /home depot|lowes|hardware/i, icon: "home-assistant", color: "#F96302" },
+  {
+    regex: /walmart|target|costco|sams club/i,
+    icon: "shopping",
+    color: "#0071C5",
+  },
+  {
+    regex: /home depot|lowes|hardware/i,
+    icon: "home-assistant",
+    color: "#F96302",
+  },
   { regex: /etsy|ebay|shopify/i, icon: "cart", color: "#546E7A" },
-  
+
   // --- Transportation/Auto ---
-  { regex: /car loan|auto payment|lease payment/i, icon: "car", color: "#16A085" },
+  {
+    regex: /car loan|auto payment|lease payment/i,
+    icon: "car",
+    color: "#16A085",
+  },
   { regex: /toll|ezpass|highway|sunpass/i, icon: "highway", color: "#F4D03F" },
   { regex: /uber|lyft|taxi/i, icon: "taxi", color: "#000000" },
 ];
 
-function getBillIcon(creditor: string): { name: string; color: string; type: 'MaterialCommunityIcons' | 'Ionicons' } {
-  const match = BILL_ICON_MAP.find(m => creditor.match(m.regex));
+function getBillIcon(creditor: string): {
+  name: string;
+  color: string;
+  type: "MaterialCommunityIcons" | "Ionicons";
+} {
+  const match = BILL_ICON_MAP.find((m) => creditor.match(m.regex));
   if (match) {
-    return { name: match.icon, color: match.color, type: 'MaterialCommunityIcons' };
+    return {
+      name: match.icon,
+      color: match.color,
+      type: "MaterialCommunityIcons",
+    };
   }
   // Default fallback icon
-  return { name: "receipt-outline", color: "#808080", type: 'Ionicons' };
+  return { name: "receipt-outline", color: "#808080", type: "Ionicons" };
 }
 // END ICON MAPPING
 
@@ -262,7 +338,7 @@ function BillItem({
   theme,
   t,
   onLongPress,
-  onEdit, 
+  onEdit,
   onMarkPaid,
   onDelete,
 }: {
@@ -279,51 +355,62 @@ function BillItem({
     item.paid_at || item.is_paid || item.status === "paid"
   );
   const overdue = isOverdue(item);
-const swipeableRef = useRef<SwipeableMethods>(null);
+  const swipeableRef = useRef<SwipeableMethods>(null);
 
-const closeSwipe = () => {
-  swipeableRef.current?.close(); //
-};
+  const closeSwipe = () => {
+    swipeableRef.current?.close(); //
+  };
   const iconData = getBillIcon(item.creditor);
-  const IconComponent = iconData.type === 'Ionicons' ? Ionicons : MaterialCommunityIcons;
+  const IconComponent =
+    iconData.type === "Ionicons" ? Ionicons : MaterialCommunityIcons;
 
   const renderRightActions = useCallback(() => {
-    const ActionButton = ({ icon, color, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; color: string; label: string; onPress: () => void }) => (
-      <RectButton style={[{ backgroundColor: color }, styles.swipeAction]} 
-      onPress={() => {
-        closeSwipe(); // Close the slide
-        onPress();    // Execute the action
-      }}
+    const ActionButton = ({
+      icon,
+      color,
+      label,
+      onPress,
+    }: {
+      icon: keyof typeof Ionicons.glyphMap;
+      color: string;
+      label: string;
+      onPress: () => void;
+    }) => (
+      <RectButton
+        style={[{ backgroundColor: color }, styles.swipeAction]}
+        onPress={() => {
+          closeSwipe(); // Close the slide
+          onPress(); // Execute the action
+        }}
       >
-          <Ionicons name={icon} size={24} color="#FFF" />
-          <Text style={styles.actionText}>{label}</Text>
+        <Ionicons name={icon} size={24} color="#FFF" />
+        <Text style={styles.actionText}>{label}</Text>
       </RectButton>
     );
 
     return (
       <View style={styles.rightActionsContainer}>
-        
-        <ActionButton 
-            icon="create-outline" 
-            color="#3498DB" 
-            label={t("Edit")} 
-            onPress={onEdit} 
+        <ActionButton
+          icon="create-outline"
+          color="#3498DB"
+          label={t("Edit")}
+          onPress={onEdit}
         />
-        
+
         {!isPaid && (
-          <ActionButton 
-            icon="checkmark-done-circle-outline" 
-            color="#2ECC71" 
-            label={t("Paid")} 
-            onPress={onMarkPaid} 
+          <ActionButton
+            icon="checkmark-done-circle-outline"
+            color="#2ECC71"
+            label={t("Paid")}
+            onPress={onMarkPaid}
           />
         )}
-        
-        <ActionButton 
-            icon="trash-outline" 
-            color="#E74C3C" 
-            label={t("Delete")} 
-            onPress={onDelete} 
+
+        <ActionButton
+          icon="trash-outline"
+          color="#E74C3C"
+          label={t("Delete")}
+          onPress={onDelete}
         />
       </View>
     );
@@ -351,99 +438,131 @@ const closeSwipe = () => {
         }}
       >
         {/* Icon Box */}
-        <View style={[styles.iconBox, { backgroundColor: iconData.color + '20' }]}>
-            <IconComponent 
-                name={iconData.name as any} 
-                size={20} 
-                color={iconData.color} 
-            />
+        <View
+          style={[styles.iconBox, { backgroundColor: iconData.color + "20" }]}
+        >
+          <IconComponent
+            name={iconData.name as any}
+            size={20}
+            color={iconData.color}
+          />
         </View>
 
-        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View style={{ flexShrink: 1 }}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <View style={{ flexShrink: 1 }}>
+            <Text
+              style={[styles.billCreditor, { color: theme.colors.primaryText }]}
+              numberOfLines={1}
+            >
+              {item.creditor}
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 2,
+              }}
+            >
+              <MaterialCommunityIcons
+                name={
+                  item.payment_method === "auto"
+                    ? "refresh-auto"
+                    : "hand-pointing-right"
+                }
+                size={14}
+                color={
+                  item.payment_method === "auto"
+                    ? theme.colors.accent
+                    : theme.colors.subtext
+                }
+              />
               <Text
-                style={[styles.billCreditor, { color: theme.colors.primaryText }]}
-                numberOfLines={1}
+                style={{
+                  color:
+                    item.payment_method === "auto"
+                      ? theme.colors.accent
+                      : theme.colors.subtext,
+                  fontSize: 11,
+                  fontWeight: "600",
+                  marginLeft: 4,
+                  textTransform: "uppercase",
+                }}
               >
-                {item.creditor} 
+                {item.payment_method === "auto"
+                  ? t("Auto-Draft")
+                  : t("Manual Pay")}
               </Text>
-             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-    <MaterialCommunityIcons 
-      name={item.payment_method === "auto" ? "refresh-auto" : "hand-pointing-right"} 
-      size={14} 
-      color={item.payment_method === "auto" ? theme.colors.accent : theme.colors.subtext} 
-    />
-    <Text style={{ 
-      color: item.payment_method === "auto" ? theme.colors.accent : theme.colors.subtext, 
-      fontSize: 11, 
-      fontWeight: '600', 
-      marginLeft: 4,
-      textTransform: 'uppercase'
-    }}>
-      {item.payment_method === "auto" ? t("Auto-Draft") : t("Manual Pay")}
-    </Text>
-  </View>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+                marginTop: 4,
+              }}
+            >
+              <Ionicons
+                name={isPaid ? "checkmark-circle" : "calendar-outline"}
+                size={14}
+                color={isPaid ? theme.colors.accent : theme.colors.subtext}
+              />
+              <Text
+                style={{
+                  color: isPaid ? theme.colors.accent : theme.colors.subtext,
+                  fontSize: 13,
+                  fontWeight: "500",
+                }}
+              >
+                {isPaid
+                  ? `${t("Paid on")} ${item.paid_at || item.due_date}`
+                  : `${t("Due")} ${item.due_date}`}
+              </Text>
+            </View>
+          </View>
+
+          <View
+            style={{ alignItems: "flex-end", marginLeft: 10, flexShrink: 0 }}
+          >
+            <Text
+              style={[styles.billAmount, { color: theme.colors.primaryText }]}
+            >
+              ${amt}
+            </Text>
+            {overdue && (
               <View
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 4,
+                  backgroundColor: "#FFE5E5",
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 4,
                   marginTop: 4,
                 }}
               >
-                <Ionicons
-                  name={isPaid ? "checkmark-circle" : "calendar-outline"}
-                  size={14}
-                  color={isPaid ? theme.colors.accent : theme.colors.subtext}
-                />
                 <Text
                   style={{
-                    color: isPaid ? theme.colors.accent : theme.colors.subtext,
-                    fontSize: 13,
-                    fontWeight: "500",
+                    color: theme.colors.danger,
+                    fontSize: 10,
+                    fontWeight: "800",
                   }}
                 >
-                  {isPaid
-                    ? `${t("Paid on")} ${item.paid_at || item.due_date}`
-                    : `${t("Due")} ${item.due_date}`}
+                  {t("OVERDUE")}
                 </Text>
               </View>
-            </View>
-
-            <View style={{ alignItems: "flex-end", marginLeft: 10, flexShrink: 0 }}>
-              <Text
-                style={[styles.billAmount, { color: theme.colors.primaryText }]}
-              >
-                ${amt}
-              </Text>
-              {overdue && (
-                <View
-                  style={{
-                    backgroundColor: "#FFE5E5",
-                    paddingHorizontal: 6,
-                    paddingVertical: 2,
-                    borderRadius: 4,
-                    marginTop: 4,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: theme.colors.danger,
-                      fontSize: 10,
-                      fontWeight: "800",
-                    }}
-                  >
-                    {t("OVERDUE")}
-                  </Text>
-                </View>
-              )}
-            </View>
+            )}
+          </View>
         </View>
       </View>
     </Pressable>
   );
 
-  if (Platform.OS === 'ios') {
+  if (Platform.OS === "ios") {
     return (
       <ReanimatedSwipeable
         ref={swipeableRef} // Attach the reference here
@@ -474,7 +593,7 @@ export default function Bills() {
   const [isExporting, setIsExporting] = useState(false);
   const syncedBillsHash = useRef("");
   const BILLS_CACHE_KEY = "billbell_bills_list_cache";
-  
+
   // 1. Notification Sync
   useEffect(() => {
     const currentHash = JSON.stringify(
@@ -492,7 +611,7 @@ export default function Bills() {
 
     const syncLiveActivity = async () => {
       const isEnabled = await userSettings.getLiveActivityEnabled();
-      
+
       const pending = bills.filter(
         (b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"
       );
@@ -534,30 +653,31 @@ export default function Bills() {
     syncLiveActivity();
   }, [bills]);
 
-useEffect(() => {
-  StatusBar.setBarStyle("light-content");
-  if (Platform.OS === "android") {
-    StatusBar.setBackgroundColor("transparent");
-    StatusBar.setTranslucent(true);
-  }
-}, []); 
-
-// 2. Handle focus/unfocus when navigating between screens
-useFocusEffect(
-  useCallback(() => {
+  useEffect(() => {
     StatusBar.setBarStyle("light-content");
     if (Platform.OS === "android") {
       StatusBar.setBackgroundColor("transparent");
       StatusBar.setTranslucent(true);
     }
-    
-    return () => {
-      // Revert to theme default when leaving this view
-      const defaultStyle = theme.mode === "dark" ? "light-content" : "dark-content";
-      StatusBar.setBarStyle(defaultStyle);
-    };
-  }, [theme.mode])
-);
+  }, []);
+
+  // 2. Handle focus/unfocus when navigating between screens
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle("light-content");
+      if (Platform.OS === "android") {
+        StatusBar.setBackgroundColor("transparent");
+        StatusBar.setTranslucent(true);
+      }
+
+      return () => {
+        // Revert to theme default when leaving this view
+        const defaultStyle =
+          theme.mode === "dark" ? "light-content" : "dark-content";
+        StatusBar.setBarStyle(defaultStyle);
+      };
+    }, [theme.mode])
+  );
 
   const pendingBills = useMemo(
     () =>
@@ -716,28 +836,38 @@ useFocusEffect(
       Alert.alert(t("Error"), e.message);
     }
   }
-  
-  const onDeleteBill = useCallback((item: any) => {
-    Alert.alert(
-      t("Delete Bill"),
-      t("Are you sure you want to delete this bill?"),
-      [
-        { text: t("Cancel"), style: "cancel" },
-        { text: t("Delete"), style: "destructive", onPress: () => deleteBill(item) },
-      ]
-    );
-  }, [deleteBill, t]);
 
-  const onMarkPaidBill = useCallback((item: any) => {
-    Alert.alert(
-      t("Mark Paid"),
-      t("Mark {{creditor}} as paid?", { creditor: item.creditor }),
-      [
-        { text: t("Cancel"), style: "cancel" },
-        { text: t("Mark Paid"), onPress: () => markPaid(item) },
-      ]
-    );
-  }, [markPaid, t]);
+  const onDeleteBill = useCallback(
+    (item: any) => {
+      Alert.alert(
+        t("Delete Bill"),
+        t("Are you sure you want to delete this bill?"),
+        [
+          { text: t("Cancel"), style: "cancel" },
+          {
+            text: t("Delete"),
+            style: "destructive",
+            onPress: () => deleteBill(item),
+          },
+        ]
+      );
+    },
+    [deleteBill, t]
+  );
+
+  const onMarkPaidBill = useCallback(
+    (item: any) => {
+      Alert.alert(
+        t("Mark Paid"),
+        t("Mark {{creditor}} as paid?", { creditor: item.creditor }),
+        [
+          { text: t("Cancel"), style: "cancel" },
+          { text: t("Mark Paid"), onPress: () => markPaid(item) },
+        ]
+      );
+    },
+    [markPaid, t]
+  );
 
   const onEditBill = useCallback((item: any) => {
     router.push({
@@ -754,12 +884,16 @@ useFocusEffect(
 
   const generateAndShareCSV = async () => {
     if (isExporting) return;
+
     try {
       if (bills.length === 0) {
         Alert.alert(t("No Data"), t("There are no bills to export."));
         return;
       }
+
       setIsExporting(true);
+
+      // 1. Prepare Data
       const exportData = bills.map((b) => ({
         ID: b.id,
         Creditor: b.creditor,
@@ -770,20 +904,33 @@ useFocusEffect(
         Recurrence: b.recurrence || "none",
         Offset: b.reminder_offset_days || "0",
       }));
+
+      // 2. Generate CSV String
       const csvString = jsonToCSV(exportData);
-      const path =
-        Platform.OS === "ios"
-          ? `${RNFS.DocumentDirectoryPath}/bills_export.csv`
-          : `${RNFS.CachesDirectoryPath}/bills_export.csv`;
-      await RNFS.writeFile(path, csvString, "utf8");
+
+      // 3. Define Path using expo-file-system constants
+      // We use documentDirectory for iOS and cacheDirectory for Android for better sharing reliability
+
+      const fileName = "bills_export.csv";
+      // Use Paths.cache instead of cacheDirectory
+      const filePath = `${Paths.cache}${fileName}`;
+
+      // New object-oriented way to write
+      const myFile = new File(Paths.cache, "bills_export.csv");
+
+      // 2. Write content directly (no encoding needed for standard text)
+      myFile.write(csvString);
+
+      // 5. Share File
       await Share.open({
-        url: `file://${path}`,
+        url: filePath, // expo-file-system paths already include the file:// prefix
         type: "text/csv",
         filename: "bills_export",
         title: t("Export Bills CSV"),
       });
     } catch (error) {
-      console.log("Share cancelled or failed", error);
+      // Standardize error logging for Expo SDK 54
+      console.error("Export failed:", error);
     } finally {
       setIsExporting(false);
     }
@@ -800,7 +947,10 @@ useFocusEffect(
       },
     ];
     if (!isPaid)
-      actions.push({ text: t("Mark Paid"), onPress: () => onMarkPaidBill(item) });
+      actions.push({
+        text: t("Mark Paid"),
+        onPress: () => onMarkPaidBill(item),
+      });
     actions.push({
       text: t("Delete"),
       style: "destructive",
@@ -857,12 +1007,19 @@ useFocusEffect(
               />
 
               {/* FIX 1: Action Buttons Layout - Use flexWrap and remove flex: 1 from buttons */}
-              <View style={{ flexDirection: "row", gap: 12, flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  justifyContent: "flex-start",
+                }}
+              >
                 <Pressable
                   onPress={() => router.push("/(app)/insights")}
                   style={[
                     styles.actionBtn,
-                    { backgroundColor: theme.colors.primary, flex:1 }, // RESTORE STYLE
+                    { backgroundColor: theme.colors.primary, flex: 1 }, // RESTORE STYLE
                   ]}
                 >
                   <Ionicons
@@ -879,12 +1036,12 @@ useFocusEffect(
                     {t("Insights")}
                   </Text>
                 </Pressable>
-               
+
                 <Pressable
                   onPress={() => router.push("/(app)/bill-edit")}
                   style={[
                     styles.actionBtn,
-                    { backgroundColor: theme.colors.primary, flex:1 }, // RESTORE STYLE
+                    { backgroundColor: theme.colors.primary, flex: 1 }, // RESTORE STYLE
                   ]}
                 >
                   <Ionicons
@@ -913,7 +1070,7 @@ useFocusEffect(
                   { key: "paid", label: t("Paid") },
                 ]}
               />
-              
+
               {/* Export Button Relocation Fix (from previous step) */}
               <View
                 style={{
@@ -949,7 +1106,7 @@ useFocusEffect(
 
                 {/* Export Button (Below Sort By, Right aligned) */}
                 {bills.length > 0 && (
-                  <View style={{ width: '100%', alignItems: 'flex-end' }}>
+                  <View style={{ width: "100%", alignItems: "flex-end" }}>
                     <Pressable
                       onPress={generateAndShareCSV}
                       disabled={isExporting}
@@ -979,7 +1136,6 @@ useFocusEffect(
                 )}
               </View>
               {/* END Export Button Relocation Fix */}
-
             </View>
           }
           renderSectionHeader={({ section: { title, special } }) => (
@@ -1122,7 +1278,7 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     // FIX: Restored background color and padding, ensuring flexible width
-    paddingHorizontal: 16, 
+    paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -1134,7 +1290,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   actionBtnText: {
     fontSize: 15,
@@ -1158,7 +1314,7 @@ const styles = StyleSheet.create({
   billCard: {
     padding: 16,
     borderRadius: 16,
-    marginBottom: 12, 
+    marginBottom: 12,
     borderWidth: 1,
   },
   billCreditor: {
@@ -1178,18 +1334,18 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   rightActionsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
     marginBottom: 12,
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   swipeAction: {
     justifyContent: "center",
     alignItems: "center",
     width: 80,
-    height: '100%',
+    height: "100%",
   },
   actionText: {
     color: "#FFF",

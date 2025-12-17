@@ -1,26 +1,13 @@
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "lib": [
-      "ES2020",
-      "DOM"
-    ],
-    "jsx": "react-jsx",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "types": [
-      "expo-router/types"
-    ],
-    "baseUrl": "."
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules"
-  ],
   "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "crypto": ["node_modules/react-native-quick-crypto"],
+      "buffer": ["node_modules/buffer"],
+      "stream": ["node_modules/stream-browserify"],
+      "@/*": ["src/*"]
+    }
+  }
 }

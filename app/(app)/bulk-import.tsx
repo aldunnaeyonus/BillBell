@@ -14,13 +14,13 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import RNFS from "react-native-fs";
+import * as FileSystem from 'expo-file-system';
 import Share from "react-native-share";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
-
+import { File, Paths } from 'expo-file-system';
 // --- Components ---
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
@@ -262,34 +262,38 @@ async function handleWebPortalPress() {
     ]
   );
 }
-
-  async function downloadTemplate() {
+async function downloadTemplate() {
   try {
-    setDownloading(true); // Start loading
+    setDownloading(true); 
+    
     const headers = "name,amount,due_date,notes,recurrence,offset,payment_method"; 
     const today = new Date().toISOString().split("T")[0];
     const sampleRow = `Netflix,15.99,${today},Family Plan,monthly,0,auto_pay`;
     const csvContent = `${headers}\n${sampleRow}`;
 
-    const path =
-      Platform.OS === "ios"
-        ? `${RNFS.DocumentDirectoryPath}/bill_template.csv`
-        : `${RNFS.CachesDirectoryPath}/bill_template.csv`;
+    // 1. Initialize the File object using the new Paths constant
+    // No more manual string concatenation or FileSystem.cacheDirectory
+    const templateFile = new File(Paths.cache, "bill_template.csv");
 
-    await RNFS.writeFile(path, csvContent, "utf8");
+    // 2. Write content directly
+    // The new .write() method automatically handles strings as UTF-8
+    await templateFile.write(csvContent);
 
+    // 3. Share using the native URI
     await Share.open({
-      url: `file://${path}`,
+      url: templateFile.uri, // URI is automatically prefixed with file:///
       type: "text/csv",
       filename: "bill_import_template",
       title: "Download Bill Template",
     });
+    
   } catch (error: any) {
     if (error?.message !== "User did not share") {
       Alert.alert(t("Error"), t("Failed to download template"));
+      console.error("Template download failed:", error);
     }
   } finally {
-    setDownloading(false); // Stop loading
+    setDownloading(false);
   }
 }
 
