@@ -142,11 +142,9 @@ Notifications.setNotificationHandler({
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <BiometricAuth>
         <I18nextProvider i18n={i18n}>
           <AppStack />
         </I18nextProvider>
-      </BiometricAuth>
     </GestureHandlerRootView>
   );
 }

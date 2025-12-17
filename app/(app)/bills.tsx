@@ -534,20 +534,30 @@ export default function Bills() {
     syncLiveActivity();
   }, [bills]);
 
-  useFocusEffect(
-    useCallback(() => {
-      StatusBar.setBarStyle("light-content");
-      if (Platform.OS === "android") {
-        StatusBar.setBackgroundColor("transparent");
-        StatusBar.setTranslucent(true);
-      }
-      return () => {
-        const defaultStyle =
-          theme.mode === "dark" ? "light-content" : "dark-content";
-        StatusBar.setBarStyle(defaultStyle);
-      };
-    }, [theme.mode])
-  );
+useEffect(() => {
+  StatusBar.setBarStyle("light-content");
+  if (Platform.OS === "android") {
+    StatusBar.setBackgroundColor("transparent");
+    StatusBar.setTranslucent(true);
+  }
+}, []); 
+
+// 2. Handle focus/unfocus when navigating between screens
+useFocusEffect(
+  useCallback(() => {
+    StatusBar.setBarStyle("light-content");
+    if (Platform.OS === "android") {
+      StatusBar.setBackgroundColor("transparent");
+      StatusBar.setTranslucent(true);
+    }
+    
+    return () => {
+      // Revert to theme default when leaving this view
+      const defaultStyle = theme.mode === "dark" ? "light-content" : "dark-content";
+      StatusBar.setBarStyle(defaultStyle);
+    };
+  }, [theme.mode])
+);
 
   const pendingBills = useMemo(
     () =>

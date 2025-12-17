@@ -304,7 +304,21 @@
     "reminders_save_error": "Failed to save settings.",
     "Auto-Draft":"Auto-Draft",
     "Manual Pay":"Manual Pay",
-
+"visit_on_computer": "Visit on Computer",
+    "visit_on_computer_subtitle": "Upload your CSV via the web portal for easier management.",
+    "download_template": "Download Template",
+    "download_template_subtitle": "Get the CSV template to ensure correct formatting.",
+    "template_sample_row": "Netflix,15.99,2023-12-25,Family Plan,monthly,0,auto_pay",
+    "portal_alert_msg": "Open the portal in your browser or share the link to your computer.",
+    "portal_share_msg": "Access the BillBell Web Portal to upload your bills:",
+    "open": "Open",
+    "share_link": "Share Link",
+    "cancel": "Cancel",
+    "step_2_title": "Step 2: Select File",
+        "step_2_share_id_hint": "You will need your Share ID and a Generated Import Code.",
+        "enter_code_placeholder": "Enter Import Code",
+        "generate_code_hint": "Generate an Import code in your Profile.",
+        "step_3_title":"Step 3: Authorization",
   "faqSections": [
     {
       "title": "Adding & Managing Debts",

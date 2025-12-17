@@ -9,6 +9,7 @@ import {
   Platform,
   StyleSheet,
   ActivityIndicator,
+  Linking
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { router } from "expo-router";
@@ -113,7 +114,7 @@ export default function BulkImport() {
   const [csvName, setCsvName] = useState<string | null>(null);
   const [bills, setBills] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-
+  const [downloading, setDownloading] = useState(false); // New state
   // --- Logic ---
 
   async function pickCsv() {
@@ -183,6 +184,7 @@ export default function BulkImport() {
     const iRecurrence = idx("recurrence");
     const iOffset = idx("offset");
     const ireminder = idx("reminder"); 
+    const ipaymentMethod = idx("payment_method"); 
 
     const result: any[] = [];
 
@@ -195,6 +197,8 @@ export default function BulkImport() {
       const amountStr = iAmount >= 0 && cols.length > iAmount ? cols[iAmount] : "";
       const dueDate = iDueDate >= 0 && cols.length > iDueDate ? cols[iDueDate] : "";
       const notes = iNotes >= 0 && cols.length > iNotes ? cols[iNotes] : "";
+      const reminder = ireminder >= 0 && cols.length > ireminder ? cols[ireminder] : "0";
+      const paymentMethod = ipaymentMethod >= 0 && cols.length > ipaymentMethod ? cols[ipaymentMethod] : "manual";
       
       let recurrence = "none";
       if (iRecurrence >= 0 && cols.length > iRecurrence) {
@@ -222,38 +226,72 @@ export default function BulkImport() {
         notes,
         recurrence,
         offset, 
+        reminder,
+        paymentMethod
       });
     }
 
     return result;
   }
+async function handleWebPortalPress() {
+  const url = "https://tinyurl.com/3y3vm7ey";
+  
+  Alert.alert(
+    t("Visit on Computer"),
+    t("Open the portal in your browser or share the link to your computer."),
+    [
+      {
+        text: t("Open"),
+        onPress: () => Linking.openURL(url),
+      },
+      {
+        text: t("Share Link"),
+        onPress: () => {
+          Share.open({
+            message: t("Access the BillBell Web Portal to upload your bills:"),
+            url: url,
+          }).catch((err) => {
+            if (err) console.log(err);
+          });
+        },
+      },
+      {
+        text: t("Cancel"),
+        style: "cancel",
+      },
+    ]
+  );
+}
 
   async function downloadTemplate() {
-    try {
-      const headers = "name,amount,due_date,notes,recurrence,offset"; 
-      const today = new Date().toISOString().split("T")[0];
-      const sampleRow = `Netflix,15.99,${today},Family Plan,none,0`;
-      const csvContent = `${headers}\n${sampleRow}`;
+  try {
+    setDownloading(true); // Start loading
+    const headers = "name,amount,due_date,notes,recurrence,offset,payment_method"; 
+    const today = new Date().toISOString().split("T")[0];
+    const sampleRow = `Netflix,15.99,${today},Family Plan,monthly,0,auto_pay`;
+    const csvContent = `${headers}\n${sampleRow}`;
 
-      const path =
-        Platform.OS === "ios"
-          ? `${RNFS.DocumentDirectoryPath}/bill_template.csv`
-          : `${RNFS.CachesDirectoryPath}/bill_template.csv`;
+    const path =
+      Platform.OS === "ios"
+        ? `${RNFS.DocumentDirectoryPath}/bill_template.csv`
+        : `${RNFS.CachesDirectoryPath}/bill_template.csv`;
 
-      await RNFS.writeFile(path, csvContent, "utf8");
+    await RNFS.writeFile(path, csvContent, "utf8");
 
-      await Share.open({
-        url: `file://${path}`,
-        type: "text/csv",
-        filename: "bill_import_template",
-        title: "Download Bill Template",
-      });
-    } catch (error: any) {
-      if (error?.message !== "User did not share") {
-        Alert.alert(t("Error"), t("Failed to download template"));
-      }
+    await Share.open({
+      url: `file://${path}`,
+      type: "text/csv",
+      filename: "bill_import_template",
+      title: "Download Bill Template",
+    });
+  } catch (error: any) {
+    if (error?.message !== "User did not share") {
+      Alert.alert(t("Error"), t("Failed to download template"));
     }
+  } finally {
+    setDownloading(false); // Stop loading
   }
+}
 
   async function doImport() {
     if (!importCode.trim()) {
@@ -294,64 +332,101 @@ export default function BulkImport() {
         />
 
         {/* Step 1 */}
-        <View style={styles.section}>
-          <SectionTitle title={t("Step 1: Preparation")} theme={theme} />
-          <Pressable
-            onPress={downloadTemplate}
-            style={({ pressed }) => [
-              styles.actionCard,
-              {
-                backgroundColor: theme.colors.card,
-                borderColor: theme.colors.border,
-                opacity: pressed ? 0.7 : 1,
-              },
-            ]}
-          >
-            <View style={[styles.iconBox, { backgroundColor: theme.mode === 'dark' ? '#1E293B' : '#F1F5F9' }]}>
-              <Ionicons name="download-outline" size={22} color={theme.colors.primary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>
-                {t("Download Template")}
-              </Text>
-              <Text style={[styles.cardSubtitle, { color: theme.colors.subtext }]}>
-                {t("Get the CSV template to ensure correct formatting.")}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.subtext} />
-          </Pressable>
-        </View>
+<View style={styles.section}>
+  <SectionTitle title={t("Step 1: Preparation")} theme={theme} />
+  <Pressable
+    onPress={downloadTemplate}
+    disabled={downloading} // Disable while loading
+    style={({ pressed }) => [
+      styles.actionCard,
+      {
+        backgroundColor: theme.colors.card,
+        borderColor: theme.colors.border,
+        opacity: downloading || pressed ? 0.7 : 1,
+      },
+    ]}
+  >
+    <View style={[styles.iconBox, { backgroundColor: theme.mode === 'dark' ? '#1E293B' : '#F1F5F9' }]}>
+      {downloading ? (
+        <ActivityIndicator size="small" color={theme.colors.primary} />
+      ) : (
+        <Ionicons name="download-outline" size={22} color={theme.colors.primary} />
+      )}
+    </View>
+    <View style={{ flex: 1 }}>
+      <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>
+        {t("Download Template")}
+      </Text>
+      <Text style={[styles.cardSubtitle, { color: theme.colors.subtext }]}>
+        {t("Get the CSV template to ensure correct formatting.")}
+      </Text>
+    </View>
+    <Ionicons name="chevron-forward" size={20} color={theme.colors.subtext} />
+  </Pressable>
+</View>
 
-        {/* Step 2 */}
-        <View style={styles.section}>
-          <SectionTitle title={t("Step 2: Select File")} theme={theme} />
-          <FileDropZone
-            filename={csvName}
-            onPress={pickCsv}
-            theme={theme}
-            parsedCount={bills.length}
-          />
-        </View>
+{/* Step 2: Select File */}
+<View style={styles.section}>
+  {/* Updated Subtitle with Share ID */}
+  <SectionTitle title={t("step_2_title")} theme={theme} />
+  <Text style={{ color: theme.colors.subtext, fontSize: 12, marginLeft: 4, marginBottom: 4 }}>
+    {t("step_2_share_id_hint")}
+  </Text>
+  
+  <Pressable
+    onPress={handleWebPortalPress}
+    style={({ pressed }) => [
+      styles.actionCard,
+      {
+        backgroundColor: theme.colors.card,
+        borderColor: theme.colors.border,
+        opacity: pressed ? 0.7 : 1,
+        marginBottom: 8,
+      },
+    ]}
+  >
+    <View style={[styles.iconBox, { backgroundColor: theme.mode === 'dark' ? '#1E293B' : '#F1F5F9' }]}>
+      <Ionicons name="desktop-outline" size={22} color={theme.colors.primary} />
+    </View>
+    <View style={{ flex: 1 }}>
+      <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>
+        {t("visit_on_computer")}
+      </Text>
+      <Text style={[styles.cardSubtitle, { color: theme.colors.subtext }]}>
+        {t("visit_on_computer_subtitle")}
+      </Text>
+    </View>
+    <Ionicons name="ellipsis-horizontal" size={20} color={theme.colors.subtext} />
+  </Pressable>
 
-        {/* Step 3 */}
-        <View style={styles.section}>
-          <SectionTitle title={t("Step 3: Authorization")} theme={theme} />
-          <View style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Ionicons name="key-outline" size={20} color={theme.colors.subtext} style={{ marginLeft: 12 }} />
-            <TextInput
-              value={importCode}
-              onChangeText={setImportCode}
-              autoCapitalize="characters"
-              autoCorrect={false}
-              placeholder={t("Enter Import Code")}
-              placeholderTextColor={theme.colors.subtext}
-              style={[styles.input, { color: theme.colors.primaryText }]}
-            />
-          </View>
-          <Text style={{ color: theme.colors.subtext, fontSize: 12, marginLeft: 4 }}>
-            {t("Generate this in your Profile")}
-          </Text>
-        </View>
+  <FileDropZone
+    filename={csvName}
+    onPress={pickCsv}
+    theme={theme}
+    parsedCount={bills.length}
+  />
+</View>
+
+{/* Step 3: Authorization */}
+<View style={styles.section}>
+  <SectionTitle title={t("step_3_title")} theme={theme} />
+  <View style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+    <Ionicons name="key-outline" size={20} color={theme.colors.subtext} style={{ marginLeft: 12 }} />
+    <TextInput
+      value={importCode}
+      onChangeText={setImportCode}
+      autoCapitalize="characters"
+      autoCorrect={false}
+      placeholder={t("enter_code_placeholder")}
+      placeholderTextColor={theme.colors.subtext}
+      style={[styles.input, { color: theme.colors.primaryText }]}
+    />
+  </View>
+  {/* Updated Subtitle to "Generate an Import code" */}
+  <Text style={{ color: theme.colors.subtext, fontSize: 12, marginLeft: 4 }}>
+    {t("generate_code_hint")}
+  </Text>
+</View>
 
         {/* Action Button */}
         <Pressable

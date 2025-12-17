@@ -25,10 +25,16 @@
       "NSSupportsLiveActivities":true
 },
       "supportsTablet": true,
+      "statusBarStyle": "light",
       "bundleIdentifier": "com.dunn.carabali.billbell",
       "appleTeamId": "2899NRK28S"
     },
     "android": {
+      "statusBar": {
+        "barStyle": "light-content",
+        "backgroundColor": "#00000000",
+        "translucent": true
+      },
       "package": "com.dunn.carabali.billbell",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {

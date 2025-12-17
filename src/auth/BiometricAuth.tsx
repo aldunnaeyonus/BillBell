@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
-import { View, Text, StyleSheet, AppState, Pressable, StatusBar } from "react-native";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { View, Text, StyleSheet, AppState, Pressable, StatusBar, Platform } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
-import { useSegments } from "expo-router";
+import { useSegments, useFocusEffect } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -23,6 +23,15 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     segmentsRef.current = segments;
   }, [segments]);
+
+  useEffect(() => {
+    StatusBar.setBarStyle("light-content");
+    if (Platform.OS === "android") {
+      StatusBar.setBackgroundColor("transparent");
+      StatusBar.setTranslucent(true);
+    }
+  }, []); 
+
 
   useEffect(() => {
     checkHardware();
