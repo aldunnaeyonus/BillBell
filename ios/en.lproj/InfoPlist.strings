@@ -8,3 +8,22 @@
 /* Reminders Access */
 "NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
 "NSRemindersUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
+"widget_title" = "Bill Tracker";
+"widget_description" = "Track and pay bills from your home screen.";
+"no_data" = "No Bills Data";
+"sync_prompt" = "Open app to sync";
+"needs_attention" = "Needs Attention";
+"all_clear" = "All Clear";
+"overdue_bills" = "Overdue bills";
+"nothing_overdue" = "Nothing overdue";
+"overdue_label" = "overdue";
+"next_bill" = "Next Bill:";
+"mark_paid" = "Mark Paid";
+"auto_draft" = "Auto-Draft";
+"manual_pay" = "Manual Pay";
+"no_upcoming" = "No upcoming bills";
+"updated_at %@" = "Updated %@";
+"overdue_label" = "Overdue";
+"this_month" = "This Month";
+"overdue_bills_plural %lld" = "%lld bills";
+"month_left_plural %lld" = "%lld left";

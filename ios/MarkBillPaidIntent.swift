@@ -3,7 +3,7 @@ import WidgetKit
 import Foundation
 
 struct MarkBillPaidIntent: AppIntent {
-  static var title: LocalizedStringResource = "Mark Paid"
+  static var title: LocalizedStringResource = "mark_paid"
   
   @Parameter(title: "Bill ID")
   var billID: String
