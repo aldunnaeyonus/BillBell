@@ -10,9 +10,9 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  StatusBar
+  StatusBar,
 } from "react-native";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -21,7 +21,15 @@ import { useTheme, Theme } from "../../src/ui/useTheme";
 
 // --- Components ---
 
-function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
+function Header({
+  title,
+  subtitle,
+  theme,
+}: {
+  title: string;
+  subtitle: string;
+  theme: Theme;
+}) {
   return (
     <View style={styles.headerShadowContainer}>
       <LinearGradient
@@ -45,12 +53,12 @@ function Header({ title, subtitle, theme }: { title: string; subtitle: string; t
 // --- Main Screen ---
 
 export default function Family() {
-  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
   const { t } = useTranslation();
-
-useFocusEffect(
+  const { code: urlCode } = useLocalSearchParams<{ code?: string }>();
+  const [code, setCode] = useState(urlCode || ""); // Auto-fill if link was used
+  useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle("dark-content");
       if (Platform.OS === "android") {
@@ -66,25 +74,23 @@ useFocusEffect(
   );
 
   async function handleCreate() {
-  setLoading(true);
-  try {
-    const res: any = await api.familyCreate();
-    console.log("familyCreate:", res);
+    setLoading(true);
+    try {
+      const res: any = await api.familyCreate();
+      console.log("familyCreate:", res);
 
-    const code = res?.family_code;
-    if (!code) throw new Error("family_code missing from server response");
+      const code = res?.family_code;
+      if (!code) throw new Error("family_code missing from server response");
 
-    Alert.alert(
-      t("Family created"),
-      `${t("Family ID")}: ${code}`,
-      [{ text: "OK", onPress: () => router.push("/(app)/bills") }]
-    );
-  } catch (e: any) {
-    Alert.alert(t("Error"), e?.message || "Failed");
-  } finally {
-    setLoading(false);
+      Alert.alert(t("Family created"), `${t("Family ID")}: ${code}`, [
+        { text: "OK", onPress: () => router.push("/(app)/bills") },
+      ]);
+    } catch (e: any) {
+      Alert.alert(t("Error"), e?.message || "Failed");
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
   async function handleJoin() {
     if (!code.trim()) {
@@ -108,9 +114,11 @@ useFocusEffect(
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 60 }}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.content}>
-            
             {/* Header */}
             <Header
               title={t("Family Setup")}
@@ -120,91 +128,181 @@ useFocusEffect(
 
             {/* Option 1: Join */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Join a Group")}</Text>
-              
-              <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
-                    <View style={[styles.iconBox, { backgroundColor: theme.mode === 'dark' ? '#1E293B' : '#F1F5F9' }]}>
-                        <Ionicons name="enter-outline" size={24} color={theme.colors.primary} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>{t("Have an ID?")}</Text>
-                        <Text style={[styles.cardBody, { color: theme.colors.subtext }]}>
-                            {t("Enter the Family ID shared with you to join an existing group.")}
-                        </Text>
-                    </View>
+              <Text
+                style={[styles.sectionTitle, { color: theme.colors.subtext }]}
+              >
+                {t("Join a Group")}
+              </Text>
+
+              <View
+                style={[
+                  styles.card,
+                  {
+                    backgroundColor: theme.colors.card,
+                    borderColor: theme.colors.border,
+                  },
+                ]}
+              >
+                <View
+                  style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}
+                >
+                  <View
+                    style={[
+                      styles.iconBox,
+                      {
+                        backgroundColor:
+                          theme.mode === "dark" ? "#1E293B" : "#F1F5F9",
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="enter-outline"
+                      size={24}
+                      color={theme.colors.primary}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[
+                        styles.cardTitle,
+                        { color: theme.colors.primaryText },
+                      ]}
+                    >
+                      {t("Have an ID?")}
+                    </Text>
+                    <Text
+                      style={[styles.cardBody, { color: theme.colors.subtext }]}
+                    >
+                      {t(
+                        "Enter the Family ID shared with you to join an existing group."
+                      )}
+                    </Text>
+                  </View>
                 </View>
 
-                <View style={[styles.inputContainer, { borderColor: theme.colors.border, backgroundColor: theme.colors.bg }]}>
-                    <TextInput
-                        value={code}
-                        onChangeText={setCode}
-                        placeholder={t("e.g. K7P3D9")}
-                        placeholderTextColor={theme.colors.subtext}
-                        autoCapitalize="characters"
-                        autoCorrect={false}
-                        style={[styles.input, { color: theme.colors.primaryText }]}
-                    />
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      borderColor: theme.colors.border,
+                      backgroundColor: theme.colors.bg,
+                    },
+                  ]}
+                >
+                  <TextInput
+                    value={code}
+                    onChangeText={setCode}
+                    placeholder={t("e.g. K7P3D9")}
+                    placeholderTextColor={theme.colors.subtext}
+                    autoCapitalize="characters"
+                    autoCorrect={false}
+                    style={[styles.input, { color: theme.colors.primaryText }]}
+                  />
                 </View>
 
                 <Pressable
-                    onPress={handleJoin}
-                    disabled={loading || !code.trim()}
-                    style={({ pressed }) => [
-                        styles.actionButton,
-                        { 
-                            backgroundColor: theme.colors.primary,
-                            opacity: loading || !code.trim() ? 0.5 : pressed ? 0.8 : 1
-                        }
-                    ]}
+                  onPress={handleJoin}
+                  disabled={loading || !code.trim()}
+                  style={({ pressed }) => [
+                    styles.actionButton,
+                    {
+                      backgroundColor: theme.colors.primary,
+                      opacity:
+                        loading || !code.trim() ? 0.5 : pressed ? 0.8 : 1,
+                    },
+                  ]}
                 >
-                    {loading ? (
-                        <ActivityIndicator color={theme.colors.primaryTextButton} />
-                    ) : (
-                        <Text style={[styles.actionButtonText, { color: theme.colors.primaryTextButton }]}>{t("Join Family")}</Text>
-                    )}
+                  {loading ? (
+                    <ActivityIndicator color={theme.colors.primaryTextButton} />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.actionButtonText,
+                        { color: theme.colors.primaryTextButton },
+                      ]}
+                    >
+                      {t("Join Family")}
+                    </Text>
+                  )}
                 </Pressable>
               </View>
             </View>
 
             {/* Divider with Text */}
             <View style={styles.orContainer}>
-                <View style={[styles.line, { backgroundColor: theme.colors.border }]} />
-                <Text style={{ color: theme.colors.subtext, fontWeight: '600' }}>{t("OR")}</Text>
-                <View style={[styles.line, { backgroundColor: theme.colors.border }]} />
+              <View
+                style={[styles.line, { backgroundColor: theme.colors.border }]}
+              />
+              <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>
+                {t("OR")}
+              </Text>
+              <View
+                style={[styles.line, { backgroundColor: theme.colors.border }]}
+              />
             </View>
 
             {/* Option 2: Create */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Start Fresh")}</Text>
-              
-              <Pressable 
+              <Text
+                style={[styles.sectionTitle, { color: theme.colors.subtext }]}
+              >
+                {t("Start Fresh")}
+              </Text>
+
+              <Pressable
                 onPress={handleCreate}
                 disabled={loading}
                 style={({ pressed }) => [
-                    styles.card,
-                    { 
-                        backgroundColor: theme.colors.card, 
-                        borderColor: theme.colors.border,
-                        opacity: pressed ? 0.9 : 1
-                    }
+                  styles.card,
+                  {
+                    backgroundColor: theme.colors.card,
+                    borderColor: theme.colors.border,
+                    opacity: pressed ? 0.9 : 1,
+                  },
                 ]}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                    <View style={[styles.iconBox, { backgroundColor: theme.colors.accent + '20' }]}>
-                        <Ionicons name="add-circle" size={28} color={theme.colors.accent} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>{t("Create New Family")}</Text>
-                        <Text style={[styles.cardBody, { color: theme.colors.subtext }]}>
-                            {t("Become an admin and invite others.")}
-                        </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={theme.colors.subtext} />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <View
+                    style={[
+                      styles.iconBox,
+                      { backgroundColor: theme.colors.accent + "20" },
+                    ]}
+                  >
+                    <Ionicons
+                      name="add-circle"
+                      size={28}
+                      color={theme.colors.accent}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[
+                        styles.cardTitle,
+                        { color: theme.colors.primaryText },
+                      ]}
+                    >
+                      {t("Create New Family")}
+                    </Text>
+                    <Text
+                      style={[styles.cardBody, { color: theme.colors.subtext }]}
+                    >
+                      {t("Become an admin and invite others.")}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={theme.colors.subtext}
+                  />
                 </View>
               </Pressable>
             </View>
-
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -222,7 +320,7 @@ const styles = StyleSheet.create({
   },
   // Header
   headerShadowContainer: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -231,9 +329,9 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     borderRadius: 20,
   },
-headerGradient: {
+  headerGradient: {
     borderRadius: 20,
-    height:120,
+    height: 120,
     paddingBottom: 24,
     flexDirection: "row",
     alignItems: "center",
@@ -247,7 +345,7 @@ headerGradient: {
     backgroundColor: "rgba(255,255,255,0.15)",
     justifyContent: "center",
     alignItems: "center",
-    marginLeft:10
+    marginLeft: 10,
   },
   headerTitle: {
     fontSize: 22,
@@ -280,12 +378,12 @@ headerGradient: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 2,
   },
   cardBody: {
@@ -297,21 +395,21 @@ headerGradient: {
     borderWidth: 1,
     borderRadius: 14,
     height: 56,
-    justifyContent: 'center',
+    justifyContent: "center",
     marginBottom: 16,
   },
   input: {
     fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
     letterSpacing: 2,
   },
   // Button
   actionButton: {
     height: 52,
     borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -320,17 +418,17 @@ headerGradient: {
   },
   actionButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   // Divider
   orContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
     paddingHorizontal: 10,
   },
   line: {
     flex: 1,
     height: 1,
-  }
+  },
 });

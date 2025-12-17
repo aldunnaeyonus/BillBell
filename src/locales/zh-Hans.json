@@ -318,6 +318,8 @@
         "generate_code_hint": "在个人资料中生成导入代码。",
         "policies": "政策",
     "data_management": "数据管理",
+    "Invite Members": "邀请成员",
+  "Invite to Group": "邀请加入群组",
   "faqSections": [
     {
       "title": "添加和管理债务",

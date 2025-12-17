@@ -28,7 +28,7 @@ import { notifyImportCode } from "../../src/notifications/importCode";
 import { copyToClipboard } from "../../src/ui/copy";
 import { googleSignOut } from "../../src/auth/providers";
 import * as EncryptionService from "../../src/security/EncryptionService"; // <--- ADDED
-
+import * as Linking from 'expo-linking';
 // Imports for Live Activity Logic
 import { userSettings } from "../../src/storage/userSettings";
 import { stopActivity } from "../../src/native/LiveActivity";
@@ -287,6 +287,30 @@ export default function Profile() {
     { code: 'zh-Hans', label: '简体中文' },
     { code: 'ja', label: '日本語' },
   ];
+
+const shareInvite = async (familyCode: string) => {
+  // 1. Create the deep link using your app's scheme ('billbell')
+  // This produces: billbell://family?code=K7P3D9
+  const url = Linking.createURL('family', {
+    queryParams: { code: familyCode },
+  });
+
+  const shareOptions = {
+    title: 'Join my Family',
+    message: `Join my family on BillBell to sync our bills! Use code: ${familyCode} or click the link:`,
+    url: url, // Some apps prefer the link in the URL field
+    subject: 'Family Invite - BillBell', // For email sharing
+  };
+
+  try {
+    await Share.open(shareOptions);
+  } catch (error: any) {
+    // react-native-share throws an error if the user cancels the share sheet
+    if (error && error.message !== 'User did not share') {
+      Alert.alert("Error", error.message);
+    }
+  }
+};
 
 const loadData = useCallback(async () => {
   try {
@@ -638,6 +662,12 @@ const loadData = useCallback(async () => {
               )}
 
               <ActionRow
+                icon="person-add-outline"
+                label={t("Invite Members")}
+                theme={theme}
+                onPress={() => { shareInvite(data.family_code) }}
+              />
+               <ActionRow
                 icon="settings-outline"
                 label={t("Shared Settings")}
                 theme={theme}

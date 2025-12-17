@@ -318,6 +318,8 @@
         "generate_code_hint": "Genera un código de importación en tu Perfil.",
         "policies": "Políticas",
     "data_management": "Gestión de datos",
+"Invite Members": "Invitar miembros",
+  "Invite to Group": "Invitar al grupo",
   "faqSections": [
     {
       "title": "Añadir y Gestionar Deudas",
