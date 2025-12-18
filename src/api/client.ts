@@ -73,7 +73,6 @@ async function request(path: string, opts: RequestInit = {}) {
 
     // onboarding case: user is authenticated but hasn't created/joined a family
 if (res.status === 409 && errMsg.includes("User not in family")) {
-      router.replace("/(app)/family");
       return { error_silent: true, message: "User not in family" };
     }
 
@@ -468,8 +467,7 @@ try {
     // --------------------------------------------------
 
     const response = await request("/bills");
-    const rawBills = response?.bills || response || [];
-
+      const rawBills = response?.bills || (Array.isArray(response) ? response : []);
     const decryptedBills = await Promise.all(
       rawBills.map(async (b: any) => {
 try {

@@ -42,71 +42,82 @@ export default function Login() {
   );
 
   async function handleAppleLogin() {
+  try {
+    const credential = await AppleAuthentication.signInAsync({
+      requestedScopes: [
+        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        AppleAuthentication.AppleAuthenticationScope.EMAIL,
+      ],
+    });
+    setLoading(true);
+    const res = await api.authApple({
+      identity_token: credential.identityToken,
+      email: credential.email,
+      name: credential.fullName?.givenName
+        ? `${credential.fullName.givenName} ${credential.fullName.familyName}`
+        : null,
+    });
+    await setToken(res.token);
+
+    // FIXED: Logic to check for family status silently
     try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
+      const fam = await api.familyMembers();
+      
+      // If the API returned the silent error object, the user is NOT in a family
+      if (fam?.error_silent) {
+        router.replace("/(app)/family");
+      } else {
+        // User has a family, proceed to onboarding
+        router.replace("/onboarding");
+      }
+    } catch (e) {
+      // Fallback: If familyMembers throws, assume they need to join/create a family
+      router.replace("/(app)/family");
+    }
+  } catch (e: any) {
+    if (e.code === "ERR_REQUEST_CANCELED") {
+      // user cancelled
+    } else {
+      Alert.alert(t("Login failed"), e.message);
+    }
+  } finally {
+    setLoading(false);
+  }
+}
+
+ async function handleGoogleLogin() {
+  try {
+    await GoogleSignin.hasPlayServices();
+    const userInfo = await GoogleSignin.signIn();
+
+    if (userInfo.data?.idToken) {
       setLoading(true);
-      const res = await api.authApple({
-        identity_token: credential.identityToken,
-        email: credential.email,
-        name: credential.fullName?.givenName
-          ? `${credential.fullName.givenName} ${credential.fullName.familyName}`
-          : null,
-      });
+      const res = await api.authGoogle({ id_token: userInfo.data?.idToken });
       await setToken(res.token);
 
-      // CHANGED: Redirect to Onboarding instead of Bills
-      //router.replace("/onboarding");
+      // FIXED: Logic to check for family status silently
       try {
-        await api.familyMembers();
-        router.replace("/onboarding");
-      } catch {
+        const fam = await api.familyMembers();
+        
+        if (fam?.error_silent) {
+          router.replace("/(app)/family");
+        } else {
+          router.replace("/onboarding");
+        }
+      } catch (e) {
         router.replace("/(app)/family");
       }
-    } catch (e: any) {
-      if (e.code === "ERR_REQUEST_CANCELED") {
-        // user cancelled
-      } else {
-        Alert.alert(t("Login failed"), e.message);
-      }
-    } finally {
-      setLoading(false);
     }
-  }
-
-  async function handleGoogleLogin() {
-    try {
-      await GoogleSignin.hasPlayServices();
-
-      const userInfo = await GoogleSignin.signIn();
-
-      if (userInfo.data?.idToken) {
-        setLoading(true);
-        const res = await api.authGoogle({ id_token: userInfo.data?.idToken });
-        await setToken(res.token);
-
-        // CHANGED: Redirect to Onboarding instead of Bills
-        try {
-          await api.familyMembers();
-          router.replace("/onboarding");
-        } catch {
-          router.replace("/(app)/family");
-        }
-      }
-    } catch (error: any) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        // user cancelled
-      } else {
-        Alert.alert(t("Login failed"), error.message);
-      }
-    } finally {
-      setLoading(false);
+  } catch (error: any) {
+    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+      // user cancelled
+    } else {
+      Alert.alert(t("Login failed"), error.message);
     }
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <View style={styles.container}>
