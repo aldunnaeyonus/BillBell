@@ -37,9 +37,57 @@ async function hardReset() {
     console.warn("Performing hard application reset. User must log in again.");
     router.replace("/(auth)/login");
 }
+// src/api/client.ts
 
-// --- Generic Request Helper ---
 async function request(path: string, opts: RequestInit = {}) {
+  const token = await getToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(opts.headers as any),
+  };
+  
+  // Explicitly check for token presence
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}${path}`, { ...opts, headers });
+  const text = await res.text();
+  let json: any = null;
+  if (text) {
+    try { json = JSON.parse(text); } catch { json = null; }
+  }
+
+  if (!res.ok) {
+    const errMsg = (json?.error || text || "").toString();
+
+    // Only force logout if we actually HAD a token and it was rejected.
+    // If we didn't have a token, it's a "Missing Authorization" error which 
+    // we should handle as a logic failure, not a session expiration.
+    const shouldForceLogout =
+      (res.status === 401 && !!token) || // Only logout if token existed
+      errMsg.includes("Invalid token") ||
+      errMsg.includes("User not found or token is stale");
+
+    if (shouldForceLogout) {
+      await clearToken();
+      router.replace("/(auth)/login");
+      throw new Error("Session ended. Please log in again.");
+    }
+
+    // Keep the 409 redirect logic
+    if (res.status === 409 && errMsg.includes("User not in family")) {
+      router.replace("/(app)/family");
+      throw new Error("User not in family");
+    }
+
+    throw new Error(errMsg || `Request failed (${res.status})`);
+  }
+
+  return json;
+}
+// --- Generic Request Helper ---
+async function request2(path: string, opts: RequestInit = {}) {
   const token = await getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -58,18 +106,20 @@ async function request(path: string, opts: RequestInit = {}) {
   // ---- FORCE LOGOUT CASES ----
   const errMsg = (json?.error || text || "").toString();
   if (!res.ok) {
-    const shouldForceLogout =
-      res.status === 401 ||
-      errMsg.includes("Missing Authorization header") ||
-      errMsg.includes("Invalid token") ||
-      errMsg.includes("User not found or token is stale");
+    const errMsg = (json?.error || text || "").toString();
 
-    // real auth failures only
-    if (shouldForceLogout) {
+    // Only force logout if we sent a token and it was rejected.
+    // If no token was sent, it's an onboarding/auth issue, not a "Session ended" issue.
+    const isUnauthorized = res.status === 401;
+    const hasToken = !!token;
+
+    if (isUnauthorized && hasToken) {
       await clearToken();
       router.replace("/(auth)/login");
       throw new Error("Session ended. Please log in again.");
     }
+    
+    // ... rest of error handling
 
     // onboarding case: user is authenticated but hasn't created/joined a family
 if (res.status === 409 && errMsg.includes("User not in family")) {
@@ -467,7 +517,7 @@ try {
     // --------------------------------------------------
 
     const response = await request("/bills");
-      const rawBills = response?.bills || (Array.isArray(response) ? response : []);
+    const rawBills = response?.bills || (Array.isArray(response) ? response : []);
     const decryptedBills = await Promise.all(
       rawBills.map(async (b: any) => {
 try {

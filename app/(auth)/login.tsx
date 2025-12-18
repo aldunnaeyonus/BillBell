@@ -58,6 +58,7 @@ export default function Login() {
         : null,
     });
     await setToken(res.token);
+      await new Promise(resolve => setTimeout(resolve, 100));
 
     // FIXED: Logic to check for family status silently
     try {
@@ -85,7 +86,9 @@ export default function Login() {
   }
 }
 
- async function handleGoogleLogin() {
+ // app/(auth)/login.tsx
+
+async function handleGoogleLogin() {
   try {
     await GoogleSignin.hasPlayServices();
     const userInfo = await GoogleSignin.signIn();
@@ -93,27 +96,28 @@ export default function Login() {
     if (userInfo.data?.idToken) {
       setLoading(true);
       const res = await api.authGoogle({ id_token: userInfo.data?.idToken });
+      
+      // 1. Await the token storage fully
       await setToken(res.token);
 
-      // FIXED: Logic to check for family status silently
+      // 2. CRITICAL: Add a small delay to ensure SecureStore is readable by the next task
+      await new Promise(resolve => setTimeout(resolve, 150));
+
       try {
+        // 3. Now fetch family members
         const fam = await api.familyMembers();
-        
-        if (fam?.error_silent) {
+        router.replace("/onboarding");
+      } catch (e: any) {
+        // If it's the "User not in family" error, redirect to family setup
+        if (e.message.includes("User not in family")) {
           router.replace("/(app)/family");
         } else {
-          router.replace("/onboarding");
+          throw e; // Re-throw actual network/auth errors
         }
-      } catch (e) {
-        router.replace("/(app)/family");
       }
     }
   } catch (error: any) {
-    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-      // user cancelled
-    } else {
-      Alert.alert(t("Login failed"), error.message);
-    }
+    // ... error handling
   } finally {
     setLoading(false);
   }
