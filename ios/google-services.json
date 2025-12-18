@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "249297362734",
+    "project_id": "billbell-6226f",
+    "storage_bucket": "billbell-6226f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:249297362734:android:6ffd22d5fa6ed4bf56e4bf",
+        "android_client_info": {
+          "package_name": "com.dunn.carabali.billbell"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "249297362734-q0atl2p733pufsrgb3jl25459i24b92h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAeIxwYWgDIc98N-e8LSy32tYIfl5TjG4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "249297362734-q0atl2p733pufsrgb3jl25459i24b92h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
