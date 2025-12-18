@@ -12,7 +12,9 @@ import { Buffer } from "buffer";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { initBackgroundFetch, syncAndRefresh } from '../src/native/LiveActivity';
 import { api } from "../src/api/client";
-
+import {
+  GoogleSignin,
+} from "@react-native-google-signin/google-signin";
 
 // Polyfill Buffer for network/data operations
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
@@ -32,6 +34,22 @@ function AppStack() {
   const theme = useTheme();
   const { t } = useTranslation();
 const appState = useRef(AppState.currentState);
+
+useEffect(() => {
+    const initializeApp = async () => {
+      
+      GoogleSignin.configure({
+        scopes: ["profile", "email"], // scopes you want to request
+        profileImageSize: 120,
+        webClientId:
+          "249297362734-q0atl2p733pufsrgb3jl25459i24b92h.apps.googleusercontent.com", // Replace if needed or env var
+      });
+      await GoogleSignin.signOut().catch((err) =>
+        console.log("Google Signout handled:", err.code)
+      );
+    };
+    initializeApp();
+  }, []);
 
 async function handlePendingPaidBill() {
 

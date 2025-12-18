@@ -41,15 +41,6 @@ export default function Login() {
     }, [])
   );
 
-  useEffect(() => {
-    GoogleSignin.configure({
-      webClientId:
-        "233875745320-icjvn6gi8726vroeq7o8r9s0hg4t731r.apps.googleusercontent.com", // Replace if needed or env var
-      iosClientId:
-        "233875745320-8u6mbqhrcal1mc9jocnij2bhg5decs6t.apps.googleusercontent.com",
-    });
-  }, []);
-
   async function handleAppleLogin() {
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -90,7 +81,9 @@ export default function Login() {
   async function handleGoogleLogin() {
     try {
       await GoogleSignin.hasPlayServices();
+
       const userInfo = await GoogleSignin.signIn();
+
       if (userInfo.data?.idToken) {
         setLoading(true);
         const res = await api.authGoogle({ id_token: userInfo.data?.idToken });

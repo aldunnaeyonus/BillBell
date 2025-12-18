@@ -18,21 +18,25 @@ import { router } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from 'expo-file-system'; // <--- Restored expo-file-system
 import Share from "react-native-share";
-import { getDeviceId } from "../../src/security/device"; // <--- ADD THIS IMPORT
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { File, Paths } from "expo-file-system";
+
 import { api } from "../../src/api/client";
 import { clearToken } from "../../src/auth/session";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 import { notifyImportCode } from "../../src/notifications/importCode";
 import { copyToClipboard } from "../../src/ui/copy";
 import { googleSignOut } from "../../src/auth/providers";
-import * as EncryptionService from "../../src/security/EncryptionService"; // <--- ADDED
-import * as Linking from "expo-linking";
+import * as EncryptionService from "../../src/security/EncryptionService";
+import { getDeviceId } from "../../src/security/device";
+
 // Imports for Live Activity Logic
 import { userSettings } from "../../src/storage/userSettings";
 import { stopActivity } from "../../src/native/LiveActivity";
-import { File, Paths } from "expo-file-system";
+
+// --- Helpers ---
 
 function centsToDollars(cents: number) {
   return (Number(cents || 0) / 100).toFixed(2);
@@ -79,9 +83,9 @@ function ProfileHeader({
       >
         <View style={styles.headerContentLeft}>
           <Text style={styles.headerLabel}>{t("Family ID")}</Text>
-          <Text
-            style={styles.headerCode}
-            numberOfLines={1}
+          <Text 
+            style={styles.headerCode} 
+            numberOfLines={1} 
             adjustsFontSizeToFit={true}
             minimumFontScale={0.5}
           >
@@ -94,11 +98,7 @@ function ProfileHeader({
           hitSlop={8}
           style={({ pressed }) => [
             styles.copyButton,
-            {
-              backgroundColor: pressed
-                ? "rgba(255,255,255,0.2)"
-                : "rgba(255,255,255,0.1)",
-            },
+            { backgroundColor: pressed ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)" },
           ]}
         >
           <Ionicons name="copy-outline" size={18} color="#FFF" />
@@ -147,18 +147,7 @@ function ActionRow({
         },
       ]}
     >
-      <View
-        style={[
-          styles.iconBox,
-          {
-            backgroundColor: danger
-              ? "#FFE5E5"
-              : theme.mode === "dark"
-              ? "#1E293B"
-              : "#F1F5F9",
-          },
-        ]}
-      >
+      <View style={[styles.iconBox, { backgroundColor: danger ? "#FFE5E5" : theme.mode === 'dark' ? '#1E293B' : '#F1F5F9' }]}>
         <Ionicons
           name={icon}
           size={22}
@@ -180,7 +169,11 @@ function ActionRow({
           </Text>
         )}
       </View>
-      <Ionicons name="chevron-forward" size={20} color={theme.colors.subtext} />
+      <Ionicons
+        name="chevron-forward"
+        size={20}
+        color={theme.colors.subtext}
+      />
     </Pressable>
   );
 }
@@ -211,13 +204,12 @@ function SwitchRow({
         },
       ]}
     >
-      <View
-        style={[
-          styles.iconBox,
-          { backgroundColor: theme.mode === "dark" ? "#1E293B" : "#F1F5F9" },
-        ]}
-      >
-        <Ionicons name={icon} size={22} color={theme.colors.primary} />
+      <View style={[styles.iconBox, { backgroundColor: theme.mode === 'dark' ? '#1E293B' : '#F1F5F9' }]}>
+        <Ionicons
+          name={icon}
+          size={22}
+          color={theme.colors.primary}
+        />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[styles.actionLabel, { color: theme.colors.primaryText }]}>
@@ -235,14 +227,14 @@ function SwitchRow({
   );
 }
 
-function MemberAvatar({
-  item,
-  theme,
+function MemberAvatar({ 
+  item, 
+  theme, 
   onRemove,
-  isCurrentUser,
-}: {
-  item: any;
-  theme: Theme;
+  isCurrentUser
+}: { 
+  item: any; 
+  theme: Theme; 
   onRemove: (item: any) => void;
   isCurrentUser: boolean;
 }) {
@@ -250,38 +242,18 @@ function MemberAvatar({
   const initial = name.charAt(0).toUpperCase();
 
   return (
-    <Pressable
+    <Pressable 
       onLongPress={() => {
         if (!isCurrentUser) onRemove(item);
       }}
       delayLongPress={500}
       style={({ pressed }) => [
         styles.memberContainer,
-        { opacity: pressed ? 0.7 : 1 },
+        { opacity: pressed ? 0.7 : 1 }
       ]}
     >
-      <View
-        style={[
-          styles.avatarCircle,
-          {
-            backgroundColor: isCurrentUser
-              ? theme.colors.primary
-              : theme.colors.accent,
-          },
-        ]}
-      >
-        <Text
-          style={[
-            styles.avatarText,
-            {
-              color: isCurrentUser
-                ? theme.colors.primaryTextButton
-                : theme.colors.navy,
-            },
-          ]}
-        >
-          {initial}
-        </Text>
+      <View style={[styles.avatarCircle, { backgroundColor: isCurrentUser ? theme.colors.primary : theme.colors.accent }]}>
+        <Text style={[styles.avatarText, { color: isCurrentUser ? theme.colors.primaryTextButton : theme.colors.navy }]}>{initial}</Text>
       </View>
       <Text
         numberOfLines={1}
@@ -298,53 +270,25 @@ function MemberAvatar({
 export default function Profile() {
   const theme = useTheme();
   const { t, i18n } = useTranslation();
-
+  
   const [data, setData] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingCode, setLoadingCode] = useState(false);
-  const [isRotatingKeys, setIsRotatingKeys] = useState(false); // <--- ADDED
-  const [importInfo, setImportInfo] = useState<{
-    code: string;
-    expires: string;
-  } | null>(null);
+  const [isRotatingKeys, setIsRotatingKeys] = useState(false);
+  const [importInfo, setImportInfo] = useState<{ code: string; expires: string } | null>(null);
   const [showLangModal, setShowLangModal] = useState(false);
-
   const [liveActivityEnabled, setLiveActivityEnabled] = useState(true);
 
   const langs = [
-    { code: "en", label: "English" },
-    { code: "es", label: "Español" },
-    { code: "de", label: "Deutsch" },
-    { code: "fr", label: "Français" },
-    { code: "it", label: "Italiano" },
-    { code: "pt-BR", label: "Português (BR)" },
-    { code: "zh-Hans", label: "简体中文" },
-    { code: "ja", label: "日本語" },
+    { code: 'en', label: 'English' },
+    { code: 'es', label: 'Español' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'fr', label: 'Français' },
+    { code: 'it', label: 'Italiano' },
+    { code: 'pt-BR', label: 'Português (BR)' },
+    { code: 'zh-Hans', label: '简体中文' },
+    { code: 'ja', label: '日本語' },
   ];
-
-  const shareInvite = async (familyCode: string) => {
-    if (!familyCode) {
-      return Alert.alert(t("Error"), t("Family ID not found."));
-    }
-    // Your server link with the code attached
-    const inviteLink = `https://dunn-carabali.com/billMVP/?code=${familyCode}`;
-
-    const shareOptions = {
-      title: t("Invite to Group"),
-      message:
-        `${t("Join my family on BillBell to sync our bills!")}\n\n` +
-        `${t("Click to join or download")}: ${inviteLink}\n\n` +
-        `${t("Use Code")}: ${familyCode}`,
-    };
-
-    try {
-      await Share.open(shareOptions);
-    } catch (error: any) {
-      if (error && error.message !== "User did not share") {
-        Alert.alert(t("Error"), error.message);
-      }
-    }
-  };
 
   const loadData = useCallback(async () => {
     try {
@@ -380,7 +324,7 @@ export default function Profile() {
   const handleToggleLiveActivity = async (val: boolean) => {
     setLiveActivityEnabled(val);
     await userSettings.setLiveActivityEnabled(val);
-    if (!val && Platform.OS === "ios") {
+    if (!val && Platform.OS === 'ios') {
       stopActivity();
     }
   };
@@ -388,9 +332,7 @@ export default function Profile() {
   const handleRemoveMember = (member: any) => {
     Alert.alert(
       t("Remove Member"),
-      t("Are you sure you want to remove {{name}}?", {
-        name: member.name || member.email,
-      }),
+      t("Are you sure you want to remove {{name}}?", { name: member.name || member.email }),
       [
         { text: t("Cancel"), style: "cancel" },
         {
@@ -402,10 +344,7 @@ export default function Profile() {
               Alert.alert(t("Success"), t("Member removed."));
               onRefresh();
             } catch (e: any) {
-              Alert.alert(
-                t("Error"),
-                e.message || t("Failed to remove member.")
-              );
+              Alert.alert(t("Error"), e.message || t("Failed to remove member."));
             }
           },
         },
@@ -413,13 +352,10 @@ export default function Profile() {
     );
   };
 
-  // [UPDATED] Secure Leave Logic
   const handleLeaveFamily = () => {
     Alert.alert(
       t("Leave Family"),
-      t(
-        "You will leave this group and take your data with you. We will re-encrypt your data with a new key."
-      ),
+      t("You will leave this group and take your data with you. We will re-encrypt your data with a new key."),
       [
         { text: t("Cancel"), style: "cancel" },
         {
@@ -429,82 +365,59 @@ export default function Profile() {
             try {
               setIsRotatingKeys(true);
 
-              // 1) Fetch bills (api.billsList() already returns DECRYPTED fields)
+              // 1) Fetch bills (api.billsList() returns decrypted fields)
               const { bills } = await api.billsList();
-
-              // Keep plaintext copies for re-encryption
               const plaintextBills = bills.map((b: any) => ({
                 ...b,
                 creditor_plain: b.creditor || "",
                 notes_plain: b.notes || "",
-                amount_cents_plain: b.amount_cents, // already numeric
+                amount_cents_plain: b.amount_cents,
               }));
 
-              // 2) Leave the family on Server (moves your rows to a new family)
+              // 2) Leave the family on Server
               const leaveRes = await api.familyLeave();
-              // Expecting: { success: true, new_family_code: '...', new_family_id: 123 }
 
-              // 3) Generate a NEW family key (hex)
+              // 3) Generate a NEW family key
               const newKeyHex = EncryptionService.generateNewFamilyKey();
-
-              // 4) Re-encrypt bills with the NEW key and write back
-              // IMPORTANT: your api.billsUpdate will encrypt AGAIN if you pass plaintext,
-              // so we must pass ALREADY-ENCRYPTED strings and avoid re-encryption in client.
-              //
-              // Easiest: call the lower-level request layer (not exposed), OR:
-              // pass fields that api.billsUpdate will not re-encrypt. But it always encrypts when it sees "creditor"/"notes".
-              //
-              // So: directly call EncryptionService.encryptData(...) with specificKeyHex AND
-              // call the server update endpoint via api.billsUpdateRaw (not currently in your client).
-              //
-              // If you DON'T have a raw update method, the safe workaround is:
-              // - temporarily disable the auto-encrypt in api.billsUpdate for this path, OR
-              // - add api.billsUpdateEncrypted(...) that does not wrap encryptData().
-              //
-              // For now, here's the simplest approach: use api.billsUpdate but pass PLAINTEXT and let it encrypt
-              // with the ACTIVE key. That means we must temporarily set the ACTIVE cached key to the new key first.
-
-              // Cache new key as active for the new family.
-              // New family should start at key_version=1 unless your backend increments differently.
               const NEW_FAMILY_KEY_VERSION = 1;
-              await EncryptionService.cacheFamilyKey(
-                newKeyHex,
-                NEW_FAMILY_KEY_VERSION
-              );
 
+              // Cache new key as active locally so api.billsUpdate uses it for encryption
+              await EncryptionService.cacheFamilyKey(newKeyHex, NEW_FAMILY_KEY_VERSION);
+
+              // 4) Re-encrypt bills and write back
               for (const b of plaintextBills) {
                 await api.billsUpdate(b.id, {
-                  creditor: b.creditor_plain, // plaintext -> api.billsUpdate encrypts with new active key
-                  notes: b.notes_plain, // plaintext -> encrypts with new active key
-                  amount_cents: b.amount_cents_plain, // api.billsUpdate will set amount_encrypted too
+                  creditor: b.creditor_plain,
+                  notes: b.notes_plain,
+                  amount_cents: b.amount_cents_plain,
                 });
               }
 
-              // 5) Share the NEW key to the server for your user (wrapped with your RSA public key)
+              // 5) Share the NEW key to the server (FIXED Types & Added device_id)
               const myKeys = await EncryptionService.ensureKeyPair();
+              if (!myKeys.publicKey) {
+                throw new Error("Security keys missing. Please Hard Reset.");
+              }
+
               const wrappedKey = EncryptionService.wrapKeyForUser(
                 newKeyHex,
-                myKeys.publicKey as unknown as string // types: KeyPairKey -> string
+                myKeys.publicKey as string // cast to string to fix TS error
               );
-              const deviceId = await getDeviceId(); // <--- NEW CALL
+
+              const deviceId = await getDeviceId(); // Added device_id for multi-device support
+
               await api.shareKey({
                 family_id: leaveRes.new_family_id,
                 target_user_id: data.current_user_id,
                 encrypted_key: wrappedKey,
-                device_id: deviceId, // <--- MISSING DEVICE_ID ADDED HERE
+                device_id: deviceId, // Included device_id
               });
 
-              Alert.alert(
-                t("Success"),
-                t("You have left the family and your data has been re-secured.")
-              );
+              Alert.alert(t("Success"), t("You have left the family and your data has been re-secured."));
               onRefresh();
             } catch (e: any) {
               console.error("Leave failed", e);
-              Alert.alert(
-                t("Error"),
-                e.message || t("Failed to leave family securely.")
-              );
+              Alert.alert(t("Error"), e.message || t("Failed to leave family securely."));
             } finally {
               setIsRotatingKeys(false);
             }
@@ -515,31 +428,36 @@ export default function Profile() {
   };
 
   const handleDeleteAccount = async () => {
-    Alert.alert(t("Delete Account"), t("DeleteAccountConfirm"), [
-      { text: t("Cancel"), style: "cancel" },
-      {
-        text: t("Delete"),
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await api.deleteAccount();
-            await googleSignOut();
-            await clearToken();
-            Alert.alert(t("Success"), t("Account deleted successfully."));
-            router.replace("/(auth)/login");
-          } catch (e: any) {
-            Alert.alert(t("Error"), e.message || "Failed to delete account");
-          }
+    Alert.alert(
+      t("Delete Account"),
+      t("DeleteAccountConfirm"),
+      [
+        { text: t("Cancel"), style: "cancel" },
+        {
+          text: t("Delete"),
+          style: "destructive",
+          onPress: async () => {
+             try {
+                await api.deleteAccount();
+                await googleSignOut();
+                await clearToken();
+                await AsyncStorage.removeItem("billbell_bills_list_cache")
+                Alert.alert(t("Success"), t("Account deleted successfully."));
+                router.replace("/(auth)/login");
+             } catch(e: any) {
+                 Alert.alert(t("Error"), e.message || "Failed to delete account");
+             }
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const handleChangeLanguage = () => {
-    if (Platform.OS === "ios") {
+    if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: [...langs.map((l) => l.label), t("Cancel")],
+          options: [...langs.map(l => l.label), t("Cancel")],
           cancelButtonIndex: langs.length,
           title: t("Select Language"),
         },
@@ -558,25 +476,19 @@ export default function Profile() {
     try {
       setLoadingCode(true);
       const res = await api.createImportCode(15);
-
-      const expiresTime = new Date(res.expires_at).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      
+      const expiresTime = new Date(res.expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setImportInfo({ code: res.code, expires: expiresTime });
-
+      
       await copyToClipboard(res.code);
-      await notifyImportCode(
-        t("Import Code"),
-        t("CodeExpires", { code: res.code, expiresAt: expiresTime })
-      );
-
+      await notifyImportCode(t("Import Code"), t("CodeExpires", { code: res.code, expiresAt: expiresTime }));
+      
       Alert.alert(
         t("Import Code Generated"),
         `${t("Code")}: ${res.code}\n${t("Expires")}: ${expiresTime}`,
         [
           { text: t("Copy"), onPress: () => copyToClipboard(res.code) },
-          { text: t("OK") },
+          { text: t("OK") }
         ]
       );
     } catch (e: any) {
@@ -586,7 +498,7 @@ export default function Profile() {
     }
   };
 
-const handleExportData = async () => {
+  const handleExportData = async () => {
   try {
     const res = await api.billsList();
     const bills = res.bills || [];
@@ -651,12 +563,7 @@ const handleExportData = async () => {
 
   if (!data && !refreshing) {
     return (
-      <View
-        style={[
-          styles.container,
-          { backgroundColor: theme.colors.bg, justifyContent: "center" },
-        ]}
-      >
+      <View style={[styles.container, { backgroundColor: theme.colors.bg, justifyContent: 'center' }]}>
         <ActivityIndicator color={theme.colors.primary} />
       </View>
     );
@@ -667,11 +574,10 @@ const handleExportData = async () => {
       <ScrollView
         style={[styles.container, { backgroundColor: theme.colors.bg }]}
         contentContainerStyle={{ paddingBottom: 60 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <View style={styles.content}>
+          
           {/* Hero Section */}
           {data && (
             <ProfileHeader
@@ -686,14 +592,7 @@ const handleExportData = async () => {
           {data?.members && (
             <View style={styles.section}>
               <SectionTitle title={t("Members")} theme={theme} />
-              <Text
-                style={{
-                  color: theme.colors.subtext,
-                  fontSize: 12,
-                  marginLeft: 6,
-                  marginBottom: 4,
-                }}
-              >
+              <Text style={{color: theme.colors.subtext, fontSize: 12, marginLeft: 6, marginBottom: 4}}>
                 {t("Long press to remove member")}
               </Text>
               <FlatList
@@ -701,15 +600,11 @@ const handleExportData = async () => {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => String(item.id)}
-                contentContainerStyle={{
-                  gap: 16,
-                  paddingVertical: 8,
-                  paddingHorizontal: 4,
-                }}
+                contentContainerStyle={{ gap: 16, paddingVertical: 8, paddingHorizontal: 4 }}
                 renderItem={({ item }) => (
-                  <MemberAvatar
-                    item={item}
-                    theme={theme}
+                  <MemberAvatar 
+                    item={item} 
+                    theme={theme} 
                     onRemove={handleRemoveMember}
                     isCurrentUser={item.id === data.current_user_id}
                   />
@@ -721,11 +616,10 @@ const handleExportData = async () => {
           {/* Management Section */}
           <View style={styles.section}>
             <SectionTitle title={t("Management")} theme={theme} />
-            <View
-              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-            >
-              {Platform.OS === "ios" && (
-                <SwitchRow
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+              
+              {Platform.OS === 'ios' && (
+                <SwitchRow 
                   icon="notifications-outline"
                   label={t("Show Overdue on Lock Screen")}
                   value={liveActivityEnabled}
@@ -734,14 +628,6 @@ const handleExportData = async () => {
                 />
               )}
 
-              <ActionRow
-                icon="person-add-outline"
-                label={t("Invite Members")}
-                theme={theme}
-                onPress={() => {
-                  shareInvite(data.family_code);
-                }}
-              />
               <ActionRow
                 icon="settings-outline"
                 label={t("Shared Settings")}
@@ -755,13 +641,6 @@ const handleExportData = async () => {
                 theme={theme}
                 onPress={handleChangeLanguage}
               />
-            </View>
-          </View>
-          <View style={styles.section}>
-            <SectionTitle title={t("Data")} theme={theme} />
-            <View
-              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-            >
               <ActionRow
                 icon="cloud-upload-outline"
                 label={t("Bulk Upload")}
@@ -779,24 +658,28 @@ const handleExportData = async () => {
               <ActionRow
                 icon="key-outline"
                 label={t("Generate Import Code")}
-                subLabel={
-                  importInfo
-                    ? `${t("Active")}: ${importInfo.code}`
-                    : t("Create secure code for upload")
-                }
+                subLabel={importInfo ? `${t("Active")}: ${importInfo.code}` : t("Create secure code for upload")}
                 theme={theme}
                 onPress={handleGenerateCode}
-                isLast={data.members.length < 2}
+                isLast={data.members.length < 2} 
               />
+              {data.members.length > 1 && (
+                <ActionRow
+                  icon="exit-outline"
+                  label={t("Leave Family")}
+                  subLabel={t("Start new family with your data")}
+                  theme={theme}
+                  onPress={handleLeaveFamily}
+                  isLast
+                />
+              )}
             </View>
           </View>
 
           {/* Support Section */}
           <View style={styles.section}>
             <SectionTitle title={t("Support")} theme={theme} />
-            <View
-              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-            >
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
               <ActionRow
                 icon="help-circle-outline"
                 label={t("FAQ & Help")}
@@ -809,13 +692,6 @@ const handleExportData = async () => {
                 theme={theme}
                 onPress={() => router.push("/(app)/feedback")}
               />
-            </View>
-          </View>
-          <View style={styles.section}>
-            <SectionTitle title={t("Policies")} theme={theme} />
-            <View
-              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-            >
               <ActionRow
                 icon="shield-checkmark-outline"
                 label={t("Privacy Policy")}
@@ -834,18 +710,7 @@ const handleExportData = async () => {
 
           {/* Logout & Delete */}
           <View style={[styles.section, { marginTop: 20 }]}>
-            <View
-              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-            >
-              {data.members.length > 1 && (
-                <ActionRow
-                  icon="exit-outline"
-                  label={t("Leave Family")}
-                  subLabel={t("Start new family with your data")}
-                  theme={theme}
-                  onPress={handleLeaveFamily}
-                />
-              )}
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
               <ActionRow
                 icon="log-out-outline"
                 label={t("Logout")}
@@ -862,48 +727,20 @@ const handleExportData = async () => {
                 isLast
               />
             </View>
-            <Text
-              style={{
-                textAlign: "center",
-                color: theme.colors.subtext,
-                marginTop: 16,
-                fontSize: 12,
-              }}
-            >
+            <Text style={{ textAlign: 'center', color: theme.colors.subtext, marginTop: 16, fontSize: 12 }}>
               {t("Version")} 1.0.0 (BillBell)
             </Text>
           </View>
+
         </View>
       </ScrollView>
 
       {/* Loading Overlay for Key Rotation */}
       {isRotatingKeys && (
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              backgroundColor: "rgba(0,0,0,0.6)",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 999,
-            },
-          ]}
-        >
-          <View
-            style={{
-              backgroundColor: theme.colors.card,
-              padding: 24,
-              borderRadius: 16,
-              alignItems: "center",
-              gap: 16,
-            }}
-          >
-            <ActivityIndicator size="large" color={theme.colors.primary} />
-            <Text
-              style={{ color: theme.colors.primaryText, fontWeight: "600" }}
-            >
-              {t("Securing your data...")}
-            </Text>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 999 }]}>
+          <View style={{ backgroundColor: theme.colors.card, padding: 24, borderRadius: 16, alignItems: 'center', gap: 16 }}>
+             <ActivityIndicator size="large" color={theme.colors.primary} />
+             <Text style={{ color: theme.colors.primaryText, fontWeight: '600' }}>{t("Securing your data...")}</Text>
           </View>
         </View>
       )}
@@ -914,19 +751,9 @@ const handleExportData = async () => {
         animationType="fade"
         onRequestClose={() => setShowLangModal(false)}
       >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setShowLangModal(false)}
-        >
-          <View
-            style={[
-              styles.modalContent,
-              { backgroundColor: theme.colors.card },
-            ]}
-          >
-            <Text
-              style={[styles.modalTitle, { color: theme.colors.primaryText }]}
-            >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowLangModal(false)}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.primaryText }]}>
               {t("Select Language")}
             </Text>
             {langs.map((l) => (
@@ -938,43 +765,21 @@ const handleExportData = async () => {
                 }}
                 style={({ pressed }) => [
                   styles.modalItem,
-                  {
-                    backgroundColor: pressed
-                      ? theme.colors.border
-                      : "transparent",
-                    borderBottomColor: theme.colors.border,
-                  },
+                  { 
+                    backgroundColor: pressed ? theme.colors.border : 'transparent',
+                    borderBottomColor: theme.colors.border
+                  }
                 ]}
               >
-                <Text
-                  style={[
-                    styles.modalItemText,
-                    { color: theme.colors.primaryText },
-                  ]}
-                >
-                  {l.label}
-                </Text>
-                {i18n.language === l.code && (
-                  <Ionicons
-                    name="checkmark"
-                    size={20}
-                    color={theme.colors.primary}
-                  />
-                )}
+                <Text style={[styles.modalItemText, { color: theme.colors.primaryText }]}>{l.label}</Text>
+                {i18n.language === l.code && <Ionicons name="checkmark" size={20} color={theme.colors.primary} />}
               </Pressable>
             ))}
-            <Pressable
-              onPress={() => setShowLangModal(false)}
-              style={[
-                styles.modalCancel,
-                { backgroundColor: theme.colors.border },
-              ]}
+            <Pressable 
+              onPress={() => setShowLangModal(false)} 
+              style={[styles.modalCancel, { backgroundColor: theme.colors.border }]}
             >
-              <Text
-                style={[styles.modalCancelText, { color: theme.colors.text }]}
-              >
-                {t("Cancel")}
-              </Text>
+              <Text style={[styles.modalCancelText, { color: theme.colors.text }]}>{t("Cancel")}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -992,7 +797,7 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   headerShadowContainer: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
@@ -1000,11 +805,11 @@ const styles = StyleSheet.create({
     elevation: 6,
     margin: 2,
     borderRadius: 20,
-    width: "100%",
+    width: '100%', 
   },
   headerGradient: {
     borderRadius: 20,
-    height: 120,
+    height:120,
     paddingLeft: 10,
     paddingRight: 10,
     paddingBottom: 24,
@@ -1015,8 +820,8 @@ const styles = StyleSheet.create({
   },
   headerContentLeft: {
     flex: 1,
-    marginRight: 10,
-    justifyContent: "center",
+    marginRight: 10, 
+    justifyContent: 'center',
     minWidth: 0,
   },
   headerLabel: {
@@ -1041,7 +846,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
     flexShrink: 0,
-    paddingRight: 50,
+    paddingRight:50
   },
   copyButtonText: {
     color: "#FFF",
@@ -1108,8 +913,8 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
     padding: 20,
   },
   modalContent: {
@@ -1119,30 +924,30 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "800",
+    fontWeight: '800',
     marginBottom: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
   modalItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
   },
   modalItemText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   modalCancel: {
     marginTop: 10,
     paddingVertical: 14,
     borderRadius: 12,
-    alignItems: "center",
+    alignItems: 'center',
   },
   modalCancelText: {
-    fontWeight: "700",
+    fontWeight: '700',
     fontSize: 15,
-  },
+  }
 });

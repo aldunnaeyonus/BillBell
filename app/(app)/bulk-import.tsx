@@ -277,7 +277,7 @@ async function downloadTemplate() {
 
     // 2. Write content directly
     // The new .write() method automatically handles strings as UTF-8
-    await templateFile.write(csvContent);
+    templateFile.write(csvContent);
 
     // 3. Share using the native URI
     await Share.open({
