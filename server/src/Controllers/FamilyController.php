@@ -8,6 +8,8 @@ use App\Controllers\KeysController;
 
 class FamilyController {
 
+
+
   // --- Helpers ---
 public static function rotateKey() {
   $userId = Auth::requireUserId();
@@ -121,42 +123,71 @@ public static function rotateKey() {
     }
   }
 
-  public static function join() {
+  // server/src/Controllers/FamilyController.php
+
+public static function join() {
     $userId = Auth::requireUserId();
     $data = Utils::bodyJson();
     Utils::requireFields($data, ["family_code"]);
 
     $pdo = DB::pdo();
-    $existing = self::requireFamilyIdForUser($userId);
-    if ($existing) Utils::json(["error" => "User already in a family"], 409);
-
-    $stmt = $pdo->prepare("SELECT id, created_by_user_id FROM families WHERE family_code=? LIMIT 1");
+    
+    // 1. Verify target family exists
+    $stmt = $pdo->prepare("SELECT id FROM families WHERE family_code=? LIMIT 1");
     $stmt->execute([$data["family_code"]]);
     $family = $stmt->fetch();
-    if (!$family) Utils::json(["error" => "Family not found"], 404);
     
-    $familyId = (int)$family["id"];
+    if (!$family) {
+        Utils::json(["error" => "Family not found"], 404);
+    }
+    
+    $newFamilyId = (int)$family["id"];
 
-    // Find an active admin (the key sharer)
-    $adminStmt = $pdo->prepare("
-        SELECT user_id 
-        FROM family_members 
-        WHERE family_id = ? AND role = 'admin' 
-        ORDER BY created_at ASC LIMIT 1
-    ");
-    $adminStmt->execute([$familyId]);
-    $admin = $adminStmt->fetch();
+    try {
+        $pdo->beginTransaction();
 
-    $ins = $pdo->prepare("INSERT INTO family_members (family_id, user_id, role) VALUES (?,?, 'member')");
-    $ins->execute([$familyId, $userId]);
+        // 2. Data Migration: Check if user is currently in another family
+        $oldStmt = $pdo->prepare("SELECT family_id FROM family_members WHERE user_id=? LIMIT 1");
+        $oldStmt->execute([$userId]);
+        $oldFam = $oldStmt->fetch();
 
-    // Return necessary IDs for client to orchestrate the key share
-    Utils::json([
-      "family_id" => $familyId,
-      "new_member_id" => $userId, 
-      "key_sharer_admin_id" => (int)($admin["user_id"] ?? $family["created_by_user_id"] ?? 0), 
-    ]);
-  }
+        if ($oldFam) {
+            $oldFamilyId = (int)$oldFam['family_id'];
+            
+            // Reassign all bills created by this user to the new family
+            // This includes recurring bills since they are stored in the same 'bills' table
+            $moveBills = $pdo->prepare("
+                UPDATE bills 
+                SET family_id = ? 
+                WHERE family_id = ? AND created_by_user_id = ?
+            ");
+            $moveBills->execute([$newFamilyId, $oldFamilyId, $userId]);
+            
+            // Remove user from the old family membership
+            $pdo->prepare("DELETE FROM family_members WHERE user_id = ?")
+                ->execute([$userId]);
+        }
+
+        // 3. Finalize Join: Add user to the new family as a member
+        $ins = $pdo->prepare("INSERT INTO family_members (family_id, user_id, role) VALUES (?,?, 'member')");
+        $ins->execute([$newFamilyId, $userId]);
+
+        $pdo->commit();
+        
+        // Return IDs for the client to trigger key exchange sync
+        Utils::json([
+            "success" => true,
+            "family_id" => $newFamilyId,
+            "new_member_id" => $userId
+        ]);
+
+    } catch (\Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        Utils::json(["error" => "Migration failed: " . $e->getMessage()], 500);
+    }
+}
 
   public static function members() {
     $userId = Auth::requireUserId();

@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>BillBell | Bulk Upload Bills</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
     <style>
       :root {
         --navy: #0b1f3b;
@@ -14,6 +15,7 @@
         --subtext: #64748b;
         --border: #e2e8f0;
         --accent: #2563eb;
+        --error: #dc2626;
       }
 
       body {
@@ -23,120 +25,104 @@
         margin: 0;
         display: flex;
         justify-content: center;
-        padding: 40px 16px;
+        padding: 104px 16px 60px;
       }
 
-      .container {
-        width: 100%;
-        max-width: 600px;
+      header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background-color: var(--card-bg);
         display: flex;
-        flex-direction: column;
-        gap: 24px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        z-index: 1000;
       }
 
-      .card {
-        background: var(--card-bg);
-        border-radius: 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
+      .logo-container { display: flex; align-items: center; gap: 10px; }
+      .logo-img { width: 36px; height: 36px; object-fit: contain; border-radius: 8px; }
+      .logo-text { font-size: 20px; font-weight: 800; color: var(--navy); letter-spacing: -0.5px; }
+
+      .header-actions { display: flex; align-items: center; gap: 12px; }
+
+      .lang-picker {
+        padding: 6px 12px;
+        border-radius: 10px;
         border: 1px solid var(--border);
-      }
-
-      .header-gradient {
-        background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
-        padding: 24px;
-        color: #fff;
-      }
-
-      .header-gradient h2 { margin: 0; font-size: 20px; font-weight: 800; }
-      .header-gradient p { margin: 4px 0 0; font-size: 13px; color: rgba(255, 255, 255, 0.7); }
-
-      .content { padding: 24px; }
-
-      /* Instructions Table Style */
-      .template-link {
-        display: inline-block;
-        margin-bottom: 16px;
-        color: var(--accent);
-        font-weight: 700;
-        text-decoration: none;
-        padding: 8px 12px;
-        background: #eff6ff;
-        border-radius: 8px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-        margin-top: 8px;
-        color: var(--subtext);
-      }
-
-      th { text-align: left; padding: 8px; border-bottom: 2px solid var(--border); color: var(--navy); }
-      td { padding: 8px; border-bottom: 1px solid var(--border); }
-
-      label {
-        display: block;
-        margin-top: 20px;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: var(--subtext);
-      }
-
-      input {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 12px;
-        margin-top: 6px;
-        border: 1px solid var(--border);
-        border-radius: 12px;
         background: var(--bg);
-      }
-
-      button {
-        margin-top: 24px;
-        width: 100%;
-        padding: 16px;
-        border: 0;
-        border-radius: 16px;
-        background: var(--navy);
-        color: #fff;
-        font-weight: 700;
+        font-weight: 600;
         cursor: pointer;
       }
 
-      pre {
-        background: #f1f5f9;
-        padding: 16px;
-        border-radius: 12px;
-        font-size: 13px;
-        border: 1px dashed var(--border);
-        overflow-x: auto;
+      .contact-btn {
+        padding: 8px 16px;
+        border-radius: 10px;
+        background-color: var(--bg);
+        color: var(--navy);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        border: 1px solid var(--border);
       }
+
+      .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 24px; }
+      .card { background: var(--card-bg); border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border); }
+      .header-gradient { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); padding: 24px; color: #fff; }
+      .header-gradient h2 { margin: 0; font-size: 20px; font-weight: 800; }
+      .header-gradient p { margin: 4px 0 0; font-size: 13px; color: rgba(255,255,255,0.7); }
+      .content { padding: 24px; }
+
+      .template-link { display: inline-block; margin-bottom: 16px; color: var(--accent); font-weight: 700; text-decoration: none; padding: 8px 12px; background: #eff6ff; border-radius: 8px; }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; color: var(--subtext); }
+      th { text-align: left; padding: 8px; border-bottom: 2px solid var(--border); color: var(--navy); }
+      td { padding: 8px; border-bottom: 1px solid var(--border); }
+
+      label { display: block; margin-top: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--subtext); }
+      input { width: 100%; box-sizing: border-box; padding: 12px; margin-top: 6px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+      button { margin-top: 24px; width: 100%; padding: 16px; border: 0; border-radius: 16px; background: var(--navy); color: #fff; font-weight: 700; cursor: pointer; }
+      button:disabled { background: var(--subtext); opacity: 0.7; }
+      pre { background: #f1f5f9; padding: 16px; border-radius: 12px; font-size: 13px; border: 1px dashed var(--border); overflow-x: auto; }
     </style>
   </head>
   <body>
+    <header>
+      <div class="logo-container">
+        <img src="favicon.png" alt="BillBell Logo" class="logo-img" />
+        <span class="logo-text">BillBell</span>
+      </div>
+      <div class="header-actions">
+        <select class="lang-picker" id="langPicker">
+          <option value="en">EN</option>
+          <option value="es">ES</option>
+          <option value="de">DE</option>
+          <option value="fr">FR</option>
+          <option value="it">IT</option>
+          <option value="pt-BR">PT</option>
+          <option value="ja">JP</option>
+          <option value="zh-Hans">CN</option>
+        </select>
+        <a href="mailto:support@dunn-carabali.com" class="contact-btn">Support</a>
+      </div>
+    </header>
+
     <div class="container">
       <div class="card">
         <div class="content">
-          <h3 style="margin-top:0; color: var(--navy);">1. Preparation</h3>
+          <h3 id="prep_title" style="margin-top:0; color: var(--navy);">1. Preparation</h3>
           <a href="./bill_template.csv" class="template-link">📥 Download CSV Template</a>
-          <p style="font-size: 13px; color: var(--subtext);">Ensure your file uses these exact headers:</p>
-          
+          <p id="prep_sub" style="font-size: 13px; color: var(--subtext);">The file must use these headers exactly:</p>
           <table>
-            <thead>
-              <tr><th>Header</th><th>Required</th><th>Format</th></tr>
-            </thead>
+            <thead><tr><th id="th_header">Header</th><th id="th_req">Required</th><th id="th_fmt">Format</th></tr></thead>
             <tbody>
               <tr><td>name</td><td>Yes</td><td>Netflix</td></tr>
               <tr><td>amount</td><td>Yes</td><td>15.99</td></tr>
               <tr><td>due_date</td><td>Yes</td><td>YYYY-MM-DD</td></tr>
-              <tr><td>notes</td><td>No</td><td>Text of what you want to add</td></tr>
-              <tr><td>offset (Reminder Advance Days)</td><td>No</td><td>0,1,2,3</td></tr>
-              <tr><td>reminder</td><td>No</td><td>09:00:00</td></tr>
-              <tr><td>recurrence</td><td>No</td><td>monthly, weekly, bi-weekly, none, annualy</td></tr>
+              <tr><td>notes</td><td>No</td><td>Plan Details</td></tr>
+              <tr><td>recurrence</td><td>No</td><td>monthly, none...</td></tr>
               <tr><td>payment_method</td><td>No</td><td>auto_pay, manual</td></tr>
             </tbody>
           </table>
@@ -145,45 +131,89 @@
 
       <div class="card">
         <div class="header-gradient">
-          <h2>2. Bulk Upload</h2>
-          <p>Securely link bills to your family account</p>
+          <h2 id="upload_title">2. Bulk Upload</h2>
+          <p id="upload_sub">Securely sync bills to your account</p>
         </div>
-
         <div class="content">
           <form id="f">
-            <label>Family Share ID (Found in App Profile Page)</label>
-            <input name="family_code" placeholder="e.g. K7P3D9" required />
-
-            <label>Import Code (Generated in App Profile Page)</label>
-            <input name="import_code" placeholder="Generated in your App Profile" required />
-
-            <label>File (CSV or XLSX)</label>
-            <input name="file" type="file" accept=".csv,.xlsx" required />
-
-            <button type="submit">Start Upload</button>
+            <label id="lbl_share">Family Share ID</label>
+            <input name="family_code" placeholder="Found in App" required />
+            <label id="lbl_code">Import Code</label>
+            <input name="import_code" placeholder="Generated in App" required />
+            <label id="lbl_file">File (CSV)</label>
+            <input name="file" type="file" accept=".csv" required />
+            <button type="submit" id="btn">Start Upload</button>
           </form>
-
-          <h3 style="font-size: 12px; color: var(--subtext); text-transform: uppercase; margin-top: 32px;">Result</h3>
+          <h3 id="res_title" style="font-size: 12px; color: var(--subtext); text-transform: uppercase; margin-top: 32px;">Result</h3>
           <pre id="out">—</pre>
         </div>
       </div>
     </div>
 
     <script>
-      const form = document.getElementById("f");
-      const out = document.getElementById("out");
-      form.addEventListener("submit", async (e) => {
+      const translations = {
+        en: { prep_title: "1. Preparation", prep_sub: "The file must use these headers exactly:", th_header: "Header", th_req: "Required", th_fmt: "Format", upload_title: "2. Bulk Upload", upload_sub: "Securely sync bills to your account", lbl_share: "Family Share ID", lbl_code: "Import Code", lbl_file: "File (CSV)", btn: "Start Upload", res_title: "Result" },
+        es: { prep_title: "1. Preparación", prep_sub: "El archivo debe usar estos encabezados exactamente:", th_header: "Encabezado", th_req: "Requerido", th_fmt: "Formato", upload_title: "2. Carga Masiva", upload_sub: "Sincroniza facturas de forma segura", lbl_share: "ID de Compartir Familiar", lbl_code: "Código de Importación", lbl_file: "Archivo (CSV)", btn: "Iniciar Carga", res_title: "Resultado" },
+        de: { prep_title: "1. Vorbereitung", prep_sub: "Die Datei muss genau diese Header verwenden:", th_header: "Header", th_req: "Erforderlich", th_fmt: "Format", upload_title: "2. Massen-Upload", upload_sub: "Rechnungen sicher synchronisieren", lbl_share: "Familien-Share-ID", lbl_code: "Import-Code", lbl_file: "Datei (CSV)", btn: "Upload Starten", res_title: "Ergebnis" },
+        fr: { prep_title: "1. Préparation", prep_sub: "Le fichier doit utiliser exactement ces en-têtes :", th_header: "En-tête", th_req: "Requis", th_fmt: "Format", upload_title: "2. Téléchargement en Masse", upload_sub: "Synchronisez vos factures en toute sécurité", lbl_share: "ID de Partage Familial", lbl_code: "Code d'Importation", lbl_file: "Fichier (CSV)", btn: "Démarrer", res_title: "Résultat" },
+        it: { prep_title: "1. Preparazione", prep_sub: "Il file deve utilizzare esattamente queste intestazioni:", th_header: "Intestazione", th_req: "Obbligatorio", th_fmt: "Formato", upload_title: "2. Caricamento di Massa", upload_sub: "Sincronizza le fatture in modo sicuro", lbl_share: "ID Condivisione Famiglia", lbl_code: "Codice di Importazione", lbl_file: "File (CSV)", btn: "Inizia Caricamento", res_title: "Risultato" },
+        "pt-BR": { prep_title: "1. Preparação", prep_sub: "O arquivo deve usar exatamente esses cabeçalhos:", th_header: "Cabeçalho", th_req: "Obrigatório", th_fmt: "Formato", upload_title: "2. Upload em Massa", upload_sub: "Sincronize faturas com segurança", lbl_share: "ID de Compartilhamento Familiar", lbl_code: "Código de Importação", lbl_file: "Arquivo (CSV)", btn: "Iniciar Upload", res_title: "Resultado" },
+        ja: { prep_title: "1. 準備", prep_sub: "ファイルは正確にこれらのヘッダーを使用する必要があります：", th_header: "ヘッダー", th_req: "必須", th_fmt: "形式", upload_title: "2. 一括アップロード", upload_sub: "請求書を安全に同期する", lbl_share: "ファミリー共有ID", lbl_code: "インポートコード", lbl_file: "ファイル (CSV)", btn: "アップロード開始", res_title: "結果" },
+        "zh-Hans": { prep_title: "1. 准备工作", prep_sub: "文件必须使用完全一致的标题：", th_header: "标题", th_req: "必填", th_fmt: "格式", upload_title: "2. 批量上传", upload_sub: "安全地同步账单到您的账户", lbl_share: "家庭共享 ID", lbl_code: "导入代码", lbl_file: "文件 (CSV)", btn: "开始上传", res_title: "结果" }
+      };
+
+      function applyLocale(lang) {
+        const t = translations[lang] || translations.en;
+        Object.keys(t).forEach(key => {
+          const el = document.getElementById(key);
+          if (el) el.textContent = t[key];
+        });
+      }
+
+      window.onload = () => {
+        const browserLang = navigator.language.split('-')[0];
+        const langMap = { "en": "en", "es": "es", "de": "de", "fr": "fr", "it": "it", "pt": "pt-BR", "ja": "ja", "zh": "zh-Hans" };
+        const targetLang = langMap[browserLang] || "en";
+        document.getElementById("langPicker").value = targetLang;
+        applyLocale(targetLang);
+      };
+
+      document.getElementById("langPicker").addEventListener("change", (e) => applyLocale(e.target.value));
+
+      document.getElementById("f").addEventListener("submit", async (e) => {
         e.preventDefault();
+        const fd = new FormData(e.target);
+        const out = document.getElementById("out");
+        const btn = document.getElementById("btn");
+        out.style.color = "inherit";
         out.textContent = "Processing...";
-        const fd = new FormData(form);
-        try {
-          const res = await fetch("/import/bills", { method: "POST", body: fd });
-          const text = await res.text();
-          try { out.textContent = JSON.stringify(JSON.parse(text), null, 2); }
-          catch { out.textContent = text; }
-        } catch (err) {
-          out.textContent = "Connection error.";
-        }
+        btn.disabled = true;
+
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          try {
+            const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim() !== "");
+            if (lines.length < 2) throw new Error("File is empty.");
+            const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+            const bills = lines.slice(1).map(l => {
+              const v = l.split(",");
+              const b = {};
+              headers.forEach((h, i) => b[h] = v[i] ? v[i].trim() : "");
+              return b;
+            });
+            const validBills = bills.filter(b => b.name && !isNaN(parseFloat(b.amount)) && b.due_date);
+            const res = await fetch("/import/bills", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ import_code: fd.get("import_code").toUpperCase(), bills: validBills })
+            });
+            out.textContent = JSON.stringify(await res.json(), null, 2);
+          } catch (err) {
+            out.style.color = "var(--error)";
+            out.textContent = "Error: " + err.message;
+          } finally { btn.disabled = false; }
+        };
+        reader.readAsText(fd.get("file"));
       });
     </script>
   </body>

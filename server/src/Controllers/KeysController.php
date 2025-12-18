@@ -1,4 +1,3 @@
-// --- File: aldunnaeyonus/billbell/.../server/src/Controllers/KeysController.php ---
 <?php
 namespace App\Controllers;
 
@@ -42,7 +41,6 @@ class KeysController {
   }
 
   // Get ALL a specific user's Public Keys (one per device)
-  // FIX: This function now fetches all public keys (one per device) and their device IDs
   public static function getUserPublicKey($targetUserId) {
     $userId = Auth::requireUserId();
     RateLimit::hit("keys_fetch:{$userId}", 60, 60);
@@ -142,7 +140,7 @@ class KeysController {
       "family_id" => $familyId,
       "user_id" => $targetUserId,
       "key_version" => $keyVersion,
-      "device_id" => $deviceId // Include for clarity
+      "device_id" => $deviceId 
     ]);
   }
 
@@ -186,7 +184,6 @@ class KeysController {
     $row = $stmt->fetch();
 
     if (!$row) {
-      // Not an error in logic—means rotation occurred and this user hasn't received the new wrapped key yet.
       Utils::json([
         "error" => "Key not found for current version",
         "family_id" => $familyId,
@@ -200,6 +197,4 @@ class KeysController {
       "key_version" => $keyVersion
     ]);
   }
-
-  // ... (Optional helper endpoint remains the same)
 }

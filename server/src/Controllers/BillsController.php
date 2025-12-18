@@ -59,11 +59,14 @@ class BillsController {
 
     // NEW: store which family key_version this ciphertext corresponds to
     $cipherVersion = self::getFamilyKeyVersion($familyId);
-
+    $paymentMethod = $data["payment_method"] ?? "manual";
+     
+     if (!in_array($paymentMethod, ["manual", "auto"])) $paymentMethod = "manual";
+     
     $stmt = $pdo->prepare("
       INSERT INTO bills
-      (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version, payment_method)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     ");
 
     $stmt->execute([
@@ -80,7 +83,8 @@ class BillsController {
       $reminderOffset,
       $reminderTime,
       $data["notes"] ?? null,        // Encrypted String (via Client)
-      $cipherVersion
+      $cipherVersion,
+      $paymentMethod ?? "manual"
     ]);
 
     Utils::json(["id" => (int)$pdo->lastInsertId(), "cipher_version" => $cipherVersion], 201);
@@ -96,7 +100,7 @@ class BillsController {
     $stmt->execute([$id, $familyId]);
     if (!$stmt->fetch()) Utils::json(["error" => "Not found"], 404);
 
-    $fields = ["creditor","amount_cents","amount_encrypted","due_date","recurrence","reminder_offset_days","reminder_time_local","status","notes","cipher_version"];
+    $fields = ["creditor","amount_cents","amount_encrypted","due_date","recurrence","reminder_offset_days","reminder_time_local","status","notes","cipher_version", "payment_method"];
     $sets = [];
     $vals = [];
 
@@ -186,8 +190,8 @@ class BillsController {
       if (!$chk->fetch()) {
         $ins = $pdo->prepare("
           INSERT INTO bills
-          (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+          (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version, payment_method)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ");
         $ins->execute([
           (int)$bill["family_id"],
@@ -203,7 +207,8 @@ class BillsController {
           (int)$bill["reminder_offset_days"],
           $bill["reminder_time_local"],
           $bill["notes"],
-          (int)($bill["cipher_version"] ?? 1)
+          (int)($bill["cipher_version"] ?? 1),
+          $bill["payment_method"]
         ]);
       }
     }
