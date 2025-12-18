@@ -1,4 +1,4 @@
-import "./polyfills"; // MUST BE FIRST
+import "../polyfills"; // MUST BE FIRST
 import i18n from "../src/api/i18n";
 import { useEffect, useRef } from "react";
 import { Stack } from "expo-router";
