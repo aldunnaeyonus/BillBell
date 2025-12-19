@@ -333,6 +333,7 @@
         "Unknown User":"Unknown User",
         "Deny":"Deny",
         "Approve":"Approve",
+        "Application": "Application",
   "faqSections": [
     {
       "title": "Adding & Managing Debts",

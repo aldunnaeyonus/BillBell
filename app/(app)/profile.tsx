@@ -708,7 +708,7 @@ export default function Profile() {
 
           {/* Management Section */}
           <View style={styles.section}>
-            <SectionTitle title={t("Management")} theme={theme} />
+            <SectionTitle title={t("Application")} theme={theme} />
             <View
               style={[styles.cardGroup, { borderColor: theme.colors.border }]}
             >
@@ -721,7 +721,27 @@ export default function Profile() {
                   theme={theme}
                 />
               )}
+            
+            <ActionRow
+                icon="globe-outline"
+                label={t("Language")}
+                subLabel={i18n.language.toUpperCase()}
+                theme={theme}
+                onPress={handleChangeLanguage}
+              />
+              </View></View> 
+              <View style={styles.section}>
+            <SectionTitle title={t("Management")} theme={theme} />
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
               <ActionRow
+                icon="settings-outline"
+                label={t("Shared Settings")}
+                theme={theme}
+                onPress={() => router.push("/(app)/family-settings")}
+              />
+               <ActionRow
                 icon="person-add-outline"
                 label={t("Invite Members")}
                 theme={theme}
@@ -729,19 +749,7 @@ export default function Profile() {
                   shareInvite(data.family_code);
                 }}
               />
-              <ActionRow
-                icon="settings-outline"
-                label={t("Shared Settings")}
-                theme={theme}
-                onPress={() => router.push("/(app)/family-settings")}
-              />
-              <ActionRow
-                icon="globe-outline"
-                label={t("Language")}
-                subLabel={i18n.language.toUpperCase()}
-                theme={theme}
-                onPress={handleChangeLanguage}
-              />
+              
                <ActionRow
                 icon="git-pull-request-outline"
                 label={t("Join Requests")}
@@ -836,7 +844,6 @@ export default function Profile() {
                   subLabel={t("Start new family with your data")}
                   theme={theme}
                   onPress={handleLeaveFamily}
-                  isLast
                 />
               )}
               <ActionRow

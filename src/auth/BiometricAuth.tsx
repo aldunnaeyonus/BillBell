@@ -9,7 +9,7 @@ import {
   Platform,
 } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
-import { useSegments, useFocusEffect } from "expo-router";
+import { useSegments } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";

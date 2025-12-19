@@ -1,7 +1,7 @@
 import "../polyfills"; // MUST BE FIRST
 import i18n from "../src/api/i18n";
-import { useEffect, useRef } from "react";
-import { Stack, router } from "expo-router"; // Added router
+import { useEffect, useRef, useState } from "react";
+import { Stack, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
 import { useTheme } from "../src/ui/useTheme";
@@ -23,7 +23,8 @@ import {
 } from "../src/native/LiveActivity";
 import { api } from "../src/api/client";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Added AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getToken } from "../src/auth/session";
 
 // Polyfill Buffer for network/data operations
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
@@ -50,25 +51,43 @@ const getLiveActivityModule = () => {
 function AppStack() {
   const theme = useTheme();
   const { t } = useTranslation();
-  const appState = useRef(AppState.currentState);
+  
+  // FIX: Use state to handle async initial route determination
+  const [isReady, setIsReady] = useState(false);
+  const [initialRoute, setInitialRoute] = useState<string>("(auth)/login");
 
-  // --- NEW: Detect Pending Approval State on App Launch ---
+  // --- Combined Startup Logic (Token + Pending Check) ---
   useEffect(() => {
-    const checkPendingFamily = async () => {
+    const prepareApp = async () => {
       try {
+        // 1. Check for Pending Family Request (Highest Priority)
         const pending = await AsyncStorage.getItem("billbell_pending_family_code");
-        if (pending) {
-          // If the user has a pending join request, force them to the waiting screen
-          console.log("Found pending family request, redirecting to family view...");
-          router.replace("/(app)/family");
+        
+        // 2. Check for User Token
+        const token = await getToken();
+
+        if (pending && token) {
+           // If user is logged in AND has a pending request -> Go to Family Waiting Screen
+           console.log("Redirecting to pending family screen...");
+           setInitialRoute("(app)/family");
+        } else if (token) {
+           // If user is logged in -> Go to Dashboard
+           setInitialRoute("(app)/bills");
+        } else {
+           // If no token -> Go to Login
+           setInitialRoute("(auth)/login");
         }
       } catch (e) {
-        // ignore errors reading storage
+        console.warn("Startup check failed", e);
+        setInitialRoute("(auth)/login");
+      } finally {
+        setIsReady(true);
       }
     };
-    checkPendingFamily();
+
+    prepareApp();
   }, []);
-  // --------------------------------------------------------
+  // ----------------------------------------------------
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -156,11 +175,10 @@ function AppStack() {
       }
     );
 
-    const appStateSub = AppState.addEventListener(
+    const appState = AppState.addEventListener(
       "change",
       (nextState: AppStateStatus) => {
         if (
-          appState.current.match(/inactive|background/) &&
           nextState === "active"
         ) {
           (async () => {
@@ -168,20 +186,25 @@ function AppStack() {
             await syncAndRefresh();
           })();
         }
-        appState.current = nextState;
       }
     );
 
     return () => {
       subscription.remove();
-      appStateSub.remove();
+      appState.remove();
     };
   }, []);
+
+  // Show nothing (or splash) until we know where to route the user
+  if (!isReady) {
+     return null; 
+  }
 
   return (
     <>
       <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
       <Stack
+        initialRouteName={initialRoute} // FIX: Use the resolved state variable
         screenOptions={{
           headerTitleAlign: "center",
           headerStyle: { backgroundColor: theme.colors.bg },
