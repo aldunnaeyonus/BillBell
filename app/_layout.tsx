@@ -1,7 +1,7 @@
 import "../polyfills"; // MUST BE FIRST
 import i18n from "../src/api/i18n";
 import { useEffect, useRef } from "react";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router"; // Added router
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
 import { useTheme } from "../src/ui/useTheme";
@@ -23,6 +23,7 @@ import {
 } from "../src/native/LiveActivity";
 import { api } from "../src/api/client";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Added AsyncStorage
 
 // Polyfill Buffer for network/data operations
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
@@ -50,6 +51,24 @@ function AppStack() {
   const theme = useTheme();
   const { t } = useTranslation();
   const appState = useRef(AppState.currentState);
+
+  // --- NEW: Detect Pending Approval State on App Launch ---
+  useEffect(() => {
+    const checkPendingFamily = async () => {
+      try {
+        const pending = await AsyncStorage.getItem("billbell_pending_family_code");
+        if (pending) {
+          // If the user has a pending join request, force them to the waiting screen
+          console.log("Found pending family request, redirecting to family view...");
+          router.replace("/(app)/family");
+        }
+      } catch (e) {
+        // ignore errors reading storage
+      }
+    };
+    checkPendingFamily();
+  }, []);
+  // --------------------------------------------------------
 
   useEffect(() => {
     const initializeApp = async () => {

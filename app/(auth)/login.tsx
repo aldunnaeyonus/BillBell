@@ -55,7 +55,7 @@ export default function Login() {
       email: credential.email,
       name: credential.fullName?.givenName
         ? `${credential.fullName.givenName} ${credential.fullName.familyName}`
-        : null,
+        : credential.email,
     });
     await setToken(res.token);
       await new Promise(resolve => setTimeout(resolve, 100));

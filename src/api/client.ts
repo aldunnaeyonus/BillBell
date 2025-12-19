@@ -1,4 +1,4 @@
-// --- File: aldunnaeyonus/billbell/.../src/api/client.ts ---
+// --- File: aldunnaeyonus/billbell/.../src/api/client.ts (FIXED) ---
 import * as SecureStore from "expo-secure-store";
 import {
   ensureKeyPair,
@@ -401,6 +401,19 @@ export const api = {
 
   // Encrypted Bills
   billsList: async () => {
+    // 1. Fetch the raw bills FIRST. If this works, we know the user is authenticated.
+    // If the list is empty, we return immediately and avoid key errors for new users.
+    const response = await request("/bills");
+    const rawBills = Array.isArray(response?.bills) 
+        ? response.bills 
+        : (Array.isArray(response) ? response : []);
+
+    // 2. If no bills, return empty list (No need to check for key)
+    if (rawBills.length === 0) {
+        return { bills: [] };
+    }
+
+    // 3. Only if bills exist do we enforce key presence
     try {
       await ensureFamilyKeyLoaded(); 
     } catch (e) {
@@ -412,10 +425,6 @@ export const api = {
       throw new Error("Cannot load family data. A Key Rotation is required by a family Admin to restore access on this device."); 
     }
 
-    const response = await request("/bills");
-    const rawBills = Array.isArray(response?.bills) 
-        ? response.bills 
-        : (Array.isArray(response) ? response : []);
     const decryptedBills = await Promise.all(
       rawBills.map(async (b: any) => {
         try {

@@ -810,7 +810,7 @@ export default function Bills() {
       setBills(res.bills);
       await AsyncStorage.setItem(BILLS_CACHE_KEY, JSON.stringify(res.bills));
     } catch (e) {
-      console.error("Failed to load bills:", e);
+      console.log("Failed to load bills:", e);
     }
   }, []);
 

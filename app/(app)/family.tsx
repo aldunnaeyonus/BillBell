@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Added persistence
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 
@@ -50,6 +51,76 @@ function Header({
   );
 }
 
+// --- New Component: Waiting View ---
+function WaitingView({ 
+  code, 
+  onCheckStatus, 
+  onCancel, 
+  loading, 
+  theme 
+}: { 
+  code: string; 
+  onCheckStatus: () => void; 
+  onCancel: () => void; 
+  loading: boolean; 
+  theme: Theme 
+}) {
+  return (
+    <View style={{ flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center', gap: 32 }}>
+      
+      {/* Icon */}
+      <View style={[styles.iconBox, { width: 100, height: 100, borderRadius: 50, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }]}>
+         <Ionicons name="hourglass-outline" size={48} color={theme.colors.primary} />
+      </View>
+      
+      {/* Text Info */}
+      <View style={{ alignItems: 'center', gap: 12 }}>
+        <Text style={[styles.headerTitle, { color: theme.colors.primaryText, textAlign: 'center', fontSize: 24 }]}>
+          Approval Pending
+        </Text>
+        <Text style={[styles.cardBody, { color: theme.colors.subtext, textAlign: 'center', fontSize: 16 }]}>
+          You requested to join family <Text style={{ fontWeight: '700', color: theme.colors.primaryText }}>{code}</Text>.
+        </Text>
+        <Text style={[styles.cardBody, { color: theme.colors.subtext, textAlign: 'center', opacity: 0.8 }]}>
+          Waiting for an admin to approve your request.
+        </Text>
+      </View>
+
+      {/* Buttons */}
+      <View style={{ width: '100%', gap: 16 }}>
+        <Pressable
+            onPress={onCheckStatus}
+            disabled={loading}
+            style={({ pressed }) => [
+            styles.actionButton,
+            {
+                backgroundColor: theme.colors.primary,
+                width: '100%',
+                opacity: loading ? 0.6 : pressed ? 0.9 : 1,
+            },
+            ]}
+        >
+            {loading ? (
+            <ActivityIndicator color={theme.colors.primaryTextButton} />
+            ) : (
+            <Text style={[styles.actionButtonText, { color: theme.colors.primaryTextButton }]}>
+                Check Status
+            </Text>
+            )}
+        </Pressable>
+
+        <Pressable 
+            onPress={onCancel} 
+            disabled={loading} 
+            style={({ pressed }) => [{ padding: 12, alignItems: 'center', opacity: pressed ? 0.6 : 1 }]}
+        >
+            <Text style={{ color: theme.colors.danger, fontWeight: '600', fontSize: 15 }}>Cancel Request</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 // --- Main Screen ---
 
 export default function Family() {
@@ -57,7 +128,24 @@ export default function Family() {
   const theme = useTheme();
   const { t } = useTranslation();
   const { code: urlCode } = useLocalSearchParams<{ code?: string }>();
-  const [code, setCode] = useState(urlCode || ""); // Auto-fill if link was used
+  
+  const [code, setCode] = useState(urlCode || ""); 
+  const [pendingCode, setPendingCode] = useState<string | null>(null); // New State
+
+  // 1. Load Pending State on Mount
+  useEffect(() => {
+    checkPendingState();
+  }, []);
+
+  async function checkPendingState() {
+    try {
+      const stored = await AsyncStorage.getItem("billbell_pending_family_code");
+      if (stored) setPendingCode(stored);
+    } catch (e) {
+      console.log("Failed to load pending state", e);
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle("dark-content");
@@ -77,8 +165,6 @@ export default function Family() {
     setLoading(true);
     try {
       const res: any = await api.familyCreate();
-      console.log("familyCreate:", res);
-
       const code = res?.family_code;
       if (!code) throw new Error("family_code missing from server response");
 
@@ -92,31 +178,93 @@ export default function Family() {
     }
   }
 
-  async function handleJoin() {
-    if (!code.trim()) {
-      Alert.alert(t("Validation"), t("Please enter an import code.")); // Reusing error msg key or create new
+  async function handleJoin(inputCode?: string) {
+    // If inputCode is provided (from Check Status), use it. Otherwise use state (from Input).
+    const codeToUse = inputCode || code;
+    
+    if (!codeToUse || !codeToUse.trim()) {
+      Alert.alert(t("Validation"), t("Please enter an import code.")); 
       return;
     }
 
     try {
       setLoading(true);
-      const res: any = await api.familyJoin(code.trim().toUpperCase());
+      const res: any = await api.familyJoin(codeToUse.trim().toUpperCase());
+      
       if (res.status === "pending") {
-        Alert.alert(
-          t("Request Sent"),
-          t("Your request has been sent to the family admin for approval.")
-        );
-        // Optionally clear code or stay on page
+        // --- SAVE STATE ---
+        const cleanCode = codeToUse.trim().toUpperCase();
+        await AsyncStorage.setItem("billbell_pending_family_code", cleanCode);
+        setPendingCode(cleanCode);
+        
+        // Only show alert if this was a manual join attempt
+        if (!inputCode) { 
+            Alert.alert(
+              t("Request Sent"),
+              t("Your request has been sent to the family admin for approval.")
+            );
+        } else {
+             Alert.alert(t("Still Pending"), t("Your request has not been approved yet."));
+        }
       } else {
-        // Immediate join (legacy support or if logic changes)
+        // --- SUCCESS ---
+        await AsyncStorage.removeItem("billbell_pending_family_code");
+        setPendingCode(null);
         router.replace("/onboarding");
       }
     } catch (e: any) {
-      Alert.alert(t("Error"), e.message);
+      const msg = e.message || "";
+      // If the API throws "User already in family" (409), that means we are approved!
+      if (msg.toLowerCase().includes("user not in family") === false && (msg.includes("already in") || msg.includes("member"))) {
+         await AsyncStorage.removeItem("billbell_pending_family_code");
+         setPendingCode(null);
+         router.replace("/(app)/bills");
+      } else {
+         Alert.alert(t("Error"), msg);
+      }
+    } finally {
       setLoading(false);
     }
   }
 
+  // Handle Cancel
+  async function handleCancel() {
+    Alert.alert(
+        t("Cancel Request"),
+        t("Are you sure you want to cancel your join request?"),
+        [
+            { text: t("No"), style: "cancel" },
+            { 
+                text: t("Yes"), 
+                style: "destructive", 
+                onPress: async () => {
+                    await AsyncStorage.removeItem("billbell_pending_family_code");
+                    setPendingCode(null);
+                    setCode("");
+                }
+            }
+        ]
+    );
+  }
+
+  // --- RENDER ---
+  
+  // 1. Pending View
+  if (pendingCode) {
+     return (
+       <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
+         <WaitingView 
+           code={pendingCode} 
+           loading={loading}
+           theme={theme}
+           onCheckStatus={() => handleJoin(pendingCode)}
+           onCancel={handleCancel}
+         />
+       </View>
+     );
+  }
+
+  // 2. Standard View (Join/Create)
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <KeyboardAvoidingView
@@ -210,7 +358,7 @@ export default function Family() {
                 </View>
 
                 <Pressable
-                  onPress={handleJoin}
+                  onPress={() => handleJoin()}
                   disabled={loading || !code.trim()}
                   style={({ pressed }) => [
                     styles.actionButton,

@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { View, Text, StyleSheet, AppState, Pressable, StatusBar, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  AppState,
+  Pressable,
+  StatusBar,
+  Platform,
+} from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import { useSegments, useFocusEffect } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -30,8 +38,7 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
       StatusBar.setBackgroundColor("transparent");
       StatusBar.setTranslucent(true);
     }
-  }, []); 
-
+  }, []);
 
   useEffect(() => {
     checkHardware();
@@ -82,7 +89,7 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
         return;
       }
 
-     const result = await LocalAuthentication.authenticateAsync({
+      const result = await LocalAuthentication.authenticateAsync({
         promptMessage: t("Unlock App") || "Unlock App",
         fallbackLabel: "Use Passcode",
         disableDeviceFallback: false,
@@ -109,7 +116,11 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated && hasHardware) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="transparent"
+          translucent
+        />
 
         <LinearGradient
           colors={[theme.colors.navy, "#1a2c4e"]}
@@ -124,11 +135,16 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
 
             <Text style={styles.title}>{t("Locked") || "Locked"}</Text>
             <Text style={styles.subtitle}>
-              {t("Please authenticate to continue") || "Please authenticate to continue"}
+              {t("Please authenticate to continue") ||
+                "Please authenticate to continue"}
             </Text>
 
             <Pressable onPress={authenticate} style={styles.unlockBtn}>
-              <Ionicons name="finger-print" size={24} color={theme.colors.navy} />
+              <Ionicons
+                name="finger-print"
+                size={24}
+                color={theme.colors.navy}
+              />
               <Text style={[styles.unlockText, { color: theme.colors.navy }]}>
                 {t("Unlock") || "Unlock"}
               </Text>
@@ -145,7 +161,12 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   gradient: { flex: 1, justifyContent: "center", alignItems: "center" },
-  content: { alignItems: "center", gap: 20, width: "100%", paddingHorizontal: 40 },
+  content: {
+    alignItems: "center",
+    gap: 20,
+    width: "100%",
+    paddingHorizontal: 40,
+  },
   iconContainer: {
     marginBottom: 10,
     width: 120,
@@ -158,7 +179,12 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.2)",
   },
   title: { fontSize: 32, fontWeight: "900", color: "#FFF", letterSpacing: 1 },
-  subtitle: { fontSize: 16, color: "rgba(255,255,255,0.7)", textAlign: "center", marginBottom: 20 },
+  subtitle: {
+    fontSize: 16,
+    color: "rgba(255,255,255,0.7)",
+    textAlign: "center",
+    marginBottom: 20,
+  },
   unlockBtn: {
     flexDirection: "row",
     alignItems: "center",
