@@ -10,12 +10,12 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
+  NativeModules
 } from "react-native";
 import { router, useFocusEffect, Stack } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import * as FileSystem from "expo-file-system";
 import Share from "react-native-share";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isSameMonth, addMonths, parseISO, startOfDay } from "date-fns";
@@ -35,8 +35,17 @@ import { File, Paths } from "expo-file-system";
 import {
   startSummaryActivity,
   stopActivity,
+  startAndroidLiveActivity,
+  // Added for Android Live Activity Support
 } from "../../src/native/LiveActivity";
 
+const getWidgetModule = () => {
+  try {
+    return NativeModules?.WidgetModule;
+  } catch {
+    return undefined;
+  }
+};
 // --- Types ---
 type SortKey = "due" | "amount" | "name";
 
@@ -81,7 +90,6 @@ const jsonToCSV = (data: any[]): string => {
 
 // ICON MAPPING LOGIC
 const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
-  // --- Streaming/Entertainment ---
   { regex: /netflix/i, icon: "netflix", color: "#E50914" },
   { regex: /spotify/i, icon: "spotify", color: "#1DB954" },
   { regex: /hulu/i, icon: "hulu", color: "#1CE783" },
@@ -90,8 +98,6 @@ const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
   { regex: /apple|music|itunes/i, icon: "apple", color: "#A2AAAD" },
   { regex: /youtube|twitch/i, icon: "youtube", color: "#FF0000" },
   { regex: /sirius|audible|podcast|radio/i, icon: "radio", color: "#F07241" },
-
-  // --- Banking/Finance/Credit ---
   {
     regex: /visa|mastercard|amex|discover|capital one|bofa/i,
     icon: "credit-card-multiple-outline",
@@ -118,8 +124,6 @@ const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
     icon: "shield-car",
     color: "#3498DB",
   },
-
-  // --- Utilities/Home Services ---
   {
     regex: /power|electric|utility|pge|con edison|duke energy/i,
     icon: "lightning-bolt",
@@ -142,8 +146,6 @@ const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
   },
   { regex: /security|alarm|adt|ring/i, icon: "security", color: "#E67E22" },
   { regex: /hoa|community fees/i, icon: "home-group", color: "#6C3483" },
-
-  // --- Telecom/Internet/Mobile ---
   {
     regex: /att|t-mobile|verizon|sprint|mobile|cellular/i,
     icon: "cellphone",
@@ -155,8 +157,6 @@ const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
     color: "#1D4ED8",
   },
   { regex: /phone|landline/i, icon: "phone", color: "#3F51B5" },
-
-  // --- Software/Tech/Gaming ---
   { regex: /amazon|aws|cloud/i, icon: "amazon", color: "#FF9900" },
   {
     regex: /microsoft|azure|office|xbox/i,
@@ -176,8 +176,6 @@ const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
     color: "#6A5ACD",
   },
   { regex: /github|gitlab|bitbucket/i, icon: "github", color: "#181717" },
-
-  // --- Retail/Shopping ---
   {
     regex: /walmart|target|costco|sams club/i,
     icon: "shopping",
@@ -189,8 +187,6 @@ const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
     color: "#F96302",
   },
   { regex: /etsy|ebay|shopify/i, icon: "cart", color: "#546E7A" },
-
-  // --- Transportation/Auto ---
   {
     regex: /car loan|auto payment|lease payment/i,
     icon: "car",
@@ -213,10 +209,8 @@ function getBillIcon(creditor: string): {
       type: "MaterialCommunityIcons",
     };
   }
-  // Default fallback icon
   return { name: "receipt-outline", color: "#808080", type: "Ionicons" };
 }
-// END ICON MAPPING
 
 // --- Components ---
 
@@ -358,7 +352,7 @@ function BillItem({
   const swipeableRef = useRef<SwipeableMethods>(null);
 
   const closeSwipe = () => {
-    swipeableRef.current?.close(); //
+    swipeableRef.current?.close();
   };
   const iconData = getBillIcon(item.creditor);
   const IconComponent =
@@ -379,8 +373,8 @@ function BillItem({
       <RectButton
         style={[{ backgroundColor: color }, styles.swipeAction]}
         onPress={() => {
-          closeSwipe(); // Close the slide
-          onPress(); // Execute the action
+          closeSwipe();
+          onPress();
         }}
       >
         <Ionicons name={icon} size={24} color="#FFF" />
@@ -396,7 +390,6 @@ function BillItem({
           label={t("Edit")}
           onPress={onEdit}
         />
-
         {!isPaid && (
           <ActionButton
             icon="checkmark-done-circle-outline"
@@ -405,7 +398,6 @@ function BillItem({
             onPress={onMarkPaid}
           />
         )}
-
         <ActionButton
           icon="trash-outline"
           color="#E74C3C"
@@ -426,7 +418,7 @@ function BillItem({
           backgroundColor: theme.colors.card,
           borderColor: overdue ? theme.colors.danger : theme.colors.border,
           opacity: pressed ? 0.9 : 1,
-          borderWidth: overdue ? 1 : 1,
+          borderWidth: 1,
         },
       ]}
     >
@@ -437,7 +429,6 @@ function BillItem({
           alignItems: "center",
         }}
       >
-        {/* Icon Box */}
         <View
           style={[styles.iconBox, { backgroundColor: iconData.color + "20" }]}
         >
@@ -565,7 +556,7 @@ function BillItem({
   if (Platform.OS === "ios") {
     return (
       <ReanimatedSwipeable
-        ref={swipeableRef} // Attach the reference here
+        ref={swipeableRef}
         friction={2}
         rightThreshold={40}
         renderRightActions={renderRightActions}
@@ -578,7 +569,6 @@ function BillItem({
 
   return BillContent;
 }
-// END BillItem
 
 // --- Main Screen ---
 
@@ -605,7 +595,45 @@ export default function Bills() {
     }
   }, [bills]);
 
-  // 2. Live Activity Sync (Overdue + This Month)
+  // 2. Android Widget & Live Activity Sync
+  useEffect(() => {
+  if (Platform.OS !== "android" || bills.length === 0) return;
+
+  const widgetModule = getWidgetModule();
+
+  const pending = bills.filter(
+    (b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"
+  );
+
+  const overdueBills = pending.filter((b: any) => isOverdue(b));
+  const overdueSum = overdueBills.reduce(
+    (sum: number, b: any) => sum + Number(b.amount_cents || 0),
+    0
+  );
+
+  const nextBill = pending.find((b: any) => !isOverdue(b));
+
+  // ✅ Widget update (only if module exists)
+  if (widgetModule?.syncWidgetData) {
+    widgetModule.syncWidgetData(
+      overdueBills.length,
+      nextBill?.creditor || "None",
+      nextBill?.due_date || "",
+      String(nextBill?.id || ""),
+      nextBill?.payment_method || "manual"
+    );
+  }
+
+  // ✅ Ongoing notification update (doesn't depend on WidgetModule)
+  startAndroidLiveActivity(
+    `$${centsToDollars(overdueSum)}`,
+    overdueBills.length,
+    String(nextBill?.id ?? "")
+  );
+}, [bills]);
+
+
+  // 3. iOS Live Activity Sync
   useEffect(() => {
     if (Platform.OS !== "ios") return;
 
@@ -661,7 +689,6 @@ export default function Bills() {
     }
   }, []);
 
-  // 2. Handle focus/unfocus when navigating between screens
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle("light-content");
@@ -669,9 +696,7 @@ export default function Bills() {
         StatusBar.setBackgroundColor("transparent");
         StatusBar.setTranslucent(true);
       }
-
       return () => {
-        // Revert to theme default when leaving this view
         const defaultStyle =
           theme.mode === "dark" ? "light-content" : "dark-content";
         StatusBar.setBarStyle(defaultStyle);
@@ -692,13 +717,11 @@ export default function Bills() {
 
   const sections = useMemo(() => {
     const list = tab === "pending" ? pendingBills : paidBills;
-
     const sorted = [...list].sort((a: any, b: any) => {
       if (sort === "name")
         return String(a.creditor || "").localeCompare(String(b.creditor || ""));
       if (sort === "amount")
         return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
-
       const dateA =
         tab === "pending"
           ? safeDateNum(a.due_date)
@@ -707,17 +730,13 @@ export default function Bills() {
         tab === "pending"
           ? safeDateNum(b.due_date)
           : safeDateNum(b.paid_at) || safeDateNum(b.due_date);
-
       return tab === "pending" ? dateA - dateB : dateB - dateA;
     });
 
-    if (sort !== "due") {
-      return [{ title: t("All Bills"), data: sorted }];
-    }
+    if (sort !== "due") return [{ title: t("All Bills"), data: sorted }];
 
     const today = new Date();
     const nextMonthDate = addMonths(today, 1);
-
     const buckets: Record<string, any[]> = {
       overdue: [],
       thisMonth: [],
@@ -729,7 +748,6 @@ export default function Bills() {
       const dateStr =
         tab === "pending" ? bill.due_date : bill.paid_at || bill.due_date;
       const billDate = parseISO(dateStr);
-
       if (tab === "pending" && isOverdue(bill)) {
         buckets.overdue.push(bill);
       } else if (isSameMonth(billDate, today)) {
@@ -754,7 +772,6 @@ export default function Bills() {
       result.push({ title: t("Next Month"), data: buckets.nextMonth });
     if (buckets.future.length > 0)
       result.push({ title: t("Future"), data: buckets.future });
-
     return result;
   }, [tab, pendingBills, paidBills, sort, t]);
 
@@ -765,7 +782,6 @@ export default function Bills() {
       const shouldInclude = isOverdue(b) || isSameMonth(due, today);
       return shouldInclude ? sum + Number(b.amount_cents || 0) : sum;
     }, 0);
-
     const paidTotal = paidBills.reduce(
       (sum, b) => sum + Number(b.amount_cents || 0),
       0
@@ -781,22 +797,16 @@ export default function Bills() {
 
   const load = useCallback(async () => {
     try {
-      // 1. Attempt to load from persistent storage first for instant display
       const cachedData = await AsyncStorage.getItem(BILLS_CACHE_KEY);
-      if (cachedData) {
-        setBills(JSON.parse(cachedData));
-      }
-
-      // 2. Fetch fresh data from the API in the background
+      if (cachedData) setBills(JSON.parse(cachedData));
       const res = await api.billsList();
       setBills(res.bills);
-
-      // 3. Update the cache with the new data for the next launch
       await AsyncStorage.setItem(BILLS_CACHE_KEY, JSON.stringify(res.bills));
     } catch (e) {
       console.error("Failed to load bills:", e);
     }
   }, []);
+
   useFocusEffect(
     useCallback(() => {
       load().catch(() => {});
@@ -884,16 +894,12 @@ export default function Bills() {
 
   const generateAndShareCSV = async () => {
     if (isExporting) return;
-
     try {
       if (bills.length === 0) {
         Alert.alert(t("No Data"), t("There are no bills to export."));
         return;
       }
-
       setIsExporting(true);
-
-      // 1. Prepare Data
       const exportData = bills.map((b) => ({
         ID: b.id,
         Creditor: b.creditor,
@@ -904,32 +910,17 @@ export default function Bills() {
         Recurrence: b.recurrence || "none",
         Offset: b.reminder_offset_days || "0",
       }));
-
-      // 2. Generate CSV String
       const csvString = jsonToCSV(exportData);
-
-      // 3. Define Path using expo-file-system constants
-      // We use documentDirectory for iOS and cacheDirectory for Android for better sharing reliability
-
       const fileName = "bills_export.csv";
-      // Use Paths.cache instead of cacheDirectory
-      const filePath = `${Paths.cache}${fileName}`;
-
-      // New object-oriented way to write
-      const myFile = new File(Paths.cache, "bills_export.csv");
-
-      // 2. Write content directly (no encoding needed for standard text)
+      const myFile = new File(Paths.cache, fileName);
       myFile.write(csvString);
-
-      // 5. Share File
       await Share.open({
-        url: filePath, // expo-file-system paths already include the file:// prefix
+        url: `${Paths.cache}${fileName}`,
         type: "text/csv",
         filename: "bills_export",
         title: t("Export Bills CSV"),
       });
     } catch (error) {
-      // Standardize error logging for Expo SDK 54
       console.error("Export failed:", error);
     } finally {
       setIsExporting(false);
@@ -941,10 +932,7 @@ export default function Bills() {
       item.paid_at || item.is_paid || item.status === "paid"
     );
     const actions: any[] = [
-      {
-        text: t("Edit"),
-        onPress: () => onEditBill(item),
-      },
+      { text: t("Edit"), onPress: () => onEditBill(item) },
     ];
     if (!isPaid)
       actions.push({
@@ -1006,7 +994,6 @@ export default function Bills() {
                 t={t}
               />
 
-              {/* FIX 1: Action Buttons Layout - Use flexWrap and remove flex: 1 from buttons */}
               <View
                 style={{
                   flexDirection: "row",
@@ -1019,7 +1006,7 @@ export default function Bills() {
                   onPress={() => router.push("/(app)/insights")}
                   style={[
                     styles.actionBtn,
-                    { backgroundColor: theme.colors.primary, flex: 1 }, // RESTORE STYLE
+                    { backgroundColor: theme.colors.primary, flex: 1 },
                   ]}
                 >
                   <Ionicons
@@ -1036,12 +1023,11 @@ export default function Bills() {
                     {t("Insights")}
                   </Text>
                 </Pressable>
-
                 <Pressable
                   onPress={() => router.push("/(app)/bill-edit")}
                   style={[
                     styles.actionBtn,
-                    { backgroundColor: theme.colors.primary, flex: 1 }, // RESTORE STYLE
+                    { backgroundColor: theme.colors.primary, flex: 1 },
                   ]}
                 >
                   <Ionicons
@@ -1059,7 +1045,6 @@ export default function Bills() {
                   </Text>
                 </Pressable>
               </View>
-              {/* END FIX 1 */}
 
               <TabSegment
                 theme={theme}
@@ -1071,7 +1056,6 @@ export default function Bills() {
                 ]}
               />
 
-              {/* Export Button Relocation Fix (from previous step) */}
               <View
                 style={{
                   flexDirection: "column",
@@ -1080,7 +1064,6 @@ export default function Bills() {
                   gap: 8,
                 }}
               >
-                {/* Sort By Control (Left aligned) */}
                 <Pressable
                   onPress={cycleSort}
                   style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
@@ -1104,7 +1087,6 @@ export default function Bills() {
                   />
                 </Pressable>
 
-                {/* Export Button (Below Sort By, Right aligned) */}
                 {bills.length > 0 && (
                   <View style={{ width: "100%", alignItems: "flex-end" }}>
                     <Pressable
@@ -1116,12 +1098,12 @@ export default function Bills() {
                         gap: 6,
                       }}
                     >
-                      {isExporting ? (
+                      {isExporting && (
                         <ActivityIndicator
                           size="small"
                           color={theme.colors.accent}
                         />
-                      ) : null}
+                      )}
                       <Text
                         style={{
                           color: theme.colors.accent,
@@ -1135,7 +1117,6 @@ export default function Bills() {
                   </View>
                 )}
               </View>
-              {/* END Export Button Relocation Fix */}
             </View>
           }
           renderSectionHeader={({ section: { title, special } }) => (
@@ -1195,21 +1176,6 @@ export default function Bills() {
               </Text>
             </View>
           }
-          ListFooterComponent={
-            bills.length > 0 ? (
-              <View style={{ padding: 20, alignItems: "center", opacity: 0.6 }}>
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: theme.colors.subtext,
-                    textAlign: "center",
-                  }}
-                >
-                  {t("Tip: Long press a bill to see more actions")}
-                </Text>
-              </View>
-            ) : null
-          }
           renderItem={({ item }) => (
             <BillItem
               item={item}
@@ -1228,9 +1194,7 @@ export default function Bills() {
 }
 
 const styles = StyleSheet.create({
-  headerGradient: {
-    paddingBottom: 40,
-  },
+  headerGradient: { paddingBottom: 40 },
   safeArea: {
     paddingHorizontal: 20,
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
@@ -1241,11 +1205,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#FFF",
-  },
+  headerTitle: { fontSize: 28, fontWeight: "800", color: "#FFF" },
   profileButton: {
     width: 40,
     height: 40,
@@ -1272,12 +1232,8 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1,
   },
-  summaryAmount: {
-    fontSize: 36,
-    fontWeight: "900",
-  },
+  summaryAmount: { fontSize: 36, fontWeight: "900" },
   actionBtn: {
-    // FIX: Restored background color and padding, ensuring flexible width
     paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
@@ -1290,12 +1246,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    backgroundColor: "transparent",
   },
-  actionBtnText: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
+  actionBtnText: { fontSize: 15, fontWeight: "700" },
   tabContainer: {
     flexDirection: "row",
     padding: 4,
@@ -1308,23 +1260,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 12,
   },
-  tabText: {
-    fontSize: 14,
-  },
-  billCard: {
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-  },
-  billCreditor: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  billAmount: {
-    fontSize: 18,
-    fontWeight: "800",
-  },
+  tabText: { fontSize: 14 },
+  billCard: { padding: 16, borderRadius: 16, marginBottom: 12, borderWidth: 1 },
+  billCreditor: { fontSize: 16, fontWeight: "700" },
+  billAmount: { fontSize: 18, fontWeight: "800" },
   iconBox: {
     width: 36,
     height: 36,
@@ -1347,10 +1286,5 @@ const styles = StyleSheet.create({
     width: 80,
     height: "100%",
   },
-  actionText: {
-    color: "#FFF",
-    fontSize: 12,
-    fontWeight: "600",
-    marginTop: 4,
-  },
+  actionText: { color: "#FFF", fontSize: 12, fontWeight: "600", marginTop: 4 },
 });

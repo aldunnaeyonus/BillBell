@@ -81,7 +81,7 @@ async function request(path: string, opts: RequestInit = {}) {
       throw new Error("User not in family");
     }
 
-    throw new Error(errMsg || `Request failed (${res.status})`);
+    //throw new Error(errMsg || `Request failed (${res.status})`);
   }
 
   return json;
@@ -517,7 +517,9 @@ try {
     // --------------------------------------------------
 
     const response = await request("/bills");
-    const rawBills = response?.bills || (Array.isArray(response) ? response : []);
+    const rawBills = Array.isArray(response?.bills) 
+  ? response.bills 
+  : (Array.isArray(response) ? response : []);
     const decryptedBills = await Promise.all(
       rawBills.map(async (b: any) => {
 try {
