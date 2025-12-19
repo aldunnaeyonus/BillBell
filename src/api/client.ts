@@ -1,4 +1,4 @@
-// --- File: aldunnaeyonus/billbell/.../src/api/client.ts (COMPLETE, CORRECTED) ---
+// --- File: aldunnaeyonus/billbell/.../src/api/client.ts ---
 import * as SecureStore from "expo-secure-store";
 import {
   ensureKeyPair,
@@ -24,6 +24,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/bi
 async function getToken() {
   return SecureStore.getItemAsync("token");
 }
+
 async function hardReset() {
     await clearAllFamilyKeys();
     await AsyncStorage.removeItem("billbell_bills_list_cache");
@@ -37,7 +38,6 @@ async function hardReset() {
     console.warn("Performing hard application reset. User must log in again.");
     router.replace("/(auth)/login");
 }
-// src/api/client.ts
 
 async function request(path: string, opts: RequestInit = {}) {
   const token = await getToken();
@@ -61,11 +61,8 @@ async function request(path: string, opts: RequestInit = {}) {
   if (!res.ok) {
     const errMsg = (json?.error || text || "").toString();
 
-    // Only force logout if we actually HAD a token and it was rejected.
-    // If we didn't have a token, it's a "Missing Authorization" error which 
-    // we should handle as a logic failure, not a session expiration.
     const shouldForceLogout =
-      (res.status === 401 && !!token) || // Only logout if token existed
+      (res.status === 401 && !!token) || 
       errMsg.includes("Invalid token") ||
       errMsg.includes("User not found or token is stale");
 
@@ -75,55 +72,9 @@ async function request(path: string, opts: RequestInit = {}) {
       throw new Error("Session ended. Please log in again.");
     }
 
-    // Keep the 409 redirect logic
     if (res.status === 409 && errMsg.includes("User not in family")) {
       router.replace("/(app)/family");
       throw new Error("User not in family");
-    }
-
-    //throw new Error(errMsg || `Request failed (${res.status})`);
-  }
-
-  return json;
-}
-// --- Generic Request Helper ---
-async function request2(path: string, opts: RequestInit = {}) {
-  const token = await getToken();
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(opts.headers as any),
-  };
-  if (token) headers.Authorization = `Bearer ${token}`;
-
-  const res = await fetch(`${API_URL}${path}`, { ...opts, headers });
-  const text = await res.text();
-
-  let json: any = null;
-  if (text) {
-    try { json = JSON.parse(text); } catch { json = null; }
-  }
-
-  // ---- FORCE LOGOUT CASES ----
-  const errMsg = (json?.error || text || "").toString();
-  if (!res.ok) {
-    const errMsg = (json?.error || text || "").toString();
-
-    // Only force logout if we sent a token and it was rejected.
-    // If no token was sent, it's an onboarding/auth issue, not a "Session ended" issue.
-    const isUnauthorized = res.status === 401;
-    const hasToken = !!token;
-
-    if (isUnauthorized && hasToken) {
-      await clearToken();
-      router.replace("/(auth)/login");
-      throw new Error("Session ended. Please log in again.");
-    }
-    
-    // ... rest of error handling
-
-    // onboarding case: user is authenticated but hasn't created/joined a family
-if (res.status === 409 && errMsg.includes("User not in family")) {
-      return { error_silent: true, message: "User not in family" };
     }
 
     throw new Error(errMsg || `Request failed (${res.status})`);
@@ -135,20 +86,18 @@ if (res.status === 409 && errMsg.includes("User not in family")) {
 async function ensureRsaKeyUploaded() {
     const { publicKey } = await ensureKeyPair();
     
-    // Check if the key exists and is a string
     if (typeof publicKey !== 'string' || !publicKey) {
         throw new Error("Local RSA Public Key is missing or invalid.");
     }
     
     try {
-        // --- FIX: Get Device ID and include in upload payload ---
         const deviceId = await getDeviceId();
 
         await request("/keys/public", { 
             method: "POST", 
             body: JSON.stringify({ 
                 public_key: publicKey,
-                device_id: deviceId // CRITICAL NEW FIELD
+                device_id: deviceId 
             }) 
         });
         
@@ -164,31 +113,23 @@ async function ensureRsaKeyUploaded() {
     }
 }
 
-
 // --- Key sync (version-history) ---
-// Avoid hammering /keys/shared on every render
 const FAMILY_KEY_SYNC_TS = "billbell_family_key_last_sync_ms";
-const KEY_SYNC_MIN_INTERVAL_MS = 60_000; // 1 min
+const KEY_SYNC_MIN_INTERVAL_MS = 60_000; 
 
 async function clearAllFamilyKeys() {
     console.warn("Performing aggressive clear of all cached family encryption keys.");
-    
-    // Clear the core version tracker and sync cooldown
     await SecureStore.deleteItemAsync(FAMILY_KEY_VERSION_ALIAS);
     await SecureStore.deleteItemAsync(FAMILY_KEY_SYNC_TS); 
-    
-    // Aggressively search and clear all versioned keys (v1, v2, v3, etc.)
     for (let v = 1; v <= 100; v++) { 
         await SecureStore.deleteItemAsync(`${FAMILY_KEY_PREFIX}${v}`);
     }
 }
 
 async function ensureFamilyKeyLoaded() {
-  // If no token, nothing to do
   const token = await getToken();
   if (!token) return;
 
-  // 1. CRITICAL FIX: Ensure RSA keys are generated AND uploaded before sync attempt
   try {
       await ensureRsaKeyUploaded();
   } catch (e: any) {
@@ -202,26 +143,19 @@ async function ensureFamilyKeyLoaded() {
 
   const now = Date.now();
   const last = parseInt((await SecureStore.getItemAsync(FAMILY_KEY_SYNC_TS)) || "0", 10);
-
-  // If we already have an active cached key version, respect the sync interval.
   const cachedVersion = await getCachedFamilyKeyVersion();
+  
   if (cachedVersion && Number.isFinite(last) && now - last < KEY_SYNC_MIN_INTERVAL_MS) {
     return;
   }
 
-  // --- FIX: Pass deviceId to fetch request ---
-  const deviceId = await getDeviceId(); // 1. Fetch the ID
-  
-  // Fetch current wrapped key for my user + current family key_version
-  // 2. Pass the deviceId as a query parameter for the server to use
+  const deviceId = await getDeviceId(); 
   const resp = await request(`/keys/shared?device_id=${deviceId}`); 
-  // --- END FIX ---
   
   const wrapped = resp?.encrypted_key;
   const keyVersion = Number(resp?.key_version);
   const familyId = Number(resp?.family_id);
 
-  // Get current user ID for the self-healing share API call
   let currentUserId: number | undefined;
   try {
       const familyMembersResponse = await api.familyMembers();
@@ -235,10 +169,9 @@ async function ensureFamilyKeyLoaded() {
   }
 
   try {
-    // Attempt to unwrap the key fetched from the server
     const familyKeyHex = await unwrapMyKey(String(wrapped));
     await cacheFamilyKey(familyKeyHex, keyVersion);
-    await pruneFamilyKeys(50); // FIX: Increased limit from 5 to 50 for safe migration
+    await pruneFamilyKeys(50); 
 
     await SecureStore.setItemAsync(FAMILY_KEY_SYNC_TS, String(now));
     
@@ -246,7 +179,6 @@ async function ensureFamilyKeyLoaded() {
     const errMsg = String(e.message);
 
     if (errMsg.includes("KEY_DECRYPTION_FAILED")) {
-      // --- START AUTOMATIC SELF-HEALING FIX ---
       console.warn("Decryption failed. Attempting automatic key re-share (self-heal)...");
       
       let selfHealFailed = false; 
@@ -255,11 +187,9 @@ async function ensureFamilyKeyLoaded() {
 
       try {
         currentRawKey = await getLatestCachedRawFamilyKeyHex();
-        
         const keyPair = await ensureKeyPair();
         publicKey = keyPair.publicKey as string; 
-        
-        const deviceId = await getDeviceId(); // Retrieve device ID for the self-heal payload
+        const deviceId = await getDeviceId(); 
         
         if (currentRawKey?.hex && publicKey && familyId && currentUserId) {
             const wrappedKeyBase64 = wrapKeyForUser(currentRawKey.hex, publicKey);
@@ -268,7 +198,7 @@ async function ensureFamilyKeyLoaded() {
                 family_id: familyId,
                 target_user_id: currentUserId,
                 encrypted_key: wrappedKeyBase64,
-                device_id: deviceId, // CRITICAL FIX: Include device_id in self-heal share payload
+                device_id: deviceId, 
             });
             
             await cacheFamilyKey(currentRawKey.hex, keyVersion);
@@ -284,31 +214,24 @@ async function ensureFamilyKeyLoaded() {
         selfHealFailed = true;
       }
       
-if (selfHealFailed) {
+      if (selfHealFailed) {
         const failureReason = !currentRawKey?.hex ? "Local key missing (re-install/migration issue)." : 
                             !familyId || !currentUserId ? "Family or User ID unavailable." : 
                             "Re-share API failed.";
 
         console.warn(`Key sync failed and self-heal failed: ${failureReason} Requires Admin Key Rotation. Key is currently unavailable.`);
-        
-        // --- FINAL FIX: Use aggressive clear to ensure no old key versions interfere ---
         await clearAllFamilyKeys();
-        // -----------------------------------------------------------------------------
-        
         return; 
       }
-      
       return;
     }
-    
-    // For any other general API error (non-decryption error)
     throw e;
   }
 }
 
 // --- Lazy re-encrypt on read (best-effort) ---
 const REENC_MAX_PER_LOAD = 3;
-const REENC_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+const REENC_COOLDOWN_MS = 60 * 60 * 1000; 
 const REENC_LAST_MS = "billbell_reencrypt_last_ms";
 
 async function maybeReencryptBills(bills: any[]) {
@@ -328,12 +251,10 @@ async function maybeReencryptBills(bills: any[]) {
     if (!Number.isFinite(billVersion) || billVersion >= currentVersion) continue;
 
     try {
-      // Decrypt using fallback (will try older cached versions)
       const creditor = await decryptDataWithVersion(b.creditor || "");
       const notes = await decryptDataWithVersion(b.notes || "");
       const amount = b.amount_encrypted ? await decryptDataWithVersion(b.amount_encrypted) : null;
 
-      // Re-encrypt under CURRENT active key (encryptData uses active version)
       const payload: any = {
         creditor: await encryptData(creditor.text),
         notes: await encryptData(notes.text || ""),
@@ -347,7 +268,6 @@ async function maybeReencryptBills(bills: any[]) {
       await request(`/bills/${b.id}`, { method: "PUT", body: JSON.stringify(payload) });
       upgraded++;
     } catch (e: any) {
-      // FIX: Suppress warning if it's the known "Function not implemented." error
       const errMsg = String(e.message);
       if (!errMsg.includes("Function not implemented.")) {
         console.warn("Re-encrypt failed for bill", b?.id, e);
@@ -360,16 +280,10 @@ async function maybeReencryptBills(bills: any[]) {
   }
 }
 
-/**
- * Orchestrates the creation of a new family key, wraps it for the target user, 
- * stores it on the server, and caches it locally. This is for the CREATOR only.
- */
 async function orchestrateFamilyKeyExchange(familyId: number, targetUserId: number): Promise<void> {
     const { publicKey } = await ensureKeyPair();
     const deviceId = await getDeviceId();
     const newFamilyKeyHex = generateNewFamilyKey();
-    
-    // FIX 1: Type Cast Fix to satisfy the wrapKeyForUser signature
     const wrappedKeyBase64 = wrapKeyForUser(newFamilyKeyHex, publicKey as string);
     
     await api.shareKey({
@@ -378,17 +292,10 @@ async function orchestrateFamilyKeyExchange(familyId: number, targetUserId: numb
       encrypted_key: wrappedKeyBase64,
       device_id: deviceId,
     });
-    
-    // FIX 2: IMMEDIATE CACHE to prevent "Key not found" error in Bills.tsx
     await cacheFamilyKey(newFamilyKeyHex, 1);
 }
 
-// --- Key Rotation Orchestration Logic ---
-/**
- * Orchestrates the full Key Rotation process. Requires Admin privileges.
- */
 async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion: number }> {
-    // 1. Trigger server to increment key_version (POST /family/rotate-key)
     const serverResponse = await api.rotateKey(); 
     const familyId = serverResponse.family_id;
     const newKeyVersion = serverResponse.key_version;
@@ -397,29 +304,23 @@ async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion:
         throw new Error("Server did not return Family ID or new Key Version.");
     }
     await AsyncStorage.removeItem("billbell_bills_list_cache");
-    // 2. Generate a new, random Family Key (Master Key)
     const newFamilyKeyHex = generateNewFamilyKey();
 
-    // 3. Fetch all family members
     const membersResponse = await api.familyMembers();
     const members = membersResponse.members || [];
 
-    // 4. Wrap and Share the key for every member
     for (const member of members) {
         const targetUserId = member.id;
-        
-        // Fetch recipient's ALL Public Keys (one per device)
         const pubKeyResponse = await api.getPublicKey(targetUserId); 
         
-        // Normalize keysToShare to be an array of objects {public_key, device_id}
         const keysToShare = pubKeyResponse.public_keys || 
                             (pubKeyResponse.public_key ? [{
                                 public_key: pubKeyResponse.public_key,
-                                device_id: pubKeyResponse.device_id || '00000000-0000-0000-0000-000000000000' // Legacy fallback
+                                device_id: pubKeyResponse.device_id || '00000000-0000-0000-0000-000000000000' 
                             }] : []);
 
         if (keysToShare.length === 0) {
-            console.warn(`Skipping key share for user ${targetUserId}: No Public Keys found. User needs to re-upload their key.`);
+            console.warn(`Skipping key share for user ${targetUserId}: No Public Keys found.`);
             continue; 
         }
 
@@ -428,30 +329,24 @@ async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion:
             const deviceId = keyInfo.device_id;
             
             if (!recipientPublicKeyPem || !deviceId) {
-                 console.warn(`Skipping key share for user ${targetUserId}: Missing Public Key or Device ID in server response.`);
                  continue;
             }
 
-            // Wrap the new Master Key with the member's Public Key
             const wrappedKeyBase64 = wrapKeyForUser(newFamilyKeyHex, recipientPublicKeyPem);
             
-            // Share the key with the new key version
             const sharePayload = {
                 family_id: familyId,
                 target_user_id: targetUserId,
                 encrypted_key: wrappedKeyBase64,
-                device_id: deviceId, // CRITICAL FIX: Include device_id in share payload
+                device_id: deviceId, 
             };
             
-            // 5. Store the wrapped key on the server
             await api.shareKey(sharePayload);
-            console.log(`Key shared for user ${targetUserId} device ${deviceId} at version ${newKeyVersion}`);
         }
     }
 
-    // 6. Cache the raw key locally for the admin's device
     await cacheFamilyKey(newFamilyKeyHex, newKeyVersion);
-    await pruneFamilyKeys(50); // FIX: Increased limit from 5 to 50 for safe migration
+    await pruneFamilyKeys(50); 
     console.info(`Key Rotation successful. Cached key version ${newKeyVersion} locally.`);
     
     return { familyId, keyVersion: newKeyVersion };
@@ -460,7 +355,7 @@ async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion:
 // --- API Definition ---
 export const api = {
   clearAllFamilyKeys: clearAllFamilyKeys,
-    hardReset: hardReset,
+  hardReset: hardReset,
   // Auth
   authApple: (payload: any) => request("/auth/apple", { method: "POST", body: JSON.stringify(payload) }),
   authGoogle: (payload: any) => request("/auth/google", { method: "POST", body: JSON.stringify(payload) }),
@@ -474,15 +369,14 @@ export const api = {
 
   // Family
   familyCreate: async () => {
-  await ensureRsaKeyUploaded(); 
-  const response = await request("/family/create", { method: "POST", body: JSON.stringify({}) });
+    await ensureRsaKeyUploaded(); 
+    const response = await request("/family/create", { method: "POST", body: JSON.stringify({}) });
   
-  if (response.family_id && response.current_user_id) {
-      // Calls the fixed function above to handle key sharing and local caching
-      await orchestrateFamilyKeyExchange(response.family_id, response.current_user_id);
-  }
-  return response;
-},
+    if (response.family_id && response.current_user_id) {
+        await orchestrateFamilyKeyExchange(response.family_id, response.current_user_id);
+    }
+    return response;
+  },
   
   familyJoin: (family_code: string) => request("/family/join", { method: "POST", body: JSON.stringify({ family_code }) }),
   familyMembers: () => request("/family/members"),
@@ -491,52 +385,49 @@ export const api = {
   familySettingsGet: () => request("/family/settings"),
   familySettingsUpdate: (payload: { default_reminder_offset_days: number; default_reminder_time_local: string }) =>
     request("/family/settings", { method: "PUT", body: JSON.stringify(payload) }),
+  
+  // --- NEW: Family Requests Methods ---
+  familyRequests: () => request("/family/requests"),
+  familyRequestRespond: (request_id: number, action: "approve" | "reject") =>
+    request("/family/requests/respond", { method: "POST", body: JSON.stringify({ request_id, action }) }),
+  // ------------------------------------
 
   // Devices
   deviceTokenUpsert: (payload: any) => request("/devices/token", { method: "POST", body: JSON.stringify(payload) }),
 
-  // --- KEY ROTATION METHODS ---
+  // Key Rotation
   rotateKey: () => request("/family/rotate-key", { method: "POST" }),
-  orchestrateKeyRotation: orchestrateKeyRotation, // <--- ADDED EXPORT
-  // ----------------------------
+  orchestrateKeyRotation: orchestrateKeyRotation,
 
-  // --- Encrypted Bills Methods ---
+  // Encrypted Bills
   billsList: async () => {
-try {
-      await ensureFamilyKeyLoaded(); // Fetches key if needed
+    try {
+      await ensureFamilyKeyLoaded(); 
     } catch (e) {
       throw e;
     }
 
-    // --- CRITICAL FIX: Mandatory Key Presence Check ---
-    const currentVersion = await getCachedFamilyKeyVersion(); // Check local cache
+    const currentVersion = await getCachedFamilyKeyVersion(); 
     if (!currentVersion) {
-      // Throw a clean, user-facing error if key is still missing
-      throw new Error("Cannot load family data. A Key Rotation is required by a family Admin to restore access on this device."); // <--- HITS HERE
+      throw new Error("Cannot load family data. A Key Rotation is required by a family Admin to restore access on this device."); 
     }
-    // --------------------------------------------------
 
     const response = await request("/bills");
     const rawBills = Array.isArray(response?.bills) 
-  ? response.bills 
-  : (Array.isArray(response) ? response : []);
+        ? response.bills 
+        : (Array.isArray(response) ? response : []);
     const decryptedBills = await Promise.all(
       rawBills.map(async (b: any) => {
-try {
+        try {
           const creditor = await decryptDataWithVersion(b.creditor || "");
           const notes = await decryptDataWithVersion(b.notes || "");
           const amount = b.amount_encrypted ? await decryptDataWithVersion(b.amount_encrypted) : null;
 
-          // Check if decryption failed by looking for the ciphertext delimiter (:)
           const decryptionFailed = 
               (b.creditor && creditor.text.includes(':')) ||
               (b.amount_encrypted && amount?.text?.includes(':'));
               
           if (decryptionFailed) {
-             console.info(`Decryption failed for bill ${b.id}: Key missing or corrupted data. Showing placeholder.`);
-             console.info(`Decryption failed for bill ${b.id}: Key missing or corrupted data. Showing placeholder.`);
-             
-             // Return a placeholder object to prevent raw ciphertext display
              return {
                  ...b,
                  creditor: '[DECRYPTION FAILED]',
@@ -553,15 +444,11 @@ try {
             amount_cents: amount ? Number(amount.text) : b.amount_cents,
             notes: notes.text,
           };
-        } catch (e: any) { // <--- Catch the new specific error
-          // This catches the specific DECRYPT_FAILED_ALL_KEYS error from EncryptionService
+        } catch (e: any) { 
           const errorDetail = String(e.message);
-          console.error(`Decryption failed for bill ${b.id}. Root cause: ${errorDetail}`, e);
-          
-          // On unexpected error, return a clearly failed object
           return {
               ...b,
-              creditor: `[ERROR: ${errorDetail}]`, // Show the error in the UI for debug
+              creditor: `[ERROR: ${errorDetail}]`, 
               amount_cents: 0,
               notes: `[ERROR: ${errorDetail}]`,
               amount_encrypted: undefined,
@@ -571,11 +458,9 @@ try {
       })
     );
 
-    // Best-effort lazy migration (doesn't block UI)
     try {
       await maybeReencryptBills(rawBills);
     } catch (e: any) {
-      // FIX: Suppress warning if it's the known "Function not implemented." error
       const errMsg = String(e.message);
       if (!errMsg.includes("Function not implemented.")) {
         console.warn("Lazy re-encrypt skipped:", e); 
@@ -588,20 +473,18 @@ try {
   uploadPublicKey: (public_key: string) => request("/keys/public", { method: "POST", body: JSON.stringify({ public_key }) }),
   getPublicKey: (userId: number) => request(`/keys/public/${userId}`),
 
-  // FIX: Update shareKey payload definition to include device_id
-shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: string; device_id: string }) => // <--- CORRECT PAYLOAD
-  request("/keys/shared", { method: "POST", body: JSON.stringify(payload) }),
+  shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: string; device_id: string }) => 
+    request("/keys/shared", { method: "POST", body: JSON.stringify(payload) }),
 
   getMySharedKey: () => request("/keys/shared"),
 
   billsCreate: async (bill: any) => {
-    try { // FIX: Added try/catch
+    try { 
       await ensureFamilyKeyLoaded();
     } catch (e) {
       throw e;
     }
     
-    // Safety check for key presence before encrypting
     const currentVersion = await getCachedFamilyKeyVersion();
     if (!currentVersion) {
       throw new Error("Local Encryption Key Missing. Please log out and back in.");
@@ -613,16 +496,13 @@ shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: 
         creditor: await encryptData(bill.creditor),
         amount_encrypted: await encryptData(String(bill.amount_cents)),
         notes: await encryptData(bill.notes || ""),
-
         due_date: bill.due_date,
         status: bill.status,
-
         recurrence: bill.recurrence_rule ?? bill.recurrence ?? "none",
       };
 
       return request("/bills", { method: "POST", body: JSON.stringify(payload) });
     } catch (e: any) {
-      // Clearer error message if encryption fails
       const message = String(e.message);
       if (message.includes("Encryption failed") || message.includes("Family key not loaded")) {
          throw new Error("Security Key Missing: The app could not find the required encryption key locally to create the bill. Please log out and back in.");
@@ -632,13 +512,12 @@ shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: 
   },
 
   billsUpdate: async (id: number, bill: any) => {
-    try { // FIX: Added try/catch
+    try { 
       await ensureFamilyKeyLoaded();
     } catch (e) {
       throw e;
     }
 
-    // Safety check for key presence before encrypting
     const currentVersion = await getCachedFamilyKeyVersion();
     if (!currentVersion) {
       throw new Error("Local Encryption Key Missing for update. Please log out and back in.");
@@ -648,10 +527,9 @@ shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: 
       const payload: any = { ...bill };
 
       if (bill.payment_method) {
-      payload.payment_method = bill.payment_method;
-    }
+        payload.payment_method = bill.payment_method;
+      }
     
-      // IMPORTANT: allow empty-string updates (""), not just truthy values
       if (Object.prototype.hasOwnProperty.call(payload, "creditor")) {
         payload.creditor = await encryptData(payload.creditor ?? "");
       }
@@ -670,7 +548,6 @@ shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: 
 
       return request(`/bills/${id}`, { method: "PUT", body: JSON.stringify(payload) });
     } catch (e: any) {
-      // Clearer error message if encryption fails
       const message = String(e.message);
       if (message.includes("Encryption failed") || message.includes("Family key not loaded")) {
          throw new Error("Security Key Missing: The app could not find the required encryption key locally to update the bill. Please log out and back in.");
@@ -679,9 +556,7 @@ shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: 
     }
   },
   billsDelete: (id: number) => request(`/bills/${id}`, { method: "DELETE" }),
-
   billsMarkPaid: (id: number) => request(`/bills/${id}/mark-paid`, { method: "POST", body: JSON.stringify({}) }),
-
   billsSnooze: (id: number, snoozed_until: string) =>
     request(`/bills/${id}/snooze`, { method: "POST", body: JSON.stringify({ snoozed_until }) }),
 };

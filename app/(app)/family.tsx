@@ -100,8 +100,17 @@ export default function Family() {
 
     try {
       setLoading(true);
-      await api.familyJoin(code.trim().toUpperCase());
-      router.replace("/onboarding");
+      const res: any = await api.familyJoin(code.trim().toUpperCase());
+      if (res.status === "pending") {
+        Alert.alert(
+          t("Request Sent"),
+          t("Your request has been sent to the family admin for approval.")
+        );
+        // Optionally clear code or stay on page
+      } else {
+        // Immediate join (legacy support or if logic changes)
+        router.replace("/onboarding");
+      }
     } catch (e: any) {
       Alert.alert(t("Error"), e.message);
       setLoading(false);

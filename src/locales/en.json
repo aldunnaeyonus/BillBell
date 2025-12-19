@@ -327,6 +327,12 @@
 "Click to join or download":"Click to join or download",
 "Use Code":"Use Code",
 "Family ID not found.":"Family ID not found.",
+"Join Requests":"Join Requests",
+"View Join Requests from family or friends":"View Join Requests from family or friends",
+ "No pending requests.":"No pending requests.",
+        "Unknown User":"Unknown User",
+        "Deny":"Deny",
+        "Approve":"Approve",
   "faqSections": [
     {
       "title": "Adding & Managing Debts",
