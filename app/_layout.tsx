@@ -62,15 +62,7 @@ function AppStack() {
       await GoogleSignin.signOut().catch((err) =>
         console.log("Google Signout handled:", err.code)
       );
-      if (Platform.OS === "android") {
-        NativeModules?.WidgetModule?.syncWidgetData(
-          -1, // overdueCount = -1 means "no data"
-          "None", // next creditor
-          "", // next due
-          "", // bill id
-          "manual" // payment method
-        );
-      }
+      
     };
     initializeApp();
   }, []);

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+    <key>overdue_bills_plural %lld</key>
+    <dict>
+        <key>NSStringLocalizedFormatKey</key>
+        <string>%#@num_bills@</string>
+        <key>num_bills</key>
+        <dict>
+            <key>NSStringFormatSpecifierQuoted</key>
+            <string>lld</string>
+            <key>NSStringFormatValueTypeKey</key>
+            <string>lld</string>
+            <key>one</key>
+            <string>1 bill overdue</string>
+            <key>other</key>
+            <string>%lld bills overdue</string>
+        </dict>
+    </dict>
+    <key>month_left_plural %lld</key>
+    <dict>
+        <key>NSStringLocalizedFormatKey</key>
+        <string>%#@num_left@</string>
+        <key>num_left</key>
+        <dict>
+            <key>NSStringFormatSpecifierQuoted</key>
+            <string>lld</string>
+            <key>NSStringFormatValueTypeKey</key>
+            <string>lld</string>
+            <key>one</key>
+            <string>1 left</string>
+            <key>other</key>
+            <string>%lld left</string>
+        </dict>
+    </dict>
+</dict>
+</plist>

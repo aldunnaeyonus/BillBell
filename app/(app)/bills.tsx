@@ -38,6 +38,7 @@ import {
   startAndroidLiveActivity,
   // Added for Android Live Activity Support
 } from "../../src/native/LiveActivity";
+import { getToken } from "../../src/auth/session";
 
 const getWidgetModule = () => {
   try {
@@ -597,6 +598,7 @@ export default function Bills() {
 
   // 2. Android Widget & Live Activity Sync
   useEffect(() => {
+        const initializeApp = async () => {
   if (Platform.OS !== "android" || bills.length === 0) return;
 
   const widgetModule = getWidgetModule();
@@ -612,6 +614,7 @@ export default function Bills() {
   );
 
   const nextBill = pending.find((b: any) => !isOverdue(b));
+  const token = await getToken(); // Fetch the current user token
 
   // ✅ Widget update (only if module exists)
   if (widgetModule?.syncWidgetData) {
@@ -620,7 +623,8 @@ export default function Bills() {
       nextBill?.creditor || "None",
       nextBill?.due_date || "",
       String(nextBill?.id || ""),
-      nextBill?.payment_method || "manual"
+      nextBill?.payment_method || "manual",
+      token
     );
   }
 
@@ -630,6 +634,9 @@ export default function Bills() {
     overdueBills.length,
     String(nextBill?.id ?? "")
   );
+        };
+              initializeApp();
+
 }, [bills]);
 
 

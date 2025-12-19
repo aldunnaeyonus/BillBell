@@ -1,0 +1,15 @@
+"widget_title" = "Suivi de factures";
+"widget_description" = "Suivez et payez vos factures.";
+"no_data" = "Aucune donnée";
+"sync_prompt" = "Ouvrir pour sync";
+"needs_attention" = "Attention requise";
+"all_clear" = "Tout est réglé";
+"overdue_bills" = "Factures en retard";
+"nothing_overdue" = "Rien en retard";
+"overdue_label" = "en retard";
+"next_bill" = "Prochaine:";
+"mark_paid" = "Payée";
+"auto_draft" = "Prélèvement";
+"manual_pay" = "Paiement manuel";
+"no_upcoming" = "Pas de factures";
+"updated_at %@" = "Mis à jour %@";
