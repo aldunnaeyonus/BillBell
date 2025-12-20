@@ -245,6 +245,7 @@ function AppStack() {
           name="(app)/insights"
           options={{ title: t("Financial Insights") }}
         />
+        <Stack.Screen name="(app)/family-requests" options={{ title: t("Join Requests") }} />
         <Stack.Screen name="(app)/browser" options={{ title: t("Browser") }} />
         <Stack.Screen
           name="(app)/bulk-import"

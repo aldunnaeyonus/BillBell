@@ -1,11 +1,15 @@
 import * as Calendar from 'expo-calendar';
 import { Platform, Alert } from 'react-native';
+import i18n from "i18next"; // Import i18n instance
 
 export async function addToCalendar(bill: any) {
   try {
     const { status } = await Calendar.requestCalendarPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Calendar access is required to sync bills.');
+      Alert.alert(
+        i18n.t("Permission needed"), 
+        i18n.t("Calendar access is required to sync bills.")
+      );
       return;
     }
 
@@ -17,11 +21,12 @@ export async function addToCalendar(bill: any) {
     dueDate.setHours(12, 0, 0, 0);
 
     const eventDetails = {
-      title: `Pay ${bill.creditor}`,
+      // FIX: Use i18n.t() for the title
+      title: `${i18n.t("Pay")} ${bill.creditor}`,
       startDate: dueDate,
       endDate: dueDate,
       allDay: true,
-      notes: `Amount: $${(bill.amount_cents / 100).toFixed(2)}\nNotes: ${bill.notes || ''}`,
+      notes: `${i18n.t("Amount")}: $${(bill.amount_cents / 100).toFixed(2)}\n${i18n.t("Notes")}: ${bill.notes || ''}`,
       timeZone: 'UTC',
     };
 
@@ -29,10 +34,10 @@ export async function addToCalendar(bill: any) {
     // For now, we just create a new event.
     await Calendar.createEventAsync(calendarId, eventDetails);
     
-    Alert.alert('Success', 'Bill added to your calendar!');
+    Alert.alert(i18n.t("Success"), i18n.t("Bill added to your calendar!"));
   } catch (e: any) {
     console.log(e);
-    Alert.alert('Calendar Error', e.message);
+    Alert.alert(i18n.t("Calendar Error"), e.message);
   }
 }
 

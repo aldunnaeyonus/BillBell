@@ -3,6 +3,7 @@ import BackgroundFetch from "react-native-background-fetch";
 import AsyncStorage from '@react-native-async-storage/async-storage'; // <--- Added Import
 import { api } from "../../src/api/client";
 import { getToken } from "../../src/auth/session";
+import i18n from "../api/i18n"; // Import i18n
 
 // Lazy getters to prevent startup crashes if modules are missing
 const getLiveActivityModule = () => NativeModules?.LiveActivityModule;
@@ -147,10 +148,13 @@ export async function syncAndRefresh() {
 
       // Update Notification
       if (liveMod?.startBillLiveActivity) {
-        const headline = overdue.length > 0 ? "Needs attention" : "All clear";
-        const status = overdue.length > 0 ? `${overdue.length} overdue` : "Nothing overdue";
-        startAndroidLiveActivity(`${headline} • ${status}`, overdue.length, next?.id);
-      }
+  const headline = overdue.length > 0 ? i18n.t("Needs attention") : i18n.t("All clear");
+  const status = overdue.length > 0 
+    ? i18n.t("{{count}} overdue", { count: overdue.length }) 
+    : i18n.t("Nothing overdue");
+    
+  startAndroidLiveActivity(`${headline} • ${status}`, overdue.length, next?.id);
+}
     }
 
     console.log("Widget sync complete.");

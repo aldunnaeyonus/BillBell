@@ -620,7 +620,7 @@ export default function Bills() {
   if (widgetModule?.syncWidgetData) {
     widgetModule.syncWidgetData(
       overdueBills.length,
-      nextBill?.creditor || "None",
+      nextBill?.creditor || t("None"),
       nextBill?.due_date || "",
       String(nextBill?.id || ""),
       nextBill?.payment_method || "manual",

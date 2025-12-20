@@ -81,7 +81,7 @@ export default function FamilyRequests() {
       ) : requests.length === 0 ? (
         <View style={styles.empty}>
           <Text style={{ color: theme.colors.subtext }}>
-            No requests found.
+            {t("No requests found.")}
           </Text>
         </View>
       ) : (

@@ -18,6 +18,7 @@ import { clearToken } from "../auth/session";
 import { router } from "expo-router";
 import { getDeviceId } from '../security/device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import i18n from "./i18n"; // Add this import
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/billMVP";
 
@@ -439,9 +440,9 @@ export const api = {
           if (decryptionFailed) {
              return {
                  ...b,
-                 creditor: '[DECRYPTION FAILED]',
+                  creditor: i18n.t("Decryption Failed"),
                  amount_cents: 0,
-                 notes: '[DECRYPTION FAILED]',
+                  notes: i18n.t("Decryption Failed"),
                  amount_encrypted: undefined, 
                  cipher_version: 0, 
              };
@@ -457,9 +458,9 @@ export const api = {
           const errorDetail = String(e.message);
           return {
               ...b,
-              creditor: `[ERROR: ${errorDetail}]`, 
+              creditor: i18n.t("Decryption Error", { error: errorDetail }),
               amount_cents: 0,
-              notes: `[ERROR: ${errorDetail}]`,
+              notes: i18n.t("Decryption Error", { error: errorDetail }),
               amount_encrypted: undefined,
               cipher_version: 0,
           };
@@ -514,7 +515,7 @@ export const api = {
     } catch (e: any) {
       const message = String(e.message);
       if (message.includes("Encryption failed") || message.includes("Family key not loaded")) {
-         throw new Error("Security Key Missing: The app could not find the required encryption key locally to create the bill. Please log out and back in.");
+            throw new Error(i18n.t("Security Key Missing Create"));
       }
       throw e;
     }
@@ -529,7 +530,7 @@ export const api = {
 
     const currentVersion = await getCachedFamilyKeyVersion();
     if (!currentVersion) {
-      throw new Error("Local Encryption Key Missing for update. Please log out and back in.");
+throw new Error(i18n.t("Local Key Missing"));
     }
     
     try {
@@ -559,7 +560,7 @@ export const api = {
     } catch (e: any) {
       const message = String(e.message);
       if (message.includes("Encryption failed") || message.includes("Family key not loaded")) {
-         throw new Error("Security Key Missing: The app could not find the required encryption key locally to update the bill. Please log out and back in.");
+throw new Error(i18n.t("Security Key Missing Update"));
       }
       throw e;
     }
