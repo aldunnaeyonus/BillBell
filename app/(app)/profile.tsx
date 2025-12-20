@@ -19,7 +19,7 @@ import { router } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import * as FileSystem from "expo-file-system"; // <--- Restored expo-file-system
+import Constants from "expo-constants";
 import Share from "react-native-share";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { File, Paths } from "expo-file-system";
@@ -315,6 +315,9 @@ export default function Profile() {
   } | null>(null);
   const [showLangModal, setShowLangModal] = useState(false);
   const [liveActivityEnabled, setLiveActivityEnabled] = useState(true);
+const version = Constants.expoConfig?.version ?? "1.0.0";
+  // Optional: Get name from app.json ("BillBell")
+  const appName = Constants.expoConfig?.name ?? "BillBell";
 
   const langs = [
     { code: "en", label: "English" },
@@ -871,7 +874,7 @@ export default function Profile() {
                 fontSize: 12,
               }}
             >
-              {t("Version")} 1.0.0 (BillBell)
+              {t("Version")} {version} {appName}, Dunn-Carabali, LLC
             </Text>
           </View>
         </View>
