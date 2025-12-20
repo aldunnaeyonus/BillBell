@@ -191,7 +191,7 @@ struct MediumWidgetView: View {
         if !entry.nextBillID.isEmpty {
           Text(entry.nextBillName)
             .font(.headline)
-            .lineLimit(1)
+            .lineLimit(2)
           
           Text(LocalizedStringKey(entry.payment_method == "auto" ? "auto_draft" : "manual_pay"))
             .font(.caption2)
