@@ -50,7 +50,7 @@ class ImportController {
     $bills = $data["bills"] ?? [];
     if (!is_array($bills)) Utils::json(["error" => "bills must be an array"], 422);
 
-    $validRecurrences = ["monthly","weekly","bi-weekly","annually","none"];
+    $validRecurrences = ["monthly","weekly","bi-weekly","quartlery","annually","semi-monthly","semi-annually", "none"];
 
     $inserted = 0;
 

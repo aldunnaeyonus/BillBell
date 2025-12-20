@@ -23,7 +23,15 @@ import { addToCalendar } from "../../src/calendar/calendarSync";
 
 // --- Components ---
 
-function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
+function Header({
+  title,
+  subtitle,
+  theme,
+}: {
+  title: string;
+  subtitle: string;
+  theme: Theme;
+}) {
   return (
     <View style={styles.headerShadowContainer}>
       <LinearGradient
@@ -129,7 +137,7 @@ function RecurrenceChip({
         {
           backgroundColor: active ? theme.colors.accent : theme.colors.card,
           borderColor: active ? theme.colors.accent : theme.colors.border,
-          opacity: pressed ? 0.8 : 1,
+          opacity: pressed ? 0.8 : 1
         },
       ]}
     >
@@ -176,17 +184,26 @@ export default function BillEdit() {
 
   const reminderDateObj = useMemo(() => {
     // Basic parsing to avoid timezone shifts on simple YYYY-MM-DD
-    const [y, m, d] = dueDate.split('-').map(Number);
+    const [y, m, d] = dueDate.split("-").map(Number);
     return new Date(y, m - 1, d);
   }, [dueDate]);
 
   const [recurrence, setRecurrence] = useState<
-    "none" | "weekly" | "bi-weekly" | "monthly" | "annually"
+    | "none"
+    | "weekly"
+    | "bi-weekly"
+    | "monthly"
+    | "annually"
+    | "semi-annually"
+    | "semi-monthly"
+    | "quarterly"
   >("none");
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"manual" | "auto">("manual");
+  const [paymentMethod, setPaymentMethod] = useState<"manual" | "auto">(
+    "manual"
+  );
 
   // Time object for the TimePicker
   const timeObj = useMemo(() => {
@@ -340,7 +357,7 @@ export default function BillEdit() {
                   keyboardType="decimal-pad"
                   theme={theme}
                 />
-                
+
                 {/* Date Picker Row */}
                 <Pressable
                   // CHANGE: Use toggle (prev => !prev) instead of true
@@ -353,15 +370,24 @@ export default function BillEdit() {
                     },
                   ]}
                 >
-                  <Ionicons name="calendar-outline" size={20} color={theme.colors.subtext} />
-                  <Text style={[styles.inputText, { color: theme.colors.primaryText }]}>
+                  <Ionicons
+                    name="calendar-outline"
+                    size={20}
+                    color={theme.colors.subtext}
+                  />
+                  <Text
+                    style={[
+                      styles.inputText,
+                      { color: theme.colors.primaryText },
+                    ]}
+                  >
                     {reminderDateObj.toDateString()}
                   </Text>
                   {/* Visual indicator that it can be closed (optional chevron flip could be added here) */}
-                  <Ionicons 
-                    name={showDatePicker ? "chevron-up" : "chevron-down"} 
-                    size={16} 
-                    color={theme.colors.subtext} 
+                  <Ionicons
+                    name={showDatePicker ? "chevron-up" : "chevron-down"}
+                    size={16}
+                    color={theme.colors.subtext}
                   />
                 </Pressable>
                 {showDatePicker && (
@@ -384,21 +410,21 @@ export default function BillEdit() {
                 />
               </View>
             </View>
-<View style={styles.section}>
-  <SectionTitle title={t("Payment Method")} theme={theme} />
-  <View style={styles.chipsContainer}>
-    {["manual", "auto"].map((m) => (
-      <RecurrenceChip
-        key={m}
-        label={m === "auto" ? t("Auto Draft") : t("Manual")}
-        value={m}
-        active={paymentMethod === m}
-        onPress={() => setPaymentMethod(m as any)}
-        theme={theme}
-      />
-    ))}
-  </View>
-</View>
+            <View style={styles.section}>
+              <SectionTitle title={t("Payment Method")} theme={theme} />
+              <View style={styles.chipsContainer}>
+                {["manual", "auto"].map((m) => (
+                  <RecurrenceChip
+                    key={m}
+                    label={m === "auto" ? t("Auto Draft") : t("Manual")}
+                    value={m}
+                    active={paymentMethod === m}
+                    onPress={() => setPaymentMethod(m as any)}
+                    theme={theme}
+                  />
+                ))}
+              </View>
+            </View>
             {/* Recurrence Section */}
             <View style={styles.section}>
               <SectionTitle title={t("Frequency")} theme={theme} />
@@ -408,11 +434,21 @@ export default function BillEdit() {
                   "weekly",
                   "bi-weekly",
                   "monthly",
+                  "semi-monthly",
+                  "quarterly",
+                  "semi-annually",
                   "annually",
                 ].map((r) => (
                   <RecurrenceChip
                     key={r}
-                    label={t(r.charAt(0).toUpperCase() + r.slice(1))}
+                    label={t(
+                      r
+                        .split("-")
+                        .map(
+                          (part) => part.charAt(0).toUpperCase() + part.slice(1)
+                        )
+                        .join("-")
+                    )}
                     value={r}
                     active={recurrence === r}
                     onPress={() => setRecurrence(r as any)}
@@ -428,18 +464,33 @@ export default function BillEdit() {
               <View
                 style={[
                   styles.card,
-                  { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
+                  {
+                    backgroundColor: theme.colors.card,
+                    borderColor: theme.colors.border,
+                  },
                 ]}
               >
-                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
-                  <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginBottom: 10,
+                  }}
+                >
+                  <Text
+                    style={{ color: theme.colors.subtext, fontWeight: "600" }}
+                  >
                     {t("Remind me")}
                   </Text>
-                  <Text style={{ color: theme.colors.accent, fontWeight: "700" }}>
-                    {offsetDays === "0" ? t("Same day") : t("{{days}} day(s) before", { days: offsetDays })}
+                  <Text
+                    style={{ color: theme.colors.accent, fontWeight: "700" }}
+                  >
+                    {offsetDays === "0"
+                      ? t("Same day")
+                      : t("{{days}} day(s) before", { days: offsetDays })}
                   </Text>
                 </View>
-                
+
                 <Slider
                   style={{ width: "100%", height: 40 }}
                   minimumValue={0}
@@ -457,14 +508,42 @@ export default function BillEdit() {
                 <Pressable
                   // CHANGE: Use toggle for Time Picker as well for consistency
                   onPress={() => setShowTimePicker((prev) => !prev)}
-                  style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 8 }}
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    paddingVertical: 8,
+                  }}
                 >
-                  <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("Alert Time")}</Text>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <Text style={{ color: theme.colors.primaryText, fontWeight: "700", fontSize: 16 }}>
-                      {timeObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                  <Text
+                    style={{ color: theme.colors.subtext, fontWeight: "600" }}
+                  >
+                    {t("Alert Time")}
+                  </Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: theme.colors.primaryText,
+                        fontWeight: "700",
+                        fontSize: 16,
+                      }}
+                    >
+                      {timeObj.toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
                     </Text>
-                    <Ionicons name="time-outline" size={18} color={theme.colors.subtext} />
+                    <Ionicons
+                      name="time-outline"
+                      size={18}
+                      color={theme.colors.subtext}
+                    />
                   </View>
                 </Pressable>
                 {showTimePicker && (
@@ -495,7 +574,12 @@ export default function BillEdit() {
                 {loading ? (
                   <ActivityIndicator color={theme.colors.primaryTextButton} />
                 ) : (
-                  <Text style={[styles.saveButtonText, { color: theme.colors.primaryTextButton }]}>
+                  <Text
+                    style={[
+                      styles.saveButtonText,
+                      { color: theme.colors.primaryTextButton },
+                    ]}
+                  >
                     {t("Save Bill")}
                   </Text>
                 )}
@@ -511,13 +595,18 @@ export default function BillEdit() {
                   },
                 ]}
               >
-                <Ionicons name="calendar" size={18} color={theme.colors.primary} />
-                <Text style={{ color: theme.colors.primary, fontWeight: "700" }}>
+                <Ionicons
+                  name="calendar"
+                  size={18}
+                  color={theme.colors.primary}
+                />
+                <Text
+                  style={{ color: theme.colors.primary, fontWeight: "700" }}
+                >
                   {t("Add to Device Calendar")}
                 </Text>
               </Pressable>
             </View>
-
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -544,9 +633,9 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     borderRadius: 20,
   },
-headerGradient: {
+  headerGradient: {
     borderRadius: 20,
-    height:120,
+    height: 120,
     paddingBottom: 24,
     flexDirection: "row",
     alignItems: "center",
@@ -560,7 +649,7 @@ headerGradient: {
     backgroundColor: "rgba(255,255,255,0.15)",
     justifyContent: "center",
     alignItems: "center",
-    marginLeft:10
+    marginLeft: 10,
   },
   headerTitle: {
     fontSize: 22,
@@ -609,14 +698,22 @@ headerGradient: {
     flexWrap: "wrap",
     gap: 10,
   },
-  chip: {
+chip: {
+    // Preserved Styles
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
-    minWidth: "30%",
-    flexGrow: 1,
     alignItems: "center",
+
+    // Layout Changes for 2-per-line
+    width: "48%", // 48% + 48% + gap = 100%
+    marginBottom: 8, // Optional: Add vertical spacing
+    
+    // Removed:
+    // minWidth: "30%",
+    // flexGrow: 1,
+    // flex: 1,
   },
   chipText: {
     fontSize: 14,

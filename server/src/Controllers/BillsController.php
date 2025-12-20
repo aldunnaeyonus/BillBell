@@ -53,7 +53,7 @@ class BillsController {
     if (strlen($reminderTime) === 5) $reminderTime .= ":00";
 
     $recurrence = $data["recurrence"] ?? "none";
-    if (!in_array($recurrence, ["none","monthly","weekly","bi-weekly","annually"], true)) Utils::json(["error" => "Invalid recurrence"], 422);
+    if (!in_array($recurrence, ["none","monthly","weekly","bi-weekly","quarterly","semi-monthly","semi-annually", "annually"], true)) Utils::json(["error" => "Invalid recurrence"], 422);
 
     $amountEncrypted = $data["amount_encrypted"] ?? null;
 
@@ -174,10 +174,12 @@ class BillsController {
     $upd->execute([$userId, $id, $familyId]);
 
     $dateModifier = null;
-    if ($bill["recurrence"] === "weekly") $dateModifier = "+1 week";
-    elseif ($bill["recurrence"] === "bi-weekly") $dateModifier = "+2 weeks";
-    elseif ($bill["recurrence"] === "monthly") $dateModifier = "+1 month";
-    elseif ($bill["recurrence"] === "annually") $dateModifier = "+1 year";
+if ($bill["recurrence"] === "weekly") $dateModifier = "+1 week";
+elseif ($bill["recurrence"] === "bi-weekly") $dateModifier = "+2 weeks";
+elseif ($bill["recurrence"] === "monthly") $dateModifier = "+1 month";
+elseif ($bill["recurrence"] === "quarterly") $dateModifier = "+3 months";
+elseif ($bill["recurrence"] === "semi-annually") $dateModifier = "+6 months"; // Added for insurance/tax
+elseif ($bill["recurrence"] === "annually") $dateModifier = "+1 year";
 
     if ($dateModifier) {
       $dt = new \DateTime($bill["due_date"]);

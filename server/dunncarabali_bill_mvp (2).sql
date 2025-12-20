@@ -38,7 +38,7 @@ CREATE TABLE `bills` (
   `due_date` date NOT NULL,
   `status` enum('active','paid') NOT NULL DEFAULT 'active',
   `snoozed_until` datetime DEFAULT NULL,
-  `recurrence` enum('none','monthly','weekly','bi-weekly','annually') NOT NULL DEFAULT 'none',
+  `recurrence` enum('none','monthly','weekly','bi-weekly','quarterly','semi-monthly','semi-annually','annually') NOT NULL DEFAULT 'none',
   `reminder_offset_days` tinyint(4) NOT NULL DEFAULT '1',
   `reminder_time_local` time NOT NULL DEFAULT '09:00:00',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

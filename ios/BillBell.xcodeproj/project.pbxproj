@@ -59,6 +59,7 @@
 		1EA0E4C87351576506CD4551 /* Pods-BillBell.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BillBell.debug.xcconfig"; path = "Target Support Files/Pods-BillBell/Pods-BillBell.debug.xcconfig"; sourceTree = "<group>"; };
 		852448312EF45E290068137E /* google-services.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "google-services.json"; sourceTree = "<group>"; };
 		852448332EF465650068137E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		85A3D90F2EF7208200A2BB55 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		85E9AA5B2EF39ED20064B618 /* LiveActivityModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LiveActivityModule.m; sourceTree = "<group>"; };
 		85E9AA5C2EF39ED20064B618 /* LiveActivityModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityModule.swift; sourceTree = "<group>"; };
 		85E9AA5D2EF39ED20064B618 /* MarkBillPaidIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkBillPaidIntent.swift; sourceTree = "<group>"; };
@@ -316,6 +317,7 @@
 				"pt-BR",
 				"pt-PT",
 				es,
+				nl,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
@@ -543,6 +545,7 @@
 				85E9AA8B2EF39F6E0064B618 /* pt-BR */,
 				85E9AA8C2EF39F6E0064B618 /* pt-PT */,
 				85E9AA8D2EF39F6F0064B618 /* es */,
+				85A3D90F2EF7208200A2BB55 /* nl */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";

@@ -203,7 +203,7 @@ export default function BulkImport() {
       let recurrence = "none";
       if (iRecurrence >= 0 && cols.length > iRecurrence) {
         const val = cols[iRecurrence].toLowerCase();
-        if (["weekly", "bi-weekly", "monthly", "annually"].includes(val)) {
+        if (["weekly", "bi-weekly", "monthly", "quarterly", "semi-annually", "semi-monthly", "semi-annually","annually"].includes(val)) {
           recurrence = val;
         }
       }
