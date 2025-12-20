@@ -5,15 +5,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import "intl-pluralrules";
 
 import en from "../locales/en.json";
-import es from '../locales/es.json';
-import de from '../locales/de.json';
-import fr from '../locales/fr.json';
-import ja from '../locales/ja.json';
-import zhHans from '../locales/zh-Hans.json';
-import ptBR from '../locales/pt-BR.json';
-import it from '../locales/it.json';
-import zhHant from '../locales/zh-Hans.json';
-import zhHK from '../locales/zh-Hans.json';
+import es from "../locales/es.json";
+import de from "../locales/de.json";
+import fr from "../locales/fr.json";
+import ja from "../locales/ja.json";
+import zhHans from "../locales/zh-Hans.json";
+import ptBR from "../locales/pt-BR.json";
+import it from "../locales/it.json";
+import zhHant from "../locales/zh-Hans.json";
+import zhHK from "../locales/zh-Hans.json";
+import nl from "../locales/nl.json";
 
 const resources = {
   en: { translation: en },
@@ -28,6 +29,7 @@ const resources = {
   zh: { translation: zhHans },
   zh: { translation: zhHant },
   zh: { translation: zhHK },
+  nl: { translation: nl },
 };
 
 const MODULE_TYPE = "languageDetector";
@@ -70,7 +72,7 @@ i18n
     },
     react: {
       useSuspense: false, // Prevents UI blocking while loading language
-    }
+    },
   });
 
 export default i18n;

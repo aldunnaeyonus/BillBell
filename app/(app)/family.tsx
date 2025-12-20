@@ -16,7 +16,7 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Added persistence
+import AsyncStorage from "@react-native-async-storage/async-storage"; 
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 
@@ -51,7 +51,7 @@ function Header({
   );
 }
 
-// --- New Component: Waiting View ---
+// --- Waiting View ---
 function WaitingView({ 
   code, 
   onCheckStatus, 
@@ -65,28 +65,27 @@ function WaitingView({
   loading: boolean; 
   theme: Theme 
 }) {
+    const { t } = useTranslation();
+  
   return (
     <View style={{ flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center', gap: 32 }}>
-      
-      {/* Icon */}
       <View style={[styles.iconBox, { width: 100, height: 100, borderRadius: 50, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }]}>
          <Ionicons name="hourglass-outline" size={48} color={theme.colors.primary} />
       </View>
       
-      {/* Text Info */}
       <View style={{ alignItems: 'center', gap: 12 }}>
         <Text style={[styles.headerTitle, { color: theme.colors.primaryText, textAlign: 'center', fontSize: 24 }]}>
-          Approval Pending
+          {t("Approval Pending")}
         </Text>
         <Text style={[styles.cardBody, { color: theme.colors.subtext, textAlign: 'center', fontSize: 16 }]}>
-          You requested to join family <Text style={{ fontWeight: '700', color: theme.colors.primaryText }}>{code}</Text>.
+           {t("You requested to join family")}
+            <Text style={{ fontWeight: '700', color: theme.colors.primaryText }}>{code}</Text>.
         </Text>
         <Text style={[styles.cardBody, { color: theme.colors.subtext, textAlign: 'center', opacity: 0.8 }]}>
-          Waiting for an admin to approve your request.
+           {t("Waiting for an admin to approve your request.")}
         </Text>
       </View>
 
-      {/* Buttons */}
       <View style={{ width: '100%', gap: 16 }}>
         <Pressable
             onPress={onCheckStatus}
@@ -104,7 +103,7 @@ function WaitingView({
             <ActivityIndicator color={theme.colors.primaryTextButton} />
             ) : (
             <Text style={[styles.actionButtonText, { color: theme.colors.primaryTextButton }]}>
-                Check Status
+                 {t("Check Status")}
             </Text>
             )}
         </Pressable>
@@ -114,7 +113,7 @@ function WaitingView({
             disabled={loading} 
             style={({ pressed }) => [{ padding: 12, alignItems: 'center', opacity: pressed ? 0.6 : 1 }]}
         >
-            <Text style={{ color: theme.colors.danger, fontWeight: '600', fontSize: 15 }}>Cancel Request</Text>
+            <Text style={{ color: theme.colors.danger, fontWeight: '600', fontSize: 15 }}> {t("Cancel Request")}</Text>
         </Pressable>
       </View>
     </View>
@@ -130,9 +129,8 @@ export default function Family() {
   const { code: urlCode } = useLocalSearchParams<{ code?: string }>();
   
   const [code, setCode] = useState(urlCode || ""); 
-  const [pendingCode, setPendingCode] = useState<string | null>(null); // New State
+  const [pendingCode, setPendingCode] = useState<string | null>(null); 
 
-  // 1. Load Pending State on Mount
   useEffect(() => {
     checkPendingState();
   }, []);
@@ -179,7 +177,6 @@ export default function Family() {
   }
 
   async function handleJoin(inputCode?: string) {
-    // If inputCode is provided (from Check Status), use it. Otherwise use state (from Input).
     const codeToUse = inputCode || code;
     
     if (!codeToUse || !codeToUse.trim()) {
@@ -191,13 +188,28 @@ export default function Family() {
       setLoading(true);
       const res: any = await api.familyJoin(codeToUse.trim().toUpperCase());
       
-      if (res.status === "pending") {
-        // --- SAVE STATE ---
+      console.log("API Join Response:", JSON.stringify(res)); // DEBUG LOG
+
+      // --- 1. HANDLE REJECTION ---
+      if (res && res.status === "rejected") {
+          // Clear everything so the user is forced back to the main input screen
+          await AsyncStorage.removeItem("billbell_pending_family_code");
+          setPendingCode(null);
+          setCode(""); 
+          
+          Alert.alert(
+              t("Request Denied"),
+              t("The family admin has denied your request to join.")
+          );
+          return; // STOP HERE
+      }
+
+      // --- 2. HANDLE PENDING ---
+      if (res && res.status === "pending") {
         const cleanCode = codeToUse.trim().toUpperCase();
         await AsyncStorage.setItem("billbell_pending_family_code", cleanCode);
         setPendingCode(cleanCode);
         
-        // Only show alert if this was a manual join attempt
         if (!inputCode) { 
             Alert.alert(
               t("Request Sent"),
@@ -206,15 +218,21 @@ export default function Family() {
         } else {
              Alert.alert(t("Still Pending"), t("Your request has not been approved yet."));
         }
-      } else {
-        // --- SUCCESS ---
-        await AsyncStorage.removeItem("billbell_pending_family_code");
-        setPendingCode(null);
-        router.replace("/onboarding");
+        return; // STOP HERE
       }
+      
+      // --- 3. SAFETY NET ---
+      // If we get here, the status is unknown (neither rejected nor pending).
+      // DO NOT redirect to onboarding/bills unless we are sure.
+      console.warn("Unknown status from server:", res);
+      Alert.alert("Debug", "Unknown server status: " + (res?.status || "missing"));
+
     } catch (e: any) {
       const msg = e.message || "";
-      // If the API throws "User already in family" (409), that means we are approved!
+      console.log("Join Error:", msg);
+
+      // --- 4. SUCCESS CASE (via Error) ---
+      // The API returns 409 "User already in family" if they are fully approved/joined.
       if (msg.toLowerCase().includes("user not in family") === false && (msg.includes("already in") || msg.includes("member"))) {
          await AsyncStorage.removeItem("billbell_pending_family_code");
          setPendingCode(null);
@@ -227,7 +245,6 @@ export default function Family() {
     }
   }
 
-  // Handle Cancel
   async function handleCancel() {
     Alert.alert(
         t("Cancel Request"),
@@ -247,9 +264,6 @@ export default function Family() {
     );
   }
 
-  // --- RENDER ---
-  
-  // 1. Pending View
   if (pendingCode) {
      return (
        <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
@@ -264,7 +278,6 @@ export default function Family() {
      );
   }
 
-  // 2. Standard View (Join/Create)
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <KeyboardAvoidingView
@@ -276,76 +289,33 @@ export default function Family() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.content}>
-            {/* Header */}
             <Header
               title={t("Family Setup")}
               subtitle={t("Sync bills with your family or housemates.")}
               theme={theme}
             />
 
-            {/* Option 1: Join */}
             <View style={styles.section}>
-              <Text
-                style={[styles.sectionTitle, { color: theme.colors.subtext }]}
-              >
+              <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>
                 {t("Join a Group")}
               </Text>
 
-              <View
-                style={[
-                  styles.card,
-                  {
-                    backgroundColor: theme.colors.card,
-                    borderColor: theme.colors.border,
-                  },
-                ]}
-              >
-                <View
-                  style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}
-                >
-                  <View
-                    style={[
-                      styles.iconBox,
-                      {
-                        backgroundColor:
-                          theme.mode === "dark" ? "#1E293B" : "#F1F5F9",
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name="enter-outline"
-                      size={24}
-                      color={theme.colors.primary}
-                    />
+              <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
+                  <View style={[styles.iconBox, { backgroundColor: theme.mode === "dark" ? "#1E293B" : "#F1F5F9" }]}>
+                    <Ionicons name="enter-outline" size={24} color={theme.colors.primary} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.cardTitle,
-                        { color: theme.colors.primaryText },
-                      ]}
-                    >
+                    <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>
                       {t("Have an ID?")}
                     </Text>
-                    <Text
-                      style={[styles.cardBody, { color: theme.colors.subtext }]}
-                    >
-                      {t(
-                        "Enter the Family ID shared with you to join an existing group."
-                      )}
+                    <Text style={[styles.cardBody, { color: theme.colors.subtext }]}>
+                      {t("Enter the Family ID shared with you to join an existing group.")}
                     </Text>
                   </View>
                 </View>
 
-                <View
-                  style={[
-                    styles.inputContainer,
-                    {
-                      borderColor: theme.colors.border,
-                      backgroundColor: theme.colors.bg,
-                    },
-                  ]}
-                >
+                <View style={[styles.inputContainer, { borderColor: theme.colors.border, backgroundColor: theme.colors.bg }]}>
                   <TextInput
                     value={code}
                     onChangeText={setCode}
@@ -364,20 +334,14 @@ export default function Family() {
                     styles.actionButton,
                     {
                       backgroundColor: theme.colors.primary,
-                      opacity:
-                        loading || !code.trim() ? 0.5 : pressed ? 0.8 : 1,
+                      opacity: loading || !code.trim() ? 0.5 : pressed ? 0.8 : 1,
                     },
                   ]}
                 >
                   {loading ? (
                     <ActivityIndicator color={theme.colors.primaryTextButton} />
                   ) : (
-                    <Text
-                      style={[
-                        styles.actionButtonText,
-                        { color: theme.colors.primaryTextButton },
-                      ]}
-                    >
+                    <Text style={[styles.actionButtonText, { color: theme.colors.primaryTextButton }]}>
                       {t("Join Family")}
                     </Text>
                   )}
@@ -385,24 +349,14 @@ export default function Family() {
               </View>
             </View>
 
-            {/* Divider with Text */}
             <View style={styles.orContainer}>
-              <View
-                style={[styles.line, { backgroundColor: theme.colors.border }]}
-              />
-              <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>
-                {t("OR")}
-              </Text>
-              <View
-                style={[styles.line, { backgroundColor: theme.colors.border }]}
-              />
+              <View style={[styles.line, { backgroundColor: theme.colors.border }]} />
+              <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("OR")}</Text>
+              <View style={[styles.line, { backgroundColor: theme.colors.border }]} />
             </View>
 
-            {/* Option 2: Create */}
             <View style={styles.section}>
-              <Text
-                style={[styles.sectionTitle, { color: theme.colors.subtext }]}
-              >
+              <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>
                 {t("Start Fresh")}
               </Text>
 
@@ -418,45 +372,19 @@ export default function Family() {
                   },
                 ]}
               >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 12,
-                  }}
-                >
-                  <View
-                    style={[
-                      styles.iconBox,
-                      { backgroundColor: theme.colors.accent + "20" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="add-circle"
-                      size={28}
-                      color={theme.colors.accent}
-                    />
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                  <View style={[styles.iconBox, { backgroundColor: theme.colors.accent + "20" }]}>
+                    <Ionicons name="add-circle" size={28} color={theme.colors.accent} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.cardTitle,
-                        { color: theme.colors.primaryText },
-                      ]}
-                    >
+                    <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>
                       {t("Create New Family")}
                     </Text>
-                    <Text
-                      style={[styles.cardBody, { color: theme.colors.subtext }]}
-                    >
+                    <Text style={[styles.cardBody, { color: theme.colors.subtext }]}>
                       {t("Become an admin and invite others.")}
                     </Text>
                   </View>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color={theme.colors.subtext}
-                  />
+                  <Ionicons name="chevron-forward" size={20} color={theme.colors.subtext} />
                 </View>
               </Pressable>
             </View>
@@ -468,14 +396,8 @@ export default function Family() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-    gap: 24,
-  },
-  // Header
+  container: { flex: 1 },
+  content: { padding: 16, gap: 24 },
   headerShadowContainer: {
     backgroundColor: "transparent",
     shadowColor: "#000",
@@ -504,88 +426,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 10,
   },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#FFF",
-    marginBottom: 2,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.7)",
-  },
-  // Section
-  section: {
-    gap: 8,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginLeft: 4,
-  },
-  // Card
-  card: {
-    padding: 20,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 2,
-  },
-  cardBody: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  // Input
-  inputContainer: {
-    borderWidth: 1,
-    borderRadius: 14,
-    height: 56,
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  input: {
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-    letterSpacing: 2,
-  },
-  // Button
-  actionButton: {
-    height: 52,
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  actionButtonText: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  // Divider
-  orContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 10,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-  },
+  headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
+  headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
+  section: { gap: 8 },
+  sectionTitle: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 4 },
+  card: { padding: 20, borderRadius: 20, borderWidth: 1 },
+  iconBox: { width: 44, height: 44, borderRadius: 14, justifyContent: "center", alignItems: "center" },
+  cardTitle: { fontSize: 16, fontWeight: "700", marginBottom: 2 },
+  cardBody: { fontSize: 13, lineHeight: 18 },
+  inputContainer: { borderWidth: 1, borderRadius: 14, height: 56, justifyContent: "center", marginBottom: 16 },
+  input: { fontSize: 18, fontWeight: "600", textAlign: "center", letterSpacing: 2 },
+  actionButton: { height: 52, borderRadius: 14, justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
+  actionButtonText: { fontSize: 16, fontWeight: "700" },
+  orContainer: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 10 },
+  line: { flex: 1, height: 1 },
 });

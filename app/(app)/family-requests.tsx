@@ -9,9 +9,13 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Stack } from "expo-router";
+import { Ionicons } from "@expo/vector-icons"; 
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Added for caching
 import { api } from "../../src/api/client";
 import { useTheme } from "../../src/ui/useTheme";
 import { useTranslation } from "react-i18next";
+
+const CACHE_KEY = "billbell_family_requests_cache";
 
 export default function FamilyRequests() {
   const theme = useTheme();
@@ -25,11 +29,23 @@ export default function FamilyRequests() {
 
   async function loadRequests() {
     try {
-      // FIX: Use client method instead of raw api.get
+      // 1. Load from Cache first (Instant UI)
+      const cached = await AsyncStorage.getItem(CACHE_KEY);
+      if (cached) {
+        setRequests(JSON.parse(cached));
+        setLoading(false); // Show cached content immediately
+      }
+
+      // 2. Fetch Fresh Data
       const res: any = await api.familyRequests();
-      setRequests(res.requests || []);
+      const freshData = res.requests || [];
+      
+      // 3. Update State & Cache
+      setRequests(freshData);
+      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(freshData));
+      
     } catch (e) {
-      console.log(e);
+      console.log("Failed to load requests", e);
     } finally {
       setLoading(false);
     }
@@ -41,25 +57,31 @@ export default function FamilyRequests() {
   ) {
     try {
       setLoading(true);
-      // FIX: Use client method instead of raw api.post
       await api.familyRequestRespond(requestId, action);
-      await loadRequests(); // Refresh list
+      
+      // Refresh list (and update cache)
+      await loadRequests(); 
     } catch (e: any) {
       Alert.alert(t("Error"), e.message);
       setLoading(false);
     }
   }
 
+  function formatDate(dateString: string) {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString();
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      <Stack.Screen options={{ title: t("Join Requests") }} />
+      <Stack.Screen options={{ title: "Join Requests" }} />
 
-      {loading ? (
+      {loading && requests.length === 0 ? (
         <ActivityIndicator size="large" style={{ marginTop: 20 }} />
       ) : requests.length === 0 ? (
         <View style={styles.empty}>
           <Text style={{ color: theme.colors.subtext }}>
-            {t("No pending requests.")}
+            No requests found.
           </Text>
         </View>
       ) : (
@@ -67,61 +89,86 @@ export default function FamilyRequests() {
           data={requests}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ padding: 16, gap: 12 }}
-          renderItem={({ item }) => (
-            <View
-              style={[
-                styles.card,
-                {
-                  backgroundColor: theme.colors.card,
-                  borderColor: theme.colors.border,
-                },
-              ]}
-            >
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={[styles.name, { color: theme.colors.primaryText }]}
-                >
-                  {item.name || t("Unknown User")}
-                </Text>
-                <Text style={[styles.email, { color: theme.colors.subtext }]}>
-                  {item.email}
-                </Text>
-              </View>
-              <View style={styles.actions}>
-                <Pressable
-                  onPress={() => handleRespond(item.id, "reject")}
-                  // FIX: Use theme.colors.danger
-                  style={[styles.btn, { backgroundColor: theme.colors.danger }]}
-                >
-                  <Text
-                    style={[
-                      styles.btnText,
-                      { color: theme.colors.dangerText },
-                    ]}
-                  >
-                    {t("Deny")}
+          renderItem={({ item }) => {
+            const isRejected = item.status === 'rejected';
+
+            return (
+              <View
+                style={[
+                  styles.card,
+                  {
+                    backgroundColor: theme.colors.card,
+                    borderColor: theme.colors.border,
+                    opacity: isRejected ? 0.8 : 1, 
+                  },
+                ]}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text
+                      style={[styles.name, { color: theme.colors.primaryText }]}
+                    >
+                      {item.name || "Unknown User"}
+                    </Text>
+                    
+                    {/* ICON: Show Red X if rejected */}
+                    {isRejected && (
+                      <Ionicons name="close-circle" size={20} color={theme.colors.danger} />
+                    )}
+                  </View>
+                  
+                  <Text style={[styles.email, { color: theme.colors.subtext }]}>
+                    {item.email}
                   </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => handleRespond(item.id, "approve")}
-                  // FIX: Use theme.colors.primary (Navy/Mint)
-                  style={[
-                    styles.btn,
-                    { backgroundColor: theme.colors.primary },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.btnText,
-                      { color: theme.colors.primaryTextButton },
-                    ]}
-                  >
-                    {t("Approve")}
-                  </Text>
-                </Pressable>
+                </View>
+
+                <View style={styles.actions}>
+                  {isRejected ? (
+                    // SHOW DATE OF DENIAL
+                    <Text style={{ color: theme.colors.danger, fontSize: 13, fontWeight: '600' }}>
+                      {t("Denied on")} {formatDate(item.updated_at || item.created_at)}
+                    </Text>
+                  ) : (
+                    // SHOW BUTTONS
+                    <>
+                      <Pressable
+                        onPress={() => handleRespond(item.id, "reject")}
+                        style={[
+                            styles.btn, 
+                            { backgroundColor: theme.colors.danger }
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.btnText,
+                            { color: theme.colors.dangerText },
+                          ]}
+                        >
+                          {t("Deny")}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => handleRespond(item.id, "approve")}
+                        style={[
+                          styles.btn,
+                          { backgroundColor: theme.colors.primary },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.btnText,
+                            { color: theme.colors.primaryTextButton },
+                          ]}
+                        >
+                          {t("Approve")}
+                        </Text>
+                      </Pressable>
+                    </>
+                  )}
+                </View>
               </View>
-            </View>
-          )}
+            );
+          }}
         />
       )}
     </View>
@@ -140,7 +187,7 @@ const styles = StyleSheet.create({
   },
   name: { fontWeight: "bold", fontSize: 16 },
   email: { fontSize: 12 },
-  actions: { flexDirection: "row", gap: 8 },
+  actions: { flexDirection: "row", gap: 8, alignItems: 'center' },
   btn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   btnText: { fontWeight: "bold", fontSize: 12 },
 });

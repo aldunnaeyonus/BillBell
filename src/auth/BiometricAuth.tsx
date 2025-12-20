@@ -90,8 +90,8 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
       }
 
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: t("Unlock App") || "Unlock App",
-        fallbackLabel: "Use Passcode",
+        promptMessage: t("Unlock App") || t("Unlock App"),
+        fallbackLabel: t("Use Passcode"),
         disableDeviceFallback: false,
         // FIX: Add a robust fallback for the cancelLabel to prevent native crashes
         cancelLabel: t("Cancel") || "Cancel", // <-- MODIFIED

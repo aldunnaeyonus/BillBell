@@ -354,7 +354,7 @@ export default function FamilySettings() {
         {isAdmin && (
             <View style={{ marginTop: 40, borderTopWidth: StyleSheet.hairlineWidth, borderColor: theme.colors.border, paddingBottom: 30 }}>
               <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary, marginTop: 20 }]}>
-                {t("Encryption Management")}
+                {t("section_encryption")}
               </Text>
               
               <Pressable 
@@ -377,7 +377,7 @@ export default function FamilySettings() {
                 ]}
               >
                 <Text style={[styles.rowText, { color: theme.colors.destructive, fontWeight: '600' }]}>
-                  {isRotating ? t("Rotating Key...") : t("Rotate Family Encryption Key")}
+                  {isRotating ? t("Rotating Key...") : t("rotation_button")}
                 </Text>
                 <Ionicons 
                   name={isRotating ? "reload-circle-outline" : "key-outline"} 

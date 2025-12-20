@@ -13,6 +13,7 @@ import {
   Platform,
   Modal,
   Switch,
+  codegenNativeCommands,
 } from "react-native";
 import { router } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -252,6 +253,7 @@ function MemberAvatar({
 }) {
   const name = item.name || item.email || "User";
   const initial = name.charAt(0).toUpperCase();
+  const { t } = useTranslation();
 
   return (
     <Pressable
@@ -291,7 +293,7 @@ function MemberAvatar({
         numberOfLines={1}
         style={[styles.memberName, { color: theme.colors.primaryText }]}
       >
-        {name} {isCurrentUser ? "(You)" : ""}
+        {name} {isCurrentUser ? t("(You)") : ""}
       </Text>
     </Pressable>
   );
@@ -318,6 +320,7 @@ export default function Profile() {
     { code: "en", label: "English" },
     { code: "es", label: "Español" },
     { code: "de", label: "Deutsch" },
+    { code: "nl", label: "Nederlands"},
     { code: "fr", label: "Français" },
     { code: "it", label: "Italiano" },
     { code: "pt-BR", label: "Português (BR)" },
@@ -660,7 +663,6 @@ export default function Profile() {
         }
       >
         <View style={styles.content}>
-          {/* Hero Section */}
           {data && (
             <ProfileHeader
               familyCode={data.family_code}
@@ -670,7 +672,6 @@ export default function Profile() {
             />
           )}
 
-          {/* Members Section */}
           {data?.members && (
             <View style={styles.section}>
               <SectionTitle title={t("Members")} theme={theme} />
