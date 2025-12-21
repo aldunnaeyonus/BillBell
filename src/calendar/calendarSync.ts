@@ -1,37 +1,47 @@
 import * as Calendar from 'expo-calendar';
-import { Platform, Alert } from 'react-native';
-import i18n from "i18next"; // Import i18n instance
+import { Platform, Alert, Linking } from 'react-native';
+import i18n from "../api/i18n"; 
+import { parseISO, setHours, setMinutes, setSeconds, setMilliseconds } from 'date-fns';
 
 export async function addToCalendar(bill: any) {
   try {
     const { status } = await Calendar.requestCalendarPermissionsAsync();
+    
     if (status !== 'granted') {
       Alert.alert(
         i18n.t("Permission needed"), 
-        i18n.t("Calendar access is required to sync bills.")
+        i18n.t("Calendar access is required to sync bills."),
+        [
+            { text: i18n.t("Cancel"), style: "cancel" },
+            { text: i18n.t("Settings"), onPress: () => Linking.openSettings() }
+        ]
       );
       return;
     }
 
     const calendarId = await getCalendarId();
-    if (!calendarId) return;
+    if (!calendarId) {
+        Alert.alert(
+            i18n.t("Error"), 
+            i18n.t("Could not find a default calendar to add this event to. Please check your device calendar settings.")
+        );
+        return;
+    }
 
-    // Parse date (ensure it's noon to avoid timezone edge cases shifts)
-    const dueDate = new Date(bill.due_date);
-    dueDate.setHours(12, 0, 0, 0);
+    // Parse date safely and set to noon to avoid timezone shifts
+    const due = parseISO(bill.due_date);
+    const startDate = setMilliseconds(setSeconds(setMinutes(setHours(due, 12), 0), 0), 0);
+    const endDate = setMilliseconds(setSeconds(setMinutes(setHours(due, 13), 0), 0), 0);
 
     const eventDetails = {
-      // FIX: Use i18n.t() for the title
       title: `${i18n.t("Pay")} ${bill.creditor}`,
-      startDate: dueDate,
-      endDate: dueDate,
+      startDate,
+      endDate,
       allDay: true,
       notes: `${i18n.t("Amount")}: $${(bill.amount_cents / 100).toFixed(2)}\n${i18n.t("Notes")}: ${bill.notes || ''}`,
       timeZone: 'UTC',
     };
 
-    // Check if we already synced this bill (you might want to store eventId in your DB later)
-    // For now, we just create a new event.
     await Calendar.createEventAsync(calendarId, eventDetails);
     
     Alert.alert(i18n.t("Success"), i18n.t("Bill added to your calendar!"));
@@ -47,8 +57,14 @@ async function getCalendarId(): Promise<string | null> {
     const defaultCalendar = await Calendar.getDefaultCalendarAsync();
     return defaultCalendar.id;
   } else {
-    // Android: Find a writable calendar (usually Google Calendar)
+    // Android: Find a writable calendar
     const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+    
+    // 1. Try to find the primary Google calendar
+    const primary = calendars.find(c => c.isPrimary && (c.accessLevel === Calendar.CalendarAccessLevel.OWNER || c.accessLevel === Calendar.CalendarAccessLevel.CONTRIBUTOR));
+    if (primary) return primary.id;
+
+    // 2. Fallback to any writable calendar
     const writableCalendar = calendars.find(
       (c) => c.accessLevel === Calendar.CalendarAccessLevel.OWNER || 
              c.accessLevel === Calendar.CalendarAccessLevel.CONTRIBUTOR

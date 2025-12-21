@@ -1,4 +1,3 @@
-// --- File: aldunnaeyonus/billbell/.../src/security/EncryptionService.ts (UPLOADED CONTENT) ---
 import * as SecureStore from "expo-secure-store";
 import Crypto from "react-native-quick-crypto";
 import { Buffer } from "buffer";
@@ -14,8 +13,15 @@ export const FAMILY_KEY_VERSION_ALIAS = "billbell_family_key_version";
 
 export async function ensureKeyPair() {
   const pub = await SecureStore.getItemAsync(PUBLIC_KEY_ALIAS);
+  const priv = await SecureStore.getItemAsync(PRIVATE_KEY_ALIAS);
 
-  if (!pub) {
+  // FIX: Validate keys actually exist and look like PEM keys
+  const isValid = pub && priv && 
+                  pub.includes("BEGIN PUBLIC KEY") && 
+                  priv.includes("BEGIN PRIVATE KEY");
+
+  if (!isValid) {
+    console.log("Generating new RSA Keypair...");
     const { privateKey, publicKey } = Crypto.generateKeyPairSync("rsa", {
       modulusLength: 2048,
       publicKeyEncoding: { type: "spki", format: "pem" },
@@ -30,7 +36,7 @@ export async function ensureKeyPair() {
 
   return {
     publicKey: pub,
-    privateKey: await SecureStore.getItemAsync(PRIVATE_KEY_ALIAS),
+    privateKey: priv,
   };
 }
 
@@ -55,23 +61,19 @@ export async function unwrapMyKey(wrappedKeyBase64: string): Promise<string> {
 
   const bufferToDecrypt = Buffer.from(wrappedKeyBase64, "base64");
   
-  // --- FIX START: Add try/catch for native decryption errors ---
   try {
-    // Line 56: Crypto.privateDecrypt
     const decrypted = Crypto.privateDecrypt(
       { key: privateKeyPem, padding: Crypto.constants.RSA_PKCS1_OAEP_PADDING },
       bufferToDecrypt
     );
     return decrypted.toString("utf8");
   } catch (e: any) {
-    // Catch the low-level native error and throw a recognizable JS error
     const errMsg = String(e.message);
     if (errMsg.includes("oaep decoding error") || errMsg.includes("privateDecrypt failed")) {
       throw new Error("KEY_DECRYPTION_FAILED: The family key on the server cannot be decrypted by this device's private key. Your Public Key on the server is stale.");
     }
     throw e;
   }
-  // --- FIX END ---
 }
 
 function familyKeyAliasForVersion(version: number) {
@@ -93,11 +95,6 @@ export async function getCachedFamilyKeyVersion(): Promise<number | null> {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-// --- ADDED FOR KEY ROTATION ---
-/**
- * Retrieves the raw family key hex from the latest cached version.
- * Used for self-healing re-wrapping when public key is updated on a new device.
- */
 export async function getLatestCachedRawFamilyKeyHex(): Promise<{ hex: string; version: number } | null> {
   const v = await getCachedFamilyKeyVersion();
   if (!v) return null;
@@ -107,7 +104,6 @@ export async function getLatestCachedRawFamilyKeyHex(): Promise<{ hex: string; v
   
   return { hex, version: v };
 }
-// --------------------------------
 
 async function getActiveFamilyKeyBuffer(): Promise<Buffer> {
   const v = await getCachedFamilyKeyVersion();
@@ -181,9 +177,6 @@ export async function decryptData(encryptedString: string, specificKeyHex?: stri
   return r.text;
 }
 
-/**
- * NEW: decrypt and tell you which key_version succeeded (or null if not decrypted.
- */
 export async function decryptDataWithVersion(
   encryptedString: string,
   specificKeyHex?: string
@@ -195,33 +188,29 @@ export async function decryptDataWithVersion(
       return { text: tryDecryptWithKey(encryptedString, specificKeyHex), usedVersion: null };
     } catch (e) {
       console.warn("Decryption failed with provided key:", e);
-      // FIX 1: Throw a specific error if decryption with the provided key fails
       throw new Error("DECRYPT_FAILED_SPECIFIC_KEY");
     }
   }
 
   try {
-    // The number of candidates (5) here is overridden by client.ts changing the prune limit to 50.
-    const candidates = await getFallbackKeyHexesWithVersions(50); // Use 50 to match client.ts safety
-    let lastError: any = null; // Store the last error for reporting
+    // Try current + recent previous keys (handling rotation)
+    const candidates = await getFallbackKeyHexesWithVersions(50);
+    let lastError: any = null; 
 
     for (const c of candidates) {
       try {
         return { text: tryDecryptWithKey(encryptedString, c.hex), usedVersion: c.v };
       } catch (e) {
-        lastError = e; // Store the error from this candidate key
-        // continue to try the next key
+        lastError = e;
       }
     }
     
-    // FIX 2: If we ran out of keys and failed, throw the last decryption error
     if (lastError) {
         throw new Error(`DECRYPT_FAILED_ALL_KEYS: ${lastError.message}`);
     }
 
     return { text: encryptedString, usedVersion: null };
   } catch (e) {
-    // Catch any error thrown within this block, including the specific error from FIX 2
     throw e;
   }
 }
