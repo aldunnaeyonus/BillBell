@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 
-// --- Components ---
+// ... (Header and OffsetChip components remain unchanged from previous, included below for completeness) ...
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
   return (
@@ -62,7 +62,7 @@ function OffsetChip({
         {
           backgroundColor: active ? theme.colors.accent : theme.colors.card,
           borderColor: active ? theme.colors.accent : theme.colors.border,
-          opacity: disabled ? 0.6 : pressed ? 0.8 : 1,
+          opacity: disabled ? 0.5 : pressed ? 0.8 : 1,
         },
       ]}
     >
@@ -81,23 +81,19 @@ function OffsetChip({
   );
 }
 
-// --- Main Screen ---
-
 export default function FamilySettings() {
   const [offset, setOffset] = useState<number>(1);
   const [time, setTime] = useState<string>("09:00:00");
-  const [editable, setEditable] = useState<boolean>(false);
+  const [editable, setEditable] = useState<boolean>(false); // Server-side permission
   const [loading, setLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   
-  // NEW: State for admin check and key rotation
   const [isRotating, setIsRotating] = useState(false);
   const [familyInfo, setFamilyInfo] = useState<{ members: { id: number; role: string; }[]; current_user_id: number; } | null>(null);
 
   const theme = useTheme();
   const { t } = useTranslation();
   
-  // FIX: isMounted ref
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
@@ -114,38 +110,35 @@ export default function FamilySettings() {
   const OFFSETS = [
     { label: t("Same day"), value: 0 },
     { label: t("1 day before"), value: 1 },
-    { label: t("2 day before"), value: 2 },
-    { label: t("3 day before"), value: 3 },
+    { label: t("2 days before"), value: 2 },
+    { label: t("3 days before"), value: 3 },
   ];
 
-  // Logic to determine if the current user is an admin
+  // Client-side admin check
   const currentUserRole = familyInfo?.members.find(
     m => m.id === familyInfo.current_user_id
   )?.role;
   const isAdmin = currentUserRole === 'admin';
 
-
   useEffect(() => {
     (async () => {
       try {
-        // Fetch Settings
-        const s = await api.familySettingsGet();
+        const [settings, members] = await Promise.all([
+            api.familySettingsGet(),
+            api.familyMembers()
+        ]);
+
         if(isMounted.current) {
-            setOffset(Number(s.default_reminder_offset_days ?? 1));
-            setTime(String(s.default_reminder_time_local ?? "09:00:00"));
-            setEditable(Boolean(s.editable));
+            setOffset(Number(settings.default_reminder_offset_days ?? 1));
+            setTime(String(settings.default_reminder_time_local ?? "09:00:00"));
+            setEditable(Boolean(settings.editable));
+            setFamilyInfo(members);
             
-            // Parse time string to Date object for picker
-            const [h, m] = String(s.default_reminder_time_local ?? "09:00").split(":");
+            const [h, m] = String(settings.default_reminder_time_local ?? "09:00").split(":");
             const d = new Date();
             d.setHours(Number(h), Number(m), 0, 0);
             setReminderDateObj(d);
         }
-        
-        // NEW: Fetch Members for role check
-        const membersData = await api.familyMembers();
-        if(isMounted.current) setFamilyInfo(membersData);
-
       } catch (e: any) {
         if(isMounted.current) Alert.alert(t("Error"), e.message);
       } finally {
@@ -171,23 +164,11 @@ export default function FamilySettings() {
   };
 
   async function save() {
-    if (!editable)
-      return Alert.alert(
-        t("Not allowed"),
-        t("Only a admin can change shared settings.")
-      );
+    if (!editable) return;
 
     try {
       setLoading(true);
       const formattedTime = normalizeTime(time.trim());
-
-      if (!/^\d{2}:\d{2}:\d{2}$/.test(formattedTime)) {
-        return Alert.alert(t("Validation"), t("Time must be HH:MM or HH:MM:SS"));
-      }
-
-      if (offset < 0 || offset > 3) {
-        return Alert.alert(t("Validation"), t("Offset must be 0, 1, 2, or 3"));
-      }
 
       await api.familySettingsUpdate({
         default_reminder_offset_days: offset,
@@ -195,7 +176,7 @@ export default function FamilySettings() {
       });
 
       if(isMounted.current) {
-          Alert.alert(t("Saved"), t("Share defaults updated."));
+          Alert.alert(t("Success"), t("Settings updated successfully."));
           router.back();
       }
     } catch (e: any) {
@@ -205,13 +186,12 @@ export default function FamilySettings() {
     }
   }
 
-  // NEW: Key Rotation Handler
   const handleKeyRotation = async () => {
     if (!isAdmin || isRotating) return;
     
     Alert.alert(
-      t("Confirm Key Rotation"),
-      t("This will generate a new encryption key for your family. All members must be able to sync to continue accessing data. Proceed?"),
+      t("Rotate Encryption Key"),
+      t("Use this ONLY if family members are having decryption issues. This will generate a new key and attempt to re-sync all devices."),
       [
         { text: t("Cancel"), style: 'cancel' },
         { 
@@ -220,17 +200,19 @@ export default function FamilySettings() {
           onPress: async () => {
             setIsRotating(true);
             try {
-            await api.orchestrateKeyRotation();              
+              // This function (defined in client.ts) handles the heavy lifting
+              await api.orchestrateKeyRotation();              
+              
               if(isMounted.current) {
-                  Alert.alert(t("Success"), t("Family encryption key successfully rotated. All members will sync automatically."));
-                  
-                  // Force a re-fetch of member data to reflect any changes if needed, and to refresh bills
-                  router.replace("/(app)/bills"); 
+                  Alert.alert(
+                      t("Success"), 
+                      t("Key rotation complete. You will be redirected to the bills list to verify access."),
+                      [{ text: "OK", onPress: () => router.replace("/(app)/bills") }]
+                  );
               }
-
             } catch (e: any) {
               console.error("Key Rotation Failed:", e);
-              if(isMounted.current) Alert.alert(t("Rotation Failed"), e.message || t("An unknown error occurred during key rotation. Check console for details."));
+              if(isMounted.current) Alert.alert(t("Error"), e.message);
             } finally {
               if(isMounted.current) setIsRotating(false);
             }
@@ -239,8 +221,6 @@ export default function FamilySettings() {
       ]
     );
   };
-  // END NEW: Key Rotation Handler
-
 
   if (!dataLoaded) {
     return (
@@ -254,26 +234,23 @@ export default function FamilySettings() {
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <View style={styles.content}>
         
-        {/* Header */}
         <Header 
-          title={t("Share Settings")} 
-          subtitle={t("Shared reminder defaults for the whole group.")}
+          title={t("Shared Settings")} 
+          subtitle={t("Defaults for new bills")}
           theme={theme}
         />
 
-        {/* Admin Warning */}
         {!editable && (
-          <View style={[styles.warningCard, { backgroundColor: 'rgba(255, 179, 0, 0.1)', borderColor: 'rgba(255, 179, 0, 0.3)' }]}>
-            <Ionicons name="lock-closed-outline" size={18} color={theme.colors.text} />
-            <Text style={[styles.warningText, { color: theme.colors.text }]}>
-              {t("Ask a family admin to change these.")}
+          <View style={[styles.warningCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <Ionicons name="lock-closed" size={20} color={theme.colors.subtext} />
+            <Text style={[styles.warningText, { color: theme.colors.subtext }]}>
+              {t("Only an admin can change these settings.")}
             </Text>
           </View>
         )}
 
-        {/* Offset Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Default offset")}</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Default Reminder Offset")}</Text>
           <View style={styles.chipsContainer}>
             {OFFSETS.map((o) => (
               <OffsetChip
@@ -288,28 +265,24 @@ export default function FamilySettings() {
           </View>
         </View>
 
-        {/* Time Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Default time (local)")}</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Default Alert Time")}</Text>
           <Pressable
             disabled={!editable}
-            // CHANGED: Use toggle (prev => !prev) instead of true
-            onPress={() => setShowReminderDatePicker((prev) => !prev)}
+            onPress={() => setShowReminderDatePicker(prev => !prev)}
             style={({ pressed }) => [
               styles.timeRow,
               { 
                 backgroundColor: theme.colors.card,
                 borderColor: theme.colors.border,
-                opacity: !editable ? 0.6 : pressed ? 0.7 : 1
+                opacity: !editable ? 0.5 : pressed ? 0.7 : 1
               }
             ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={[styles.iconBox, { backgroundColor: theme.mode === 'dark' ? '#1E293B' : '#F1F5F9' }]}>
-                <Ionicons name="time-outline" size={22} color={theme.colors.primary} />
-              </View>
+              <Ionicons name="time-outline" size={22} color={theme.colors.primary} />
               <Text style={[styles.timeLabel, { color: theme.colors.primaryText }]}>
-                {t("Alert Time")}
+                {t("Time")}
               </Text>
             </View>
             
@@ -318,12 +291,7 @@ export default function FamilySettings() {
                 {reminderDateObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
               </Text>
               {editable && (
-                <Ionicons 
-                  // OPTIONAL: Flip chevron if open
-                  name={showReminderDatePicker ? "chevron-up" : "chevron-down"} 
-                  size={16} 
-                  color={theme.colors.subtext} 
-                />
+                <Ionicons name={showReminderDatePicker ? "chevron-up" : "chevron-down"} size={16} color={theme.colors.subtext} />
               )}
             </View>
           </Pressable>
@@ -339,7 +307,6 @@ export default function FamilySettings() {
           )}
         </View>
 
-        {/* Save Button */}
         {editable && (
           <Pressable
             disabled={loading}
@@ -363,45 +330,40 @@ export default function FamilySettings() {
           </Pressable>
         )}
 
-        {/* NEW: Key Rotation Button (Admin Only) */}
         {isAdmin && (
-            <View style={{ marginTop: 40, borderTopWidth: StyleSheet.hairlineWidth, borderColor: theme.colors.border, paddingBottom: 30 }}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary, marginTop: 20 }]}>
-                {t("section_encryption")}
+            <View style={{ marginTop: 40, borderTopWidth: 1, borderColor: theme.colors.border, paddingBottom: 40 }}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.danger, marginTop: 20 }]}>
+                {t("Advanced Security")}
               </Text>
               
               <Pressable 
                 onPress={handleKeyRotation} 
                 disabled={isRotating}
                 style={({ pressed }) => [
-                  styles.row, 
+                  styles.rotationButton, 
                   { 
                     backgroundColor: theme.colors.card, 
-                    borderColor: theme.colors.border,
-                    borderWidth: StyleSheet.hairlineWidth,
-                    padding: 16,
-                    borderRadius: 16,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: 10,
+                    borderColor: theme.colors.danger,
                     opacity: pressed || isRotating ? 0.6 : 1
                   }
                 ]}
               >
-                <Text style={[styles.rowText, { color: theme.colors.destructive, fontWeight: '600' }]}>
-                  {isRotating ? t("Rotating Key...") : t("rotation_button")}
-                </Text>
-                <Ionicons 
-                  name={isRotating ? "reload-circle-outline" : "key-outline"} 
-                  size={24} 
-                  color={theme.colors.destructive} 
-                  // Simple spin animation for loading state
-                  style={isRotating ? { transform: [{ rotate: "360deg" }] } : {}}
-                />
+                <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                    <Ionicons 
+                    name="refresh-circle" 
+                    size={24} 
+                    color={theme.colors.danger} 
+                    style={isRotating ? { transform: [{ rotate: "45deg" }] } : {}}
+                    />
+                    <Text style={[styles.rowText, { color: theme.colors.danger }]}>
+                    {isRotating ? t("Rotating Keys...") : t("Rotate Family Encryption Key")}
+                    </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.danger} />
               </Pressable>
-              <Text style={[styles.helpText, { color: theme.colors.textTertiary, paddingHorizontal: 16, marginTop: 10, fontSize: 12 }]}>
-                  {t("Only use this if a member cannot sync bills or receives a decryption error after using a new device.")}
+              
+              <Text style={[styles.helpText, { color: theme.colors.subtext }]}>
+                  {t("Use this if a member cannot decrypt data. It will re-encrypt all bills with a new key and share it with all members.")}
               </Text>
             </View>
         )}
@@ -411,145 +373,26 @@ export default function FamilySettings() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-    gap: 24,
-  },
-  // Header
-  headerShadowContainer: {
-    backgroundColor: 'transparent',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-    marginVertical: 4,
-    borderRadius: 20, 
-  },
-headerGradient: {
-    borderRadius: 20,
-    height:120,
-    paddingBottom: 24,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    overflow: "hidden",
-  },
-  headerIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft:10
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: "#FFF",
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.7)",
-    lineHeight: 18,
-    width:'70%'
-
-  },
-  // Sections
-  section: {
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginLeft: 4,
-  },
-  // Chips
-  chipsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  chip: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    minWidth: '45%', // 2 per row roughly
-    flex: 1,
-    alignItems: 'center',
-  },
-  chipText: {
-    fontSize: 14,
-  },
-  // Time Row / Generic Row for Key Rotation
-  timeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  row: {
-    // Shared style for both timeRow and key rotation button
-  },
-  rowText: {
-    // Shared text style
-  },
-  helpText: {
-    // Style for explanatory text under rotation button
-  },
-  iconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  timeLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  timeValue: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  // Warning
-  warningCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  warningText: {
-    fontSize: 13,
-    fontWeight: "500",
-    flex: 1,
-  },
-  // Save Button
-  saveButton: {
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
+  container: { flex: 1 },
+  content: { padding: 16, gap: 24 },
+  headerShadowContainer: { backgroundColor: 'transparent', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
+  headerGradient: { borderRadius: 20, height:120, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
+  headerIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center", marginLeft:10 },
+  headerTitle: { fontSize: 20, fontWeight: "800", color: "#FFF", marginBottom: 4 },
+  headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 18, width:'70%' },
+  section: { gap: 12 },
+  sectionTitle: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 4 },
+  chipsContainer: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  chip: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: 16, borderWidth: 1, minWidth: '45%', flex: 1, alignItems: 'center' },
+  chipText: { fontSize: 14 },
+  timeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderRadius: 16, borderWidth: 1 },
+  timeLabel: { fontSize: 16, fontWeight: "600" },
+  timeValue: { fontSize: 18, fontWeight: "700" },
+  warningCard: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16, borderRadius: 16, borderWidth: 1, borderStyle: 'dashed' },
+  warningText: { fontSize: 13, fontWeight: "500", flex: 1 },
+  saveButton: { paddingVertical: 16, borderRadius: 16, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+  saveButtonText: { fontSize: 16, fontWeight: "700" },
+  rotationButton: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: 16, borderWidth: 1, marginTop: 10 },
+  rowText: { fontSize: 15, fontWeight: '700' },
+  helpText: { marginTop: 10, fontSize: 12, paddingHorizontal: 4, lineHeight: 18 },
 });

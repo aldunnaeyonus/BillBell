@@ -6,19 +6,22 @@ import { useTheme } from "../../src/ui/useTheme";
 import { screen } from "../../src/ui/styles";
 
 export default function Browser() {
-  const { url } = useLocalSearchParams<{ url?: string }>();
+  const params = useLocalSearchParams<{ url?: string | string[] }>();
   const theme = useTheme();
 
-  // FIX: Prevent app crash if URL contains malformed encoding (e.g. "%")
   const uri = useMemo(() => {
-    if (typeof url !== "string") return "about:blank";
+    // Handle array case (take first) or single string
+    const rawUrl = Array.isArray(params.url) ? params.url[0] : params.url;
+    
+    if (!rawUrl) return "about:blank";
+
     try {
-      return decodeURIComponent(url);
+      return decodeURIComponent(rawUrl);
     } catch (e) {
-      console.warn("Failed to decode browser URL:", url);
-      return url; // Fallback to raw URL or about:blank
+      console.warn("Failed to decode browser URL:", rawUrl);
+      return rawUrl;
     }
-  }, [url]);
+  }, [params.url]);
 
   return (
     <View style={screen(theme)}>

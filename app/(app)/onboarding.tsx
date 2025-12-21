@@ -88,9 +88,8 @@ export default function Onboarding() {
     router.replace("/(app)/bills");
   };
 
-  // --- FIX: Add safety check for viewableItems ---
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    // Check if viewableItems exists before accessing .length
+    // Safety check for viewableItems
     if (viewableItems && viewableItems.length > 0) {
       setCurrentIndex(viewableItems[0].index);
     }
@@ -102,7 +101,6 @@ export default function Onboarding() {
 
   return (
     <View style={styles.container}>
-      {/* Ensure header is hidden */}
       <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} />
 
       <LinearGradient

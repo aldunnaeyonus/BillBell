@@ -19,7 +19,8 @@ import { useTheme, Theme } from "../../src/ui/useTheme";
 
 const SUPPORT_EMAIL = "support@dunn-carabali.com";
 
-// --- Components ---
+// ... (Components Header and FeedbackTypeToggle remain unchanged) ...
+// Please retain Header and FeedbackTypeToggle components here.
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
   return (
@@ -102,8 +103,6 @@ function FeedbackTypeToggle({
   );
 }
 
-// --- Main Screen ---
-
 export default function FeedbackScreen() {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -114,7 +113,6 @@ export default function FeedbackScreen() {
   const [contact, setContact] = useState("");
   const [submitting, setSubmitting] = useState(false);
   
-  // FIX: isMounted ref to prevent state updates on unmounted component
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
@@ -144,6 +142,12 @@ export default function FeedbackScreen() {
 
     const body = bodyLines.join("\n");
     const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    // FIX: Check URL length to prevent crashes with very long descriptions
+    if (mailto.length > 2000) {
+        Alert.alert(t("Too Long"), t("Your feedback is too long to send via the mail app. Please shorten it."));
+        return;
+    }
 
     try {
       setSubmitting(true);
@@ -175,20 +179,15 @@ export default function FeedbackScreen() {
         <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
             
-            {/* Header */}
             <Header
               title={t("FeedbackTitle")}
               subtitle={t("FeedbackSubtitle")}
               theme={theme}
             />
 
-            {/* Type Selector */}
             <FeedbackTypeToggle type={type} setType={setType} theme={theme} t={t} />
 
-            {/* Form Fields */}
             <View style={styles.formGroup}>
-              
-              {/* Title Input */}
               <View>
                 <Text style={[styles.label, { color: theme.colors.primaryText }]}>{t("Title")}</Text>
                 <TextInput
@@ -204,7 +203,6 @@ export default function FeedbackScreen() {
                 />
               </View>
 
-              {/* Description Input */}
               <View>
                 <Text style={[styles.label, { color: theme.colors.primaryText }]}>{t("Details")}</Text>
                 <TextInput
@@ -226,7 +224,6 @@ export default function FeedbackScreen() {
                 />
               </View>
 
-              {/* Contact Input */}
               <View>
                 <Text style={[styles.label, { color: theme.colors.primaryText }]}>{t("ContactLabel")}</Text>
                 <TextInput
@@ -245,7 +242,6 @@ export default function FeedbackScreen() {
 
             </View>
 
-            {/* Submit Button */}
             <View>
                 <Pressable
                 onPress={onSubmit}
@@ -279,114 +275,21 @@ export default function FeedbackScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-    gap: 24,
-  },
-  // Header
-  headerShadowContainer: {
-    backgroundColor: 'transparent',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-    marginVertical: 4,
-    borderRadius: 20,
-  },
-headerGradient: {
-    borderRadius: 20,
-    height:120,
-    paddingBottom: 24,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    overflow: "hidden",
-  },
-  headerIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft:10
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#FFF",
-    marginBottom: 2,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.7)",
-    lineHeight: 18,
-    width:'70%'
-  },
-  // Toggle
-  toggleContainer: {
-    flexDirection: "row",
-    padding: 4,
-    borderRadius: 14,
-    borderWidth: 1,
-    height: 50,
-  },
-  toggleButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
-    gap: 8,
-  },
-  toggleText: {
-    fontWeight: "700",
-    fontSize: 14,
-  },
-  // Form
-  formGroup: {
-    gap: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "700",
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-  },
-  textArea: {
-    minHeight: 140,
-    paddingTop: 14,
-  },
-  // Submit
-  submitButton: {
-    height: 56,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  disclaimer: {
-    textAlign: "center",
-    fontSize: 12,
-    marginTop: 12,
-  },
+  container: { flex: 1 },
+  content: { padding: 16, gap: 24 },
+  headerShadowContainer: { backgroundColor: 'transparent', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
+  headerGradient: { borderRadius: 20, height:120, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
+  headerIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center", marginLeft:10 },
+  headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
+  headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 18, width:'70%' },
+  toggleContainer: { flexDirection: "row", padding: 4, borderRadius: 14, borderWidth: 1, height: 50 },
+  toggleButton: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 10, gap: 8 },
+  toggleText: { fontWeight: "700", fontSize: 14 },
+  formGroup: { gap: 16 },
+  label: { fontSize: 14, fontWeight: "700", marginBottom: 8, marginLeft: 4 },
+  input: { borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16 },
+  textArea: { minHeight: 140, paddingTop: 14 },
+  submitButton: { height: 56, borderRadius: 16, justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+  submitButtonText: { fontSize: 16, fontWeight: "800" },
+  disclaimer: { textAlign: "center", fontSize: 12, marginTop: 12 },
 });

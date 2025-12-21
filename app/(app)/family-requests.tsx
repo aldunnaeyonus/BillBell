@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,8 +7,9 @@ import {
   Alert,
   StyleSheet,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons"; 
 import AsyncStorage from "@react-native-async-storage/async-storage"; 
 import { api } from "../../src/api/client";
@@ -21,26 +22,25 @@ export default function FamilyRequests() {
   const theme = useTheme();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { t } = useTranslation();
   
-  // FIX: isMounted ref
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
     return () => { isMounted.current = false; };
   }, []);
 
-  useEffect(() => {
-    loadRequests();
-  }, []);
-
-  async function loadRequests() {
+  const loadRequests = useCallback(async (isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
     try {
-      // 1. Load from Cache first (Instant UI)
-      const cached = await AsyncStorage.getItem(CACHE_KEY);
-      if (cached && isMounted.current) {
-        setRequests(JSON.parse(cached));
-        setLoading(false); 
+      // 1. Load from Cache first (Instant UI) if not refreshing
+      if (!isRefresh) {
+        const cached = await AsyncStorage.getItem(CACHE_KEY);
+        if (cached && isMounted.current) {
+          setRequests(JSON.parse(cached));
+          setLoading(false); 
+        }
       }
 
       // 2. Fetch Fresh Data
@@ -56,24 +56,59 @@ export default function FamilyRequests() {
     } catch (e) {
       console.log("Failed to load requests", e);
     } finally {
-      if(isMounted.current) setLoading(false);
+      if(isMounted.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
-  }
+  }, []);
+
+  useFocusEffect(useCallback(() => {
+    loadRequests();
+  }, [loadRequests]));
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadRequests(true);
+  };
 
   async function handleRespond(
     requestId: number,
     action: "approve" | "reject"
   ) {
+    // 1. Optimistic Update: Immediately update UI
+    const originalRequests = [...requests];
+    
+    // For rejection, we keep it but mark as rejected visually
+    // For approval, we usually remove it from the 'Pending' list or mark as approved
+    const updatedRequests = requests.map(r => 
+        r.id === requestId 
+            ? { ...r, status: action === 'reject' ? 'rejected' : 'approved', updated_at: new Date().toISOString() } 
+            : r
+    );
+    
+    // If approved, we might want to just hide it, but let's stick to status update or removal
+    // If you want to remove approved items immediately:
+    const optimisticList = action === 'approve' 
+        ? requests.filter(r => r.id !== requestId)
+        : updatedRequests;
+
+    setRequests(optimisticList);
+
     try {
-      setLoading(true);
       await api.familyRequestRespond(requestId, action);
       
-      // Refresh list (and update cache)
-      await loadRequests(); 
+      // Background re-fetch to ensure consistency
+      const res: any = await api.familyRequests();
+      if(isMounted.current && res.requests) {
+          setRequests(res.requests);
+          await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(res.requests));
+      }
     } catch (e: any) {
+      // Revert on failure
       if(isMounted.current) {
+          setRequests(originalRequests);
           Alert.alert(t("Error"), e.message);
-          setLoading(false);
       }
     }
   }
@@ -85,23 +120,31 @@ export default function FamilyRequests() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      <Stack.Screen options={{ title: "Join Requests" }} />
+      <Stack.Screen options={{ title: t("Join Requests") }} />
 
       {loading && requests.length === 0 ? (
-        <ActivityIndicator size="large" style={{ marginTop: 20 }} />
-      ) : requests.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={{ color: theme.colors.subtext }}>
-            {t("No requests found.")}
-          </Text>
+        <View style={styles.center}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       ) : (
         <FlatList
           data={requests}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ padding: 16, gap: 12 }}
+          contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          ListEmptyComponent={
+            <View style={styles.center}>
+              <Ionicons name="people-outline" size={48} color={theme.colors.border} />
+              <Text style={{ color: theme.colors.subtext, marginTop: 12 }}>
+                {t("No pending requests.")}
+              </Text>
+            </View>
+          }
           renderItem={({ item }) => {
             const isRejected = item.status === 'rejected';
+            const isApproved = item.status === 'approved'; // Assuming API returns this status
+
+            if (isApproved) return null; // Don't show approved items in the list
 
             return (
               <View
@@ -110,7 +153,7 @@ export default function FamilyRequests() {
                   {
                     backgroundColor: theme.colors.card,
                     borderColor: theme.colors.border,
-                    opacity: isRejected ? 0.8 : 1, 
+                    opacity: isRejected ? 0.7 : 1, 
                   },
                 ]}
               >
@@ -119,12 +162,11 @@ export default function FamilyRequests() {
                     <Text
                       style={[styles.name, { color: theme.colors.primaryText }]}
                     >
-                      {item.name || "Unknown User"}
+                      {item.name || t("Unknown User")}
                     </Text>
                     
-                    {/* ICON: Show Red X if rejected */}
                     {isRejected && (
-                      <Ionicons name="close-circle" size={20} color={theme.colors.danger} />
+                      <Ionicons name="close-circle" size={18} color={theme.colors.danger} />
                     )}
                   </View>
                   
@@ -135,24 +177,22 @@ export default function FamilyRequests() {
 
                 <View style={styles.actions}>
                   {isRejected ? (
-                    // SHOW DATE OF DENIAL
-                    <Text style={{ color: theme.colors.danger, fontSize: 13, fontWeight: '600' }}>
-                      {t("Denied on")} {formatDate(item.updated_at || item.created_at)}
+                    <Text style={{ color: theme.colors.danger, fontSize: 12, fontWeight: '600' }}>
+                      {t("Denied")}
                     </Text>
                   ) : (
-                    // SHOW BUTTONS
                     <>
                       <Pressable
                         onPress={() => handleRespond(item.id, "reject")}
                         style={[
                             styles.btn, 
-                            { backgroundColor: theme.colors.danger }
+                            { backgroundColor: theme.colors.danger + '20' } // Light red bg
                         ]}
                       >
                         <Text
                           style={[
                             styles.btnText,
-                            { color: theme.colors.dangerText },
+                            { color: theme.colors.danger },
                           ]}
                         >
                           {t("Deny")}
@@ -188,17 +228,17 @@ export default function FamilyRequests() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  empty: { flex: 1, justifyContent: "center", alignItems: "center" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", paddingTop: 40 },
   card: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
   },
-  name: { fontWeight: "bold", fontSize: 16 },
-  email: { fontSize: 12 },
+  name: { fontWeight: "700", fontSize: 16 },
+  email: { fontSize: 13, marginTop: 2 },
   actions: { flexDirection: "row", gap: 8, alignItems: 'center' },
-  btn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  btnText: { fontWeight: "bold", fontSize: 12 },
+  btn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  btnText: { fontWeight: "700", fontSize: 13 },
 });

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -136,13 +136,18 @@ export default function FAQ() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const rawFaqItems = t("faqSections", { returnObjects: true }) as FaqSection[];
-
   const filteredFaqItems = useMemo(() => {
-    if (!searchQuery.trim()) return rawFaqItems;
+    const rawFaqItems = t("faqSections", { returnObjects: true });
+    
+    // FIX: Ensure rawFaqItems is actually an array before filtering
+    if (!Array.isArray(rawFaqItems)) return [];
+
+    const sections = rawFaqItems as FaqSection[];
+
+    if (!searchQuery.trim()) return sections;
     const lowerQuery = searchQuery.toLowerCase();
 
-    return rawFaqItems
+    return sections
       .map((section) => {
         const matchingItems = section.items.filter((item) => {
           const question = t(item.q).toLowerCase();
@@ -152,7 +157,7 @@ export default function FAQ() {
         return { ...section, items: matchingItems };
       })
       .filter((section) => section.items.length > 0);
-  }, [searchQuery, rawFaqItems, t]);
+  }, [searchQuery, t]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
@@ -160,17 +165,14 @@ export default function FAQ() {
         <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
             
-            {/* Header */}
             <Header
               title={t("FAQ")}
               subtitle={t("Frequently Asked Questions")}
               theme={theme}
             />
 
-            {/* Search */}
             <SearchBar value={searchQuery} onChange={setSearchQuery} theme={theme} t={t} />
 
-            {/* Content */}
             {filteredFaqItems.length === 0 ? (
               <View style={[styles.emptyState, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
                 <Ionicons name="search-outline" size={48} color={theme.colors.subtext} />
@@ -207,120 +209,22 @@ export default function FAQ() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-    gap: 20,
-  },
-  // Header
-  headerShadowContainer: {
-    backgroundColor: 'transparent',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-    marginVertical: 4,
-    borderRadius: 20,
-  },
-headerGradient: {
-    borderRadius: 20,
-    height:120,
-    paddingBottom: 24,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    overflow: "hidden",
-  },
-  headerIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft:10
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#FFF",
-    marginBottom: 2,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.7)",
-  },
-  // Search
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    height: 50,
-    borderRadius: 14,
-    borderWidth: 1,
-    gap: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    height: "100%",
-  },
-  // Sections
-  sectionHeader: {
-    fontSize: 13,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    marginBottom: 10,
-    marginLeft: 4,
-    letterSpacing: 0.5,
-  },
-  // Accordion
-  accordionItem: {
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: "hidden",
-  },
-  accordionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    minHeight: 60,
-  },
-  questionText: {
-    fontSize: 16,
-    fontWeight: "600",
-    lineHeight: 22,
-  },
-  accordionBody: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
-  divider: {
-    height: 1,
-    width: "100%",
-    marginBottom: 16,
-    opacity: 0.5,
-  },
-  answerText: {
-    fontSize: 15,
-    lineHeight: 24,
-  },
-  // Empty State
-  emptyState: {
-    padding: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 16,
-    marginTop: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: "center",
-  },
+  container: { flex: 1 },
+  content: { padding: 16, gap: 20 },
+  headerShadowContainer: { backgroundColor: 'transparent', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
+  headerGradient: { borderRadius: 20, height:120, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
+  headerIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center", marginLeft:10 },
+  headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
+  headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
+  searchContainer: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 50, borderRadius: 14, borderWidth: 1, gap: 10 },
+  searchInput: { flex: 1, fontSize: 16, height: "100%" },
+  sectionHeader: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", marginBottom: 10, marginLeft: 4, letterSpacing: 0.5 },
+  accordionItem: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
+  accordionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, minHeight: 60 },
+  questionText: { fontSize: 16, fontWeight: "600", lineHeight: 22 },
+  accordionBody: { paddingHorizontal: 16, paddingBottom: 20 },
+  divider: { height: 1, width: "100%", marginBottom: 16, opacity: 0.5 },
+  answerText: { fontSize: 15, lineHeight: 24 },
+  emptyState: { padding: 40, alignItems: "center", justifyContent: "center", borderRadius: 20, borderWidth: 1, gap: 16, marginTop: 20 },
+  emptyText: { fontSize: 16, textAlign: "center" },
 });
