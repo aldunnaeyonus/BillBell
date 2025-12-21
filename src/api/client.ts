@@ -1,4 +1,3 @@
-// --- File: aldunnaeyonus/billbell/.../src/api/client.ts (FIXED) ---
 import * as SecureStore from "expo-secure-store";
 import {
   ensureKeyPair,
@@ -18,7 +17,7 @@ import { clearToken } from "../auth/session";
 import { router } from "expo-router";
 import { getDeviceId } from '../security/device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import i18n from "./i18n"; // Add this import
+import i18n from "./i18n"; 
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/billMVP";
 
@@ -29,12 +28,10 @@ async function getToken() {
 async function hardReset() {
     await clearAllFamilyKeys();
     await AsyncStorage.removeItem("billbell_bills_list_cache");
-    // Clear the Public and Private RSA keys as well
     await SecureStore.deleteItemAsync("billbell_rsa_public"); 
     await SecureStore.deleteItemAsync("billbell_rsa_private"); 
     await AsyncStorage.removeItem("isLog")
 
-    // Clear the session token, forcing a login
     await clearToken(); 
     
     console.warn("Performing hard application reset. User must log in again.");
@@ -48,7 +45,6 @@ async function request(path: string, opts: RequestInit = {}) {
     ...(opts.headers as any),
   };
   
-  // Explicitly check for token presence
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
@@ -72,16 +68,13 @@ async function request(path: string, opts: RequestInit = {}) {
       await clearToken();
       api.hardReset();
       router.replace("/(auth)/login");
-      //throw new Error("Session ended. Please log in again.");
       return;
     }
 
     if (res.status === 409 && errMsg.includes("User not in family")) {
       router.replace("/(app)/family");
       await AsyncStorage.removeItem("billbell_pending_family_code");
-
-      //throw new Error("User not in family");
-      return;
+      return; // Implicitly returns undefined to the caller
     }
 
     throw new Error(errMsg || `Request failed (${res.status})`);
@@ -107,8 +100,6 @@ async function ensureRsaKeyUploaded() {
                 device_id: deviceId 
             }) 
         });
-        
-        console.info("RSA Public Key and Device ID uploaded successfully.");
         
     } catch (e: any) {
         const errMsg = String(e.message);
@@ -144,7 +135,6 @@ async function ensureFamilyKeyLoaded() {
       if (errMsg.includes("Session ended. Please log in again.")) {
           return;
       }
-      console.warn("Stopping family key sync due to RSA Public Key upload failure:", e);
       return; 
   }
 
@@ -222,11 +212,11 @@ async function ensureFamilyKeyLoaded() {
       }
       
       if (selfHealFailed) {
-        const failureReason = !currentRawKey?.hex ? "Local key missing (re-install/migration issue)." : 
+        const failureReason = !currentRawKey?.hex ? "Local key missing." : 
                             !familyId || !currentUserId ? "Family or User ID unavailable." : 
                             "Re-share API failed.";
 
-        console.warn(`Key sync failed and self-heal failed: ${failureReason} Requires Admin Key Rotation. Key is currently unavailable.`);
+        console.warn(`Key sync failed and self-heal failed: ${failureReason} Requires Admin Key Rotation.`);
         await clearAllFamilyKeys();
         return; 
       }
@@ -320,6 +310,7 @@ async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion:
         const targetUserId = member.id;
         const pubKeyResponse = await api.getPublicKey(targetUserId); 
         
+        // Handles legacy (single key) and new (array of keys) response format
         const keysToShare = pubKeyResponse.public_keys || 
                             (pubKeyResponse.public_key ? [{
                                 public_key: pubKeyResponse.public_key,
@@ -393,11 +384,9 @@ export const api = {
   familySettingsUpdate: (payload: { default_reminder_offset_days: number; default_reminder_time_local: string }) =>
     request("/family/settings", { method: "PUT", body: JSON.stringify(payload) }),
   
-  // --- NEW: Family Requests Methods ---
   familyRequests: () => request("/family/requests"),
   familyRequestRespond: (request_id: number, action: "approve" | "reject") =>
     request("/family/requests/respond", { method: "POST", body: JSON.stringify({ request_id, action }) }),
-  // ------------------------------------
 
   // Devices
   deviceTokenUpsert: (payload: any) => request("/devices/token", { method: "POST", body: JSON.stringify(payload) }),
@@ -408,19 +397,15 @@ export const api = {
 
   // Encrypted Bills
   billsList: async () => {
-    // 1. Fetch the raw bills FIRST. If this works, we know the user is authenticated.
-    // If the list is empty, we return immediately and avoid key errors for new users.
     const response = await request("/bills");
     const rawBills = Array.isArray(response?.bills) 
         ? response.bills 
         : (Array.isArray(response) ? response : []);
 
-    // 2. If no bills, return empty list (No need to check for key)
     if (rawBills.length === 0) {
         return { bills: [] };
     }
 
-    // 3. Only if bills exist do we enforce key presence
     try {
       await ensureFamilyKeyLoaded(); 
     } catch (e) {

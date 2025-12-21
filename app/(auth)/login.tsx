@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,9 +12,7 @@ import {
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import * as AppleAuthentication from "expo-apple-authentication";
-import {
-  GoogleSignin,
-} from "@react-native-google-signin/google-signin";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -28,11 +26,17 @@ export default function Login() {
   const theme = useTheme();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
+  
+  // FIX: Track mounted state to prevent memory leaks during navigation
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   // --- Status Bar Management ---
   useFocusEffect(
     useCallback(() => {
-      // Force status bar to be white (light content) on this screen
       StatusBar.setBarStyle("light-content");
       if (Platform.OS === "android") {
         StatusBar.setBackgroundColor("transparent");
@@ -42,92 +46,89 @@ export default function Login() {
   );
 
   async function handleAppleLogin() {
-  try {
-    const credential = await AppleAuthentication.signInAsync({
-      requestedScopes: [
-        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-        AppleAuthentication.AppleAuthenticationScope.EMAIL,
-      ],
-    });
-    setLoading(true);
-    const res = await api.authApple({
-      identity_token: credential.identityToken,
-      email: credential.email,
-      name: credential.fullName?.givenName
-        ? `${credential.fullName.givenName} ${credential.fullName.familyName}`
-        : credential.email,
-    });
-    await setToken(res.token);
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-    // FIXED: Logic to check for family status silently
     try {
-      const fam = await api.familyMembers();
-      await AsyncStorage.setItem("isLog", "1")
-      // If the API returned the silent error object, the user is NOT in a family
-      if (fam?.error_silent) {
-        router.replace("/(app)/family");
-      } else {
-        // User has a family, proceed to onboarding
-        router.replace("/onboarding");
-      }
-    } catch (e) {
-      // Fallback: If familyMembers throws, assume they need to join/create a family
-      router.replace("/(app)/family");
-    }
-  } catch (e: any) {
-    if (e.code === "ERR_REQUEST_CANCELED") {
-      // user cancelled
-    } else {
-      Alert.alert(t("Login failed"), e.message);
-    }
-  } finally {
-    setLoading(false);
-  }
-}
-
- // app/(auth)/login.tsx
-
-async function handleGoogleLogin() {
-  try {
-    await GoogleSignin.hasPlayServices();
-    const userInfo = await GoogleSignin.signIn();
-
-    if (userInfo.data?.idToken) {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      
       setLoading(true);
-      const res = await api.authGoogle({ id_token: userInfo.data?.idToken });
+      const res = await api.authApple({
+        identity_token: credential.identityToken,
+        email: credential.email,
+        name: credential.fullName?.givenName
+          ? `${credential.fullName.givenName} ${credential.fullName.familyName}`
+          : credential.email,
+      });
       
-      // 1. Await the token storage fully
       await setToken(res.token);
+      // Short delay to ensure token persistence before network calls
       await new Promise(resolve => setTimeout(resolve, 100));
 
-    // FIXED: Logic to check for family status silently
+      await checkFamilyAndRedirect();
+
+    } catch (e: any) {
+      if (e.code === "ERR_REQUEST_CANCELED") {
+        // user cancelled
+      } else {
+        if(isMounted.current) Alert.alert(t("Login failed"), e.message);
+      }
+    } finally {
+      if (isMounted.current) setLoading(false);
+    }
+  }
+
+  async function handleGoogleLogin() {
     try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+
+      if (userInfo.data?.idToken) {
+        setLoading(true);
+        const res = await api.authGoogle({ id_token: userInfo.data?.idToken });
+        
+        await setToken(res.token);
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        await checkFamilyAndRedirect();
+      }
+    } catch (e: any) {
+      if (e.code === "ERR_REQUEST_CANCELED") {
+        // user cancelled
+      } else {
+        if(isMounted.current) Alert.alert(t("Login failed"), e.message);
+      }
+    } finally {
+      if (isMounted.current) setLoading(false);
+    }
+  }
+
+  // Helper to centralize navigation logic and fix race conditions
+  async function checkFamilyAndRedirect() {
+    try {
+      // NOTE: api.familyMembers() will redirect to /(app)/family automatically 
+      // via client.ts if it returns a 409 error.
       const fam = await api.familyMembers();
-      await AsyncStorage.setItem("isLog", "1")
-      // If the API returned the silent error object, the user is NOT in a family
+
+      // FIX: If fam is undefined, it means client.ts already intercepted a 409 
+      // and performed a redirect. We MUST stop here to prevent double-navigation.
+      if (!fam) return;
+
+      await AsyncStorage.setItem("isLog", "1");
+
       if (fam?.error_silent) {
         router.replace("/(app)/family");
       } else {
-        // User has a family, proceed to onboarding
+        // User is successfully in a family
         router.replace("/onboarding");
       }
-      
     } catch (e) {
-      // Fallback: If familyMembers throws, assume they need to join/create a family
-      router.replace("/(app)/family");
+      // Fallback
+      if (isMounted.current) router.replace("/(app)/family");
     }
   }
-  } catch (e: any) {
-    if (e.code === "ERR_REQUEST_CANCELED") {
-      // user cancelled
-    } else {
-      Alert.alert(t("Login failed"), e.message);
-    }
-  } finally {
-    setLoading(false);
-  }
-}
 
   return (
     <View style={styles.container}>
@@ -146,7 +147,7 @@ async function handleGoogleLogin() {
                 width: 200,
                 height: 200,
                 resizeMode: "contain",
-                tintColor: "#71E3C3", // Tints the black logo to white
+                tintColor: "#71E3C3",
                 opacity: 0.95,
               }}
             />

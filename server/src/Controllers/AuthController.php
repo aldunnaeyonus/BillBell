@@ -8,8 +8,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\JWK;
 
 class AuthController {
-  // ... existing apple() and google() methods ...
-
+  
   public static function apple() {
     $data = Utils::bodyJson();
     Utils::requireFields($data, ["identity_token"]);
@@ -38,7 +37,7 @@ class AuthController {
     Utils::json(self::upsertUser("google", $providerUserId, $email, $name));
   }
 
-  // --- UPDATED DELETE METHOD ---
+  // --- UPDATED DELETE METHOD (Transactional & Complete) ---
   public static function delete() {
     $userId = Auth::requireUserId();
     $pdo = DB::pdo();
@@ -75,7 +74,7 @@ class AuthController {
         $memberCount = count($members);
 
         if ($memberCount <= 1) {
-          // CASE A: last member -> delete family + dependent rows (FK-safe order)
+          // CASE A: Last member -> Delete everything (Order matters for Foreign Keys)
           $pdo->prepare("DELETE FROM family_settings WHERE family_id = ?")->execute([$familyId]);
           $pdo->prepare("DELETE FROM family_shared_keys WHERE family_id = ?")->execute([$familyId]);
           $pdo->prepare("DELETE FROM import_codes WHERE family_id = ?")->execute([$familyId]);
@@ -84,16 +83,16 @@ class AuthController {
           $pdo->prepare("DELETE FROM families WHERE id = ?")->execute([$familyId]);
 
         } else {
-          // CASE B: other members exist -> choose successor + transfer if needed
-
-          // Prefer an existing admin (not me). Otherwise oldest remaining member.
+          // CASE B: Other members exist -> Assign successor
           $successorId = null;
 
+          // 1. Prefer an existing admin (not me)
           foreach ($members as $m) {
             $uid = (int)$m["user_id"];
             if ($uid === $userId) continue;
             if ((string)$m["role"] === "admin") { $successorId = $uid; break; }
           }
+          // 2. Fallback to oldest member
           if ($successorId === null) {
             foreach ($members as $m) {
               $uid = (int)$m["user_id"];
@@ -104,7 +103,7 @@ class AuthController {
           }
           if (!$successorId) throw new \Exception("No successor found");
 
-          // If I'm admin and I'm the last admin, promote successor
+          // If I was the only admin, promote successor
           if ($myRole === "admin") {
             $admins = $pdo->prepare("
               SELECT COUNT(*) AS c
@@ -120,33 +119,29 @@ class AuthController {
             }
           }
 
-          // Reassign bills referencing me so deleting users row won't violate FK
+          // Reassign my contributions to successor
           $pdo->prepare("UPDATE bills SET created_by_user_id = ? WHERE family_id = ? AND created_by_user_id = ?")
               ->execute([$successorId, $familyId, $userId]);
           $pdo->prepare("UPDATE bills SET updated_by_user_id = ? WHERE family_id = ? AND updated_by_user_id = ?")
               ->execute([$successorId, $familyId, $userId]);
 
-          // Reassign family "creator" to successor (avoid FK issues / nicer semantics)
+          // Reassign family ownership
           $pdo->prepare("UPDATE families SET created_by_user_id = ? WHERE id = ? AND created_by_user_id = ?")
               ->execute([$successorId, $familyId, $userId]);
 
-          // Remove me from family
+          // Remove me
           $pdo->prepare("DELETE FROM family_members WHERE family_id = ? AND user_id = ? LIMIT 1")
               ->execute([$familyId, $userId]);
         }
       }
 
-      // Delete device tokens (you have FK from device_tokens.user_id -> users.id)
+      // Cleanup user data
       $pdo->prepare("DELETE FROM device_tokens WHERE user_id = ?")->execute([$userId]);
-
-      // user_public_keys has ON DELETE CASCADE, but explicit delete is fine
       $pdo->prepare("DELETE FROM user_public_keys WHERE user_id = ?")->execute([$userId]);
-
-      // Finally delete user
       $pdo->prepare("DELETE FROM users WHERE id = ? LIMIT 1")->execute([$userId]);
 
       $pdo->commit();
-      Utils::json(["success" => true]);
+      Utils::json(["ok" => true]);
 
     } catch (\Throwable $e) {
       if ($pdo->inTransaction()) $pdo->rollBack();
@@ -154,7 +149,7 @@ class AuthController {
     }
   }
 
-  // ... (Keep existing private helper methods upsertUser, verifyGoogleIdToken, verifyAppleIdentityToken) ...
+  // --- Helpers ---
   private static function upsertUser(string $provider, string $providerUserId, ?string $email, ?string $name): array {
     $pdo = DB::pdo();
 
