@@ -636,6 +636,7 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
         style: "destructive",
         onPress: async () => {
           await googleSignOut();
+          await AsyncStorage.removeItem("isLog")
           await clearToken();
           router.replace("/(auth)/login");
         },

@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -14,11 +14,11 @@ import { router, useFocusEffect } from "expo-router";
 import * as AppleAuthentication from "expo-apple-authentication";
 import {
   GoogleSignin,
-  statusCodes,
 } from "@react-native-google-signin/google-signin";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { api } from "../../src/api/client";
 import { setToken } from "../../src/auth/session";
@@ -63,7 +63,7 @@ export default function Login() {
     // FIXED: Logic to check for family status silently
     try {
       const fam = await api.familyMembers();
-      
+      await AsyncStorage.setItem("isLog", "1")
       // If the API returned the silent error object, the user is NOT in a family
       if (fam?.error_silent) {
         router.replace("/(app)/family");
@@ -99,25 +99,31 @@ async function handleGoogleLogin() {
       
       // 1. Await the token storage fully
       await setToken(res.token);
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      // 2. CRITICAL: Add a small delay to ensure SecureStore is readable by the next task
-      await new Promise(resolve => setTimeout(resolve, 150));
-
-      try {
-        // 3. Now fetch family members
-        const fam = await api.familyMembers();
+    // FIXED: Logic to check for family status silently
+    try {
+      const fam = await api.familyMembers();
+      await AsyncStorage.setItem("isLog", "1")
+      // If the API returned the silent error object, the user is NOT in a family
+      if (fam?.error_silent) {
+        router.replace("/(app)/family");
+      } else {
+        // User has a family, proceed to onboarding
         router.replace("/onboarding");
-      } catch (e: any) {
-        // If it's the "User not in family" error, redirect to family setup
-        if (e.message.includes("User not in family")) {
-          router.replace("/(app)/family");
-        } else {
-          throw e; // Re-throw actual network/auth errors
-        }
       }
+      
+    } catch (e) {
+      // Fallback: If familyMembers throws, assume they need to join/create a family
+      router.replace("/(app)/family");
     }
-  } catch (error: any) {
-    // ... error handling
+  }
+  } catch (e: any) {
+    if (e.code === "ERR_REQUEST_CANCELED") {
+      // user cancelled
+    } else {
+      Alert.alert(t("Login failed"), e.message);
+    }
   } finally {
     setLoading(false);
   }

@@ -23,7 +23,7 @@ import {
 } from "../src/native/LiveActivity";
 import { api } from "../src/api/client";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getToken } from "../src/auth/session";
 
 // Polyfill Buffer for network/data operations
@@ -51,85 +51,10 @@ const getLiveActivityModule = () => {
 function AppStack() {
   const theme = useTheme();
   const { t } = useTranslation();
-  
+
   // FIX: Use state to handle async initial route determination
   const [isReady, setIsReady] = useState(false);
   const [initialRoute, setInitialRoute] = useState<string>("(auth)/login");
-
-  // --- Combined Startup Logic (Token + Pending Check) ---
-  useEffect(() => {
-    const prepareApp = async () => {
-      try {
-        // 1. Check for Pending Family Request (Highest Priority)
-        const pending = await AsyncStorage.getItem("billbell_pending_family_code");
-        
-        // 2. Check for User Token
-        const token = await getToken();
-
-        if (pending && token) {
-           // If user is logged in AND has a pending request -> Go to Family Waiting Screen
-           console.log("Redirecting to pending family screen...");
-           setInitialRoute("(app)/family");
-        } else if (token) {
-           // If user is logged in -> Go to Dashboard
-           setInitialRoute("(app)/bills");
-        } else {
-           // If no token -> Go to Login
-           setInitialRoute("(auth)/login");
-        }
-      } catch (e) {
-        console.warn("Startup check failed", e);
-        setInitialRoute("(auth)/login");
-      } finally {
-        setIsReady(true);
-      }
-    };
-
-    prepareApp();
-  }, []);
-  // ----------------------------------------------------
-
-  useEffect(() => {
-    const initializeApp = async () => {
-      GoogleSignin.configure({
-        scopes: ["profile", "email"],
-        profileImageSize: 120,
-        webClientId:
-          "249297362734-q0atl2p733pufsrgb3jl25459i24b92h.apps.googleusercontent.com",
-      });
-      await GoogleSignin.signOut().catch((err) =>
-        console.log("Google Signout handled:", err.code)
-      );
-      
-    };
-    initializeApp();
-  }, []);
-
-  async function handlePendingPaidBill() {
-    if (Platform.OS !== "ios") return;
-
-    const LiveActivityModule = getLiveActivityModule();
-    if (!LiveActivityModule?.consumeLastPaidBillId) return;
-
-    try {
-      console.log(
-        "LiveActivityModule keys:",
-        Object.keys(LiveActivityModule || {})
-      );
-
-      const billIdStr = await LiveActivityModule.consumeLastPaidBillId();
-      const billId = Number(billIdStr);
-
-      if (Number.isFinite(billId) && billId > 0) {
-        console.log("Consuming widget-paid bill:", billId);
-        await api.billsMarkPaid(billId);
-      }
-
-      await syncAndRefresh();
-    } catch (e) {
-      console.warn("handlePendingPaidBill failed", e);
-    }
-  }
 
   useEffect(() => {
     if (Platform.OS !== "ios") return;
@@ -178,9 +103,7 @@ function AppStack() {
     const appState = AppState.addEventListener(
       "change",
       (nextState: AppStateStatus) => {
-        if (
-          nextState === "active"
-        ) {
+        if (nextState === "active") {
           (async () => {
             await handlePendingPaidBill();
             await syncAndRefresh();
@@ -194,10 +117,107 @@ function AppStack() {
       appState.remove();
     };
   }, []);
+  
+  useEffect(() => {
+    const initializeApp = async () => {
+      GoogleSignin.configure({
+        scopes: ["profile", "email"],
+        profileImageSize: 120,
+        webClientId:
+          "249297362734-q0atl2p733pufsrgb3jl25459i24b92h.apps.googleusercontent.com",
+      });
+      await GoogleSignin.signOut().catch((err) =>
+        console.log("Google Signout handled:", err.code)
+      );
+    };
+    initializeApp();
+  }, []);
+  
+  // --- Combined Startup Logic (Token + Pending Check) ---
+  useEffect(() => {
+    const prepareApp = async () => {
+      try {
+        // 1. Check for Pending Family Request (Highest Priority)
+        const pending = await AsyncStorage.getItem(
+          "billbell_pending_family_code"
+        );
+        const login = await AsyncStorage.getItem("isLog");
+
+        // 2. Check for User Token
+        const token = await getToken();
+
+        if (pending && token && login) {
+          // If user is logged in AND has a pending request -> Go to Family Waiting Screen
+          console.log(
+            "Redirecting to pending family screen...",
+            token,
+            pending
+          );
+          setInitialRoute("(app)/family");
+          return;
+        } else if (token && login) {
+          console.log("Redirecting to bills screen...", token);
+
+          setInitialRoute("(app)/bills");
+          return;
+        } else if (!login) {
+          api.hardReset();
+          console.log("Redirecting to login screen...");
+          // If no token -> Go to Login
+          setInitialRoute("(auth)/login");
+          return;
+        } else {
+          api.hardReset();
+          console.log("Redirecting to login screen...");
+          // If no token -> Go to Login
+          setInitialRoute("(auth)/login");
+          return;
+        }
+      } catch (e) {
+        console.warn("Startup check failed", e);
+        await AsyncStorage.removeItem("billbell_pending_family_code");
+        await AsyncStorage.removeItem("isLog");
+        setInitialRoute("(auth)/login");
+        return;
+      } finally {
+        setIsReady(true);
+      }
+    };
+
+    prepareApp();
+  }, []);
+  // ----------------------------------------------------
+
+  async function handlePendingPaidBill() {
+    if (Platform.OS !== "ios") return;
+
+    const LiveActivityModule = getLiveActivityModule();
+    if (!LiveActivityModule?.consumeLastPaidBillId) return;
+
+    try {
+      console.log(
+        "LiveActivityModule keys:",
+        Object.keys(LiveActivityModule || {})
+      );
+
+      const billIdStr = await LiveActivityModule.consumeLastPaidBillId();
+      const billId = Number(billIdStr);
+
+      if (Number.isFinite(billId) && billId > 0) {
+        console.log("Consuming widget-paid bill:", billId);
+        await api.billsMarkPaid(billId);
+      }
+
+      await syncAndRefresh();
+    } catch (e) {
+      console.warn("handlePendingPaidBill failed", e);
+    }
+  }
+
 
   // Show nothing (or splash) until we know where to route the user
   if (!isReady) {
-     return null; 
+    return null;
   }
 
   return (
@@ -245,7 +265,10 @@ function AppStack() {
           name="(app)/insights"
           options={{ title: t("Financial Insights") }}
         />
-        <Stack.Screen name="(app)/family-requests" options={{ title: t("Join Requests") }} />
+        <Stack.Screen
+          name="(app)/family-requests"
+          options={{ title: t("Join Requests") }}
+        />
         <Stack.Screen name="(app)/browser" options={{ title: t("Browser") }} />
         <Stack.Screen
           name="(app)/bulk-import"
@@ -286,9 +309,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <I18nextProvider i18n={i18n}>
-        <BiometricAuth>
         <AppStack />
-        </BiometricAuth>
       </I18nextProvider>
     </GestureHandlerRootView>
   );

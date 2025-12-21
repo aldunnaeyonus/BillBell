@@ -32,6 +32,7 @@ async function hardReset() {
     // Clear the Public and Private RSA keys as well
     await SecureStore.deleteItemAsync("billbell_rsa_public"); 
     await SecureStore.deleteItemAsync("billbell_rsa_private"); 
+    await AsyncStorage.removeItem("isLog")
 
     // Clear the session token, forcing a login
     await clearToken(); 
@@ -69,13 +70,18 @@ async function request(path: string, opts: RequestInit = {}) {
 
     if (shouldForceLogout) {
       await clearToken();
+      api.hardReset();
       router.replace("/(auth)/login");
-      throw new Error("Session ended. Please log in again.");
+      //throw new Error("Session ended. Please log in again.");
+      return;
     }
 
     if (res.status === 409 && errMsg.includes("User not in family")) {
       router.replace("/(app)/family");
-      throw new Error("User not in family");
+      await AsyncStorage.removeItem("billbell_pending_family_code");
+
+      //throw new Error("User not in family");
+      return;
     }
 
     throw new Error(errMsg || `Request failed (${res.status})`);

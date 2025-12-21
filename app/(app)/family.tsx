@@ -301,7 +301,6 @@ export default function Family() {
         msg.toLowerCase().includes("user not in family") === false &&
         (msg.includes("already in") || msg.includes("member"))
       ) {
-        await AsyncStorage.removeItem("billbell_pending_family_code");
         setPendingCode(null);
         router.replace("/(app)/bills");
       } else {
