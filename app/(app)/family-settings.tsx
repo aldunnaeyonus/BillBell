@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -97,6 +97,13 @@ export default function FamilySettings() {
   const theme = useTheme();
   const { t } = useTranslation();
   
+  // FIX: isMounted ref
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
+  
   const [showReminderDatePicker, setShowReminderDatePicker] = useState(false);
   const [reminderDateObj, setReminderDateObj] = useState(() => {
     const d = new Date();
@@ -123,24 +130,26 @@ export default function FamilySettings() {
       try {
         // Fetch Settings
         const s = await api.familySettingsGet();
-        setOffset(Number(s.default_reminder_offset_days ?? 1));
-        setTime(String(s.default_reminder_time_local ?? "09:00:00"));
-        setEditable(Boolean(s.editable));
-        
-        // Parse time string to Date object for picker
-        const [h, m] = String(s.default_reminder_time_local ?? "09:00").split(":");
-        const d = new Date();
-        d.setHours(Number(h), Number(m), 0, 0);
-        setReminderDateObj(d);
+        if(isMounted.current) {
+            setOffset(Number(s.default_reminder_offset_days ?? 1));
+            setTime(String(s.default_reminder_time_local ?? "09:00:00"));
+            setEditable(Boolean(s.editable));
+            
+            // Parse time string to Date object for picker
+            const [h, m] = String(s.default_reminder_time_local ?? "09:00").split(":");
+            const d = new Date();
+            d.setHours(Number(h), Number(m), 0, 0);
+            setReminderDateObj(d);
+        }
         
         // NEW: Fetch Members for role check
         const membersData = await api.familyMembers();
-        setFamilyInfo(membersData);
+        if(isMounted.current) setFamilyInfo(membersData);
 
       } catch (e: any) {
-        Alert.alert(t("Error"), e.message);
+        if(isMounted.current) Alert.alert(t("Error"), e.message);
       } finally {
-        setDataLoaded(true);
+        if(isMounted.current) setDataLoaded(true);
       }
     })();
   }, [t]);
@@ -185,12 +194,14 @@ export default function FamilySettings() {
         default_reminder_time_local: formattedTime,
       });
 
-      Alert.alert(t("Saved"), t("Share defaults updated."));
-      router.back();
+      if(isMounted.current) {
+          Alert.alert(t("Saved"), t("Share defaults updated."));
+          router.back();
+      }
     } catch (e: any) {
-      Alert.alert(t("Error"), e.message);
+      if(isMounted.current) Alert.alert(t("Error"), e.message);
     } finally {
-      setLoading(false);
+      if(isMounted.current) setLoading(false);
     }
   }
 
@@ -210,16 +221,18 @@ export default function FamilySettings() {
             setIsRotating(true);
             try {
             await api.orchestrateKeyRotation();              
-              Alert.alert(t("Success"), t("Family encryption key successfully rotated. All members will sync automatically."));
-              
-              // Force a re-fetch of member data to reflect any changes if needed, and to refresh bills
-              router.replace("/(app)/bills"); // Navigate to Bills screen for sync/refresh
+              if(isMounted.current) {
+                  Alert.alert(t("Success"), t("Family encryption key successfully rotated. All members will sync automatically."));
+                  
+                  // Force a re-fetch of member data to reflect any changes if needed, and to refresh bills
+                  router.replace("/(app)/bills"); 
+              }
 
             } catch (e: any) {
               console.error("Key Rotation Failed:", e);
-              Alert.alert(t("Rotation Failed"), e.message || t("An unknown error occurred during key rotation. Check console for details."));
+              if(isMounted.current) Alert.alert(t("Rotation Failed"), e.message || t("An unknown error occurred during key rotation. Check console for details."));
             } finally {
-              setIsRotating(false);
+              if(isMounted.current) setIsRotating(false);
             }
           }
         },

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,6 @@ import {
   Platform,
   Modal,
   Switch,
-  codegenNativeCommands,
 } from "react-native";
 import { router } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -315,9 +314,16 @@ export default function Profile() {
   } | null>(null);
   const [showLangModal, setShowLangModal] = useState(false);
   const [liveActivityEnabled, setLiveActivityEnabled] = useState(true);
-const version = Constants.expoConfig?.version ?? "1.0.0";
-  // Optional: Get name from app.json ("BillBell")
+  
+  const version = Constants.expoConfig?.version ?? "1.0.0";
   const appName = Constants.expoConfig?.name ?? "BillBell";
+  
+  // FIX: isMounted ref
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   const langs = [
     { code: "en", label: "English" },
@@ -334,7 +340,7 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
   const loadData = useCallback(async () => {
     try {
       const res = await api.familyMembers();
-      setData(res);
+      if(isMounted.current) setData(res);
     } catch (e: any) {
       if ((e?.message || "").includes("Not authenticated")) {
         router.replace("/(auth)/login");
@@ -346,13 +352,15 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
 
   useEffect(() => {
     loadData();
-    userSettings.getLiveActivityEnabled().then(setLiveActivityEnabled);
+    userSettings.getLiveActivityEnabled().then((val) => {
+        if(isMounted.current) setLiveActivityEnabled(val);
+    });
   }, [loadData]);
 
   const onRefresh = async () => {
     setRefreshing(true);
     await loadData();
-    setRefreshing(false);
+    if(isMounted.current) setRefreshing(false);
   };
 
   const handleCopyFamilyID = async () => {
@@ -384,13 +392,12 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
           onPress: async () => {
             try {
               await api.familyMemberRemove(member.id);
-              Alert.alert(t("Success"), t("Member removed."));
-              onRefresh();
+              if(isMounted.current) {
+                  Alert.alert(t("Success"), t("Member removed."));
+                  onRefresh();
+              }
             } catch (e: any) {
-              Alert.alert(
-                t("Error"),
-                e.message || t("Failed to remove member.")
-              );
+              if(isMounted.current) Alert.alert(t("Error"), e.message || t("Failed to remove member."));
             }
           },
         },
@@ -413,8 +420,10 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
             try {
               setIsRotatingKeys(true);
 
-              // 1) Fetch bills (api.billsList() returns decrypted fields)
+              // 1) Fetch bills. The API now returns decrypted fields.
               const { bills } = await api.billsList();
+              
+              // Map already decrypted data to plaintext structure
               const plaintextBills = bills.map((b: any) => ({
                 ...b,
                 creditor_plain: b.creditor || "",
@@ -435,7 +444,7 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
                 NEW_FAMILY_KEY_VERSION
               );
 
-              // 4) Re-encrypt bills and write back
+              // 4) Re-encrypt bills and write back (api.billsUpdate handles encryption)
               for (const b of plaintextBills) {
                 await api.billsUpdate(b.id, {
                   creditor: b.creditor_plain,
@@ -444,7 +453,7 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
                 });
               }
 
-              // 5) Share the NEW key to the server (FIXED Types & Added device_id)
+              // 5) Share the NEW key to the server 
               const myKeys = await EncryptionService.ensureKeyPair();
               if (!myKeys.publicKey) {
                 throw new Error("Security keys missing. Please Hard Reset.");
@@ -452,31 +461,30 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
 
               const wrappedKey = EncryptionService.wrapKeyForUser(
                 newKeyHex,
-                myKeys.publicKey as string // cast to string to fix TS error
+                myKeys.publicKey as string 
               );
 
-              const deviceId = await getDeviceId(); // Added device_id for multi-device support
+              const deviceId = await getDeviceId();
 
               await api.shareKey({
                 family_id: leaveRes.new_family_id,
                 target_user_id: data.current_user_id,
                 encrypted_key: wrappedKey,
-                device_id: deviceId, // Included device_id
+                device_id: deviceId,
               });
 
-              Alert.alert(
-                t("Success"),
-                t("You have left the family and your data has been re-secured.")
-              );
-              onRefresh();
+              if(isMounted.current) {
+                  Alert.alert(
+                    t("Success"),
+                    t("You have left the family and your data has been re-secured.")
+                  );
+                  onRefresh();
+              }
             } catch (e: any) {
               console.error("Leave failed", e);
-              Alert.alert(
-                t("Error"),
-                e.message || t("Failed to leave family securely.")
-              );
+              if(isMounted.current) Alert.alert(t("Error"), e.message || t("Failed to leave family securely."));
             } finally {
-              setIsRotatingKeys(false);
+              if(isMounted.current) setIsRotatingKeys(false);
             }
           },
         },
@@ -496,10 +504,10 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
             await googleSignOut();
             await clearToken();
             await AsyncStorage.removeItem("billbell_bills_list_cache");
-            Alert.alert(t("Success"), t("Account deleted successfully."));
+            if(isMounted.current) Alert.alert(t("Success"), t("Account deleted successfully."));
             router.replace("/(auth)/login");
           } catch (e: any) {
-            Alert.alert(t("Error"), e.message || "Failed to delete account");
+            if(isMounted.current) Alert.alert(t("Error"), e.message || "Failed to delete account");
           }
         },
       },
@@ -510,7 +518,6 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
     if (!familyCode) {
       return Alert.alert(t("Error"), t("Family ID not found."));
     }
-    // Your server link with the code attached
     const inviteLink = `https://dunn-carabali.com/billMVP/?code=${familyCode}`;
 
     const shareOptions = {
@@ -558,7 +565,7 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
         hour: "2-digit",
         minute: "2-digit",
       });
-      setImportInfo({ code: res.code, expires: expiresTime });
+      if(isMounted.current) setImportInfo({ code: res.code, expires: expiresTime });
 
       await copyToClipboard(res.code);
       await notifyImportCode(
@@ -566,23 +573,26 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
         t("CodeExpires", { code: res.code, expiresAt: expiresTime })
       );
 
-      Alert.alert(
-        t("Import Code Generated"),
-        `${t("Code")}: ${res.code}\n${t("Expires")}: ${expiresTime}`,
-        [
-          { text: t("Copy"), onPress: () => copyToClipboard(res.code) },
-          { text: t("OK") },
-        ]
-      );
+      if(isMounted.current) {
+          Alert.alert(
+            t("Import Code Generated"),
+            `${t("Code")}: ${res.code}\n${t("Expires")}: ${expiresTime}`,
+            [
+              { text: t("Copy"), onPress: () => copyToClipboard(res.code) },
+              { text: t("OK") },
+            ]
+          );
+      }
     } catch (e: any) {
-      Alert.alert(t("Error"), e.message);
+      if(isMounted.current) Alert.alert(t("Error"), e.message);
     } finally {
-      setLoadingCode(false);
+      if(isMounted.current) setLoadingCode(false);
     }
   };
 
   const handleExportData = async () => {
     try {
+      // FIX: api.billsList() returns decrypted data now.
       const res = await api.billsList();
       const bills = res.bills || [];
 
@@ -591,29 +601,20 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
         return;
       }
 
-      const exportData = await Promise.all(
-        bills.map(async (b: any) => ({
-          name: await EncryptionService.decryptData(b.creditor),
+      // FIX: No need to call EncryptionService.decryptData(), bills are already plaintext
+      const exportData = bills.map((b: any) => ({
+          name: b.creditor, // Plaintext
           amount: centsToDollars(b.amount_cents),
           due_date: b.due_date,
-          notes: await EncryptionService.decryptData(b.notes || ""),
+          notes: b.notes || "", // Plaintext
           recurrence: b.recurrence || "none",
           offset: b.reminder_offset_days || "0",
-        }))
-      );
+      }));
 
       const csvString = jsonToCSV(exportData);
-
-      // 2. Initialize the file object using Paths.cache
-      // This replaces manual string concatenation and FileSystem.cacheDirectory
       const exportFile = new File(Paths.cache, "bills_export.csv");
+      exportFile.write(csvString);
 
-      // 3. Write directly to the file
-      // No encoding parameter needed; strings default to UTF-8
-       exportFile.write(csvString);
-
-      // 4. Share using the file's native URI
-      // .uri automatically includes the correct 'file://' prefix
       await Share.open({
         url: exportFile.uri,
         type: "text/csv",
@@ -623,7 +624,7 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
     } catch (e: any) {
       console.error("Export failed:", e);
       if (e?.message !== "User did not share") {
-        Alert.alert(t("Error"), t("Failed to export data"));
+        if(isMounted.current) Alert.alert(t("Error"), t("Failed to export data"));
       }
     }
   };
@@ -657,6 +658,8 @@ const version = Constants.expoConfig?.version ?? "1.0.0";
     );
   }
 
+  // ... (JSX remains unchanged, omitted for brevity as logic was the focus) ...
+  // Please retain all JSX from the original file here, making sure the handlers above are used.
   return (
     <>
       <ScrollView

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons"; 
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Added for caching
+import AsyncStorage from "@react-native-async-storage/async-storage"; 
 import { api } from "../../src/api/client";
 import { useTheme } from "../../src/ui/useTheme";
 import { useTranslation } from "react-i18next";
@@ -22,6 +22,13 @@ export default function FamilyRequests() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
+  
+  // FIX: isMounted ref
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   useEffect(() => {
     loadRequests();
@@ -31,9 +38,9 @@ export default function FamilyRequests() {
     try {
       // 1. Load from Cache first (Instant UI)
       const cached = await AsyncStorage.getItem(CACHE_KEY);
-      if (cached) {
+      if (cached && isMounted.current) {
         setRequests(JSON.parse(cached));
-        setLoading(false); // Show cached content immediately
+        setLoading(false); 
       }
 
       // 2. Fetch Fresh Data
@@ -41,13 +48,15 @@ export default function FamilyRequests() {
       const freshData = res.requests || [];
       
       // 3. Update State & Cache
-      setRequests(freshData);
-      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(freshData));
+      if(isMounted.current) {
+          setRequests(freshData);
+          await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(freshData));
+      }
       
     } catch (e) {
       console.log("Failed to load requests", e);
     } finally {
-      setLoading(false);
+      if(isMounted.current) setLoading(false);
     }
   }
 
@@ -62,8 +71,10 @@ export default function FamilyRequests() {
       // Refresh list (and update cache)
       await loadRequests(); 
     } catch (e: any) {
-      Alert.alert(t("Error"), e.message);
-      setLoading(false);
+      if(isMounted.current) {
+          Alert.alert(t("Error"), e.message);
+          setLoading(false);
+      }
     }
   }
 
