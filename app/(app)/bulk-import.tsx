@@ -6,7 +6,6 @@ import {
   Pressable,
   Alert,
   ScrollView,
-  Platform,
   StyleSheet,
   ActivityIndicator,
   Linking
@@ -19,9 +18,11 @@ import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
+import * as FileSystem from 'expo-file-system';
 import { File, Paths } from 'expo-file-system';
 
-// --- Components ---
+// ... (Header and FileDropZone components unchanged) ...
+// NOTE: Please retain Header, SectionTitle, FileDropZone components from original file.
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
   return (
@@ -104,8 +105,6 @@ function FileDropZone({
   );
 }
 
-// --- Main Screen ---
-
 export default function BulkImport() {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -116,14 +115,11 @@ export default function BulkImport() {
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   
-  // FIX: Track mounted state
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
     return () => { isMounted.current = false; };
   }, []);
-
-  // --- Logic ---
 
   async function pickCsv() {
     try {
@@ -143,8 +139,8 @@ export default function BulkImport() {
       const file = res.assets[0];
       if (isMounted.current) setCsvName(file.name);
 
-      const response = await fetch(file.uri);
-      const content = await response.text();
+      // FIX: Use FileSystem to read file content reliably
+      const content = await FileSystem.readAsStringAsync(file.uri);
       const parsed = parseCsvToBills(content);
 
       if (!parsed || !parsed.length) {
@@ -205,7 +201,6 @@ export default function BulkImport() {
       const reminder = ireminder >= 0 && cols.length > ireminder ? cols[ireminder] : "0";
       
       const rawPayment = ipaymentMethod >= 0 && cols.length > ipaymentMethod ? cols[ipaymentMethod] : "manual";
-      // FIX: Normalize payment method from "auto_pay" to "auto"
       const paymentMethod = (rawPayment === 'auto_pay' || rawPayment === 'auto') ? 'auto' : 'manual';
       
       let recurrence = "none";
@@ -224,7 +219,6 @@ export default function BulkImport() {
 
       if (!name || !amountStr || !dueDate) continue;
       
-      // FIX: Robust amount parsing (remove non-numeric chars like $ or ,)
       const cleanAmountStr = amountStr.replace(/[^0-9.-]+/g, "");
       const amount = parseFloat(cleanAmountStr);
       
@@ -279,7 +273,7 @@ export default function BulkImport() {
     try {
       setDownloading(true); 
       
-      const headers = "name,amount,due_date,notes,recurrence,offset,payment_method"; 
+     const headers = "name,amount,due_date,notes,recurrence,offset,payment_method"; 
       const today = new Date().toISOString().split("T")[0];
       const sampleRow = `Netflix,15.99,${today},Family Plan,monthly,0,auto_pay`;
       const csvContent = `${headers}\n${sampleRow}`;

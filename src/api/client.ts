@@ -21,6 +21,16 @@ import i18n from "./i18n";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/billMVP";
 
+// --- Helper Types ---
+interface KeySharePayload {
+    family_id: number;
+    target_user_id: number;
+    encrypted_key: string;
+    device_id: string;
+}
+
+// --- Core Functions ---
+
 async function getToken() {
   return SecureStore.getItemAsync("token");
 }
@@ -66,7 +76,7 @@ async function request(path: string, opts: RequestInit = {}) {
 
     if (shouldForceLogout) {
       await clearToken();
-      api.hardReset();
+      await hardReset(); // Corrected: Call function directly
       router.replace("/(auth)/login");
       return;
     }
@@ -82,6 +92,14 @@ async function request(path: string, opts: RequestInit = {}) {
 
   return json;
 }
+
+// --- Specific API Calls (Lifted out for internal usage) ---
+
+const apiMembers = () => request("/family/members");
+const apiShareKey = (payload: KeySharePayload) => request("/keys/shared", { method: "POST", body: JSON.stringify(payload) });
+const apiGetPublicKey = (userId: number) => request(`/keys/public/${userId}`);
+const apiRotateKey = () => request("/family/rotate-key", { method: "POST" });
+
 
 async function ensureRsaKeyUploaded() {
     const { publicKey } = await ensureKeyPair();
@@ -119,9 +137,13 @@ async function clearAllFamilyKeys() {
     console.warn("Performing aggressive clear of all cached family encryption keys.");
     await SecureStore.deleteItemAsync(FAMILY_KEY_VERSION_ALIAS);
     await SecureStore.deleteItemAsync(FAMILY_KEY_SYNC_TS); 
+    
+    // Performance: Use Promise.all for deletion
+    const promises = [];
     for (let v = 1; v <= 100; v++) { 
-        await SecureStore.deleteItemAsync(`${FAMILY_KEY_PREFIX}${v}`);
+        promises.push(SecureStore.deleteItemAsync(`${FAMILY_KEY_PREFIX}${v}`));
     }
+    await Promise.all(promises);
 }
 
 async function ensureFamilyKeyLoaded() {
@@ -155,7 +177,7 @@ async function ensureFamilyKeyLoaded() {
 
   let currentUserId: number | undefined;
   try {
-      const familyMembersResponse = await api.familyMembers();
+      const familyMembersResponse = await apiMembers();
       currentUserId = familyMembersResponse.current_user_id;
   } catch (e) {
       console.warn("Could not retrieve current user ID. Cannot perform self-heal if needed.");
@@ -191,7 +213,7 @@ async function ensureFamilyKeyLoaded() {
         if (currentRawKey?.hex && publicKey && familyId && currentUserId) {
             const wrappedKeyBase64 = wrapKeyForUser(currentRawKey.hex, publicKey);
             
-            await api.shareKey({
+            await apiShareKey({
                 family_id: familyId,
                 target_user_id: currentUserId,
                 encrypted_key: wrappedKeyBase64,
@@ -240,7 +262,9 @@ async function maybeReencryptBills(bills: any[]) {
   if (Number.isFinite(last) && now - last < REENC_COOLDOWN_MS) return;
 
   let upgraded = 0;
-
+  
+  // Note: We keep this sequential because we don't want to spam the server with 
+  // multiple PUT requests in the background. It is a maintenance task.
   for (const b of bills) {
     if (upgraded >= REENC_MAX_PER_LOAD) break;
 
@@ -283,7 +307,7 @@ async function orchestrateFamilyKeyExchange(familyId: number, targetUserId: numb
     const newFamilyKeyHex = generateNewFamilyKey();
     const wrappedKeyBase64 = wrapKeyForUser(newFamilyKeyHex, publicKey as string);
     
-    await api.shareKey({
+    await apiShareKey({
       family_id: familyId,
       target_user_id: targetUserId,
       encrypted_key: wrappedKeyBase64,
@@ -293,7 +317,7 @@ async function orchestrateFamilyKeyExchange(familyId: number, targetUserId: numb
 }
 
 async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion: number }> {
-    const serverResponse = await api.rotateKey(); 
+    const serverResponse = await apiRotateKey(); 
     const familyId = serverResponse.family_id;
     const newKeyVersion = serverResponse.key_version;
 
@@ -303,45 +327,56 @@ async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion:
     await AsyncStorage.removeItem("billbell_bills_list_cache");
     const newFamilyKeyHex = generateNewFamilyKey();
 
-    const membersResponse = await api.familyMembers();
+    const membersResponse = await apiMembers();
     const members = membersResponse.members || [];
+
+    // Parallelize requests to speed up rotation
+    const sharePromises: Promise<any>[] = [];
 
     for (const member of members) {
         const targetUserId = member.id;
-        const pubKeyResponse = await api.getPublicKey(targetUserId); 
         
-        // Handles legacy (single key) and new (array of keys) response format
-        const keysToShare = pubKeyResponse.public_keys || 
-                            (pubKeyResponse.public_key ? [{
-                                public_key: pubKeyResponse.public_key,
-                                device_id: pubKeyResponse.device_id || '00000000-0000-0000-0000-000000000000' 
-                            }] : []);
-
-        if (keysToShare.length === 0) {
-            console.warn(`Skipping key share for user ${targetUserId}: No Public Keys found.`);
-            continue; 
-        }
-
-        for (const keyInfo of keysToShare) {
-            const recipientPublicKeyPem = keyInfo.public_key;
-            const deviceId = keyInfo.device_id;
-            
-            if (!recipientPublicKeyPem || !deviceId) {
-                 continue;
+        // We need to await this because we can't map over members and call async inside map 
+        // without handling the promise array.
+        // However, we can create a promise for the whole operation per user.
+        sharePromises.push((async () => {
+             const pubKeyResponse = await apiGetPublicKey(targetUserId); 
+        
+            // Handles legacy (single key) and new (array of keys) response format
+            const keysToShare = pubKeyResponse.public_keys || 
+                                (pubKeyResponse.public_key ? [{
+                                    public_key: pubKeyResponse.public_key,
+                                    device_id: pubKeyResponse.device_id || '00000000-0000-0000-0000-000000000000' 
+                                }] : []);
+    
+            if (keysToShare.length === 0) {
+                console.warn(`Skipping key share for user ${targetUserId}: No Public Keys found.`);
+                return;
             }
-
-            const wrappedKeyBase64 = wrapKeyForUser(newFamilyKeyHex, recipientPublicKeyPem);
             
-            const sharePayload = {
-                family_id: familyId,
-                target_user_id: targetUserId,
-                encrypted_key: wrappedKeyBase64,
-                device_id: deviceId, 
-            };
+            const userDevicePromises = keysToShare.map((keyInfo: any) => {
+                const recipientPublicKeyPem = keyInfo.public_key;
+                const deviceId = keyInfo.device_id;
+                
+                if (!recipientPublicKeyPem || !deviceId) return Promise.resolve();
+    
+                const wrappedKeyBase64 = wrapKeyForUser(newFamilyKeyHex, recipientPublicKeyPem);
+                
+                const sharePayload = {
+                    family_id: familyId,
+                    target_user_id: targetUserId,
+                    encrypted_key: wrappedKeyBase64,
+                    device_id: deviceId, 
+                };
+                
+                return apiShareKey(sharePayload);
+            });
             
-            await api.shareKey(sharePayload);
-        }
+            await Promise.all(userDevicePromises);
+        })());
     }
+
+    await Promise.all(sharePromises);
 
     await cacheFamilyKey(newFamilyKeyHex, newKeyVersion);
     await pruneFamilyKeys(50); 
@@ -377,7 +412,7 @@ export const api = {
   },
   
   familyJoin: (family_code: string) => request("/family/join", { method: "POST", body: JSON.stringify({ family_code }) }),
-  familyMembers: () => request("/family/members"),
+  familyMembers: apiMembers,
   familyMemberRemove: (memberId: number) => request(`/family/members/${memberId}`, { method: "DELETE" }),
   familyLeave: () => request("/family/leave", { method: "POST" }),
   familySettingsGet: () => request("/family/settings"),
@@ -392,7 +427,7 @@ export const api = {
   deviceTokenUpsert: (payload: any) => request("/devices/token", { method: "POST", body: JSON.stringify(payload) }),
 
   // Key Rotation
-  rotateKey: () => request("/family/rotate-key", { method: "POST" }),
+  rotateKey: apiRotateKey,
   orchestrateKeyRotation: orchestrateKeyRotation,
 
   // Encrypted Bills
@@ -472,10 +507,9 @@ export const api = {
   },
 
   uploadPublicKey: (public_key: string) => request("/keys/public", { method: "POST", body: JSON.stringify({ public_key }) }),
-  getPublicKey: (userId: number) => request(`/keys/public/${userId}`),
+  getPublicKey: apiGetPublicKey,
 
-  shareKey: (payload: { family_id: number; target_user_id: number; encrypted_key: string; device_id: string }) => 
-    request("/keys/shared", { method: "POST", body: JSON.stringify(payload) }),
+  shareKey: apiShareKey,
 
   getMySharedKey: () => request("/keys/shared"),
 

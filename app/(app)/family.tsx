@@ -20,9 +20,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 
-// ... (Header and WaitingView components remain unchanged - omitted for brevity) ...
-// NOTE: Please retain the Header and WaitingView components from the original file.
-
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
   return (
     <View style={styles.headerShadowContainer}>
@@ -43,13 +40,6 @@ function Header({ title, subtitle, theme }: { title: string; subtitle: string; t
     </View>
   );
 }
-
-function WaitingView({ code, onCheckStatus, onCancel, loading, theme }: any) {
-    // ... (Keep implementation from previous file)
-    return <View><Text>Pending...</Text></View>; // Placeholder to save space, use original
-}
-
-// --- Main Screen ---
 
 export default function Family() {
   const [loading, setLoading] = useState(false);
@@ -93,6 +83,10 @@ export default function Family() {
     }, [theme.mode])
   );
 
+  const onChangeCode = (text: string) => {
+      setCode(text.toUpperCase());
+  };
+
   async function handleCreate() {
     setLoading(true);
     try {
@@ -126,9 +120,6 @@ export default function Family() {
 
       if (!isMounted.current) return;
 
-      console.log("API Join Response:", JSON.stringify(res));
-
-      // FIX: Handle "Instant Join" Success (Backend returns { success: true })
       if (res && res.success) {
         setPendingCode(null);
         await AsyncStorage.removeItem("billbell_pending_family_code");
@@ -141,7 +132,6 @@ export default function Family() {
         return;
       }
 
-      // Handle Rejection
       if (res && res.status === "rejected") {
         await AsyncStorage.removeItem("billbell_pending_family_code");
         setPendingCode(null);
@@ -150,7 +140,6 @@ export default function Family() {
         return;
       }
 
-      // Handle Pending (If backend adds request logic later)
       if (res && res.status === "pending") {
         const cleanCode = codeToUse.trim().toUpperCase();
         await AsyncStorage.setItem("billbell_pending_family_code", cleanCode);
@@ -172,7 +161,6 @@ export default function Family() {
       const msg = e.message || "";
       console.log("Join Error:", msg);
 
-      // Handle "Already in family" as a success case
       if (
         !msg.toLowerCase().includes("user not in family") &&
         (msg.includes("already in") || msg.includes("member"))
@@ -209,15 +197,18 @@ export default function Family() {
   }
 
   if (pendingCode) {
-    // Basic waiting view fallback if component missing
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.bg, justifyContent:'center', alignItems:'center' }]}>
-         <Text style={{color: theme.colors.text, fontSize: 18, marginBottom: 20}}>Request Pending: {pendingCode}</Text>
-         <Pressable onPress={() => handleJoin(pendingCode)} style={{padding: 10, backgroundColor: theme.colors.primary, borderRadius: 8}}>
-            <Text style={{color: '#FFF'}}>Check Status</Text>
+      <View style={[styles.container, { backgroundColor: theme.colors.bg, justifyContent:'center', alignItems:'center', padding: 20 }]}>
+         <Ionicons name="time-outline" size={64} color={theme.colors.primary} style={{marginBottom: 20}} />
+         <Text style={{color: theme.colors.text, fontSize: 18, marginBottom: 8, fontWeight: '700'}}>Request Pending</Text>
+         <Text style={{color: theme.colors.subtext, fontSize: 14, marginBottom: 30}}>Code: {pendingCode}</Text>
+         
+         <Pressable onPress={() => handleJoin(pendingCode)} style={{paddingVertical: 12, paddingHorizontal: 24, backgroundColor: theme.colors.primary, borderRadius: 12, marginBottom: 16, width: '100%', alignItems: 'center'}}>
+            <Text style={{color: '#FFF', fontWeight: '700'}}>Check Status</Text>
          </Pressable>
-         <Pressable onPress={handleCancel} style={{marginTop: 20}}>
-            <Text style={{color: theme.colors.danger}}>Cancel</Text>
+         
+         <Pressable onPress={handleCancel} style={{padding: 10}}>
+            <Text style={{color: theme.colors.danger}}>Cancel Request</Text>
          </Pressable>
       </View>
     );
@@ -263,7 +254,7 @@ export default function Family() {
                 <View style={[styles.inputContainer, { borderColor: theme.colors.border, backgroundColor: theme.colors.bg }]}>
                   <TextInput
                     value={code}
-                    onChangeText={setCode}
+                    onChangeText={onChangeCode}
                     placeholder={t("e.g. K7P3D9")}
                     placeholderTextColor={theme.colors.subtext}
                     autoCapitalize="characters"

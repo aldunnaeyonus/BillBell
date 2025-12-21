@@ -1,3 +1,5 @@
+import { ColorValue, OpaqueColorValue } from "react-native";
+
 export const palette = {
   navy: "#0B1F3B",
   mint: "#71E3C3",
@@ -22,10 +24,9 @@ export const palette = {
 export type Theme = {
   mode: "light" | "dark";
   colors: {
-    textSecondary: ColorValue | undefined;
-    destructive: ColorValue | undefined;
-    destructive: string | OpaqueColorValue | undefined;
-    textTertiary: ColorValue | undefined;
+    textSecondary?: ColorValue;
+    destructive?: string | OpaqueColorValue;
+    textTertiary?: ColorValue;
     bg: string;
     card: string;
     text: string;
@@ -68,4 +69,3 @@ export function makeTheme(mode: "light" | "dark"): Theme {
     },
   };
 }
-

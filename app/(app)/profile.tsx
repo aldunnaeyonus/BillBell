@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next";
 import Constants from "expo-constants";
 import Share from "react-native-share";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { File, Paths } from "expo-file-system";
+import { File, Paths } from 'expo-file-system';
 
 import { api } from "../../src/api/client";
 import { clearToken } from "../../src/auth/session";
@@ -31,8 +31,6 @@ import { copyToClipboard } from "../../src/ui/copy";
 import { googleSignOut } from "../../src/auth/providers";
 import * as EncryptionService from "../../src/security/EncryptionService";
 import { getDeviceId } from "../../src/security/device";
-
-// Imports for Live Activity Logic
 import { userSettings } from "../../src/storage/userSettings";
 import { stopActivity } from "../../src/native/LiveActivity";
 
@@ -318,7 +316,6 @@ export default function Profile() {
   const version = Constants.expoConfig?.version ?? "1.0.0";
   const appName = Constants.expoConfig?.name ?? "BillBell";
   
-  // FIX: isMounted ref
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
@@ -420,17 +417,9 @@ export default function Profile() {
             try {
               setIsRotatingKeys(true);
 
-              // 1) Fetch bills. The API now returns decrypted fields.
+              // 1) Fetch bills (already decrypted by api.billsList)
               const { bills } = await api.billsList();
               
-              // Map already decrypted data to plaintext structure
-              const plaintextBills = bills.map((b: any) => ({
-                ...b,
-                creditor_plain: b.creditor || "",
-                notes_plain: b.notes || "",
-                amount_cents_plain: b.amount_cents,
-              }));
-
               // 2) Leave the family on Server
               const leaveRes = await api.familyLeave();
 
@@ -438,18 +427,23 @@ export default function Profile() {
               const newKeyHex = EncryptionService.generateNewFamilyKey();
               const NEW_FAMILY_KEY_VERSION = 1;
 
-              // Cache new key as active locally so api.billsUpdate uses it for encryption
+              // Cache new key as active locally
               await EncryptionService.cacheFamilyKey(
                 newKeyHex,
                 NEW_FAMILY_KEY_VERSION
               );
 
-              // 4) Re-encrypt bills and write back (api.billsUpdate handles encryption)
-              for (const b of plaintextBills) {
+              // 4) Re-encrypt bills and write back
+              // Note: We use the decrypted data from step 1
+              for (const b of bills) {
                 await api.billsUpdate(b.id, {
-                  creditor: b.creditor_plain,
-                  notes: b.notes_plain,
-                  amount_cents: b.amount_cents_plain,
+                  creditor: b.creditor,
+                  notes: b.notes,
+                  amount_cents: b.amount_cents,
+                  // Preserve other fields
+                  due_date: b.due_date,
+                  recurrence: b.recurrence,
+                  payment_method: b.payment_method
                 });
               }
 
@@ -592,7 +586,6 @@ export default function Profile() {
 
   const handleExportData = async () => {
     try {
-      // FIX: api.billsList() returns decrypted data now.
       const res = await api.billsList();
       const bills = res.bills || [];
 
@@ -601,7 +594,6 @@ export default function Profile() {
         return;
       }
 
-      // FIX: No need to call EncryptionService.decryptData(), bills are already plaintext
       const exportData = bills.map((b: any) => ({
           name: b.creditor, // Plaintext
           amount: centsToDollars(b.amount_cents),
@@ -658,8 +650,6 @@ export default function Profile() {
     );
   }
 
-  // ... (JSX remains unchanged, omitted for brevity as logic was the focus) ...
-  // Please retain all JSX from the original file here, making sure the handlers above are used.
   return (
     <>
       <ScrollView

@@ -174,7 +174,6 @@ export default function BillEdit() {
   const theme = useTheme();
   const { t } = useTranslation();
   
-  // FIX: isMounted ref to prevent state updates on unmounted component
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -191,8 +190,12 @@ export default function BillEdit() {
   const [loading, setLoading] = useState(false);
 
   const reminderDateObj = useMemo(() => {
-    const [y, m, d] = dueDate.split("-").map(Number);
-    return new Date(y, m - 1, d);
+    try {
+      const [y, m, d] = dueDate.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    } catch {
+      return new Date();
+    }
   }, [dueDate]);
 
   const [recurrence, setRecurrence] = useState<
@@ -213,16 +216,24 @@ export default function BillEdit() {
   );
 
   const timeObj = useMemo(() => {
-    const d = new Date();
-    const [h, m] = reminderTime.split(":").map(Number);
-    d.setHours(h || 9, m || 0, 0, 0);
-    return d;
+    try {
+      const d = new Date();
+      const [h, m] = reminderTime.split(":").map(Number);
+      d.setHours(h || 9, m || 0, 0, 0);
+      return d;
+    } catch {
+      return new Date();
+    }
   }, [reminderTime]);
 
-  const amountCents = useMemo(
-    () => Math.round(parseFloat(amount || "0") * 100),
-    [amount]
-  );
+  // Safe Amount Calculation
+  const amountCents = useMemo(() => {
+    // Normalize commas to dots for european support
+    const normalized = amount.replace(/,/g, '.');
+    const floatVal = parseFloat(normalized);
+    if (isNaN(floatVal)) return 0;
+    return Math.round(floatVal * 100);
+  }, [amount]);
 
   // 1. Load Defaults (Create Mode)
   useEffect(() => {
@@ -230,7 +241,7 @@ export default function BillEdit() {
       if (id) return;
       try {
         const s = await api.familySettingsGet();
-        if (!isMounted.current) return; // check ref
+        if (!isMounted.current) return; 
         setOffsetDays(String(s.default_reminder_offset_days ?? 0));
         if (s.default_reminder_time_local) {
           setReminderTime(s.default_reminder_time_local);
@@ -245,7 +256,7 @@ export default function BillEdit() {
       if (!id) return;
       try {
         const res = await api.billsList();
-        if (!isMounted.current) return; // check ref
+        if (!isMounted.current) return;
 
         const bill = res.bills.find((b: any) => b.id === id);
         if (!bill) return;
@@ -272,8 +283,9 @@ export default function BillEdit() {
       return;
     }
     const currentBill = {
+      id,
       creditor,
-      amount_cents: Number(amount) * 100,
+      amount_cents: amountCents,
       due_date: dueDate,
       notes: notes,
     };
@@ -284,7 +296,9 @@ export default function BillEdit() {
     try {
       if (!creditor.trim())
         return Alert.alert(t("Validation"), t("Creditor is required"));
-      if (amountCents <= 0)
+      
+      // FIX: Robust check for NaN or 0
+      if (!amountCents || amountCents <= 0)
         return Alert.alert(t("Validation"), t("Amount must be > 0"));
 
       setLoading(true);
@@ -302,7 +316,7 @@ export default function BillEdit() {
       if (!id) await api.billsCreate(payload);
       else await api.billsUpdate(id, payload);
 
-      if (isMounted.current) router.back(); // Check before nav
+      if (isMounted.current) router.back(); 
     } catch (e: any) {
       if (isMounted.current) Alert.alert(t("Error"), e.message);
     } finally {
@@ -329,6 +343,13 @@ export default function BillEdit() {
     }
   };
 
+  const onAmountChange = (text: string) => {
+      // Allow only numbers, dots, commas
+      if (/^[0-9.,]*$/.test(text)) {
+          setAmount(text);
+      }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <KeyboardAvoidingView
@@ -340,14 +361,12 @@ export default function BillEdit() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.content}>
-            {/* Header */}
             <Header
               title={id ? t("Edit Bill") : t("New Bill")}
               subtitle={id ? t("Update details") : t("Add a new debt to track")}
               theme={theme}
             />
 
-            {/* Bill Details Section */}
             <View style={styles.section}>
               <SectionTitle title={t("Bill Details")} theme={theme} />
               <View style={{ gap: 12 }}>
@@ -362,12 +381,11 @@ export default function BillEdit() {
                   icon="cash-outline"
                   placeholder="0.00"
                   value={amount}
-                  onChangeText={setAmount}
+                  onChangeText={onAmountChange}
                   keyboardType="decimal-pad"
                   theme={theme}
                 />
 
-                {/* Date Picker Row */}
                 <Pressable
                   onPress={() => setShowDatePicker((prev) => !prev)}
                   style={[
@@ -432,7 +450,7 @@ export default function BillEdit() {
                 ))}
               </View>
             </View>
-            {/* Recurrence Section */}
+            
             <View style={styles.section}>
               <SectionTitle title={t("Frequency")} theme={theme} />
               <View style={styles.chipsContainer}>
@@ -465,7 +483,6 @@ export default function BillEdit() {
               </View>
             </View>
 
-            {/* Reminders Section */}
             <View style={styles.section}>
               <SectionTitle title={t("Reminders")} theme={theme} />
               <View
@@ -564,7 +581,6 @@ export default function BillEdit() {
               </View>
             </View>
 
-            {/* Actions */}
             <View style={{ gap: 12, marginTop: 10 }}>
               <Pressable
                 onPress={save}
@@ -621,14 +637,8 @@ export default function BillEdit() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-    gap: 24,
-  },
-  // Header
+  container: { flex: 1 },
+  content: { padding: 16, gap: 24 },
   headerShadowContainer: {
     backgroundColor: "transparent",
     shadowColor: "#000",
@@ -657,103 +667,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 10,
   },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#FFF",
-    marginBottom: 2,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.7)",
-  },
-  // Sections
-  section: {
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginLeft: 4,
-  },
-  // Inputs
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    height: 56,
-    gap: 12,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  inputText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  // Chips
-  chipsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-chip: {
-    // Preserved Styles
+  headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
+  headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
+  section: { gap: 12 },
+  sectionTitle: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 4 },
+  inputContainer: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, borderRadius: 14, borderWidth: 1, height: 56, gap: 12 },
+  input: { flex: 1, fontSize: 16, fontWeight: "500" },
+  inputText: { flex: 1, fontSize: 16, fontWeight: "500" },
+  chipsContainer: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  chip: {
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
     alignItems: "center",
-
-    // Layout Changes for 2-per-line
-    width: "48%", // 48% + 48% + gap = 100%
-    marginBottom: 8, // Optional: Add vertical spacing
+    flexGrow: 1, // FIX: Allow chips to grow to fill space rather than fixed 48%
+    minWidth: "30%", 
   },
-  chipText: {
-    fontSize: 14,
-  },
-  // Card
-  card: {
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    minHeight: 120,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "rgba(0,0,0,0.05)",
-    marginVertical: 12,
-  },
-  // Buttons
-  saveButton: {
-    height: 56,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  calendarButton: {
-    flexDirection: "row",
-    height: 50,
-    borderRadius: 16,
-    borderWidth: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
+  chipText: { fontSize: 14 },
+  card: { padding: 16, borderRadius: 16, borderWidth: 1, minHeight: 120 },
+  divider: { height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginVertical: 12 },
+  saveButton: { height: 56, borderRadius: 16, justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+  saveButtonText: { fontSize: 16, fontWeight: "800" },
+  calendarButton: { flexDirection: "row", height: 50, borderRadius: 16, borderWidth: 1, justifyContent: "center", alignItems: "center", gap: 8 },
 });

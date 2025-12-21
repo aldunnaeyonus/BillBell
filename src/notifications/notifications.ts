@@ -45,7 +45,6 @@ export async function getExpoPushTokenSafe() {
 
 // --- Helpers ---
 
-// FIX: Use date-fns for robust ISO parsing and date math
 function nextFireDateForBill(dueDateISO: string, offsetDays: number, reminderTimeLocal: string) {
   const due = parseISO(dueDateISO); // Safely parse YYYY-MM-DD to local date
   
@@ -155,13 +154,18 @@ export async function resyncLocalNotificationsFromBills(bills: any[]) {
 
   const billIdSet = new Set(bills.map((b) => Number(b.id)));
 
+  // 1. Cancel stale notifications in parallel
   const pairs = await getAllBillNotificationPairs();
-  for (const p of pairs) {
-    if (!billIdSet.has(p.billId)) {
-      try { await Notifications.cancelScheduledNotificationAsync(p.notificationId); } catch {}
-      await removeNotificationIdForBill(p.billId);
-    }
-  }
+  const cleanupPromises = pairs
+    .filter(p => !billIdSet.has(p.billId))
+    .map(async (p) => {
+        try { await Notifications.cancelScheduledNotificationAsync(p.notificationId); } catch {}
+        await removeNotificationIdForBill(p.billId);
+    });
+  
+  await Promise.all(cleanupPromises);
 
-  for (const b of bills) await scheduleBillReminderLocal(b);
+  // 2. Schedule new ones in parallel
+  const schedulePromises = bills.map(b => scheduleBillReminderLocal(b));
+  await Promise.all(schedulePromises);
 }

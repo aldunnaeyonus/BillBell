@@ -15,7 +15,7 @@ export async function ensureKeyPair() {
   const pub = await SecureStore.getItemAsync(PUBLIC_KEY_ALIAS);
   const priv = await SecureStore.getItemAsync(PRIVATE_KEY_ALIAS);
 
-  // FIX: Validate keys actually exist and look like PEM keys
+  // Validate keys actually exist and look like PEM keys
   const isValid = pub && priv && 
                   pub.includes("BEGIN PUBLIC KEY") && 
                   priv.includes("BEGIN PRIVATE KEY");
@@ -119,6 +119,9 @@ async function getFallbackKeyHexesWithVersions(maxVersionsToTry: number = 5): Pr
   if (!current) return [];
 
   const out: Array<{ v: number; hex: string }> = [];
+  // Note: This is read-sequential but usually small number of keys.
+  // Optimizing this to parallel reads is possible but might be overkill if maxVersions is small.
+  // We keep it simple here.
   for (let v = current; v >= 1 && out.length < maxVersionsToTry; v--) {
     const hex = await SecureStore.getItemAsync(familyKeyAliasForVersion(v));
     if (hex) out.push({ v, hex });
@@ -131,9 +134,11 @@ export async function pruneFamilyKeys(keepLast: number = 5) {
   if (!current) return;
 
   const minKeep = Math.max(1, current - keepLast + 1);
+  const deletePromises = [];
   for (let v = 1; v < minKeep; v++) {
-    await SecureStore.deleteItemAsync(familyKeyAliasForVersion(v));
+    deletePromises.push(SecureStore.deleteItemAsync(familyKeyAliasForVersion(v)));
   }
+  await Promise.all(deletePromises);
 }
 
 // --- Data Encryption (AES-GCM) ---

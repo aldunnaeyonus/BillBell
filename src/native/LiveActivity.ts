@@ -21,8 +21,7 @@ const headlessTask = async (event: any) => {
 
   console.log('[BackgroundFetch] Headless task start:', taskId);
   
-  // FIX: Pass true to indicate we are running in the background/headless
-  // preventing SecureStore access which causes crashes on Android
+  // Explicitly pass TRUE for background mode
   await syncAndRefresh(true);
   
   BackgroundFetch.finish(taskId);
@@ -33,8 +32,7 @@ BackgroundFetch.registerHeadlessTask(headlessTask);
 
 async function getMyAuthToken(): Promise<string> {
   try {    
-    // Note: getToken uses SecureStore. This might fail in headless mode on some devices.
-    // If it fails, the widget "Mark Paid" button just won't update the token, which is acceptable fail-safe.
+    // Best effort token retrieval
     const token = await getToken(); 
     return token || "";
   } catch (e) {
@@ -78,24 +76,27 @@ function ymdLocal(date: Date): string {
 }
 
 // --- 3. MAIN SYNC FUNCTION ---
-// FIX: Added backgroundMode parameter
 export async function syncAndRefresh(backgroundMode = false) {
   try {
     console.log(`Starting widget sync (Background: ${backgroundMode})...`);
     
     let bills: any[] = [];
 
-    if (backgroundMode && Platform.OS === 'android') {
-      // FIX: In Android Headless mode, SecureStore is unavailable/unstable.
-      // We CANNOT call api.billsList() because it attempts decryption.
-      // We must rely solely on the cached decrypted data.
-      const cached = await AsyncStorage.getItem("billbell_bills_list_cache");
-      if (cached) {
-        bills = JSON.parse(cached);
-        console.log("Loaded bills from cache for background sync.");
-      } else {
-        console.log("No cache available for background sync.");
-        return; // Abort if no data
+    // FIX: If we are in background mode (regardless of OS), rely on cache first
+    // to avoid SecureStore lock-outs or navigation side-effects.
+    if (backgroundMode) {
+      try {
+        const cached = await AsyncStorage.getItem("billbell_bills_list_cache");
+        if (cached) {
+          bills = JSON.parse(cached);
+          console.log("Loaded bills from cache for background sync.");
+        } else {
+          console.log("No cache available for background sync.");
+          return; // Abort if no data
+        }
+      } catch (e) {
+        console.warn("Error reading cache in background:", e);
+        return;
       }
     } else {
       // Foreground: Try to fetch fresh data
@@ -142,13 +143,11 @@ export async function syncAndRefresh(backgroundMode = false) {
       const unpaid = sanitizedBills.filter(b => !b.is_paid);
       const overdue = unpaid.filter(b => b.due < today);
 
-      // Get next bill (including overdue ones)
       const next = unpaid.sort((a, b) => a.due.getTime() - b.due.getTime())[0];
-
       const overdueCount = sanitizedBills.length === 0 ? -1 : overdue.length;
       
-      // Try to get token, but don't crash if it fails in background
       let token = "";
+      // Only fetch token if NOT in background mode to avoid SecureStore crash
       if (!backgroundMode) {
           token = await getMyAuthToken();
       }
@@ -200,7 +199,8 @@ export const initBackgroundFetch = async () => {
     requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY
   }, async (taskId) => {
     console.log("[BackgroundFetch] Event received:", taskId);
-    await syncAndRefresh(false); // Foreground fetch
+    // FIX: Pass TRUE to indicate background execution context
+    await syncAndRefresh(true); 
     BackgroundFetch.finish(taskId);
   }, (error) => {
     console.error("[BackgroundFetch] Failed to configure:", error);

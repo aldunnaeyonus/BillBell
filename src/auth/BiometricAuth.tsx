@@ -21,69 +21,69 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
 
   const isAuthedRef = useRef(false);
   const isAuthenticatingRef = useRef(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null); // FIX: Track timer for cleanup
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isMounted = useRef(true); // Track mount status
 
   const theme = useTheme();
   const { t } = useTranslation();
   const segments = useSegments();
 
-  // FIX: avoid stale closure on segments inside AppState listener/authenticate
   const segmentsRef = useRef(segments);
   useEffect(() => {
     segmentsRef.current = segments;
   }, [segments]);
 
   useEffect(() => {
+    isMounted.current = true;
     StatusBar.setBarStyle("light-content");
     if (Platform.OS === "android") {
       StatusBar.setBackgroundColor("transparent");
       StatusBar.setTranslucent(true);
     }
     
-    // FIX: Cleanup timer on unmount
-    return () => {
-        if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
     checkHardware();
 
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "background") {
         if (!isAuthenticatingRef.current) {
-          setIsAuthenticated(false);
+          if (isMounted.current) setIsAuthenticated(false);
           isAuthedRef.current = false;
         }
       }
 
       if (nextAppState === "active") {
         if (!isAuthedRef.current && !isAuthenticatingRef.current) {
-          // Delay slightly to allow UI to settle
-          timerRef.current = setTimeout(() => authenticate(), 500);
+          // Clear existing timer before setting a new one
+          if (timerRef.current) clearTimeout(timerRef.current);
+          timerRef.current = setTimeout(() => {
+            if (isMounted.current) authenticate();
+          }, 500);
         }
       }
     });
 
-    return () => subscription.remove();
+    return () => {
+      isMounted.current = false;
+      subscription.remove();
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
   async function checkHardware() {
     const compatible = await LocalAuthentication.hasHardwareAsync();
-    setHasHardware(compatible);
-
-    if (!compatible) {
-      setIsAuthenticated(true);
-      isAuthedRef.current = true;
-    } else {
-      authenticate();
+    if (isMounted.current) {
+      setHasHardware(compatible);
+      if (!compatible) {
+        setIsAuthenticated(true);
+        isAuthedRef.current = true;
+      } else {
+        authenticate();
+      }
     }
   }
 
   async function authenticate() {
     if (isAuthedRef.current || isAuthenticatingRef.current) return;
-
-    // Don't auth on login screens (use ref to ensure it's current)
     if (segmentsRef.current?.[0] === "(auth)") return;
 
     try {
@@ -91,32 +91,35 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
 
       const hasRecords = await LocalAuthentication.isEnrolledAsync();
       if (!hasRecords) {
-        setIsAuthenticated(true);
-        isAuthedRef.current = true;
+        if (isMounted.current) {
+          setIsAuthenticated(true);
+          isAuthedRef.current = true;
+        }
         return;
       }
 
       const result = await LocalAuthentication.authenticateAsync({
-        // FIX: Removed redundant "|| t(...)" and used string fallback
         promptMessage: t("Unlock App") || "Unlock App",
         fallbackLabel: t("Use Passcode") || "Use Passcode",
         disableDeviceFallback: false,
         cancelLabel: t("Cancel") || "Cancel",
       });
 
-      if (result.success) {
+      if (result.success && isMounted.current) {
         setIsAuthenticated(true);
         isAuthedRef.current = true;
       }
     } catch (e) {
       console.log("Auth Error", e);
     } finally {
-      // FIX: Track timer to clear on unmount
-      if (timerRef.current) clearTimeout(timerRef.current);
-      
-      timerRef.current = setTimeout(() => {
+      if (isMounted.current) {
+         if (timerRef.current) clearTimeout(timerRef.current);
+         timerRef.current = setTimeout(() => {
+           isAuthenticatingRef.current = false;
+         }, 500);
+      } else {
         isAuthenticatingRef.current = false;
-      }, 500);
+      }
     }
   }
 

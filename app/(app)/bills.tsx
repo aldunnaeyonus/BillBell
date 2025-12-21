@@ -31,13 +31,15 @@ import {
   cancelBillReminderLocal,
 } from "../../src/notifications/notifications";
 import { useTheme, Theme } from "../../src/ui/useTheme";
-import { File, Paths } from "expo-file-system";
+// FIX: Correct Import
+import * as FileSystem from "expo-file-system";
 import {
   startSummaryActivity,
   stopActivity,
   startAndroidLiveActivity,
 } from "../../src/native/LiveActivity";
 import { getToken } from "../../src/auth/session";
+import { File, Paths } from 'expo-file-system';
 
 const getWidgetModule = () => {
   try {
@@ -55,9 +57,14 @@ function centsToDollars(cents: number) {
   return (Number(cents || 0) / 100).toFixed(2);
 }
 
+// FIX: Use parseISO for consistent parsing
 function safeDateNum(s?: string | null) {
-  const t = s ? Date.parse(s) : NaN;
-  return Number.isFinite(t) ? t : 0;
+  if (!s) return 0;
+  try {
+    return parseISO(s).getTime();
+  } catch {
+    return 0;
+  }
 }
 
 function isOverdue(item: any) {
@@ -89,8 +96,7 @@ const jsonToCSV = (data: any[]): string => {
   return [headerRow, ...rows].join("\n");
 };
 
-// ICON MAPPING LOGIC OMITTED FOR BREVITY (No Changes Needed)
-// ... (Keep existing BILL_ICON_MAP) ...
+// ICON MAPPING LOGIC (No Changes)
 const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
   { regex: /netflix/i, icon: "netflix", color: "#E50914" },
   { regex: /spotify/i, icon: "spotify", color: "#1DB954" },
@@ -215,7 +221,6 @@ function getBillIcon(creditor: string): {
 }
 
 // --- Components ---
-// (Header, SummaryCard, TabSegment components unchanged)
 function Header({ theme, title, onProfilePress }: { theme: Theme; title: string; onProfilePress: () => void; }) {
   return (
     <View style={{ backgroundColor: theme.colors.navy }}>
@@ -348,7 +353,6 @@ export default function Bills() {
   const syncedBillsHash = useRef("");
   const BILLS_CACHE_KEY = "billbell_bills_list_cache";
   
-  // FIX: Track mounted state to prevent memory leaks/warnings on async updates
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -369,49 +373,47 @@ export default function Bills() {
 
   // 2. Android Widget & Live Activity Sync
   useEffect(() => {
-        const initializeApp = async () => {
-  if (Platform.OS !== "android" || bills.length === 0) return;
+    const initializeApp = async () => {
+      if (Platform.OS !== "android" || bills.length === 0) return;
 
-  const widgetModule = getWidgetModule();
+      const widgetModule = getWidgetModule();
 
-  const pending = bills.filter(
-    (b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"
-  );
+      const pending = bills.filter(
+        (b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"
+      );
 
-  const overdueBills = pending.filter((b: any) => isOverdue(b));
-  const overdueSum = overdueBills.reduce(
-    (sum: number, b: any) => sum + Number(b.amount_cents || 0),
-    0
-  );
+      const overdueBills = pending.filter((b: any) => isOverdue(b));
+      const overdueSum = overdueBills.reduce(
+        (sum: number, b: any) => sum + Number(b.amount_cents || 0),
+        0
+      );
 
-  const nextBill = pending.find((b: any) => !isOverdue(b));
-  
-  // Ensure we don't try to get token if unmounted, although getting token is side-effect free
-  if (!isMounted.current) return;
-  
-  const token = await getToken(); 
+      const nextBill = pending.find((b: any) => !isOverdue(b));
+      
+      if (!isMounted.current) return;
+      
+      const token = await getToken(); 
 
-  if (widgetModule?.syncWidgetData) {
-    widgetModule.syncWidgetData(
-      overdueBills.length,
-      nextBill?.creditor || t("None"),
-      nextBill?.due_date || "",
-      String(nextBill?.id || ""),
-      nextBill?.payment_method || "manual",
-      token
-    );
-  }
+      if (widgetModule?.syncWidgetData) {
+        widgetModule.syncWidgetData(
+          overdueBills.length,
+          nextBill?.creditor || t("None"),
+          nextBill?.due_date || "",
+          String(nextBill?.id || ""),
+          nextBill?.payment_method || "manual",
+          token
+        );
+      }
 
-  startAndroidLiveActivity(
-    `$${centsToDollars(overdueSum)}`,
-    overdueBills.length,
-    String(nextBill?.id ?? "")
-  );
-        };
-              initializeApp();
+      startAndroidLiveActivity(
+        `$${centsToDollars(overdueSum)}`,
+        overdueBills.length,
+        String(nextBill?.id ?? "")
+      );
+    };
+    initializeApp();
 
-}, [bills]); // Note: In a production app, debouncing this effect is recommended if `bills` updates often.
-
+  }, [bills]); 
 
   // 3. iOS Live Activity Sync
   useEffect(() => {
@@ -520,6 +522,8 @@ export default function Bills() {
         return String(a.creditor || "").localeCompare(String(b.creditor || ""));
       if (sort === "amount")
         return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
+      
+      // FIX: Use safe date parsing
       const dateA =
         tab === "pending"
           ? safeDateNum(a.due_date)
@@ -599,7 +603,8 @@ export default function Bills() {
     if (isMounted.current) setRefreshing(false);
   }
 
-  async function markPaid(item: any) {
+  // Memoize these to prevent re-creation on every render
+  const markPaid = useCallback(async (item: any) => {
     try {
       await api.billsMarkPaid(item.id);
       await cancelBillReminderLocal(item.id);
@@ -615,9 +620,9 @@ export default function Bills() {
     } catch (e: any) {
       if (isMounted.current) Alert.alert(t("Error"), e.message);
     }
-  }
+  }, [load, t]);
 
-  async function deleteBill(item: any) {
+  const deleteBill = useCallback(async (item: any) => {
     try {
       await api.billsDelete(item.id);
       await cancelBillReminderLocal(item.id);
@@ -625,7 +630,7 @@ export default function Bills() {
     } catch (e: any) {
       if (isMounted.current) Alert.alert(t("Error"), e.message);
     }
-  }
+  }, [load, t]);
 
   const onDeleteBill = useCallback(
     (item: any) => {
@@ -692,13 +697,15 @@ export default function Bills() {
       }));
       const csvString = jsonToCSV(exportData);
       const fileName = "bills_export.csv";
-      const myFile = new File(Paths.cache, fileName);
-      myFile.write(csvString);
-      await Share.open({
-        url: `${Paths.cache}${fileName}`,
+      
+      const templateFile = new File(Paths.cache, fileName);
+      templateFile.write(csvString);
+
+ await Share.open({
+        url: templateFile.uri,
         type: "text/csv",
         filename: "bills_export",
-        title: t("Export Bills CSV"),
+        title: "Download Bill Export",
       });
     } catch (error) {
       console.error("Export failed:", error);

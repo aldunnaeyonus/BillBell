@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useRef, JSXElementConstructor, ReactElement, ReactNode, ReactPortal, useEffect } from "react";
+import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,11 +17,10 @@ import { useFocusEffect } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import { format, parseISO, startOfMonth, addMonths, isSameMonth } from 'date-fns';
+import { format, parseISO, startOfMonth, addMonths } from 'date-fns';
 
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
-import * as EncryptionService from "../../src/security/EncryptionService";
 
 // --- Helpers ---
 
@@ -49,7 +48,9 @@ function groupDataByCreditor(bills: any[], theme: Theme): { data: any[], total: 
     for (const bill of bills) {
         const amount = Number(bill.amount_cents || 0);
         if (amount > 0) {
-            creditorMap[bill.creditor] = (creditorMap[bill.creditor] || 0) + amount;
+            // Safe fallback if creditor is missing
+            const name = bill.creditor || 'Unknown';
+            creditorMap[name] = (creditorMap[name] || 0) + amount;
             total += amount;
         }
     }
@@ -79,6 +80,7 @@ function groupDataByMonth(bills: any[], theme: Theme): { data: any[], total: num
     }
 
     for (const bill of bills) {
+        if (!bill.due_date) continue;
         const date = parseISO(bill.due_date);
         const amount = Number(bill.amount_cents || 0);
         const dateKey = format(date, 'yyyy-MM');
@@ -268,7 +270,6 @@ export default function Insights() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeChart, setActiveChart] = useState<ChartType>('creditor_pie');
 
-  // FIX: isMounted ref to prevent state updates on unmounted component
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
@@ -278,20 +279,18 @@ export default function Insights() {
   const loadBills = useCallback(async () => {
     setLoading(true);
     try {
+      // FIX: api.billsList() returns decrypted bills. Do NOT double decrypt.
       const res = await api.billsList();
       
-      const decrypted = await Promise.all(res.bills.map(async (b: any) => ({
-          ...b,
-          creditor: await EncryptionService.decryptData(b.creditor),
-          notes: await EncryptionService.decryptData(b.notes),
-      })));
-      
       if (isMounted.current) {
-          setBills(decrypted.filter(b => b.status !== 'paid'));
+          // Only show bills that represent money owed (not fully paid off or archive)
+          // Adjust logic based on needs (e.g. showing paid bills in history chart)
+          // For now, let's include everything for charts, or filter if needed.
+          setBills(res.bills || []);
       }
       
     } catch (e) {
-      console.error("Failed to load/decrypt bills for insights:", e);
+      console.error("Failed to load bills for insights:", e);
       if (isMounted.current) setBills([]);
     } finally {
       if (isMounted.current) setLoading(false);
@@ -309,8 +308,15 @@ export default function Insights() {
   }, [loadBills]);
   
   // STATS: Computed from bills state
-  const totalDue = useMemo(() => bills.reduce((sum, b) => sum + Number(b.amount_cents || 0), 0), [bills]);
+  const totalDue = useMemo(() => {
+      // Calculate pending amount only
+      return bills
+        .filter(b => !b.paid_at && !b.is_paid && b.status !== 'paid')
+        .reduce((sum, b) => sum + Number(b.amount_cents || 0), 0);
+  }, [bills]);
+
   const averageBill = useMemo(() => bills.length > 0 ? totalDue / bills.length : 0, [totalDue, bills.length]);
+  
   const topCreditor = useMemo(() => {
     const { data } = groupDataByCreditor(bills, theme);
     return data[0]?.label || t('N/A');
@@ -344,7 +350,7 @@ export default function Insights() {
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={theme.colors.primary} />
-              <Text style={{ color: theme.colors.subtext, marginTop: 10 }}>{t('Loading and decrypting bills...')}</Text>
+              <Text style={{ color: theme.colors.subtext, marginTop: 10 }}>{t('Loading bills...')}</Text>
             </View>
           ) : (
             <>

@@ -1,7 +1,8 @@
 import * as Calendar from 'expo-calendar';
 import { Platform, Alert, Linking } from 'react-native';
 import i18n from "../api/i18n"; 
-import { parseISO, setHours, setMinutes, setSeconds, setMilliseconds } from 'date-fns';
+import { parseISO, setHours, setMinutes, setSeconds, setMilliseconds, addHours } from 'date-fns';
+import { getCalendar } from 'react-native-localize';
 
 export async function addToCalendar(bill: any) {
   try {
@@ -28,18 +29,24 @@ export async function addToCalendar(bill: any) {
         return;
     }
 
-    // Parse date safely and set to noon to avoid timezone shifts
+    // Parse date safely. "2023-12-25" -> Local Midnight
     const due = parseISO(bill.due_date);
+    const calendars =  getCalendar();
+    // Set to Noon (12:00) Local Time to be safe from DST shifts at midnight boundaries
     const startDate = setMilliseconds(setSeconds(setMinutes(setHours(due, 12), 0), 0), 0);
-    const endDate = setMilliseconds(setSeconds(setMinutes(setHours(due, 13), 0), 0), 0);
+    const endDate = addHours(startDate, 1);
+    const timezones = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-    const eventDetails = {
+    const eventDetails: Partial<Calendar.Event> = {
       title: `${i18n.t("Pay")} ${bill.creditor}`,
       startDate,
       endDate,
       allDay: true,
       notes: `${i18n.t("Amount")}: $${(bill.amount_cents / 100).toFixed(2)}\n${i18n.t("Notes")}: ${bill.notes || ''}`,
-      timeZone: 'UTC',
+      // FIX: Removing specific timezone forces the calendar to use the device's local time,
+      // which matches our 'startDate' calculation (Noon Local). 
+      // Setting 'UTC' here would shift the event time and potentially the day.
+      timeZone: calendars[0] ? calendars[0] : timezones, 
     };
 
     await Calendar.createEventAsync(calendarId, eventDetails);

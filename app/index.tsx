@@ -9,7 +9,6 @@ export default function Index() {
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
   
-  // FIX: Track mounted state
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -21,7 +20,6 @@ export default function Index() {
     (async () => {
       const t = await getToken();
       
-      // FIX: Check if mounted before navigating or updating state
       if (!isMounted.current) return;
 
       if (t) {
@@ -29,10 +27,7 @@ export default function Index() {
       } else {
         router.replace("/(auth)/login");
       }
-      
-      // FIX: Do NOT call setLoading(false) here. 
-      // router.replace() unmounts this component immediately.
-      // Updating state afterwards causes a memory leak warning.
+      // No need to setLoading(false) here, component will unmount
     })();
   }, []);
 

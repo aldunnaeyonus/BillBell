@@ -14,7 +14,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../src/api/client";
 import { getToken, clearToken } from "../src/auth/session";
 import { initBackgroundFetch, syncAndRefresh } from "../src/native/LiveActivity";
-// FIX: Import the centralized configuration
 import { configureGoogle } from "../src/auth/providers"; 
 
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
@@ -40,28 +39,44 @@ function AppStack() {
 
   // Initialize Google Auth
   useEffect(() => {
-    configureGoogle(); // FIX: Use the imported function
+    configureGoogle(); 
   }, []);
 
+  // --- 1. Cross-Platform Background Init ---
+  useEffect(() => {
+    // Must run on BOTH iOS and Android
+    initBackgroundFetch();
+    
+    // Initial sync on mount
+    syncAndRefresh().catch(e => console.warn("Initial sync failed", e));
+
+    const appState = AppState.addEventListener("change", (nextState: AppStateStatus) => {
+        if (nextState === "active") {
+          // Re-sync when app comes to foreground
+          syncAndRefresh().catch(() => {});
+          
+          if (Platform.OS === 'ios') {
+             handlePendingPaidBill().catch(() => {});
+          }
+        }
+    });
+
+    return () => {
+      appState.remove();
+    };
+  }, []);
+
+  // --- 2. iOS Specific Live Activity Listeners ---
   useEffect(() => {
     if (Platform.OS !== "ios") return;
 
     const LiveActivityModule = getLiveActivityModule();
-    const eventEmitter = LiveActivityModule ? new NativeEventEmitter(LiveActivityModule) : null;
+    if (!LiveActivityModule) return;
 
-    if (!eventEmitter) {
-      initBackgroundFetch();
-      (async () => { await syncAndRefresh(); })();
-      return;
-    }
+    const eventEmitter = new NativeEventEmitter(LiveActivityModule);
 
+    // Check for paid bills immediately on mount (iOS only)
     handlePendingPaidBill();
-    initBackgroundFetch();
-
-    (async () => {
-      await handlePendingPaidBill();
-      await syncAndRefresh();
-    })();
 
     const subscription = eventEmitter.addListener("onBillMarkedPaid", async (e) => {
         try {
@@ -76,21 +91,12 @@ function AppStack() {
         }
     });
 
-    const appState = AppState.addEventListener("change", (nextState: AppStateStatus) => {
-        if (nextState === "active") {
-          (async () => {
-            await handlePendingPaidBill();
-            await syncAndRefresh();
-          })();
-        }
-    });
-
     return () => {
       subscription.remove();
-      appState.remove();
     };
   }, []);
   
+  // --- 3. Auth & Routing Prep ---
   useEffect(() => {
     const prepareApp = async () => {
       try {
@@ -105,9 +111,10 @@ function AppStack() {
           setInitialRoute("(app)/bills");
           return;
         } else {
+          // Cleanup potential stale state if we think we are logged out
           await clearToken();
-          await api.clearAllFamilyKeys();
-          await AsyncStorage.removeItem("isLog");
+          // We don't necessarily want to wipe keys here as it might be a temporary token expiry,
+          // but if we are routing to login, we assume a fresh start.
           setInitialRoute("(auth)/login");
           return;
         }

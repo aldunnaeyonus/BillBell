@@ -27,14 +27,12 @@ export default function Login() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   
-  // FIX: Track mounted state to prevent memory leaks during navigation
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
     return () => { isMounted.current = false; };
   }, []);
 
-  // --- Status Bar Management ---
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle("light-content");
@@ -64,15 +62,11 @@ export default function Login() {
       });
       
       await setToken(res.token);
-      // Short delay to ensure token persistence before network calls
       await new Promise(resolve => setTimeout(resolve, 100));
-
       await checkFamilyAndRedirect();
 
     } catch (e: any) {
-      if (e.code === "ERR_REQUEST_CANCELED") {
-        // user cancelled
-      } else {
+      if (e.code !== "ERR_REQUEST_CANCELED") {
         if(isMounted.current) Alert.alert(t("Login failed"), e.message);
       }
     } finally {
@@ -91,13 +85,10 @@ export default function Login() {
         
         await setToken(res.token);
         await new Promise(resolve => setTimeout(resolve, 100));
-
         await checkFamilyAndRedirect();
       }
     } catch (e: any) {
-      if (e.code === "ERR_REQUEST_CANCELED") {
-        // user cancelled
-      } else {
+      if (e.code !== "ERR_REQUEST_CANCELED") {
         if(isMounted.current) Alert.alert(t("Login failed"), e.message);
       }
     } finally {
@@ -105,15 +96,13 @@ export default function Login() {
     }
   }
 
-  // Helper to centralize navigation logic and fix race conditions
   async function checkFamilyAndRedirect() {
     try {
-      // NOTE: api.familyMembers() will redirect to /(app)/family automatically 
-      // via client.ts if it returns a 409 error.
+      // NOTE: api.familyMembers() throws/redirects internally if user is not in a family (409)
       const fam = await api.familyMembers();
 
-      // FIX: If fam is undefined, it means client.ts already intercepted a 409 
-      // and performed a redirect. We MUST stop here to prevent double-navigation.
+      // If fam is undefined, it means client.ts already intercepted a 409 
+      // and performed a redirect. We stop here.
       if (!fam) return;
 
       await AsyncStorage.setItem("isLog", "1");
@@ -121,11 +110,10 @@ export default function Login() {
       if (fam?.error_silent) {
         router.replace("/(app)/family");
       } else {
-        // User is successfully in a family
         router.replace("/onboarding");
       }
     } catch (e) {
-      // Fallback
+      // If we caught an error that client.ts didn't handle nicely
       if (isMounted.current) router.replace("/(app)/family");
     }
   }
@@ -139,7 +127,6 @@ export default function Login() {
         style={styles.gradient}
       >
         <View style={styles.content}>
-          {/* Logo / Icon */}
           <View style={styles.iconContainer}>
             <Image
               source={require("../../assets/black_logo.png")}
@@ -153,16 +140,13 @@ export default function Login() {
             />
           </View>
 
-          {/* Title */}
           <Text style={styles.title}>{t("Notification vibes.")}</Text>
           <Text style={styles.subtitle}>
             {t("Never miss a due date again.")}
           </Text>
 
-          {/* Spacer */}
           <View style={{ height: 60 }} />
 
-          {/* Buttons */}
           {loading ? (
             <ActivityIndicator size="large" color="#FFF" />
           ) : (
