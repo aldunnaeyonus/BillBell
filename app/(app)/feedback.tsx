@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -113,6 +113,13 @@ export default function FeedbackScreen() {
   const [description, setDescription] = useState("");
   const [contact, setContact] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  
+  // FIX: isMounted ref to prevent state updates on unmounted component
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   async function onSubmit() {
     if (!title.trim() || !description.trim()) {
@@ -141,6 +148,9 @@ export default function FeedbackScreen() {
     try {
       setSubmitting(true);
       const canOpen = await Linking.canOpenURL(mailto);
+      
+      if (!isMounted.current) return;
+
       if (!canOpen) {
         Alert.alert(
           t("Error"),
@@ -150,9 +160,9 @@ export default function FeedbackScreen() {
       }
       await Linking.openURL(mailto);
     } catch (e: any) {
-      Alert.alert(t("Error"), e?.message || "Error opening mail app");
+      if (isMounted.current) Alert.alert(t("Error"), e?.message || "Error opening mail app");
     } finally {
-      setSubmitting(false);
+      if (isMounted.current) setSubmitting(false);
     }
   }
 
