@@ -197,4 +197,48 @@ class KeysController {
       "key_version" => $keyVersion
     ]);
   }
+// --- FIX: Added Missing rotateKey method ---
+  public static function rotateKey() {
+    $userId = Auth::requireUserId();
+    $pdo = DB::pdo();
+
+    // 1. Check Permissions (Admin only)
+    $stmt = $pdo->prepare("SELECT family_id, role FROM family_members WHERE user_id=? LIMIT 1");
+    $stmt->execute([$userId]);
+    $row = $stmt->fetch();
+
+    if (!$row) Utils::json(["error" => "User not in family"], 409);
+    
+    // Strict check: Only admins can trigger rotation
+    if (($row["role"] ?? 'member') !== 'admin') {
+        Utils::json(["error" => "Only admins can rotate keys"], 403);
+    }
+
+    $familyId = (int)$row["family_id"];
+
+    try {
+        $pdo->beginTransaction();
+
+        // 2. Increment key_version
+        $upd = $pdo->prepare("UPDATE families SET key_version = key_version + 1 WHERE id = ?");
+        $upd->execute([$familyId]);
+
+        // 3. Fetch the new version
+        $get = $pdo->prepare("SELECT key_version FROM families WHERE id = ?");
+        $get->execute([$familyId]);
+        $newVersion = $get->fetchColumn();
+
+        $pdo->commit();
+
+        // 4. Return new version so client can generate and share new keys
+        Utils::json([
+            "status" => "ok",
+            "family_id" => $familyId,
+            "key_version" => (int)$newVersion
+        ]);
+    } catch (\Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        Utils::json(["error" => "Key rotation failed"], 500);
+    }
+  }
 }

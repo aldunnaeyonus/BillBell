@@ -23,6 +23,57 @@ class BillsController {
     return (int)($row["key_version"] ?? 1);
   }
 
+  // --- HELPER: Smart Date Addition ---
+  // Prevents the "February Bug" (Jan 31 + 1 mo != Mar 3)
+  private static function addRecurrenceInterval(\DateTime $date, string $recurrence) {
+    $day = (int)$date->format('j');
+    $originalDay = $day;
+
+    switch ($recurrence) {
+        case 'weekly':
+            $date->modify('+1 week');
+            break;
+        case 'bi-weekly':
+            $date->modify('+2 weeks');
+            break;
+        case 'semi-monthly':
+            // Logic: If before the 15th, move to 15th. If 15th or later, move to 1st of next month.
+            if ($day < 15) {
+                $date->setDate((int)$date->format('Y'), (int)$date->format('n'), 15);
+            } else {
+                $date->modify('first day of next month');
+            }
+            break;
+        case 'monthly':
+            $date->modify('+1 month');
+            // Clamp to end of month if we overshot (e.g. Jan 31 -> Feb 28)
+            if ((int)$date->format('j') < $originalDay) {
+                $date->modify('last day of previous month');
+            }
+            break;
+        case 'quarterly':
+            $date->modify('+3 months');
+             if ((int)$date->format('j') < $originalDay) {
+                $date->modify('last day of previous month');
+            }
+            break;
+        case 'semi-annually':
+            $date->modify('+6 months');
+             if ((int)$date->format('j') < $originalDay) {
+                $date->modify('last day of previous month');
+            }
+            break;
+        case 'annually':
+            $date->modify('+1 year');
+            // Handle Leap Year: Feb 29 + 1 year -> Feb 28
+             if ((int)$date->format('j') < $originalDay) {
+                $date->modify('last day of previous month');
+            }
+            break;
+    }
+    return $date;
+  }
+
   public static function list() {
     $userId = Auth::requireUserId();
     $familyId = self::requireFamilyId($userId);
@@ -53,15 +104,19 @@ class BillsController {
     if (strlen($reminderTime) === 5) $reminderTime .= ":00";
 
     $recurrence = $data["recurrence"] ?? "none";
-    if (!in_array($recurrence, ["none","monthly","weekly","bi-weekly","annually"], true)) Utils::json(["error" => "Invalid recurrence"], 422);
+    
+    // FIX: Added missing recurrence types to validation
+    $allowedRecurrence = ["none","monthly","weekly","bi-weekly","quarterly","semi-monthly","semi-annually","annually"];
+    if (!in_array($recurrence, $allowedRecurrence, true)) {
+        Utils::json(["error" => "Invalid recurrence"], 422);
+    }
 
     $amountEncrypted = $data["amount_encrypted"] ?? null;
 
-    // NEW: store which family key_version this ciphertext corresponds to
     $cipherVersion = self::getFamilyKeyVersion($familyId);
     $paymentMethod = $data["payment_method"] ?? "manual";
      
-     if (!in_array($paymentMethod, ["manual", "auto"])) $paymentMethod = "manual";
+    if (!in_array($paymentMethod, ["manual", "auto"])) $paymentMethod = "manual";
      
     $stmt = $pdo->prepare("
       INSERT INTO bills
@@ -73,16 +128,16 @@ class BillsController {
       $familyId,
       $userId,
       $userId,
-      $data["creditor"],             // Encrypted String (via Client)
-      (int)$data["amount_cents"],    // Integer (via Client)
-      $amountEncrypted,              // Encrypted String (via Client)
+      $data["creditor"],
+      (int)$data["amount_cents"],
+      $amountEncrypted,
       $data["due_date"],
       "active",
       null,
       $recurrence,
       $reminderOffset,
       $reminderTime,
-      $data["notes"] ?? null,        // Encrypted String (via Client)
+      $data["notes"] ?? null,
       $cipherVersion,
       $paymentMethod ?? "manual"
     ]);
@@ -106,7 +161,6 @@ class BillsController {
 
     foreach ($fields as $f) {
       if (array_key_exists($f, $data)) {
-        // validate cipher_version if provided
         if ($f === "cipher_version") {
           $cv = (int)$data[$f];
           if ($cv < 1) Utils::json(["error" => "Invalid cipher_version"], 422);
@@ -121,8 +175,6 @@ class BillsController {
 
     if (!$sets) Utils::json(["ok" => true]);
 
-    // NEW: If ciphertext fields are being updated and caller didn't set cipher_version,
-    // auto-bump to current family key_version.
     $touchingCiphertext =
       array_key_exists("creditor", $data) ||
       array_key_exists("amount_encrypted", $data) ||
@@ -173,32 +225,16 @@ class BillsController {
     $upd = $pdo->prepare("UPDATE bills SET status='paid', snoozed_until=NULL, updated_by_user_id=? WHERE id=? AND family_id=?");
     $upd->execute([$userId, $id, $familyId]);
 
-    $dateModifier = null;
-if ($bill["recurrence"] === "weekly") $dateModifier = "+1 week";
-elseif ($bill["recurrence"] === "bi-weekly") $dateModifier = "+2 weeks";
-elseif ($bill["recurrence"] === "monthly") $dateModifier = "+1 month";
-elseif ($bill["recurrence"] === "quarterly") $dateModifier = "+3 months";
-elseif ($bill["recurrence"] === "semi-annually") $dateModifier = "+6 months"; // Added for insurance/tax
-elseif ($bill["recurrence"] === "annually") $dateModifier = "+1 year";
-elseif ($bill["recurrence"] === "semi-monthly") {
-    // Get the day of the month (1-31) from the current bill date
-    // Note: Ensure $currentDate is the date you are modifying
-    $currentDay = date('j', strtotime($currentDate)); 
-
-    if ($currentDay < 15) {
-        // If it's the 1st, move to the 15th
-        $dateModifier = "+14 days";
-    } else {
-        // If it's the 15th, move to the 1st of the NEXT month
-        $dateModifier = "first day of next month";
-    }
-}
-
-    if ($dateModifier) {
+    // --- FIX: Use robust date calculation logic (fixes Feb bug & crash) ---
+    if ($bill["recurrence"] !== "none") {
       $dt = new \DateTime($bill["due_date"]);
-      $dt->modify($dateModifier);
+      
+      // Call the helper function
+      $dt = self::addRecurrenceInterval($dt, $bill["recurrence"]);
+      
       $nextDue = $dt->format("Y-m-d");
 
+      // Check for duplicates to prevent double-creation
       $chk = $pdo->prepare("SELECT id FROM bills WHERE family_id=? AND creditor=? AND amount_cents=? AND due_date=? LIMIT 1");
       $chk->execute([(int)$bill["family_id"], $bill["creditor"], (int)$bill["amount_cents"], $nextDue]);
 
