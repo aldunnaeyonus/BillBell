@@ -61,4 +61,53 @@ public static function sendExpoPush(array $tokens, string $title, string $body, 
     for ($i=0; $i<$len; $i++) $out .= $alphabet[random_int(0, strlen($alphabet)-1)];
     return $out;
   }
+
+  // --- ADDED: Smart Date Logic for Recurrence (Shared) ---
+  public static function addRecurrenceInterval(\DateTime $date, string $recurrence) {
+    $day = (int)$date->format('j');
+    $originalDay = $day;
+
+    switch ($recurrence) {
+        case 'weekly':
+            $date->modify('+1 week');
+            break;
+        case 'bi-weekly':
+            $date->modify('+2 weeks');
+            break;
+        case 'semi-monthly':
+            // 1st -> 15th, 15th -> 1st of next month
+            if ($day < 15) {
+                $date->setDate((int)$date->format('Y'), (int)$date->format('n'), 15);
+            } else {
+                $date->modify('first day of next month');
+            }
+            break;
+        case 'monthly':
+            $date->modify('+1 month');
+            // Fix "February Bug": Snap to last day if we overshot (e.g. Jan 31 -> Feb 28)
+            if ((int)$date->format('j') < $originalDay) {
+                $date->modify('last day of previous month');
+            }
+            break;
+        case 'quarterly':
+            $date->modify('+3 months');
+             if ((int)$date->format('j') < $originalDay) {
+                $date->modify('last day of previous month');
+            }
+            break;
+        case 'semi-annually':
+            $date->modify('+6 months');
+             if ((int)$date->format('j') < $originalDay) {
+                $date->modify('last day of previous month');
+            }
+            break;
+        case 'annually':
+            $date->modify('+1 year');
+             if ((int)$date->format('j') < $originalDay) {
+                $date->modify('last day of previous month');
+            }
+            break;
+    }
+    return $date;
+  }
 }

@@ -1,58 +1,69 @@
 <?php
 require __DIR__ . "/../../../vendor/autoload.php";
 use App\DB;
+use App\Utils;
 
 $pdo = DB::pdo();
 $tomorrow = (new DateTime("tomorrow"))->format("Y-m-d");
 $now = (new DateTime())->format("Y-m-d H:i:s");
 
-$stmt = $pdo->prepare("
-  SELECT b.id, b.creditor, b.amount_cents, b.due_date, b.family_id
+// 1. Fetch bills due tomorrow AND their associated device tokens
+$sql = "
+  SELECT 
+    b.id as bill_id, 
+    b.creditor, 
+    b.amount_cents, 
+    b.family_id,
+    dt.expo_push_token
   FROM bills b
-  WHERE b.status='active'
-    AND b.due_date=?
+  JOIN family_members fm ON fm.family_id = b.family_id
+  JOIN device_tokens dt ON dt.user_id = fm.user_id
+  WHERE b.status = 'active'
+    AND b.due_date = ?
     AND (b.snoozed_until IS NULL OR b.snoozed_until <= ?)
-");
+";
+
+$stmt = $pdo->prepare($sql);
 $stmt->execute([$tomorrow, $now]);
-$bills = $stmt->fetchAll();
-if (!$bills) { echo "No due bills.\n"; exit; }
+$rows = $stmt->fetchAll();
 
-foreach ($bills as $bill) {
-  $stmt2 = $pdo->prepare("
-    SELECT dt.expo_push_token
-    FROM family_members fm
-    JOIN device_tokens dt ON dt.user_id = fm.user_id
-    WHERE fm.family_id=?
-  ");
-  $stmt2->execute([(int)$bill["family_id"]]);
-  $tokens = array_map(function($r) {
-    return $r["expo_push_token"];
-}, $stmt2->fetchAll());
+if (!$rows) { echo "No due bills or no tokens found.\n"; exit; }
 
-  $tokens = array_values(array_unique(array_filter($tokens)));
-  if (!$tokens) continue;
+// 2. Group tokens by Bill ID so we send one batch per bill
+// (Handles users with multiple devices or families with multiple members)
+$notifications = [];
 
- $amount = number_format(((int)$bill["amount_cents"]) / 100, 2);
-  $messages = [];
-  foreach ($tokens as $t) {
-    $messages[] = [
-      "to" => $t,
-      "sound" => "default",
-      "title" => "Bill due tomorrow",
-      "body"  => "{$bill['creditor']} – \${$amount}",
-      "categoryId" => "bill-due-actions", // <--- ADD THIS
-      "data"  => ["bill_id" => (int)$bill["id"]],
-    ];
-  }
+foreach ($rows as $row) {
+    $billId = $row["bill_id"];
+    $token = $row["expo_push_token"];
 
-  $ch = curl_init("https://exp.host/--/api/v2/push/send");
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-  curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
-  curl_setopt($ch, CURLOPT_POST, true);
-  curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($messages));
-  $resp = curl_exec($ch);
-  $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-  curl_close($ch);
+    if (!$token || strpos($token, 'ExponentPushToken') === false) continue;
 
-  echo "Sent {$code}: {$resp}\n";
+    if (!isset($notifications[$billId])) {
+        $notifications[$billId] = [
+            'creditor' => $row['creditor'],
+            'amount_cents' => $row['amount_cents'],
+            'tokens' => []
+        ];
+    }
+    $notifications[$billId]['tokens'][] = $token;
 }
+
+// 3. Send Notifications
+$sentCount = 0;
+
+foreach ($notifications as $billId => $info) {
+    $amount = number_format(((int)$info["amount_cents"]) / 100, 2);
+    
+    Utils::sendExpoPush(
+        $info['tokens'], 
+        "Bill due tomorrow",
+        "{$info['creditor']} – \${$amount}",
+        ["bill_id" => (int)$billId],
+        "bill-due-actions" // Adds the "Mark as Paid" button
+    );
+    
+    $sentCount += count($info['tokens']);
+}
+
+echo "Processed {$sentCount} notifications for " . count($notifications) . " bills.\n";
