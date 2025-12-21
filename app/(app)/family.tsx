@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -190,6 +190,13 @@ export default function Family() {
   const { t } = useTranslation();
   const { code: urlCode } = useLocalSearchParams<{ code?: string }>();
 
+  // FIX: isMounted ref
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
+
   const [code, setCode] = useState(urlCode || "");
   const [pendingCode, setPendingCode] = useState<string | null>(null);
 
@@ -200,7 +207,7 @@ export default function Family() {
   async function checkPendingState() {
     try {
       const stored = await AsyncStorage.getItem("billbell_pending_family_code");
-      if (stored) setPendingCode(stored);
+      if (stored && isMounted.current) setPendingCode(stored);
     } catch (e) {
       console.log("Failed to load pending state", e);
     }
@@ -228,13 +235,15 @@ export default function Family() {
       const code = res?.family_code;
       if (!code) throw new Error("family_code missing from server response");
 
-      Alert.alert(t("Family created"), `${t("Family ID")}: ${code}`, [
-        { text: "OK", onPress: () => router.push("/(app)/bills") },
-      ]);
+      if (isMounted.current) {
+        Alert.alert(t("Family created"), `${t("Family ID")}: ${code}`, [
+            { text: "OK", onPress: () => router.push("/(app)/bills") },
+        ]);
+      }
     } catch (e: any) {
-      Alert.alert(t("Error"), e?.message || "Failed");
+      if (isMounted.current) Alert.alert(t("Error"), e?.message || "Failed");
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   }
 
@@ -250,11 +259,12 @@ export default function Family() {
       setLoading(true);
       const res: any = await api.familyJoin(codeToUse.trim().toUpperCase());
 
-      console.log("API Join Response:", JSON.stringify(res)); // DEBUG LOG
+      if (!isMounted.current) return;
+
+      console.log("API Join Response:", JSON.stringify(res));
 
       // --- 1. HANDLE REJECTION ---
       if (res && res.status === "rejected") {
-        // Clear everything so the user is forced back to the main input screen
         await AsyncStorage.removeItem("billbell_pending_family_code");
         setPendingCode(null);
         setCode("");
@@ -263,7 +273,7 @@ export default function Family() {
           t("Request Denied"),
           t("The family admin has denied your request to join.")
         );
-        return; // STOP HERE
+        return;
       }
 
       // --- 2. HANDLE PENDING ---
@@ -283,20 +293,18 @@ export default function Family() {
             t("Your request has not been approved yet.")
           );
         }
-        return; // STOP HERE
+        return;
       }
 
       // --- 3. SAFETY NET ---
-      // If we get here, the status is unknown (neither rejected nor pending).
-      // DO NOT redirect to onboarding/bills unless we are sure.
       console.warn("Unknown status from server:", res);
       Alert.alert(t("Error"), t("Unknown server status"));
     } catch (e: any) {
+      if (!isMounted.current) return;
       const msg = e.message || "";
       console.log("Join Error:", msg);
 
       // --- 4. SUCCESS CASE (via Error) ---
-      // The API returns 409 "User already in family" if they are fully approved/joined.
       if (
         msg.toLowerCase().includes("user not in family") === false &&
         (msg.includes("already in") || msg.includes("member"))
@@ -307,7 +315,7 @@ export default function Family() {
         Alert.alert(t("Error"), msg);
       }
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   }
 
@@ -322,8 +330,10 @@ export default function Family() {
           style: "destructive",
           onPress: async () => {
             await AsyncStorage.removeItem("billbell_pending_family_code");
-            setPendingCode(null);
-            setCode("");
+            if (isMounted.current) {
+                setPendingCode(null);
+                setCode("");
+            }
           },
         },
       ]

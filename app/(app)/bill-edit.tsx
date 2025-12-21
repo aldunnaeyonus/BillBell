@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -173,6 +173,14 @@ export default function BillEdit() {
   const id = params.id ? Number(params.id) : null;
   const theme = useTheme();
   const { t } = useTranslation();
+  
+  // FIX: isMounted ref to prevent state updates on unmounted component
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   const [creditor, setCreditor] = useState("");
   const [amount, setAmount] = useState("");
@@ -183,7 +191,6 @@ export default function BillEdit() {
   const [loading, setLoading] = useState(false);
 
   const reminderDateObj = useMemo(() => {
-    // Basic parsing to avoid timezone shifts on simple YYYY-MM-DD
     const [y, m, d] = dueDate.split("-").map(Number);
     return new Date(y, m - 1, d);
   }, [dueDate]);
@@ -205,7 +212,6 @@ export default function BillEdit() {
     "manual"
   );
 
-  // Time object for the TimePicker
   const timeObj = useMemo(() => {
     const d = new Date();
     const [h, m] = reminderTime.split(":").map(Number);
@@ -224,6 +230,7 @@ export default function BillEdit() {
       if (id) return;
       try {
         const s = await api.familySettingsGet();
+        if (!isMounted.current) return; // check ref
         setOffsetDays(String(s.default_reminder_offset_days ?? 0));
         if (s.default_reminder_time_local) {
           setReminderTime(s.default_reminder_time_local);
@@ -238,6 +245,8 @@ export default function BillEdit() {
       if (!id) return;
       try {
         const res = await api.billsList();
+        if (!isMounted.current) return; // check ref
+
         const bill = res.bills.find((b: any) => b.id === id);
         if (!bill) return;
         setCreditor(bill.creditor);
@@ -293,11 +302,11 @@ export default function BillEdit() {
       if (!id) await api.billsCreate(payload);
       else await api.billsUpdate(id, payload);
 
-      router.back();
+      if (isMounted.current) router.back(); // Check before nav
     } catch (e: any) {
-      Alert.alert(t("Error"), e.message);
+      if (isMounted.current) Alert.alert(t("Error"), e.message);
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   }
 
@@ -360,7 +369,6 @@ export default function BillEdit() {
 
                 {/* Date Picker Row */}
                 <Pressable
-                  // CHANGE: Use toggle (prev => !prev) instead of true
                   onPress={() => setShowDatePicker((prev) => !prev)}
                   style={[
                     styles.inputContainer,
@@ -383,7 +391,6 @@ export default function BillEdit() {
                   >
                     {reminderDateObj.toDateString()}
                   </Text>
-                  {/* Visual indicator that it can be closed (optional chevron flip could be added here) */}
                   <Ionicons
                     name={showDatePicker ? "chevron-up" : "chevron-down"}
                     size={16}
@@ -506,7 +513,6 @@ export default function BillEdit() {
                 <View style={styles.divider} />
 
                 <Pressable
-                  // CHANGE: Use toggle for Time Picker as well for consistency
                   onPress={() => setShowTimePicker((prev) => !prev)}
                   style={{
                     flexDirection: "row",
@@ -709,11 +715,6 @@ chip: {
     // Layout Changes for 2-per-line
     width: "48%", // 48% + 48% + gap = 100%
     marginBottom: 8, // Optional: Add vertical spacing
-    
-    // Removed:
-    // minWidth: "30%",
-    // flexGrow: 1,
-    // flex: 1,
   },
   chipText: {
     fontSize: 14,

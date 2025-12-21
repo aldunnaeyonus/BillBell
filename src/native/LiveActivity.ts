@@ -1,18 +1,15 @@
 import { NativeModules, Platform, AppRegistry } from 'react-native';
 import BackgroundFetch from "react-native-background-fetch";
-import AsyncStorage from '@react-native-async-storage/async-storage'; // <--- Added Import
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from "../../src/api/client";
 import { getToken } from "../../src/auth/session";
-import i18n from "../api/i18n"; // Import i18n
+import i18n from "../api/i18n";
 
-// Lazy getters to prevent startup crashes if modules are missing
 const getLiveActivityModule = () => NativeModules?.LiveActivityModule;
 const getWidgetModule = () => NativeModules?.WidgetModule;
 
 // --- 1. DEFINE HEADLESS TASK (CRITICAL FOR ANDROID) ---
-// This runs when the app is terminated but Android wakes it up to update
 const headlessTask = async (event: any) => {
-  // Get the taskId
   const taskId = event.taskId;
   const isTimeout = event.timeout; 
   
@@ -24,32 +21,30 @@ const headlessTask = async (event: any) => {
 
   console.log('[BackgroundFetch] Headless task start:', taskId);
   
-  // Perform the sync
-  await syncAndRefresh();
+  // FIX: Pass true to indicate we are running in the background/headless
+  // preventing SecureStore access which causes crashes on Android
+  await syncAndRefresh(true);
   
-  // Signal completion
   BackgroundFetch.finish(taskId);
 };
 
 // --- 2. REGISTER HEADLESS TASK ---
-// This must be called immediately, outside of any component
 BackgroundFetch.registerHeadlessTask(headlessTask);
 
-
-// --- HELPER: Get Auth Token ---
 async function getMyAuthToken(): Promise<string> {
   try {    
-    const token = await getToken(); // Fetch the current user token
+    // Note: getToken uses SecureStore. This might fail in headless mode on some devices.
+    // If it fails, the widget "Mark Paid" button just won't update the token, which is acceptable fail-safe.
+    const token = await getToken(); 
     return token || "";
   } catch (e) {
-    console.warn("Failed to get auth token", e);
     return "";
   }
 }
 
 export const startAndroidLiveActivity = (overdueText: string, count: number, nextBillId?: string) => {
   if (Platform.OS !== "android") return;
-  const mod = getLiveActivityModule(); // Use getter
+  const mod = getLiveActivityModule();
   if (!mod) return;
 
   try {
@@ -83,24 +78,45 @@ function ymdLocal(date: Date): string {
 }
 
 // --- 3. MAIN SYNC FUNCTION ---
-export async function syncAndRefresh() {
+// FIX: Added backgroundMode parameter
+export async function syncAndRefresh(backgroundMode = false) {
   try {
-    console.log("Starting widget sync...");
-    const { bills } = await api.billsList();
+    console.log(`Starting widget sync (Background: ${backgroundMode})...`);
+    
+    let bills: any[] = [];
 
-    // --- NEW: Cache to AsyncStorage ---
-    // This matches the behavior in bills.tsx load()
-    // api.billsList() returns decrypted objects, so we stringify them for storage.
-    await AsyncStorage.setItem("billbell_bills_list_cache", JSON.stringify(bills));
-    console.log("Bills successfully cached to storage in background.");
-    // ----------------------------------
+    if (backgroundMode && Platform.OS === 'android') {
+      // FIX: In Android Headless mode, SecureStore is unavailable/unstable.
+      // We CANNOT call api.billsList() because it attempts decryption.
+      // We must rely solely on the cached decrypted data.
+      const cached = await AsyncStorage.getItem("billbell_bills_list_cache");
+      if (cached) {
+        bills = JSON.parse(cached);
+        console.log("Loaded bills from cache for background sync.");
+      } else {
+        console.log("No cache available for background sync.");
+        return; // Abort if no data
+      }
+    } else {
+      // Foreground: Try to fetch fresh data
+      try {
+        const res = await api.billsList();
+        bills = res.bills;
+        // Update cache for the background task to use later
+        await AsyncStorage.setItem("billbell_bills_list_cache", JSON.stringify(bills));
+      } catch (e) {
+        console.warn("Network sync failed, falling back to cache", e);
+        const cached = await AsyncStorage.getItem("billbell_bills_list_cache");
+        if (cached) bills = JSON.parse(cached);
+      }
+    }
 
     const sanitizedBills = bills.map((b: any) => ({
       id: String(b.id),
       creditor: String(b.creditor),
       due: new Date(toNoonUtcIso(b.due_date)),
       amount_cents: Math.round(Number(b.amount_cents)),
-      is_paid: b.status === 'paid',
+      is_paid: Boolean(b.paid_at || b.is_paid || b.status === "paid"),
       payment_method: b.payment_method ?? "manual",
     }));
 
@@ -131,8 +147,11 @@ export async function syncAndRefresh() {
 
       const overdueCount = sanitizedBills.length === 0 ? -1 : overdue.length;
       
-      // Get Token for the "Mark Paid" button
-      const token = await getMyAuthToken();
+      // Try to get token, but don't crash if it fails in background
+      let token = "";
+      if (!backgroundMode) {
+          token = await getMyAuthToken();
+      }
 
       // Update Widget
       if (widgetMod?.syncWidgetData) {
@@ -142,19 +161,19 @@ export async function syncAndRefresh() {
           next ? ymdLocal(next.due) : "",
           next?.id ?? "",
           next?.payment_method ?? "manual",
-          token // Pass token to Android SharedPrefs
+          token
         );
       }
 
       // Update Notification
       if (liveMod?.startBillLiveActivity) {
-  const headline = overdue.length > 0 ? i18n.t("Needs attention") : i18n.t("All clear");
-  const status = overdue.length > 0 
-    ? i18n.t("{{count}} overdue", { count: overdue.length }) 
-    : i18n.t("Nothing overdue");
-    
-  startAndroidLiveActivity(`${headline} • ${status}`, overdue.length, next?.id);
-}
+        const headline = overdue.length > 0 ? i18n.t("Needs attention") : i18n.t("All clear");
+        const status = overdue.length > 0 
+          ? i18n.t("{{count}} overdue", { count: overdue.length }) 
+          : i18n.t("Nothing overdue");
+          
+        startAndroidLiveActivity(`${headline} • ${status}`, overdue.length, next?.id);
+      }
     }
 
     console.log("Widget sync complete.");
@@ -172,18 +191,16 @@ export async function startSummaryActivity(overdueTotal: string, overdueCount: n
 
 // --- 4. INIT BACKGROUND FETCH ---
 export const initBackgroundFetch = async () => {
-  // Configured for both iOS and Android (Headless)
   const status = await BackgroundFetch.configure({
-    minimumFetchInterval: 15, // Android limitation: runs every ~15 mins minimum
-    stopOnTerminate: false,   // Continue running after app kill
-    enableHeadless: true,     // Enable Headless JS
-    startOnBoot: true,        // Run after device restart
-    forceAlarmManager: false, // Use JobScheduler (better battery)
+    minimumFetchInterval: 15,
+    stopOnTerminate: false,
+    enableHeadless: true,
+    startOnBoot: true,
+    forceAlarmManager: false,
     requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY
   }, async (taskId) => {
-    // Foreground Fetch Event
     console.log("[BackgroundFetch] Event received:", taskId);
-    await syncAndRefresh();
+    await syncAndRefresh(false); // Foreground fetch
     BackgroundFetch.finish(taskId);
   }, (error) => {
     console.error("[BackgroundFetch] Failed to configure:", error);
