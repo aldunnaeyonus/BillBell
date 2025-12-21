@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
 
   const isAuthedRef = useRef(false);
   const isAuthenticatingRef = useRef(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null); // FIX: Track timer for cleanup
 
   const theme = useTheme();
   const { t } = useTranslation();
@@ -38,6 +39,11 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
       StatusBar.setBackgroundColor("transparent");
       StatusBar.setTranslucent(true);
     }
+    
+    // FIX: Cleanup timer on unmount
+    return () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -53,7 +59,8 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
 
       if (nextAppState === "active") {
         if (!isAuthedRef.current && !isAuthenticatingRef.current) {
-          setTimeout(() => authenticate(), 500);
+          // Delay slightly to allow UI to settle
+          timerRef.current = setTimeout(() => authenticate(), 500);
         }
       }
     });
@@ -90,11 +97,11 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
       }
 
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: t("Unlock App") || t("Unlock App"),
-        fallbackLabel: t("Use Passcode"),
+        // FIX: Removed redundant "|| t(...)" and used string fallback
+        promptMessage: t("Unlock App") || "Unlock App",
+        fallbackLabel: t("Use Passcode") || "Use Passcode",
         disableDeviceFallback: false,
-        // FIX: Add a robust fallback for the cancelLabel to prevent native crashes
-        cancelLabel: t("Cancel") || "Cancel", // <-- MODIFIED
+        cancelLabel: t("Cancel") || "Cancel",
       });
 
       if (result.success) {
@@ -104,7 +111,10 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.log("Auth Error", e);
     } finally {
-      setTimeout(() => {
+      // FIX: Track timer to clear on unmount
+      if (timerRef.current) clearTimeout(timerRef.current);
+      
+      timerRef.current = setTimeout(() => {
         isAuthenticatingRef.current = false;
       }, 500);
     }
