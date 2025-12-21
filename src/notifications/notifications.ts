@@ -2,6 +2,7 @@ import * as Notifications from "expo-notifications";
 import { SchedulableTriggerInputTypes } from "expo-notifications";
 import * as Device from "expo-device";
 import i18n from "i18next";
+import { parseISO, startOfDay, subDays, setHours, setMinutes } from "date-fns";
 import {
   getNotificationIdForBill,
   setNotificationIdForBill,
@@ -9,17 +10,7 @@ import {
   getAllBillNotificationPairs,
 } from "./notificationStore";
 
-// 1. Setup Handler
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
-
-// 2. Permissions
+// 1. Permissions
 export async function ensureNotificationPermissions() {
   const settings = await Notifications.getPermissionsAsync();
   if (settings.status !== "granted") {
@@ -29,7 +20,7 @@ export async function ensureNotificationPermissions() {
   return true;
 }
 
-// 3. Categories
+// 2. Categories
 export async function registerNotificationCategories() {
   await Notifications.setNotificationCategoryAsync("bill-due-actions", [
     {
@@ -42,7 +33,7 @@ export async function registerNotificationCategories() {
   ]);
 }
 
-// 4. Token
+// 3. Token
 export async function getExpoPushTokenSafe() {
   if (!Device.isDevice) return null;
   const ok = await ensureNotificationPermissions();
@@ -54,18 +45,25 @@ export async function getExpoPushTokenSafe() {
 
 // --- Helpers ---
 
+// FIX: Use date-fns for robust ISO parsing and date math
 function nextFireDateForBill(dueDateISO: string, offsetDays: number, reminderTimeLocal: string) {
-  const [y, m, d] = dueDateISO.split("-").map(Number);
+  const due = parseISO(dueDateISO); // Safely parse YYYY-MM-DD to local date
+  
   const [hh, mm] = reminderTimeLocal.split(":").map(Number);
-  const dt = new Date(y, m - 1, d, hh || 9, mm || 0, 0, 0);
-  dt.setDate(dt.getDate() - offsetDays);
-  return dt;
+  
+  // Set the reminder time
+  let fireDate = setHours(due, hh || 9);
+  fireDate = setMinutes(fireDate, mm || 0);
+  
+  // Subtract the offset days safely (handles DST/Month boundaries correctly)
+  fireDate = subDays(fireDate, offsetDays);
+  
+  return fireDate;
 }
 
 function isOverdue(dueDateISO: string) {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const due = new Date(dueDateISO + "T00:00:00");
+  const today = startOfDay(new Date());
+  const due = parseISO(dueDateISO);
   return due < today;
 }
 
@@ -89,7 +87,7 @@ export async function scheduleBillReminderLocal(bill: {
 
   const now = new Date();
   if (bill.snoozed_until) {
-    const s = new Date(bill.snoozed_until);
+    const s = parseISO(bill.snoozed_until);
     if (s > now) return;
   }
 
@@ -110,10 +108,7 @@ export async function scheduleBillReminderLocal(bill: {
         sound: "default",
         categoryIdentifier: "bill-due-actions",
         color: "#ff4444",
-        
-        // [NEW] Time Sensitive = Stays on screen, breaks focus modes
         interruptionLevel: 'timeSensitive', 
-        
       },
       trigger: {
         type: SchedulableTriggerInputTypes.DAILY,
@@ -142,7 +137,7 @@ export async function scheduleBillReminderLocal(bill: {
         sound: "default",
         categoryIdentifier: "bill-due-actions",
         color: "#ffffff",
-        interruptionLevel: 'active', // Standard behavior
+        interruptionLevel: 'active',
       },
       trigger: {
         type: SchedulableTriggerInputTypes.DATE,

@@ -36,7 +36,6 @@ import {
   startSummaryActivity,
   stopActivity,
   startAndroidLiveActivity,
-  // Added for Android Live Activity Support
 } from "../../src/native/LiveActivity";
 import { getToken } from "../../src/auth/session";
 
@@ -47,6 +46,7 @@ const getWidgetModule = () => {
     return undefined;
   }
 };
+
 // --- Types ---
 type SortKey = "due" | "amount" | "name";
 
@@ -89,7 +89,8 @@ const jsonToCSV = (data: any[]): string => {
   return [headerRow, ...rows].join("\n");
 };
 
-// ICON MAPPING LOGIC
+// ICON MAPPING LOGIC OMITTED FOR BREVITY (No Changes Needed)
+// ... (Keep existing BILL_ICON_MAP) ...
 const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
   { regex: /netflix/i, icon: "netflix", color: "#E50914" },
   { regex: /spotify/i, icon: "spotify", color: "#1DB954" },
@@ -214,24 +215,11 @@ function getBillIcon(creditor: string): {
 }
 
 // --- Components ---
-
-function Header({
-  theme,
-  title,
-  onProfilePress,
-}: {
-  theme: Theme;
-  title: string;
-  onProfilePress: () => void;
-}) {
+// (Header, SummaryCard, TabSegment components unchanged)
+function Header({ theme, title, onProfilePress }: { theme: Theme; title: string; onProfilePress: () => void; }) {
   return (
     <View style={{ backgroundColor: theme.colors.navy }}>
-      <LinearGradient
-        colors={[theme.colors.navy, theme.colors.navy]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.headerGradient}
-      >
+      <LinearGradient colors={[theme.colors.navy, theme.colors.navy]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.headerGradient}>
         <SafeAreaView edges={["top"]} style={styles.safeArea}>
           <View style={styles.headerContent}>
             <Text style={styles.headerTitle}>{title}</Text>
@@ -245,82 +233,23 @@ function Header({
   );
 }
 
-function SummaryCard({
-  theme,
-  label,
-  amount,
-  t,
-}: {
-  theme: Theme;
-  label: string;
-  amount: number;
-  t: any;
-}) {
+function SummaryCard({ theme, label, amount, t }: { theme: Theme; label: string; amount: number; t: any; }) {
   return (
-    <View
-      style={[
-        styles.summaryCard,
-        {
-          backgroundColor: theme.colors.card,
-          borderColor: theme.colors.border,
-        },
-      ]}
-    >
-      <Text style={[styles.summaryLabel, { color: theme.colors.subtext }]}>
-        {t("Total")} {label}
-      </Text>
-      <Text style={[styles.summaryAmount, { color: theme.colors.primaryText }]}>
-        ${centsToDollars(amount)}
-      </Text>
+    <View style={[styles.summaryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+      <Text style={[styles.summaryLabel, { color: theme.colors.subtext }]}>{t("Total")} {label}</Text>
+      <Text style={[styles.summaryAmount, { color: theme.colors.primaryText }]}>${centsToDollars(amount)}</Text>
     </View>
   );
 }
 
-function TabSegment({
-  tabs,
-  activeTab,
-  onTabPress,
-  theme,
-}: {
-  tabs: { key: string; label: string }[];
-  activeTab: string;
-  onTabPress: (key: string) => void;
-  theme: Theme;
-}) {
+function TabSegment({ tabs, activeTab, onTabPress, theme }: { tabs: { key: string; label: string }[]; activeTab: string; onTabPress: (key: string) => void; theme: Theme; }) {
   return (
-    <View
-      style={[
-        styles.tabContainer,
-        {
-          backgroundColor: theme.colors.card,
-          borderColor: theme.colors.border,
-        },
-      ]}
-    >
+    <View style={[styles.tabContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
         return (
-          <Pressable
-            key={tab.key}
-            onPress={() => onTabPress(tab.key)}
-            style={[
-              styles.tabButton,
-              isActive && { backgroundColor: theme.colors.primary },
-            ]}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                {
-                  color: isActive
-                    ? theme.colors.primaryTextButton
-                    : theme.colors.subtext,
-                  fontWeight: isActive ? "700" : "500",
-                },
-              ]}
-            >
-              {tab.label}
-            </Text>
+          <Pressable key={tab.key} onPress={() => onTabPress(tab.key)} style={[styles.tabButton, isActive && { backgroundColor: theme.colors.primary }]}>
+            <Text style={[styles.tabText, { color: isActive ? theme.colors.primaryTextButton : theme.colors.subtext, fontWeight: isActive ? "700" : "500" }]}>{tab.label}</Text>
           </Pressable>
         );
       })}
@@ -328,49 +257,18 @@ function TabSegment({
   );
 }
 
-function BillItem({
-  item,
-  theme,
-  t,
-  onLongPress,
-  onEdit,
-  onMarkPaid,
-  onDelete,
-}: {
-  item: any;
-  theme: Theme;
-  t: any;
-  onLongPress: () => void;
-  onEdit: () => void;
-  onMarkPaid: () => void;
-  onDelete: () => void;
-}) {
+function BillItem({ item, theme, t, onLongPress, onEdit, onMarkPaid, onDelete }: { item: any; theme: Theme; t: any; onLongPress: () => void; onEdit: () => void; onMarkPaid: () => void; onDelete: () => void; }) {
   const amt = centsToDollars(item.amount_cents);
-  const isPaid = Boolean(
-    item.paid_at || item.is_paid || item.status === "paid"
-  );
+  const isPaid = Boolean(item.paid_at || item.is_paid || item.status === "paid");
   const overdue = isOverdue(item);
   const swipeableRef = useRef<SwipeableMethods>(null);
 
-  const closeSwipe = () => {
-    swipeableRef.current?.close();
-  };
+  const closeSwipe = () => { swipeableRef.current?.close(); };
   const iconData = getBillIcon(item.creditor);
-  const IconComponent =
-    iconData.type === "Ionicons" ? Ionicons : MaterialCommunityIcons;
+  const IconComponent = iconData.type === "Ionicons" ? Ionicons : MaterialCommunityIcons;
 
   const renderRightActions = useCallback(() => {
-    const ActionButton = ({
-      icon,
-      color,
-      label,
-      onPress,
-    }: {
-      icon: keyof typeof Ionicons.glyphMap;
-      color: string;
-      label: string;
-      onPress: () => void;
-    }) => (
+    const ActionButton = ({ icon, color, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; color: string; label: string; onPress: () => void; }) => (
       <RectButton
         style={[{ backgroundColor: color }, styles.swipeAction]}
         onPress={() => {
@@ -385,26 +283,9 @@ function BillItem({
 
     return (
       <View style={styles.rightActionsContainer}>
-        <ActionButton
-          icon="create-outline"
-          color="#3498DB"
-          label={t("Edit")}
-          onPress={onEdit}
-        />
-        {!isPaid && (
-          <ActionButton
-            icon="checkmark-done-circle-outline"
-            color="#2ECC71"
-            label={t("Paid")}
-            onPress={onMarkPaid}
-          />
-        )}
-        <ActionButton
-          icon="trash-outline"
-          color="#E74C3C"
-          label={t("Delete")}
-          onPress={onDelete}
-        />
+        <ActionButton icon="create-outline" color="#3498DB" label={t("Edit")} onPress={onEdit} />
+        {!isPaid && <ActionButton icon="checkmark-done-circle-outline" color="#2ECC71" label={t("Paid")} onPress={onMarkPaid} />}
+        <ActionButton icon="trash-outline" color="#E74C3C" label={t("Delete")} onPress={onDelete} />
       </View>
     );
   }, [isPaid, onEdit, onMarkPaid, onDelete, t]);
@@ -413,141 +294,29 @@ function BillItem({
     <Pressable
       onLongPress={onLongPress}
       delayLongPress={350}
-      style={({ pressed }) => [
-        styles.billCard,
-        {
-          backgroundColor: theme.colors.card,
-          borderColor: overdue ? theme.colors.danger : theme.colors.border,
-          opacity: pressed ? 0.9 : 1,
-          borderWidth: 1,
-        },
-      ]}
+      style={({ pressed }) => [styles.billCard, { backgroundColor: theme.colors.card, borderColor: overdue ? theme.colors.danger : theme.colors.border, opacity: pressed ? 0.9 : 1, borderWidth: 1 }]}
     >
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={[styles.iconBox, { backgroundColor: iconData.color + "20" }]}
-        >
-          <IconComponent
-            name={iconData.name as any}
-            size={20}
-            color={iconData.color}
-          />
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <View style={[styles.iconBox, { backgroundColor: iconData.color + "20" }]}>
+          <IconComponent name={iconData.name as any} size={20} color={iconData.color} />
         </View>
 
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <View style={{ flexShrink: 1 }}>
-            <Text
-              style={[styles.billCreditor, { color: theme.colors.primaryText }]}
-              numberOfLines={1}
-            >
-              {item.creditor}
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: 2,
-              }}
-            >
-              <MaterialCommunityIcons
-                name={
-                  item.payment_method === "auto"
-                    ? "refresh-auto"
-                    : "hand-pointing-right"
-                }
-                size={14}
-                color={
-                  item.payment_method === "auto"
-                    ? theme.colors.accent
-                    : theme.colors.subtext
-                }
-              />
-              <Text
-                style={{
-                  color:
-                    item.payment_method === "auto"
-                      ? theme.colors.accent
-                      : theme.colors.subtext,
-                  fontSize: 11,
-                  fontWeight: "600",
-                  marginLeft: 4,
-                  textTransform: "uppercase",
-                }}
-              >
-                {item.payment_method === "auto"
-                  ? t("Auto-Draft")
-                  : t("Manual Pay")}
-              </Text>
+            <Text style={[styles.billCreditor, { color: theme.colors.primaryText }]} numberOfLines={1}>{item.creditor}</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+              <MaterialCommunityIcons name={item.payment_method === "auto" ? "refresh-auto" : "hand-pointing-right"} size={14} color={item.payment_method === "auto" ? theme.colors.accent : theme.colors.subtext} />
+              <Text style={{ color: item.payment_method === "auto" ? theme.colors.accent : theme.colors.subtext, fontSize: 11, fontWeight: "600", marginLeft: 4, textTransform: "uppercase" }}>{item.payment_method === "auto" ? t("Auto-Draft") : t("Manual Pay")}</Text>
             </View>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-                marginTop: 4,
-              }}
-            >
-              <Ionicons
-                name={isPaid ? "checkmark-circle" : "calendar-outline"}
-                size={14}
-                color={isPaid ? theme.colors.accent : theme.colors.subtext}
-              />
-              <Text
-                style={{
-                  color: isPaid ? theme.colors.accent : theme.colors.subtext,
-                  fontSize: 13,
-                  fontWeight: "500",
-                }}
-              >
-                {isPaid
-                  ? `${t("Paid on")} ${item.paid_at || item.due_date}`
-                  : `${t("Due")} ${item.due_date}`}
-              </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
+              <Ionicons name={isPaid ? "checkmark-circle" : "calendar-outline"} size={14} color={isPaid ? theme.colors.accent : theme.colors.subtext} />
+              <Text style={{ color: isPaid ? theme.colors.accent : theme.colors.subtext, fontSize: 13, fontWeight: "500" }}>{isPaid ? `${t("Paid on")} ${item.paid_at || item.due_date}` : `${t("Due")} ${item.due_date}`}</Text>
             </View>
           </View>
 
-          <View
-            style={{ alignItems: "flex-end", marginLeft: 10, flexShrink: 0 }}
-          >
-            <Text
-              style={[styles.billAmount, { color: theme.colors.primaryText }]}
-            >
-              ${amt}
-            </Text>
-            {overdue && (
-              <View
-                style={{
-                  backgroundColor: "#FFE5E5",
-                  paddingHorizontal: 6,
-                  paddingVertical: 2,
-                  borderRadius: 4,
-                  marginTop: 4,
-                }}
-              >
-                <Text
-                  style={{
-                    color: theme.colors.danger,
-                    fontSize: 10,
-                    fontWeight: "800",
-                  }}
-                >
-                  {t("OVERDUE")}
-                </Text>
-              </View>
-            )}
+          <View style={{ alignItems: "flex-end", marginLeft: 10, flexShrink: 0 }}>
+            <Text style={[styles.billAmount, { color: theme.colors.primaryText }]}>${amt}</Text>
+            {overdue && <View style={{ backgroundColor: "#FFE5E5", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4 }}><Text style={{ color: theme.colors.danger, fontSize: 10, fontWeight: "800" }}>{t("OVERDUE")}</Text></View>}
           </View>
         </View>
       </View>
@@ -556,13 +325,7 @@ function BillItem({
 
   if (Platform.OS === "ios") {
     return (
-      <ReanimatedSwipeable
-        ref={swipeableRef}
-        friction={2}
-        rightThreshold={40}
-        renderRightActions={renderRightActions}
-        containerStyle={{ marginVertical: 0 }}
-      >
+      <ReanimatedSwipeable ref={swipeableRef} friction={2} rightThreshold={40} renderRightActions={renderRightActions} containerStyle={{ marginVertical: 0 }}>
         {BillContent}
       </ReanimatedSwipeable>
     );
@@ -584,6 +347,14 @@ export default function Bills() {
   const [isExporting, setIsExporting] = useState(false);
   const syncedBillsHash = useRef("");
   const BILLS_CACHE_KEY = "billbell_bills_list_cache";
+  
+  // FIX: Track mounted state to prevent memory leaks/warnings on async updates
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   // 1. Notification Sync
   useEffect(() => {
@@ -614,9 +385,12 @@ export default function Bills() {
   );
 
   const nextBill = pending.find((b: any) => !isOverdue(b));
-  const token = await getToken(); // Fetch the current user token
+  
+  // Ensure we don't try to get token if unmounted, although getting token is side-effect free
+  if (!isMounted.current) return;
+  
+  const token = await getToken(); 
 
-  // ✅ Widget update (only if module exists)
   if (widgetModule?.syncWidgetData) {
     widgetModule.syncWidgetData(
       overdueBills.length,
@@ -628,7 +402,6 @@ export default function Bills() {
     );
   }
 
-  // ✅ Ongoing notification update (doesn't depend on WidgetModule)
   startAndroidLiveActivity(
     `$${centsToDollars(overdueSum)}`,
     overdueBills.length,
@@ -637,7 +410,7 @@ export default function Bills() {
         };
               initializeApp();
 
-}, [bills]);
+}, [bills]); // Note: In a production app, debouncing this effect is recommended if `bills` updates often.
 
 
   // 3. iOS Live Activity Sync
@@ -696,6 +469,21 @@ export default function Bills() {
     }
   }, []);
 
+  const load = useCallback(async () => {
+    try {
+      const cachedData = await AsyncStorage.getItem(BILLS_CACHE_KEY);
+      if (cachedData && isMounted.current) setBills(JSON.parse(cachedData));
+      
+      const res = await api.billsList();
+      if (!isMounted.current) return;
+      
+      setBills(res.bills);
+      await AsyncStorage.setItem(BILLS_CACHE_KEY, JSON.stringify(res.bills));
+    } catch (e) {
+      console.log("Failed to load bills:", e);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle("light-content");
@@ -703,12 +491,15 @@ export default function Bills() {
         StatusBar.setBackgroundColor("transparent");
         StatusBar.setTranslucent(true);
       }
+      
+      load().catch(() => {});
+
       return () => {
         const defaultStyle =
           theme.mode === "dark" ? "light-content" : "dark-content";
         StatusBar.setBarStyle(defaultStyle);
       };
-    }, [theme.mode])
+    }, [theme.mode, load])
   );
 
   const pendingBills = useMemo(
@@ -802,28 +593,10 @@ export default function Bills() {
     return tab === "pending" ? t("Due Date") : t("Paid Date");
   }, [sort, tab, t]);
 
-  const load = useCallback(async () => {
-    try {
-      const cachedData = await AsyncStorage.getItem(BILLS_CACHE_KEY);
-      if (cachedData) setBills(JSON.parse(cachedData));
-      const res = await api.billsList();
-      setBills(res.bills);
-      await AsyncStorage.setItem(BILLS_CACHE_KEY, JSON.stringify(res.bills));
-    } catch (e) {
-      console.log("Failed to load bills:", e);
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      load().catch(() => {});
-    }, [load])
-  );
-
   async function onRefresh() {
     setRefreshing(true);
     await load();
-    setRefreshing(false);
+    if (isMounted.current) setRefreshing(false);
   }
 
   async function markPaid(item: any) {
@@ -838,9 +611,9 @@ export default function Bills() {
           )
         );
       }
-      await load();
+      if (isMounted.current) await load();
     } catch (e: any) {
-      Alert.alert(t("Error"), e.message);
+      if (isMounted.current) Alert.alert(t("Error"), e.message);
     }
   }
 
@@ -848,9 +621,9 @@ export default function Bills() {
     try {
       await api.billsDelete(item.id);
       await cancelBillReminderLocal(item.id);
-      await load();
+      if (isMounted.current) await load();
     } catch (e: any) {
-      Alert.alert(t("Error"), e.message);
+      if (isMounted.current) Alert.alert(t("Error"), e.message);
     }
   }
 
@@ -930,7 +703,7 @@ export default function Bills() {
     } catch (error) {
       console.error("Export failed:", error);
     } finally {
-      setIsExporting(false);
+      if (isMounted.current) setIsExporting(false);
     }
   };
 

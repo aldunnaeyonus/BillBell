@@ -24,7 +24,7 @@ import {
 import { api } from "../src/api/client";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getToken } from "../src/auth/session";
+import { getToken, clearToken } from "../src/auth/session";
 
 // Polyfill Buffer for network/data operations
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
@@ -60,11 +60,11 @@ function AppStack() {
     if (Platform.OS !== "ios") return;
 
     const LiveActivityModule = getLiveActivityModule();
+    // FIX: Only create emitter if module exists to avoid memory leak/crash on Android/Web
     const eventEmitter = LiveActivityModule
       ? new NativeEventEmitter(LiveActivityModule)
       : null;
 
-    // If the module isn't available, don't crash iOS either
     if (!eventEmitter) {
       // Still run background fetch + refresh without iOS event bridge
       initBackgroundFetch();
@@ -126,9 +126,8 @@ function AppStack() {
         webClientId:
           "249297362734-q0atl2p733pufsrgb3jl25459i24b92h.apps.googleusercontent.com",
       });
-      await GoogleSignin.signOut().catch((err) =>
-        console.log("Google Signout handled:", err.code)
-      );
+      // FIX: Removed aggressive Google SignOut. 
+      // This was forcing users to re-login every time the app opened.
     };
     initializeApp();
   }, []);
@@ -157,24 +156,24 @@ function AppStack() {
           return;
         } else if (token && login) {
           console.log("Redirecting to bills screen...", token);
-
           setInitialRoute("(app)/bills");
           return;
-        } else if (!login) {
-          api.hardReset();
-          console.log("Redirecting to login screen...");
-          // If no token -> Go to Login
-          setInitialRoute("(auth)/login");
-          return;
         } else {
-          api.hardReset();
+          // FIX: Do NOT call api.hardReset() here. 
+          // hardReset() calls router.replace() which crashes if the Stack isn't mounted yet.
+          // Instead, perform silent cleanup and direct to login via initialRoute.
+          
+          await clearToken();
+          await api.clearAllFamilyKeys(); // Clean up sensitive keys safely
+          await AsyncStorage.removeItem("isLog");
+          
           console.log("Redirecting to login screen...");
-          // If no token -> Go to Login
           setInitialRoute("(auth)/login");
           return;
         }
       } catch (e) {
         console.warn("Startup check failed", e);
+        // Fallback cleanup
         await AsyncStorage.removeItem("billbell_pending_family_code");
         await AsyncStorage.removeItem("isLog");
         setInitialRoute("(auth)/login");
@@ -224,7 +223,7 @@ function AppStack() {
     <>
       <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
       <Stack
-        initialRouteName={initialRoute} // FIX: Use the resolved state variable
+        initialRouteName={initialRoute} // FIX: Use the resolved state variable safely
         screenOptions={{
           headerTitleAlign: "center",
           headerStyle: { backgroundColor: theme.colors.bg },
