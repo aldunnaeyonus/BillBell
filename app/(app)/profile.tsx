@@ -758,13 +758,13 @@ export default function Profile() {
                 }}
               />
               
-               <ActionRow
-                icon="git-pull-request-outline"
-                label={t("Join Requests")}
-                subLabel={t("View Join Requests from family or friends")}
-                theme={theme}
-                onPress={() => router.push("/(app)/family-requests")}
-              />
+              <ActionRow
+    icon="git-pull-request-outline"
+    label={t("Join Requests")}
+    subLabel={t("View Join Requests from family or friends")}
+    theme={theme}
+    onPress={() => router.push("/(app)/family-requests")}
+   />
                             </View>
           </View>
        <View style={styles.section}>

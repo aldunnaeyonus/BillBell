@@ -1,16 +1,17 @@
 import * as AppleAuthentication from "expo-apple-authentication";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
-// Call once at app startup (or first time login screen mounts)
-export function configureGoogle() {
-  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-  if (!webClientId) {
-    throw new Error("Missing EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID");
-  }
+// FIX: Hardcoded fallback from your original _layout.tsx
+const FALLBACK_WEB_CLIENT_ID = "249297362734-q0atl2p733pufsrgb3jl25459i24b92h.apps.googleusercontent.com";
 
+export function configureGoogle() {
+  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || FALLBACK_WEB_CLIENT_ID;
+  
   GoogleSignin.configure({
     webClientId,
-    offlineAccess: false
+    offlineAccess: false,
+    scopes: ["profile", "email"],
+    profileImageSize: 120,
   });
 }
 
@@ -37,10 +38,8 @@ export async function signInWithGoogleIdToken() {
 
   const result = await GoogleSignin.signIn();
 
-  // The ID token your backend needs
   const idToken = result.data?.idToken
   if (!idToken) {
-    // Some configs return it via getTokens()
     const tokens = await GoogleSignin.getTokens();
     if (!tokens.idToken) throw new Error("Google Sign-In did not return an idToken");
     return { id_token: tokens.idToken };
