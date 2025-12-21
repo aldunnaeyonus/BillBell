@@ -5,18 +5,20 @@ use App\DB;
 
 $pdo = DB::pdo();
 
-// Delete expired (and optionally used) import codes
-// - uses UTC to match your DB dump timezone usage
-// - keeps it simple for cron usage
+// FIX: Use PHP DateTime to match the timezone used during creation.
+// Using MySQL's UTC_TIMESTAMP() causes premature deletion if PHP is configured for a different timezone.
+$now = (new DateTime())->format("Y-m-d H:i:s");
 
 $deleteUsedToo = true;
 
 $sql = $deleteUsedToo
-  ? "DELETE FROM import_codes WHERE expires_at < UTC_TIMESTAMP() OR used_at IS NOT NULL"
-  : "DELETE FROM import_codes WHERE expires_at < UTC_TIMESTAMP()";
+  ? "DELETE FROM import_codes WHERE expires_at < ? OR used_at IS NOT NULL"
+  : "DELETE FROM import_codes WHERE expires_at < ?";
 
 $stmt = $pdo->prepare($sql);
-$stmt->execute();
+
+// Execute with the calculated timestamp
+$stmt->execute([$now]);
 
 $deleted = $stmt->rowCount();
 

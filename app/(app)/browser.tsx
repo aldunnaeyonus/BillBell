@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { WebView } from "react-native-webview";
@@ -7,7 +8,17 @@ import { screen } from "../../src/ui/styles";
 export default function Browser() {
   const { url } = useLocalSearchParams<{ url?: string }>();
   const theme = useTheme();
-  const uri = typeof url === "string" ? decodeURIComponent(url) : "about:blank";
+
+  // FIX: Prevent app crash if URL contains malformed encoding (e.g. "%")
+  const uri = useMemo(() => {
+    if (typeof url !== "string") return "about:blank";
+    try {
+      return decodeURIComponent(url);
+    } catch (e) {
+      console.warn("Failed to decode browser URL:", url);
+      return url; // Fallback to raw URL or about:blank
+    }
+  }, [url]);
 
   return (
     <View style={screen(theme)}>
@@ -16,7 +27,7 @@ export default function Browser() {
         startInLoadingState
         renderLoading={() => (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-            <ActivityIndicator />
+            <ActivityIndicator color={theme.colors.primary} />
           </View>
         )}
       />
