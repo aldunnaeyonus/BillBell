@@ -2,7 +2,7 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 export function configureGoogle() {
-  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+  const webClientId = "249297362734-q0atl2p733pufsrgb3jl25459i24b92h.apps.googleusercontent.com";
   
   if (!webClientId) {
     console.warn("Google Sign-In not configured: EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID is missing.");
