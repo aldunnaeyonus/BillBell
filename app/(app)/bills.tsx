@@ -463,14 +463,6 @@ export default function Bills() {
     syncLiveActivity();
   }, [bills]);
 
-  useEffect(() => {
-    StatusBar.setBarStyle("light-content");
-    if (Platform.OS === "android") {
-      StatusBar.setBackgroundColor("transparent");
-      StatusBar.setTranslucent(true);
-    }
-  }, []);
-
   const load = useCallback(async () => {
     try {
       const cachedData = await AsyncStorage.getItem(BILLS_CACHE_KEY);
@@ -486,23 +478,33 @@ export default function Bills() {
     }
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      StatusBar.setBarStyle("light-content");
-      if (Platform.OS === "android") {
-        StatusBar.setBackgroundColor("transparent");
-        StatusBar.setTranslucent(true);
-      }
-      
-      load().catch(() => {});
+  // Find this section inside bills.tsx
+useFocusEffect(
+  useCallback(() => {
+    // ... (Your existing setup code) ...
+    StatusBar.setBarStyle("light-content");
+    if (Platform.OS === "android") {
+      StatusBar.setBackgroundColor("transparent");
+      StatusBar.setTranslucent(true);
+    }
+    
+    load().catch(() => {});
 
-      return () => {
-        const defaultStyle =
-          theme.mode === "dark" ? "light-content" : "dark-content";
-        StatusBar.setBarStyle(defaultStyle);
-      };
-    }, [theme.mode, load])
-  );
+    return () => {
+      // --- START OF FIX ---
+      const defaultStyle =
+        theme.mode === "dark" ? "light-content" : "dark-content";
+      StatusBar.setBarStyle(defaultStyle);
+
+      // ADD THIS: Explicitly disable translucency when leaving the screen
+      if (Platform.OS === "android") {
+        StatusBar.setTranslucent(false);
+        StatusBar.setBackgroundColor(theme.colors.bg); // Restore your app background color
+      }
+      // --- END OF FIX ---
+    };
+  }, [theme.mode, load, theme.colors.bg]) // Add theme.colors.bg to deps
+);
 
   const pendingBills = useMemo(
     () =>
