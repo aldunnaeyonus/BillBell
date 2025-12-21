@@ -52,7 +52,7 @@ if ($method === "POST" && $path === "/family/requests/respond") { FamilyControll
     // --- Import / Export ---
     if ($method === "POST" && $path === "/import-code/create") { ImportCodeController::create(); return; }
     if ($method === "POST" && $path === "/import/bills") { ImportController::upload(); return; }
-    if ($method === "POST" && $path === "/family/rotate-key") { FamilyController::rotateKey(); return; }
+    if ($method === "POST" && $path === "/family/rotate-key") { KeysController::rotateKey(); return; }
     // --- Auth ---
     if ($method === "GET" && $path === "/auth/apple") { Utils::json(["ok"=>false,"hint"=>"POST /auth/apple"], 405); return; }
     if ($method === "GET" && $path === "/auth/google") { Utils::json(["ok"=>false,"hint"=>"POST /auth/google"], 405); return; }
