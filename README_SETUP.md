@@ -23,7 +23,9 @@ From `frontend/`:
 5) Notes:
    Note: Adding Libraries, with the widget causes POD to crash, delete IOS filer, copy BillBellWidget and recreate the widgert.
 
-6) Task:
+6) NPM run scripts
+
+7) Task:
    Review the entire repository and analyze all TypeScript and JavaScript files.
 
    Goals:

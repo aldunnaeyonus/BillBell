@@ -10,8 +10,8 @@
     "web": "expo start --web",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "export-android": "mkdir -p android/output && npx expo export:embed --platform android --entry-file expo-router/entry --bundle-output android/output/index.android.bundle --dev false --assets-dest android/output --sourcemap-output android/sourcemap.js && cd android/output && zip -r ../index.android.bundle.zip . && cd .. && zip sourcemap.zip sourcemap.js && rm -rf output && rm sourcemap.js",
-    "export-ios": "mkdir -p ios/output && npx expo export:embed --platform ios --entry-file expo-router/entry --bundle-output ios/output/main.jsbundle --dev false --assets-dest ios/output --sourcemap-output ios/sourcemap.js && cd ios/output && zip -r ../main.jsbundle.zip . && cd .. && zip sourcemap.zip sourcemap.js && rm -rf output && rm sourcemap.js"
+    "export-android": "mkdir -p android/output && npx expo export:embed --platform android --entry-file node_modules/expo-router/entry.js --bundle-output android/output/index.android.bundle --dev false --assets-dest android/output --sourcemap-output android/sourcemap.js && cd android/output && zip -r ../index.android.bundle.zip . && cd .. && zip sourcemap.zip sourcemap.js && rm -rf output && rm sourcemap.js",
+    "export-ios": "mkdir -p ios/output && npx expo export:embed --platform ios --entry-file node_modules/expo-router/entry.js --bundle-output ios/output/main.jsbundle --dev false --assets-dest ios/output --sourcemap-output ios/sourcemap.js && cd ios/output && zip -r ../main.jsbundle.zip . && cd .. && zip sourcemap.zip sourcemap.js && rm -rf output && rm sourcemap.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
