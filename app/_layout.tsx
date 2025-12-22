@@ -7,21 +7,48 @@ import * as Notifications from "expo-notifications";
 import { useTheme } from "../src/ui/useTheme";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Platform, NativeModules, LogBox, AppState, AppStateStatus, NativeEventEmitter, View, Image, StyleSheet } from "react-native";
+// Added Alert to imports
+import {
+  Platform,
+  NativeModules,
+  LogBox,
+  AppState,
+  LayoutAnimation,
+  AppStateStatus,
+  NativeEventEmitter,
+  View,
+  Image,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import { Buffer } from "buffer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BlurView } from "expo-blur"; 
+import { BlurView } from "expo-blur";
 import { ErrorBoundary } from "../src/ui/ErrorBoundary";
 import { api } from "../src/api/client";
 import { getToken, clearToken } from "../src/auth/session";
-import { initBackgroundFetch, syncAndRefresh } from "../src/native/LiveActivity";
-import { configureGoogle } from "../src/auth/providers"; 
-import { registerNotificationCategories, setupNotificationListeners } from "../src/notifications/notifications";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-// --- NEW IMPORT ---
-import { BiometricAuth } from "../src/auth/BiometricAuth"; // Import the wrapper
+import {
+  initBackgroundFetch,
+  syncAndRefresh,
+} from "../src/native/LiveActivity";
+import { configureGoogle } from "../src/auth/providers";
+import {
+  registerNotificationCategories,
+  setupNotificationListeners,
+} from "../src/notifications/notifications";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BiometricAuth } from "../src/auth/BiometricAuth";
 import { PrivacyOverlay } from "../src/ui/PrivacyOverlay";
 import { OfflineBanner } from "../src/ui/OfflineBanner";
+import hotUpdate from "react-native-ota-hot-update";
+import ReactNativeBlobUtil from "react-native-blob-util";
+
+// ---------------------------------------------------------
+// NOTE: Ensure these are imported.
+// You did not provide the import path for hotUpdate in the snippet.
+// import ReactNativeBlobUtil from 'react-native-blob-util';
+// import hotUpdate from 'your-hot-update-module';
+// ---------------------------------------------------------
 
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
 
@@ -43,27 +70,33 @@ function AppStack() {
   const { t } = useTranslation();
   const [isReady, setIsReady] = useState(false);
   const [initialRoute, setInitialRoute] = useState<string>("(auth)/login");
-  const [isBlurred, setIsBlurred] = useState(false); 
+  const [isBlurred, setIsBlurred] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [version, setVersion] = useState("0");
+  const apiVersion = "https://dunn-carabali.com/billMVP/ota/update.json";
 
   useEffect(() => {
-    configureGoogle(); 
+    configureGoogle();
   }, []);
 
   useEffect(() => {
     initBackgroundFetch();
     registerNotificationCategories();
     const notificationCleanup = setupNotificationListeners();
-    syncAndRefresh().catch(e => console.warn("Initial sync failed", e));
+    syncAndRefresh().catch((e) => console.warn("Initial sync failed", e));
 
-    const appState = AppState.addEventListener("change", (nextState: AppStateStatus) => {
+    const appState = AppState.addEventListener(
+      "change",
+      (nextState: AppStateStatus) => {
         setIsBlurred(nextState !== "active");
         if (nextState === "active") {
           syncAndRefresh().catch(() => {});
-          if (Platform.OS === 'ios') {
-             handlePendingPaidBill().catch(() => {});
+          if (Platform.OS === "ios") {
+            handlePendingPaidBill().catch(() => {});
           }
         }
-    });
+      }
+    );
 
     return () => {
       appState.remove();
@@ -77,7 +110,9 @@ function AppStack() {
     if (!LiveActivityModule) return;
     const eventEmitter = new NativeEventEmitter(LiveActivityModule);
     handlePendingPaidBill();
-    const subscription = eventEmitter.addListener("onBillMarkedPaid", async (e) => {
+    const subscription = eventEmitter.addListener(
+      "onBillMarkedPaid",
+      async (e) => {
         try {
           const billId = Number(e?.billId);
           if (Number.isFinite(billId) && billId > 0) {
@@ -88,16 +123,71 @@ function AppStack() {
         } finally {
           await syncAndRefresh();
         }
-    });
+      }
+    );
     return () => {
       subscription.remove();
     };
   }, []);
-  
+
+  const startUpdate = async (url: string, version: number) => {
+    hotUpdate.downloadBundleUri(ReactNativeBlobUtil, url, version, {
+      updateSuccess: () => {
+        console.log("update success!");
+      },
+      updateFail(message?: string) {
+               console.log(message);
+
+      },
+      progress(received: string, total: string) {
+        const percent = (+received / +total) * 100;
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setProgress(percent);
+      },
+      restartAfterInstall: true,
+    });
+  };
+
+  const onCheckVersion = () => {
+    fetch(apiVersion).then(async (data) => {
+      const result = await data.json();
+      if (result?.version > version) {
+        Alert.alert(
+          i18n.t("Minor update available"),
+          "",
+          [
+            {
+              text: "Cancel",
+              onPress: () => console.log("Cancel Pressed"),
+              style: "cancel",
+            },
+            {
+              text: i18n.t("Update"),
+              onPress: () =>
+                startUpdate(
+                  Platform.OS === "ios"
+                    ? result?.downloadIosUrl
+                    : result?.downloadAndroidUrl,
+                  result.version
+                ),
+            },
+          ]
+        );
+      }
+    });
+  };
+
+  // --- INTEGRATION START ---
   useEffect(() => {
     const prepareApp = async () => {
       try {
-        const pending = await AsyncStorage.getItem("billbell_pending_family_code");
+        hotUpdate.getCurrentVersion().then((data) => {
+          setVersion(`${data}`);
+        });
+        onCheckVersion();
+        const pending = await AsyncStorage.getItem(
+          "billbell_pending_family_code"
+        );
         const login = await AsyncStorage.getItem("isLog");
         const token = await getToken();
 
@@ -120,6 +210,7 @@ function AppStack() {
     };
     prepareApp();
   }, []);
+  // --- INTEGRATION END ---
 
   async function handlePendingPaidBill() {
     if (Platform.OS !== "ios") return;
@@ -144,8 +235,7 @@ function AppStack() {
   return (
     <>
       <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
-      
-      {/* WRAP STACK IN BIOMETRIC AUTH */}
+
       <BiometricAuth>
         <Stack
           initialRouteName={initialRoute}
@@ -160,41 +250,101 @@ function AppStack() {
             headerBackButtonDisplayMode: "minimal",
           }}
         >
-          <Stack.Screen name="(app)/bills" options={{ title: "", headerBackVisible: false, gestureEnabled: true }} />
-          <Stack.Screen name="(app)/onboarding" options={{ headerShown: false, headerBackVisible: false, title: "" }} />
-          <Stack.Screen name="(app)/feedback" options={{ title: t("Feedback & Bugs") }} />
+          <Stack.Screen
+            name="(app)/bills"
+            options={{
+              title: "",
+              headerBackVisible: false,
+              gestureEnabled: true,
+            }}
+          />
+          <Stack.Screen
+            name="(app)/onboarding"
+            options={{
+              headerShown: false,
+              headerBackVisible: false,
+              title: "",
+            }}
+          />
+          <Stack.Screen
+            name="(app)/feedback"
+            options={{ title: t("Feedback & Bugs") }}
+          />
           <Stack.Screen name="(app)/faq" options={{ title: t("FAQ") }} />
-          <Stack.Screen name="(app)/privacy" options={{ title: t("Privacy Policy") }} />
-          <Stack.Screen name="(app)/terms" options={{ title: t("Terms of Use") }} />
-          <Stack.Screen name="(app)/insights" options={{ title: t("Financial Insights") }} />
-          <Stack.Screen name="(app)/family-requests" options={{ title: t("Join Requests") }} />
-          <Stack.Screen name="(app)/browser" options={{ title: t("Browser") }} />
-          <Stack.Screen name="(app)/bulk-import" options={{ title: t("Bulk Upload") }} />
+          <Stack.Screen
+            name="(app)/privacy"
+            options={{ title: t("Privacy Policy") }}
+          />
+          <Stack.Screen
+            name="(app)/terms"
+            options={{ title: t("Terms of Use") }}
+          />
+          <Stack.Screen
+            name="(app)/insights"
+            options={{ title: t("Financial Insights") }}
+          />
+          <Stack.Screen
+            name="(app)/family-requests"
+            options={{ title: t("Join Requests") }}
+          />
+          <Stack.Screen
+            name="(app)/browser"
+            options={{ title: t("Browser") }}
+          />
+          <Stack.Screen
+            name="(app)/bulk-import"
+            options={{ title: t("Bulk Upload") }}
+          />
           <Stack.Screen name="index" options={{ title: t("Debts") }} />
-          <Stack.Screen name="(auth)/login" options={{ headerShown: false, headerBackVisible: false }} />
+          <Stack.Screen
+            name="(auth)/login"
+            options={{ headerShown: false, headerBackVisible: false }}
+          />
           <Stack.Screen name="(app)/family" options={{ title: "" }} />
-          <Stack.Screen name="(app)/bill-edit" options={{ title: t("Edit Debts") }} />
-          <Stack.Screen name="(app)/profile" options={{ title: t("Profile") }} />
-          <Stack.Screen name="(app)/family-settings" options={{ title: t("Shared Settings") }} />
-          <Stack.Screen name="(app)/bill-scan" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
-          <Stack.Screen name="(app)/recovery-kit" options={{ headerShown: false }} />
-          <Stack.Screen name="(app)/subscriptions" options={{ title: t("Subscriptions") }} />
+          <Stack.Screen
+            name="(app)/bill-edit"
+            options={{ title: t("Edit Debts") }}
+          />
+          <Stack.Screen
+            name="(app)/profile"
+            options={{ title: t("Profile") }}
+          />
+          <Stack.Screen
+            name="(app)/family-settings"
+            options={{ title: t("Shared Settings") }}
+          />
+          <Stack.Screen
+            name="(app)/bill-scan"
+            options={{ headerShown: false, presentation: "fullScreenModal" }}
+          />
+          <Stack.Screen
+            name="(app)/recovery-kit"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="(app)/subscriptions"
+            options={{ title: t("Subscriptions") }}
+          />
         </Stack>
       </BiometricAuth>
 
-      {/* PRIVACY VEIL (Visually hides content in App Switcher) */}
       {isBlurred && (
         <View style={StyleSheet.absoluteFill}>
-          <BlurView 
-            intensity={20} 
-            style={StyleSheet.absoluteFill} 
-            tint={theme.mode === 'dark' ? 'dark' : 'light'} 
+          <BlurView
+            intensity={20}
+            style={StyleSheet.absoluteFill}
+            tint={theme.mode === "dark" ? "dark" : "light"}
           />
-          <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
-             <Image 
-               source={require('../assets/icon.png')} 
-               style={{ width: 100, height: 100, borderRadius: 20 }} 
-             />
+          <View
+            style={[
+              StyleSheet.absoluteFill,
+              { alignItems: "center", justifyContent: "center" },
+            ]}
+          >
+            <Image
+              source={require("../assets/icon.png")}
+              style={{ width: 100, height: 100, borderRadius: 20 }}
+            />
           </View>
         </View>
       )}
@@ -213,16 +363,15 @@ Notifications.setNotificationHandler({
 });
 
 export default function RootLayout() {
-
-    const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      staleTime: 1000 * 60 * 5, // Data is fresh for 5 minutes
-      gcTime: 1000 * 60 * 60 * 24, // Keep unused data for 24 hours
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 2,
+        staleTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 60 * 24,
+      },
     },
-  },
-});
+  });
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -230,9 +379,9 @@ export default function RootLayout() {
         <ErrorBoundary>
           <QueryClientProvider client={queryClient}>
             <OfflineBanner />
-        <AppStack />
-        </QueryClientProvider>
-        <PrivacyOverlay />
+            <AppStack />
+          </QueryClientProvider>
+          <PrivacyOverlay />
         </ErrorBoundary>
       </I18nextProvider>
     </GestureHandlerRootView>

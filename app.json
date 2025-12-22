@@ -60,6 +60,7 @@
           }
         }
       ],
+      "react-native-ota-hot-update",
       "expo-router",
       "expo-secure-store",
       "expo-apple-authentication",
