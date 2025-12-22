@@ -20,6 +20,8 @@ import { registerNotificationCategories, setupNotificationListeners } from "../s
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // --- NEW IMPORT ---
 import { BiometricAuth } from "../src/auth/BiometricAuth"; // Import the wrapper
+import { PrivacyOverlay } from "../src/ui/PrivacyOverlay";
+import { OfflineBanner } from "../src/ui/OfflineBanner";
 
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
 
@@ -228,8 +230,10 @@ export default function RootLayout() {
       <I18nextProvider i18n={i18n}>
         <ErrorBoundary>
           <QueryClientProvider client={queryClient}>
+            <OfflineBanner />
         <AppStack />
         </QueryClientProvider>
+        <PrivacyOverlay />
         </ErrorBoundary>
       </I18nextProvider>
     </GestureHandlerRootView>

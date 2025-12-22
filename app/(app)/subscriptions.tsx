@@ -10,6 +10,8 @@ import { AnimatedAmount } from "../../src/ui/AnimatedAmount";
 import { ScaleButton } from "../../src/ui/ScaleButton";
 import { Skeleton } from "../../src/ui/Skeleton";
 import { BILL_ICON_MAP } from "../../src/data/vendors";
+import { useCurrency } from "../../src/hooks/useCurrency";
+import { formatCurrency } from "@/utils/currency";
 
 function getBillIcon(creditor: string) {
   const match = BILL_ICON_MAP.find((m) => creditor.match(m.regex));
@@ -22,6 +24,7 @@ export default function Subscriptions() {
   const theme = useTheme();
   const { t } = useTranslation();
   const { data: bills, isLoading } = useBills();
+const currency = useCurrency();
 
   // Filter for "Subscriptions" (Auto-pay or Recurring)
   const subs = useMemo(() => {
@@ -56,7 +59,7 @@ export default function Subscriptions() {
           </Text>
         </View>
         <Text style={[styles.amount, { color: theme.colors.primaryText }]}>
-          ${(item.amount_cents / 100).toFixed(2)}
+          {formatCurrency(item.amount_cents, currency)}
         </Text>
       </ScaleButton>
     );
@@ -84,8 +87,8 @@ export default function Subscriptions() {
           <View style={[styles.summary, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
             <Text style={[styles.label, { color: theme.colors.subtext }]}>{t("Monthly Fixed Cost")}</Text>
             <AnimatedAmount
+            currency={currency}
               amount={totalMonthly}
-              prefix="$"
               style={{ fontSize: 40, fontWeight: "900", color: theme.colors.primaryText }}
             />
             <Text style={{ color: theme.colors.subtext, marginTop: 4, fontSize: 12 }}>

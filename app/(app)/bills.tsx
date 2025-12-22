@@ -35,7 +35,7 @@ import ReanimatedSwipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { RectButton } from "react-native-gesture-handler";
-import { api } from "../../src/api/client";
+import { useCurrency } from "../../src/hooks/useCurrency";
 import {
   resyncLocalNotificationsFromBills,
   cancelBillReminderLocal,
@@ -48,13 +48,13 @@ import {
 } from "../../src/native/LiveActivity";
 import { getToken } from "../../src/auth/session";
 import { File, Paths } from "expo-file-system";
-import { getJson, setJson } from "../../src/storage/storage"; 
 import * as Haptics from "expo-haptics";
 import { AnimatedAmount } from "../../src/ui/AnimatedAmount";
 import { FlashList } from "@shopify/flash-list";
 import ConfettiCannon from "react-native-confetti-cannon";
 import * as StoreReview from "expo-store-review";
 import { BILL_ICON_MAP } from '../../src/data/vendors';
+import { formatCurrency } from "@/utils/currency";
 
 // --- NEW VISUAL IMPORTS ---
 import Animated, { LinearTransition, FadeIn, FadeOut } from 'react-native-reanimated';
@@ -81,10 +81,7 @@ type FlatListItem =
   | { type: "header"; title: string; special?: string; id: string }
   | { type: "bill"; data: Bill; id: string };
 
-// --- Helper Functions ---
-function centsToDollars(cents: number) {
-  return (Number(cents || 0) / 100).toFixed(2);
-}
+
 
 function safeDateNum(s?: string | null) {
   if (!s) return 0;
@@ -232,7 +229,7 @@ function Header({
 
 function SummaryCard({ theme, items }: { theme: Theme; items: SummaryItem[] }) {
   const isSingle = items.length === 1;
-
+  const currency = useCurrency();
   return (
     <View
       style={[
@@ -274,6 +271,7 @@ function SummaryCard({ theme, items }: { theme: Theme; items: SummaryItem[] }) {
               {item.label}
             </Text>
             <AnimatedAmount
+            currency={currency}
               amount={item.amount}
               style={{
                 color: item.highlight
@@ -283,7 +281,6 @@ function SummaryCard({ theme, items }: { theme: Theme; items: SummaryItem[] }) {
                 fontWeight: "900",
                 fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
               }}
-              prefix="$"
             />
           </View>
         ))}
@@ -373,7 +370,9 @@ function BillItem({
   onMarkPaid,
   onDelete,
 }: any) {
-  const amt = centsToDollars(item.amount_cents);
+  const currency = useCurrency();
+  
+  const amt = formatCurrency(item.amount_cents, currency)
   const isPaid = Boolean(
     item.paid_at || item.is_paid || item.status === "paid"
   );
@@ -662,6 +661,7 @@ export default function Bills() {
   const confettiRef = useRef<ConfettiCannon>(null);
 
   const safeBills = bills || [];
+  const currency = useCurrency();
 
   const filteredBills = useMemo(() => {
     if (!searchQuery.trim()) return safeBills;
@@ -669,7 +669,7 @@ export default function Bills() {
     return safeBills.filter(
       (b: { creditor: any; amount_cents: number; }) =>
         (b.creditor || "").toLowerCase().includes(lower) ||
-        centsToDollars(b.amount_cents).includes(lower)
+        formatCurrency(b.amount_cents, currency)
     );
   }, [safeBills, searchQuery]);
 
@@ -709,7 +709,7 @@ export default function Bills() {
           );
         }
         startAndroidLiveActivity(
-          `$${centsToDollars(overdueSum)}`,
+          formatCurrency(overdueSum, currency),
           overdueBills.length,
           String(nextBill?.id ?? "")
         );
@@ -747,9 +747,9 @@ export default function Bills() {
         return;
       }
       startSummaryActivity(
-        `$${centsToDollars(overdueSum)}`,
+        formatCurrency(overdueSum, currency),
         overdueBills.length,
-        `$${centsToDollars(monthSum)}`,
+        formatCurrency(monthSum, currency),
         thisMonthBills.length
       );
     };
@@ -897,7 +897,7 @@ export default function Bills() {
       if (safeBills.length === 0) { Alert.alert(t("No Data"), t("There are no bills to export.")); return; }
       setIsExporting(true);
       const exportData = safeBills.map((b: { id: any; creditor: any; amount_cents: number; due_date: any; status: string; notes: any; recurrence: any; reminder_offset_days: any; }) => ({
-        ID: b.id, Creditor: b.creditor, Amount: centsToDollars(b.amount_cents), DueDate: b.due_date,
+        ID: b.id, Creditor: b.creditor, Amount: formatCurrency(b.amount_cents, currency), DueDate: b.due_date,
         Status: b.status === "paid" ? "Paid" : "Pending", Notes: b.notes || "",
         Recurrence: b.recurrence || "none", Offset: b.reminder_offset_days || "0",
       }));

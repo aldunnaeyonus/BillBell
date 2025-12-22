@@ -33,12 +33,11 @@ import * as EncryptionService from "../../src/security/EncryptionService";
 import { getDeviceId } from "../../src/security/device";
 import { userSettings } from "../../src/storage/userSettings";
 import { stopActivity } from "../../src/native/LiveActivity";
-
+import { useCurrency, useSetCurrency } from "../../src/hooks/useCurrency";
+import { SUPPORTED_CURRENCIES } from "../../src/utils/currency";
 // --- Helpers ---
+import { formatCurrency } from "@/utils/currency";
 
-function centsToDollars(cents: number) {
-  return (Number(cents || 0) / 100).toFixed(2);
-}
 
 const jsonToCSV = (data: any[]): string => {
   if (!data || data.length === 0) return "";
@@ -311,7 +310,9 @@ export default function Profile() {
     expires: string;
   } | null>(null);
   const [showLangModal, setShowLangModal] = useState(false);
-
+  const currency = useCurrency(); // Hook
+  const setCurrencyMutation = useSetCurrency(); // Mutation
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   // Settings State
   const [liveActivityEnabled, setLiveActivityEnabled] = useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
@@ -326,7 +327,7 @@ export default function Profile() {
       isMounted.current = false;
     };
   }, []);
-
+ 
   const langs = [
     { code: "en", label: "English" },
     { code: "es", label: "Español" },
@@ -500,6 +501,11 @@ export default function Profile() {
     );
   };
 
+  const handleCurrencyChange = (code: string) => {
+    setCurrencyMutation.mutate(code);
+    setShowCurrencyModal(false);
+  };
+
   const handleDeleteAccount = async () => {
     Alert.alert(t("Delete Account"), t("DeleteAccountConfirm"), [
       { text: t("Cancel"), style: "cancel" },
@@ -613,7 +619,7 @@ export default function Profile() {
 
       const exportData = bills.map((b: any) => ({
         name: b.creditor,
-        amount: centsToDollars(b.amount_cents),
+        amount: formatCurrency(b.amount_cents, currency),
         due_date: b.due_date,
         notes: b.notes || "",
         recurrence: b.recurrence || "none",
@@ -741,6 +747,15 @@ export default function Profile() {
                 theme={theme}
                 onPress={handleChangeLanguage}
               />
+              <ActionRow
+            icon="cash-outline"
+            label={t("Currency")}
+            subLabel={currency}
+            theme={theme}
+            onPress={() => setShowCurrencyModal(true)}
+                            isLast
+
+          />
             </View>
           </View>
 
@@ -1004,7 +1019,33 @@ export default function Profile() {
           </View>
         </Pressable>
       </Modal>
+      <Modal visible={showCurrencyModal} transparent animationType="fade" onRequestClose={() => setShowCurrencyModal(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setShowCurrencyModal(false)}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.card, maxHeight: '80%' }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.primaryText }]}>{t("Select Currency")}</Text>
+            <FlatList 
+              data={SUPPORTED_CURRENCIES}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <Pressable
+                  onPress={() => handleCurrencyChange(item.code)}
+                  style={({ pressed }) => [styles.modalItem, { backgroundColor: pressed ? theme.colors.border : "transparent", borderBottomColor: theme.colors.border }]}
+                >
+                  <Text style={[styles.modalItemText, { color: theme.colors.primaryText }]}>
+                    {item.label} ({item.symbol})
+                  </Text>
+                  {currency === item.code && <Ionicons name="checkmark" size={20} color={theme.colors.primary} />}
+                </Pressable>
+              )}
+            />
+            <Pressable onPress={() => setShowCurrencyModal(false)} style={[styles.modalCancel, { backgroundColor: theme.colors.border }]}>
+              <Text style={[styles.modalCancelText, { color: theme.colors.text }]}>{t("Cancel")}</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </>
+    
   );
 }
 

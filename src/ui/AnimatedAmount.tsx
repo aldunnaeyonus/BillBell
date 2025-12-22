@@ -1,71 +1,33 @@
-import React, { useEffect } from 'react';
-import { TextInput, TextInputProps, TextStyle, StyleSheet } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withTiming,
-  withDelay,
-  Easing,
-} from 'react-native-reanimated';
+import React, { useEffect, useState } from 'react';
+import { Text, TextProps, StyleSheet } from 'react-native';
+import { formatCurrency } from '../utils/currency';
 
-// Animated TextInput to handle the text update efficiently
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
-
-interface AnimatedAmountProps {
-  amount: number; // The value in cents
-  style?: TextStyle;
-  prefix?: string;
-  duration?: number;
-  delay?: number;
+interface AnimatedAmountProps extends TextProps {
+  amount: number; // in CENTS
+  currency?: string;
+  style?: any;
 }
 
-export function AnimatedAmount({
-  amount,
-  style,
-  prefix = '$',
-  duration = 800,
-  delay = 0,
-}: AnimatedAmountProps) {
-  const animatedValue = useSharedValue(0);
+export function AnimatedAmount({ amount, currency = 'USD', style, ...props }: AnimatedAmountProps) {
+  // For a simple, reliable multi-currency formatter, we use standard State 
+  // instead of Reanimated TextInput to ensure Intl formatting is perfect.
+  const [displayValue, setDisplayValue] = useState(amount);
 
   useEffect(() => {
-    // Animate to the new amount (in cents)
-    animatedValue.value = withDelay(
-      delay,
-      withTiming(amount, {
-        duration: duration,
-        easing: Easing.out(Easing.exp), // "Premium" ease-out feel
-      })
-    );
-  }, [amount, delay, duration]);
-
-  const animatedProps = useAnimatedProps(() => {
-    // Format: 1250 -> "12.50"
-    const val = Math.round(animatedValue.value) / 100;
-    // Add commas for thousands (simple regex)
-    const formatted = val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    
-    return {
-      text: `${prefix}${formatted}`,
-    } as TextInputProps;
-  });
+    // Simple spring effect logic could go here, 
+    // but for text accuracy with currency symbols, direct update is cleaner for v1.
+    setDisplayValue(amount);
+  }, [amount]);
 
   return (
-    <AnimatedTextInput
-      underlineColorAndroid="transparent"
-      editable={false}
-      value={`${prefix}0.00`} // Initial fallback
-      style={[styles.text, style]}
-      animatedProps={animatedProps}
-    />
+    <Text style={[styles.text, style]} {...props}>
+      {formatCurrency(displayValue, currency)}
+    </Text>
   );
 }
 
 const styles = StyleSheet.create({
   text: {
-    // Ensure font padding is removed for perfect alignment
-    includeFontPadding: false,
-    textAlignVertical: 'center',
-    color: '#000', 
+    fontVariant: ['tabular-nums'], // Prevents jitter when numbers change
   },
 });

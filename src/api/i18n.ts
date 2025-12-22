@@ -1,7 +1,8 @@
-import i18n, { LanguageDetectorAsyncModule, Resource } from "i18next";
+import i18n, { LanguageDetectorModule, Resource } from "i18next";
 import { initReactI18next } from "react-i18next";
 import * as RNLocalize from "react-native-localize";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { storage } from "../storage/storage"; 
+import { userSettings } from "../storage/userSettings"; // Import settings to save currency
 import "intl-pluralrules";
 
 import en from "../locales/en.json";
@@ -14,134 +15,140 @@ import ptBR from "../locales/pt-BR.json";
 import it from "../locales/it.json";
 import nl from "../locales/nl.json";
 
+// --- 1. Define Language -> Currency Map ---
+const CURRENCY_MAP: Record<string, string> = {
+  // English Regions
+  "en-US": "USD", "en-GB": "GBP", "en-CA": "CAD", 
+  "en-AU": "AUD", "en-SG": "SGD", "en-IN": "INR",
+  
+  // Euro Zone
+  "de-DE": "EUR", "de-AT": "EUR",
+  "fr-FR": "EUR", "fr-BE": "EUR", 
+  "it-IT": "EUR", "es-ES": "EUR", "nl-NL": "EUR",
+
+  // Specific Currencies
+  "ja-JP": "JPY", // Japan -> Yen
+  "zh-CN": "CNY", "zh-Hans": "CNY", "zh-SG": "SGD", // China -> Yuan
+  "pt-BR": "BRL", // Brazil -> Real
+  "es-MX": "MXN", // Mexico -> Peso
+  "fr-CA": "CAD", // Quebec -> CAD
+  "fr-CH": "CHF", "de-CH": "CHF", "it-CH": "CHF", // Switzerland -> Franc
+  "ru-RU": "RUB", // Russia -> Ruble
+  "ko-KR": "KRW", // Korea -> Won
+
+  // Fallbacks
+  "en": "USD", "de": "EUR", "fr": "EUR", "it": "EUR", 
+  "es": "EUR", "ja": "JPY", "pt": "BRL", "zh": "CNY", "nl": "EUR"
+};
+
 const resources: Resource = {
-  // --- English (World) ---
+  // ... (Keep your existing resources object exactly as is)
   en: { translation: en },
-  "en-US": { translation: en }, // USA
-  "en-GB": { translation: en }, // UK
-  "en-CA": { translation: en }, // Canada
-  "en-AU": { translation: en }, // Australia
-  "en-IN": { translation: en }, // India
-  "en-NZ": { translation: en }, // New Zealand
-  "en-IE": { translation: en }, // Ireland
-  "en-ZA": { translation: en }, // South Africa
-  "en-SG": { translation: en }, // Singapore
-  "en-PH": { translation: en }, // Philippines
+  "en-US": { translation: en },
+  "en-GB": { translation: en },
+  "en-CA": { translation: en },
+  "en-AU": { translation: en },
+  "en-IN": { translation: en },
+  "en-NZ": { translation: en },
+  "en-IE": { translation: en },
+  "en-ZA": { translation: en },
+  "en-SG": { translation: en },
+  "en-PH": { translation: en },
 
-  // --- Spanish (World) ---
   es: { translation: es },
-  "es-ES": { translation: es }, // Spain
-  "es-US": { translation: es }, // USA
-  "es-MX": { translation: es }, // Mexico
-  "es-419": { translation: es }, // Latin America (Generic)
-  "es-AR": { translation: es }, // Argentina
-  "es-BO": { translation: es }, // Bolivia
-  "es-CL": { translation: es }, // Chile
-  "es-CO": { translation: es }, // Colombia
-  "es-CR": { translation: es }, // Costa Rica
-  "es-CU": { translation: es }, // Cuba
-  "es-DO": { translation: es }, // Dominican Republic
-  "es-EC": { translation: es }, // Ecuador
-  "es-GT": { translation: es }, // Guatemala
-  "es-HN": { translation: es }, // Honduras
-  "es-NI": { translation: es }, // Nicaragua
-  "es-PA": { translation: es }, // Panama
-  "es-PE": { translation: es }, // Peru
-  "es-PR": { translation: es }, // Puerto Rico
-  "es-PY": { translation: es }, // Paraguay
-  "es-SV": { translation: es }, // El Salvador
-  "es-UY": { translation: es }, // Uruguay
-  "es-VE": { translation: es }, // Venezuela
+  "es-ES": { translation: es },
+  "es-MX": { translation: es },
+  "es-US": { translation: es },
+  "es-AR": { translation: es },
+  "es-CO": { translation: es },
+  "es-CL": { translation: es },
+  "es-PE": { translation: es },
 
-  // --- German (DACH + Microstates) ---
   de: { translation: de },
-  "de-DE": { translation: de }, // Germany
-  "de-AT": { translation: de }, // Austria
-  "de-CH": { translation: de }, // Switzerland
-  "de-LI": { translation: de }, // Liechtenstein
-  "de-LU": { translation: de }, // Luxembourg
+  "de-DE": { translation: de },
+  "de-AT": { translation: de },
+  "de-CH": { translation: de },
 
-  // --- French (Francophonie) ---
   fr: { translation: fr },
-  "fr-FR": { translation: fr }, // France
-  "fr-CA": { translation: fr }, // Canada
-  "fr-BE": { translation: fr }, // Belgium
-  "fr-CH": { translation: fr }, // Switzerland
-  "fr-LU": { translation: fr }, // Luxembourg
-  "fr-MC": { translation: fr }, // Monaco
+  "fr-FR": { translation: fr },
+  "fr-CA": { translation: fr },
+  "fr-BE": { translation: fr },
+  "fr-CH": { translation: fr },
 
-  // --- Japanese ---
   ja: { translation: ja },
   "ja-JP": { translation: ja },
 
-  // --- Chinese (Simplified) ---
-  "zh-Hans": { translation: zhHans }, 
-  "zh-CN": { translation: zhHans }, // Mainland
-  "zh-SG": { translation: zhHans }, // Singapore
+  "zh-Hans": { translation: zhHans },
+  "zh-CN": { translation: zhHans },
+  "zh-SG": { translation: zhHans },
 
-  // --- Chinese (Traditional) ---
-  "zh-Hant": { translation: zhHans }, 
-  "zh-TW": { translation: zhHans }, // Taiwan
-  "zh-MO": { translation: zhHans }, // Macau
+  "pt-BR": { translation: ptBR },
+  pt: { translation: ptBR },
 
-  // --- Chinese (Hong Kong) ---
-  "zh-HK": { translation: zhHans },
-
-  // --- Portuguese ---
-  pt: { translation: ptBR },       
-  "pt-BR": { translation: ptBR }, // Brazil
-  "pt-PT": { translation: ptBR }, // Portugal (Fallback to BR)
-  "pt-AO": { translation: ptBR }, // Angola (Fallback to BR)
-  "pt-MZ": { translation: ptBR }, // Mozambique (Fallback to BR)
-
-  // --- Italian ---
   it: { translation: it },
   "it-IT": { translation: it },
-  "it-CH": { translation: it }, // Switzerland
-  "it-SM": { translation: it }, // San Marino
-  "it-VA": { translation: it }, // Vatican City
+  "it-CH": { translation: it },
 
-  // --- Dutch ---
   nl: { translation: nl },
-  "nl-NL": { translation: nl }, // Netherlands
-  "nl-BE": { translation: nl }, // Belgium (Flemish)
-  "nl-SR": { translation: nl }, // Suriname
-  "nl-AW": { translation: nl }, // Aruba
-  "nl-SX": { translation: nl }, // Sint Maarten
+  "nl-NL": { translation: nl },
+  "nl-BE": { translation: nl },
+  "nl-SR": { translation: nl },
+  "nl-AW": { translation: nl },
+  "nl-SX": { translation: nl },
 
-  // --- Switzerland Special Case: Romansh ---
   "rm-CH": { translation: de }, 
 };
 
 const MODULE_TYPE = "languageDetector";
+const LANGUAGE_KEY = "user-language";
+const CURRENCY_KEY = "billbell_currency_code"; // Match key from userSettings.ts
 
-const languageDetector: LanguageDetectorAsyncModule = {
+const languageDetector: LanguageDetectorModule = {
   type: MODULE_TYPE,
-  async: true,
   init: () => {},
-  detect: async (callback: (lng: string) => void) => {
+  detect: () => {
     try {
-      // 1. Check AsyncStorage for saved language
-      const savedLanguage = await AsyncStorage.getItem("user-language");
-      if (savedLanguage) {
-        callback(savedLanguage);
-        return savedLanguage; // FIX: Explicitly return the string
+      let detectedLng = storage.getString(LANGUAGE_KEY);
+
+      // 1. If no language saved, detect from device
+      if (!detectedLng) {
+        const supportedLanguages = Object.keys(resources);
+        const bestMatch = RNLocalize.findBestLanguageTag(supportedLanguages);
+        detectedLng = bestMatch?.languageTag || "en";
+        
+        // Save Language
+        storage.set(LANGUAGE_KEY, detectedLng);
       }
+
+      // 2. AUTO-CURRENCY: Check if currency is missing (New or Existing User)
+      // We check raw storage to see if it's explicitly set.
+      if (!storage.contains(CURRENCY_KEY)) {
+        // Map Language -> Currency (e.g., 'en-GB' -> 'GBP')
+        const autoCurrency = CURRENCY_MAP[detectedLng] || "USD";
+        
+        // Save via UserSettings (or direct storage)
+        userSettings.setCurrency(autoCurrency);
+        console.log(`[i18n] Auto-detected currency: ${autoCurrency} for locale: ${detectedLng}`);
+      }
+      
+      return detectedLng;
     } catch (error) {
       console.log("Error reading language", error);
+      return "en";
     }
-
-    // 2. If no saved language, use device locale
-    const supportedLanguages = Object.keys(resources);
-    const bestMatch = RNLocalize.findBestLanguageTag(supportedLanguages);
-    const detectedLng = bestMatch?.languageTag || "en";
-    
-    callback(detectedLng);
-    return detectedLng; // FIX: Explicitly return the string
-},
+  },
   cacheUserLanguage: (language: string) => {
-    // 3. Save language whenever it changes
-    AsyncStorage.setItem("user-language", language);
+    storage.set(LANGUAGE_KEY, language);
+    // Optional: If you want changing language to ALSO change currency for existing users,
+    // you could uncomment the lines below. However, usually, users prefer these separate 
+    // after the initial setup (e.g., an expat living abroad).
+    
+    /*
+    const newCurrency = CURRENCY_MAP[language];
+    if (newCurrency) {
+       userSettings.setCurrency(newCurrency);
+    }
+    */
   },
 };
 
@@ -149,14 +156,14 @@ i18n
   .use(languageDetector)
   .use(initReactI18next)
   .init({
-    compatibilityJSON: "v4", // Change "v3" to "v4"
+    compatibilityJSON: "v4", 
     resources,
     fallbackLng: "en",
     interpolation: {
-      escapeValue: false,
+      escapeValue: false, 
     },
     react: {
-      useSuspense: false,
+      useSuspense: false, 
     },
   });
 
