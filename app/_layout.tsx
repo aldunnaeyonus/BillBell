@@ -17,7 +17,7 @@ import { getToken, clearToken } from "../src/auth/session";
 import { initBackgroundFetch, syncAndRefresh } from "../src/native/LiveActivity";
 import { configureGoogle } from "../src/auth/providers"; 
 import { registerNotificationCategories, setupNotificationListeners } from "../src/notifications/notifications";
-
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // --- NEW IMPORT ---
 import { BiometricAuth } from "../src/auth/BiometricAuth"; // Import the wrapper
 
@@ -177,6 +177,7 @@ function AppStack() {
           <Stack.Screen name="(app)/family-settings" options={{ title: t("Shared Settings") }} />
           <Stack.Screen name="(app)/bill-scan" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
           <Stack.Screen name="(app)/recovery-kit" options={{ headerShown: false }} />
+          <Stack.Screen name="(app)/subscriptions" options={{ title: t("Subscriptions") }} />
         </Stack>
       </BiometricAuth>
 
@@ -211,11 +212,24 @@ Notifications.setNotificationHandler({
 });
 
 export default function RootLayout() {
+
+    const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 1000 * 60 * 5, // Data is fresh for 5 minutes
+      gcTime: 1000 * 60 * 60 * 24, // Keep unused data for 24 hours
+    },
+  },
+});
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <I18nextProvider i18n={i18n}>
         <ErrorBoundary>
+          <QueryClientProvider client={queryClient}>
         <AppStack />
+        </QueryClientProvider>
         </ErrorBoundary>
       </I18nextProvider>
     </GestureHandlerRootView>

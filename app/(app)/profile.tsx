@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next";
 import Constants from "expo-constants";
 import Share from "react-native-share";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { File, Paths } from 'expo-file-system';
+import { File, Paths } from "expo-file-system";
 
 import { api } from "../../src/api/client";
 import { clearToken } from "../../src/auth/session";
@@ -311,25 +311,27 @@ export default function Profile() {
     expires: string;
   } | null>(null);
   const [showLangModal, setShowLangModal] = useState(false);
-  
+
   // Settings State
   const [liveActivityEnabled, setLiveActivityEnabled] = useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
-  
+
   const version = Constants.expoConfig?.version ?? "1.0.0";
   const appName = Constants.expoConfig?.name ?? "BillBell";
-  
+
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
-    return () => { isMounted.current = false; };
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const langs = [
     { code: "en", label: "English" },
     { code: "es", label: "Español" },
     { code: "de", label: "Deutsch" },
-    { code: "nl", label: "Nederlands"},
+    { code: "nl", label: "Nederlands" },
     { code: "fr", label: "Français" },
     { code: "it", label: "Italiano" },
     { code: "pt-BR", label: "Português (BR)" },
@@ -340,7 +342,7 @@ export default function Profile() {
   const loadData = useCallback(async () => {
     try {
       const res = await api.familyMembers();
-      if(isMounted.current) setData(res);
+      if (isMounted.current) setData(res);
     } catch (e: any) {
       if ((e?.message || "").includes("Not authenticated")) {
         router.replace("/(auth)/login");
@@ -354,17 +356,17 @@ export default function Profile() {
     loadData();
     // Load persisted settings
     userSettings.getLiveActivityEnabled().then((val) => {
-        if(isMounted.current) setLiveActivityEnabled(val);
+      if (isMounted.current) setLiveActivityEnabled(val);
     });
     AsyncStorage.getItem("biometrics_enabled").then((val) => {
-        if(isMounted.current) setBiometricsEnabled(val === "true");
+      if (isMounted.current) setBiometricsEnabled(val === "true");
     });
   }, [loadData]);
 
   const onRefresh = async () => {
     setRefreshing(true);
     await loadData();
-    if(isMounted.current) setRefreshing(false);
+    if (isMounted.current) setRefreshing(false);
   };
 
   const handleCopyFamilyID = async () => {
@@ -401,12 +403,16 @@ export default function Profile() {
           onPress: async () => {
             try {
               await api.familyMemberRemove(member.id);
-              if(isMounted.current) {
-                  Alert.alert(t("Success"), t("Member removed."));
-                  onRefresh();
+              if (isMounted.current) {
+                Alert.alert(t("Success"), t("Member removed."));
+                onRefresh();
               }
             } catch (e: any) {
-              if(isMounted.current) Alert.alert(t("Error"), e.message || t("Failed to remove member."));
+              if (isMounted.current)
+                Alert.alert(
+                  t("Error"),
+                  e.message || t("Failed to remove member.")
+                );
             }
           },
         },
@@ -446,7 +452,7 @@ export default function Profile() {
                   amount_cents: b.amount_cents,
                   due_date: b.due_date,
                   recurrence: b.recurrence,
-                  payment_method: b.payment_method
+                  payment_method: b.payment_method,
                 });
               }
 
@@ -457,7 +463,7 @@ export default function Profile() {
 
               const wrappedKey = EncryptionService.wrapKeyForUser(
                 newKeyHex,
-                myKeys.publicKey as string 
+                myKeys.publicKey as string
               );
 
               const deviceId = await getDeviceId();
@@ -469,18 +475,24 @@ export default function Profile() {
                 device_id: deviceId,
               });
 
-              if(isMounted.current) {
-                  Alert.alert(
-                    t("Success"),
-                    t("You have left the family and your data has been re-secured.")
-                  );
-                  onRefresh();
+              if (isMounted.current) {
+                Alert.alert(
+                  t("Success"),
+                  t(
+                    "You have left the family and your data has been re-secured."
+                  )
+                );
+                onRefresh();
               }
             } catch (e: any) {
               console.error("Leave failed", e);
-              if(isMounted.current) Alert.alert(t("Error"), e.message || t("Failed to leave family securely."));
+              if (isMounted.current)
+                Alert.alert(
+                  t("Error"),
+                  e.message || t("Failed to leave family securely.")
+                );
             } finally {
-              if(isMounted.current) setIsRotatingKeys(false);
+              if (isMounted.current) setIsRotatingKeys(false);
             }
           },
         },
@@ -500,10 +512,12 @@ export default function Profile() {
             await googleSignOut();
             await clearToken();
             await AsyncStorage.removeItem("billbell_bills_list_cache");
-            if(isMounted.current) Alert.alert(t("Success"), t("Account deleted successfully."));
+            if (isMounted.current)
+              Alert.alert(t("Success"), t("Account deleted successfully."));
             router.replace("/(auth)/login");
           } catch (e: any) {
-            if(isMounted.current) Alert.alert(t("Error"), e.message || "Failed to delete account");
+            if (isMounted.current)
+              Alert.alert(t("Error"), e.message || "Failed to delete account");
           }
         },
       },
@@ -561,7 +575,8 @@ export default function Profile() {
         hour: "2-digit",
         minute: "2-digit",
       });
-      if(isMounted.current) setImportInfo({ code: res.code, expires: expiresTime });
+      if (isMounted.current)
+        setImportInfo({ code: res.code, expires: expiresTime });
 
       await copyToClipboard(res.code);
       await notifyImportCode(
@@ -569,20 +584,20 @@ export default function Profile() {
         t("CodeExpires", { code: res.code, expiresAt: expiresTime })
       );
 
-      if(isMounted.current) {
-          Alert.alert(
-            t("Import Code Generated"),
-            `${t("Code")}: ${res.code}\n${t("Expires")}: ${expiresTime}`,
-            [
-              { text: t("Copy"), onPress: () => copyToClipboard(res.code) },
-              { text: t("OK") },
-            ]
-          );
+      if (isMounted.current) {
+        Alert.alert(
+          t("Import Code Generated"),
+          `${t("Code")}: ${res.code}\n${t("Expires")}: ${expiresTime}`,
+          [
+            { text: t("Copy"), onPress: () => copyToClipboard(res.code) },
+            { text: t("OK") },
+          ]
+        );
       }
     } catch (e: any) {
-      if(isMounted.current) Alert.alert(t("Error"), e.message);
+      if (isMounted.current) Alert.alert(t("Error"), e.message);
     } finally {
-      if(isMounted.current) setLoadingCode(false);
+      if (isMounted.current) setLoadingCode(false);
     }
   };
 
@@ -597,12 +612,12 @@ export default function Profile() {
       }
 
       const exportData = bills.map((b: any) => ({
-          name: b.creditor,
-          amount: centsToDollars(b.amount_cents),
-          due_date: b.due_date,
-          notes: b.notes || "",
-          recurrence: b.recurrence || "none",
-          offset: b.reminder_offset_days || "0",
+        name: b.creditor,
+        amount: centsToDollars(b.amount_cents),
+        due_date: b.due_date,
+        notes: b.notes || "",
+        recurrence: b.recurrence || "none",
+        offset: b.reminder_offset_days || "0",
       }));
 
       const csvString = jsonToCSV(exportData);
@@ -618,7 +633,8 @@ export default function Profile() {
     } catch (e: any) {
       console.error("Export failed:", e);
       if (e?.message !== "User did not share") {
-        if(isMounted.current) Alert.alert(t("Error"), t("Failed to export data"));
+        if (isMounted.current)
+          Alert.alert(t("Error"), t("Failed to export data"));
       }
     }
   };
@@ -631,7 +647,7 @@ export default function Profile() {
         style: "destructive",
         onPress: async () => {
           await googleSignOut();
-          await AsyncStorage.removeItem("isLog")
+          await AsyncStorage.removeItem("isLog");
           await clearToken();
           router.replace("/(auth)/login");
         },
@@ -699,7 +715,9 @@ export default function Profile() {
           {/* APPLICATION SETTINGS */}
           <View style={styles.section}>
             <SectionTitle title={t("Application")} theme={theme} />
-            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
               {Platform.OS === "ios" && (
                 <SwitchRow
                   icon="notifications-outline"
@@ -724,12 +742,21 @@ export default function Profile() {
                 onPress={handleChangeLanguage}
               />
             </View>
-          </View> 
+          </View>
 
           {/* SECURITY & DATA */}
           <View style={styles.section}>
             <SectionTitle title={t("Security & Data")} theme={theme} />
-            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
+              <ActionRow
+                icon="infinite-outline"
+                label={t("Subscriptions")}
+                subLabel={t("View recurring monthly costs")}
+                theme={theme}
+                onPress={() => router.push("/(app)/subscriptions")}
+              />
               <ActionRow
                 icon="shield-checkmark-outline"
                 label={t("Recovery Kit")}
@@ -754,7 +781,11 @@ export default function Profile() {
               <ActionRow
                 icon="key-outline"
                 label={t("Generate Import Code")}
-                subLabel={importInfo ? `${t("Active")}: ${importInfo.code}` : t("Create secure code for upload")}
+                subLabel={
+                  importInfo
+                    ? `${t("Active")}: ${importInfo.code}`
+                    : t("Create secure code for upload")
+                }
                 theme={theme}
                 onPress={handleGenerateCode}
                 isLast
@@ -765,14 +796,16 @@ export default function Profile() {
           {/* FAMILY MANAGEMENT */}
           <View style={styles.section}>
             <SectionTitle title={t("Management")} theme={theme} />
-            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
               <ActionRow
                 icon="settings-outline"
                 label={t("Shared Settings")}
                 theme={theme}
                 onPress={() => router.push("/(app)/family-settings")}
               />
-               <ActionRow
+              <ActionRow
                 icon="person-add-outline"
                 label={t("Invite Members")}
                 theme={theme}
@@ -792,7 +825,9 @@ export default function Profile() {
           {/* SUPPORT */}
           <View style={styles.section}>
             <SectionTitle title={t("Support")} theme={theme} />
-            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
               <ActionRow
                 icon="help-circle-outline"
                 label={t("FAQ & Help")}
@@ -823,7 +858,9 @@ export default function Profile() {
 
           {/* LOGOUT & DELETE */}
           <View style={[styles.section, { marginTop: 20 }]}>
-            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
               {data.members.length > 1 && (
                 <ActionRow
                   icon="exit-outline"
@@ -849,7 +886,14 @@ export default function Profile() {
                 isLast
               />
             </View>
-            <Text style={{ textAlign: "center", color: theme.colors.subtext, marginTop: 16, fontSize: 12 }}>
+            <Text
+              style={{
+                textAlign: "center",
+                color: theme.colors.subtext,
+                marginTop: 16,
+                fontSize: 12,
+              }}
+            >
               {t("Version")} {version} {appName}, Dunn-Carabali, LLC
             </Text>
           </View>
@@ -858,31 +902,104 @@ export default function Profile() {
 
       {/* Loading Overlay */}
       {isRotatingKeys && (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center", zIndex: 999 }]}>
-          <View style={{ backgroundColor: theme.colors.card, padding: 24, borderRadius: 16, alignItems: "center", gap: 16 }}>
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: "rgba(0,0,0,0.6)",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 999,
+            },
+          ]}
+        >
+          <View
+            style={{
+              backgroundColor: theme.colors.card,
+              padding: 24,
+              borderRadius: 16,
+              alignItems: "center",
+              gap: 16,
+            }}
+          >
             <ActivityIndicator size="large" color={theme.colors.primary} />
-            <Text style={{ color: theme.colors.primaryText, fontWeight: "600" }}>{t("Securing your data...")}</Text>
+            <Text
+              style={{ color: theme.colors.primaryText, fontWeight: "600" }}
+            >
+              {t("Securing your data...")}
+            </Text>
           </View>
         </View>
       )}
 
       {/* Language Modal */}
-      <Modal visible={showLangModal} transparent animationType="fade" onRequestClose={() => setShowLangModal(false)}>
-        <Pressable style={styles.modalOverlay} onPress={() => setShowLangModal(false)}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.modalTitle, { color: theme.colors.primaryText }]}>{t("Select Language")}</Text>
+      <Modal
+        visible={showLangModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLangModal(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowLangModal(false)}
+        >
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.colors.card },
+            ]}
+          >
+            <Text
+              style={[styles.modalTitle, { color: theme.colors.primaryText }]}
+            >
+              {t("Select Language")}
+            </Text>
             {langs.map((l) => (
               <Pressable
                 key={l.code}
-                onPress={() => { i18n.changeLanguage(l.code); setShowLangModal(false); }}
-                style={({ pressed }) => [styles.modalItem, { backgroundColor: pressed ? theme.colors.border : "transparent", borderBottomColor: theme.colors.border }]}
+                onPress={() => {
+                  i18n.changeLanguage(l.code);
+                  setShowLangModal(false);
+                }}
+                style={({ pressed }) => [
+                  styles.modalItem,
+                  {
+                    backgroundColor: pressed
+                      ? theme.colors.border
+                      : "transparent",
+                    borderBottomColor: theme.colors.border,
+                  },
+                ]}
               >
-                <Text style={[styles.modalItemText, { color: theme.colors.primaryText }]}>{l.label}</Text>
-                {i18n.language === l.code && <Ionicons name="checkmark" size={20} color={theme.colors.primary} />}
+                <Text
+                  style={[
+                    styles.modalItemText,
+                    { color: theme.colors.primaryText },
+                  ]}
+                >
+                  {l.label}
+                </Text>
+                {i18n.language === l.code && (
+                  <Ionicons
+                    name="checkmark"
+                    size={20}
+                    color={theme.colors.primary}
+                  />
+                )}
               </Pressable>
             ))}
-            <Pressable onPress={() => setShowLangModal(false)} style={[styles.modalCancel, { backgroundColor: theme.colors.border }]}>
-              <Text style={[styles.modalCancelText, { color: theme.colors.text }]}>{t("Cancel")}</Text>
+            <Pressable
+              onPress={() => setShowLangModal(false)}
+              style={[
+                styles.modalCancel,
+                { backgroundColor: theme.colors.border },
+              ]}
+            >
+              <Text
+                style={[styles.modalCancelText, { color: theme.colors.text }]}
+              >
+                {t("Cancel")}
+              </Text>
             </Pressable>
           </View>
         </Pressable>
@@ -894,28 +1011,124 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16, gap: 24 },
-  headerShadowContainer: { backgroundColor: "transparent", shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6, margin: 2, borderRadius: 20, width: "100%" },
-  headerGradient: { borderRadius: 20, height: 120, paddingLeft: 10, paddingRight: 10, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
-  headerContentLeft: { flex: 1, marginRight: 10, justifyContent: "center", minWidth: 0 },
-  headerLabel: { color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
-  headerCode: { color: "#FFF", fontSize: 30, fontWeight: "900", letterSpacing: 1 },
-  copyButton: { flexDirection: "row", alignItems: "center", paddingVertical: 8, paddingHorizontal: 12, borderRadius: 20, gap: 6, flexShrink: 0, paddingRight: 50 },
+  headerShadowContainer: {
+    backgroundColor: "transparent",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+    margin: 2,
+    borderRadius: 20,
+    width: "100%",
+  },
+  headerGradient: {
+    borderRadius: 20,
+    height: 120,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingBottom: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    overflow: "hidden",
+  },
+  headerContentLeft: {
+    flex: 1,
+    marginRight: 10,
+    justifyContent: "center",
+    minWidth: 0,
+  },
+  headerLabel: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 13,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  headerCode: {
+    color: "#FFF",
+    fontSize: 30,
+    fontWeight: "900",
+    letterSpacing: 1,
+  },
+  copyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    gap: 6,
+    flexShrink: 0,
+    paddingRight: 50,
+  },
   copyButtonText: { color: "#FFF", fontWeight: "700", fontSize: 13 },
   section: { gap: 12 },
-  sectionTitle: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 4 },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginLeft: 4,
+  },
   cardGroup: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
-  actionRow: { flexDirection: "row", alignItems: "center", padding: 16, gap: 16 },
-  iconBox: { width: 38, height: 38, borderRadius: 10, justifyContent: "center", alignItems: "center" },
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    gap: 16,
+  },
+  iconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   actionLabel: { fontSize: 16, fontWeight: "600" },
   memberContainer: { alignItems: "center", gap: 8, width: 70 },
-  avatarCircle: { width: 56, height: 56, borderRadius: 28, justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  avatarCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   avatarText: { fontSize: 22, fontWeight: "800" },
   memberName: { fontSize: 12, fontWeight: "600", textAlign: "center" },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", padding: 20 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    padding: 20,
+  },
   modalContent: { borderRadius: 20, padding: 20, gap: 12 },
-  modalTitle: { fontSize: 18, fontWeight: "800", marginBottom: 8, textAlign: "center" },
-  modalItem: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 14, paddingHorizontal: 12, borderBottomWidth: 1 },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  modalItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+  },
   modalItemText: { fontSize: 16, fontWeight: "600" },
-  modalCancel: { marginTop: 10, paddingVertical: 14, borderRadius: 12, alignItems: "center" },
+  modalCancel: {
+    marginTop: 10,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
   modalCancelText: { fontWeight: "700", fontSize: 15 },
 });
