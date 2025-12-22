@@ -11,19 +11,23 @@ import {
 } from "react-native";
 import { Stack, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons"; 
-import AsyncStorage from "@react-native-async-storage/async-storage"; 
 import { api } from "../../src/api/client";
 import { useTheme } from "../../src/ui/useTheme";
 import { useTranslation } from "react-i18next";
+import { getJson, setJson } from "../../src/storage/storage"; // MMKV
 
 const CACHE_KEY = "billbell_family_requests_cache";
 
 export default function FamilyRequests() {
   const theme = useTheme();
-  const [requests, setRequests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const { t } = useTranslation();
+  
+  // 1. Initialize State directly from MMKV (Synchronous)
+  const [requests, setRequests] = useState<any[]>(() => getJson(CACHE_KEY) || []);
+  
+  // Only show full loading spinner if we have NO data at all
+  const [loading, setLoading] = useState(requests.length === 0);
+  const [refreshing, setRefreshing] = useState(false);
   
   const isMounted = useRef(true);
   useEffect(() => {
@@ -32,25 +36,20 @@ export default function FamilyRequests() {
   }, []);
 
   const loadRequests = useCallback(async (isRefresh = false) => {
-    if (!isRefresh) setLoading(true);
-    try {
-      // 1. Load from Cache first (Instant UI) if not refreshing
-      if (!isRefresh) {
-        const cached = await AsyncStorage.getItem(CACHE_KEY);
-        if (cached && isMounted.current) {
-          setRequests(JSON.parse(cached));
-          setLoading(false); 
-        }
-      }
+    // Only show loader if we are doing a manual refresh OR if the list is empty
+    if (isRefresh || requests.length === 0) {
+      if (!isRefresh) setLoading(true);
+    }
 
+    try {
       // 2. Fetch Fresh Data
       const res: any = await api.familyRequests();
       const freshData = res.requests || [];
       
-      // 3. Update State & Cache
+      // 3. Update State & MMKV Instant Save
       if(isMounted.current) {
           setRequests(freshData);
-          await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(freshData));
+          setJson(CACHE_KEY, freshData);
       }
       
     } catch (e) {
@@ -61,7 +60,7 @@ export default function FamilyRequests() {
         setRefreshing(false);
       }
     }
-  }, []);
+  }, [requests.length]);
 
   useFocusEffect(useCallback(() => {
     loadRequests();
@@ -79,16 +78,13 @@ export default function FamilyRequests() {
     // 1. Optimistic Update: Immediately update UI
     const originalRequests = [...requests];
     
-    // For rejection, we keep it but mark as rejected visually
-    // For approval, we usually remove it from the 'Pending' list or mark as approved
     const updatedRequests = requests.map(r => 
         r.id === requestId 
             ? { ...r, status: action === 'reject' ? 'rejected' : 'approved', updated_at: new Date().toISOString() } 
             : r
     );
     
-    // If approved, we might want to just hide it, but let's stick to status update or removal
-    // If you want to remove approved items immediately:
+    // Optimistic List logic
     const optimisticList = action === 'approve' 
         ? requests.filter(r => r.id !== requestId)
         : updatedRequests;
@@ -102,7 +98,7 @@ export default function FamilyRequests() {
       const res: any = await api.familyRequests();
       if(isMounted.current && res.requests) {
           setRequests(res.requests);
-          await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(res.requests));
+          setJson(CACHE_KEY, res.requests); // Update MMKV
       }
     } catch (e: any) {
       // Revert on failure
@@ -111,11 +107,6 @@ export default function FamilyRequests() {
           Alert.alert(t("Error"), e.message);
       }
     }
-  }
-
-  function formatDate(dateString: string) {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString();
   }
 
   return (
@@ -142,9 +133,9 @@ export default function FamilyRequests() {
           }
           renderItem={({ item }) => {
             const isRejected = item.status === 'rejected';
-            const isApproved = item.status === 'approved'; // Assuming API returns this status
+            const isApproved = item.status === 'approved'; 
 
-            if (isApproved) return null; // Don't show approved items in the list
+            if (isApproved) return null; 
 
             return (
               <View

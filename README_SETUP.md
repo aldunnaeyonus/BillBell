@@ -41,67 +41,50 @@ From `frontend/`:
    Ensure the revised code is complete, valid, and ready to replace the original file.
 
 7) Bill Bell – Shared Bill & Debt Reminders
-   Never miss a bill again — together.
+   Master your household finances with the most advanced shared bill tracker on the App Store. Bill Bell combines AI-powered scanning, military-grade encryption, and blazing-fast offline performance to ensure you never miss a due date again.
 
-   Bill Bell is the essential shared bill and debt tracker designed for households, couples, and anyone who wants reliable reminders and total visibility into their financial commitments. Say goodbye to late fees and communication gaps with a platform built for shared responsibility.
+   Designed for couples, roommates, and families who demand clarity, privacy, and speed.
 
-   RELIABLE BILL REMINDERS
-   Stay ahead of every due date with a multi-layered notification system. Bill Bell ensures you are alerted exactly when it matters most:
+   INTELLIGENT AUTOMATION
+   OCR Bill Scanning: Stop typing. Simply snap a photo of your paper bill, and Bill Bell automatically extracts the amount, due date, and vendor.
 
-   Timed Alerts: Receive notifications before a bill is due so you have time to plan.
+   Smart Autocomplete: Instantly recognizes popular vendors (Netflix, Chase, Spotify, etc.) and auto-fills brand logos for a beautiful, organized list.
 
-   Hybrid System: Benefit from local device notifications with a reliable push backup.
+   Predictive Dates: See at a glance if a bill is "Due Tomorrow," "Due in 3 Days," or "Overdue."
 
-   Smart Silence: Reminders automatically stop the moment anyone in your family marks a bill as paid.
+   BUILT FOR HOUSEHOLDS
+   Real-Time Family Sync: Invite partners or roommates to your group. Changes sync instantly across all devices.
 
-   BUILT FOR FAMILIES & HOUSEHOLDS
-   Managing a home is a team effort. Bill Bell is built from the ground up to keep everyone on the same page:
+   Offline-First Architecture: No signal? No problem. Add or edit bills while offline; we sync everything securely once you reconnect.
 
-   Family Groups: Easily create a "Family" and invite members to join your shared space.
+   Conflict-Free Management: Ideal for joint accounts, split rent, and shared utilities.
 
-   Real-Time Sync: When a bill is added or updated, everyone stays in sync across all devices automatically.
+   PREMIUM iOS EXPERIENCE
+   Interactive Widgets: View upcoming bills and mark them as paid directly from your Home Screen without opening the app.
 
-   Collective Visibility: Ideal for partners, roommates, or caregivers managing household responsibilities.
+   Live Activities: Keep track of due dates in real-time on your Lock Screen and Dynamic Island.
 
-   NATIVE iOS INTEGRATION
-   Bill Bell leverages the latest iOS technology to put your bills front and center without even opening the app:
+   Actionable Notifications: Long-press a reminder to "Mark Paid" or "Snooze" instantly from the notification center.
 
-   Live Activities: Track upcoming due dates directly on your Lock Screen or in the Dynamic Island.
+   Tactile Feedback: Enjoy a premium feel with custom Haptic feedback and a celebratory confetti animation when you pay a bill.
 
-   Home Screen Widgets: View your overdue counts and upcoming bills at a glance with beautiful, localized widgets.
+   FINANCIAL INSIGHTS
+   Interactive Charts: Visualize your spending with beautiful bar and donut charts.
 
-   Interactive Actions: Mark bills as paid directly from your widget for low-friction management.
+   Category Breakdown: See exactly how much you spend on Streaming, Housing, Utilities, and Debt.
 
-   SIMPLE & FAST MANAGEMENT
-   Quick Entry: Add new bills manually in seconds with a clean, modern interface.
+   Trend Analysis: Track your spending history over the last 6 months to spot trends early.
 
-   Clear Categorization: View "Pending" and "Paid" bills separately to see exactly what still needs your attention.
+   UNCOMPROMISED SECURITY
+   End-to-End Encryption (E2EE): Your financial data is encrypted before it leaves your device. Not even we can see it.
 
-   Easy Editing: Update amounts, creditors, or notes at any time as your bills change.
+   Recovery Kit: Generate a secure PDF Recovery Kit with your private key to ensure you never lose access to your data.
 
-   SECURE BULK IMPORT
-   Moving your data from a spreadsheet or another app? Use our secure import tool:
+   Biometric Lock: Secure the app with Face ID or Touch ID for an extra layer of privacy.
 
-   Import Codes: Generate a secure, one-time code to link your data.
+   EFFORTLESS MIGRATION
+   Bulk Import: Moving from spreadsheets? Upload a CSV to populate your account in seconds.
 
-   CSV Support: Upload a spreadsheet to instantly populate your family account with all your existing bills.
+   Search & Filter: Instantly find any bill by name or amount with our high-performance search engine.
 
-   PRIVACY & SECURITY
-   Your financial data is sensitive, and we treat it that way:
-
-   Biometric Security: Securely unlock the app using Face ID or Touch ID.
-
-   Trusted Logins: Sign in quickly and securely with Apple or Google authentication.
-
-   Family Privacy: Your data is protected and only shared with the specific members of your Family group.
-
-   IDEAL FOR:
-   Families: Sharing rent, utilities, and household expenses.
-
-   Couples: Managing joint accounts and personal debts in one place.
-
-   Caregivers: Tracking financial responsibilities for loved ones.
-
-   Roommates: Ensuring everyone knows their share of the monthly bills.
-
-   Stop the stress of tracking dates and start managing your bills with clarity. Download Bill Bell today and master your household finances together.
+   Stop the stress of manual tracking. Download Bill Bell today and experience the fastest, safest way to manage household bills together.
