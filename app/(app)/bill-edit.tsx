@@ -427,8 +427,6 @@ export default function BillEdit() {
               <SectionTitle title={t("Bill Details")} theme={theme} />
               <View style={{ gap: 12 }}>
                 <View style={{ zIndex: 2000 }}>
-                  {" "}
-                  {/* Z-Index is crucial for dropdowns to sit on top */}
                   <CreditorAutocomplete
                     value={creditor}
                     onChangeText={setCreditor}

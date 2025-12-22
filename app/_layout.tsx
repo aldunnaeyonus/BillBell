@@ -160,7 +160,6 @@ function AppStack() {
             headerBackButtonDisplayMode: "minimal",
           }}
         >
-          {/* ... All your existing screens ... */}
           <Stack.Screen name="(app)/bills" options={{ title: "", headerBackVisible: false, gestureEnabled: true }} />
           <Stack.Screen name="(app)/onboarding" options={{ headerShown: false, headerBackVisible: false, title: "" }} />
           <Stack.Screen name="(app)/feedback" options={{ title: t("Feedback & Bugs") }} />

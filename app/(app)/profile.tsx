@@ -717,7 +717,20 @@ export default function Profile() {
               />
             </View>
           )}
-
+          <View style={styles.section}>
+            <SectionTitle title={t("Spending Habits")} theme={theme} />
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
+                            <ActionRow
+                icon="infinite-outline"
+                label={t("Subscriptions")}
+                subLabel={t("View recurring monthly costs")}
+                theme={theme}
+                onPress={() => router.push("/(app)/subscriptions")}
+                isLast
+              />
+</View></View>
           {/* APPLICATION SETTINGS */}
           <View style={styles.section}>
             <SectionTitle title={t("Application")} theme={theme} />
@@ -766,20 +779,6 @@ export default function Profile() {
               style={[styles.cardGroup, { borderColor: theme.colors.border }]}
             >
               <ActionRow
-                icon="infinite-outline"
-                label={t("Subscriptions")}
-                subLabel={t("View recurring monthly costs")}
-                theme={theme}
-                onPress={() => router.push("/(app)/subscriptions")}
-              />
-              <ActionRow
-                icon="shield-checkmark-outline"
-                label={t("Recovery Kit")}
-                subLabel={t("Backup your encryption key")}
-                theme={theme}
-                onPress={() => router.push("/(app)/recovery-kit")}
-              />
-              <ActionRow
                 icon="cloud-upload-outline"
                 label={t("Bulk Upload")}
                 subLabel={t("Import via CSV/XLSX")}
@@ -803,13 +802,21 @@ export default function Profile() {
                 }
                 theme={theme}
                 onPress={handleGenerateCode}
-                isLast
+              />
+               <ActionRow
+                icon="shield-checkmark-outline"
+                label={t("Recovery Kit")}
+                subLabel={t("Backup your encryption key")}
+                theme={theme}
+                onPress={() => router.push("/(app)/recovery-kit")}
+                                isLast
+
               />
             </View>
           </View>
 
           {/* FAMILY MANAGEMENT */}
-          <View style={styles.section}>
+               <View style={styles.section}>
             <SectionTitle title={t("Management")} theme={theme} />
             <View
               style={[styles.cardGroup, { borderColor: theme.colors.border }]}

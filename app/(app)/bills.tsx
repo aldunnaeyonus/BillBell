@@ -55,13 +55,13 @@ import ConfettiCannon from "react-native-confetti-cannon";
 import * as StoreReview from "expo-store-review";
 import { BILL_ICON_MAP } from '../../src/data/vendors';
 import { formatCurrency } from "@/utils/currency";
-
 // --- NEW VISUAL IMPORTS ---
 import Animated, { LinearTransition, FadeIn, FadeOut } from 'react-native-reanimated';
 import { ScaleButton } from "../../src/ui/ScaleButton";
 import { useBills, useBillMutations } from "../../src/hooks/useBills"; 
 import { Bill } from "../../src/types/domain";
 import { Skeleton } from "../../src/ui/Skeleton";
+
 
 const getWidgetModule = () => {
   try {
@@ -771,7 +771,7 @@ export default function Bills() {
           StatusBar.setBackgroundColor(theme.colors.bg);
         }
       };
-    }, [theme.mode, theme.colors.bg])
+    }, [theme.mode, theme.colors.bg, ])
   );
 
   const pendingBills = useMemo(() => filteredBills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"), [filteredBills]);

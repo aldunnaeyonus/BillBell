@@ -557,11 +557,12 @@ export const getVendorDomain = (vendorName: string) => {
   return VENDOR_DOMAIN_ALIASES[key] ?? NORMALIZED_VENDOR_DOMAINS[key] ?? null;
 };
 
-// Helper to get logo URL safely (Clearbit Logo API)
 export const getVendorLogo = (vendorName: string) => {
   const domain = getVendorDomain(vendorName);
   if (!domain) return null;
-  return `https://logo.clearbit.com/${domain}`;
+  
+  // Google's public API. 'sz' controls size (16, 32, 64, 128).
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 };
 
 
