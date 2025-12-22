@@ -276,7 +276,7 @@
   "All clear": "All clear",
   "Select Chart": "Select Chart",
   "View": "View",
-  
+
   "Total Pending": "Total Pending",
   "Avg Bill Amount": "Avg Bill Amount",
   "Top Creditor": "Top Creditor",
@@ -399,6 +399,8 @@
 "Family ID not found.":"Group ID not found.",
 "Join Requests":"Join Requests",
 "You":"You",
+"Next Week":"Next Week",
+"This Week":"This Week",
 "View Join Requests from family or friends":"View Join Requests from others",
  "No pending requests.":"No pending requests.",
  "Request Denied":"Request Denied",

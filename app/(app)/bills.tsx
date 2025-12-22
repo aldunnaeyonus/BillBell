@@ -18,7 +18,8 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import Share from "react-native-share";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { isSameMonth, addMonths, parseISO, startOfDay } from "date-fns";
+// FIX: Added isSameWeek and addWeeks
+import { isSameMonth, addMonths, parseISO, startOfDay, isSameWeek, addWeeks } from "date-fns";
 import { userSettings } from "../../src/storage/userSettings";
 import ReanimatedSwipeable, {
   SwipeableMethods,
@@ -31,7 +32,6 @@ import {
   cancelBillReminderLocal,
 } from "../../src/notifications/notifications";
 import { useTheme, Theme } from "../../src/ui/useTheme";
-// FIX: Correct Import
 import * as FileSystem from "expo-file-system";
 import {
   startSummaryActivity,
@@ -57,7 +57,6 @@ function centsToDollars(cents: number) {
   return (Number(cents || 0) / 100).toFixed(2);
 }
 
-// FIX: Use parseISO for consistent parsing
 function safeDateNum(s?: string | null) {
   if (!s) return 0;
   try {
@@ -238,11 +237,49 @@ function Header({ theme, title, onProfilePress }: { theme: Theme; title: string;
   );
 }
 
-function SummaryCard({ theme, label, amount, t }: { theme: Theme; label: string; amount: number; t: any; }) {
+// --- MODIFIED SUMMARY CARD ---
+// Now accepts an array of items for multi-column layout or a single object
+type SummaryItem = { label: string; amount: number; highlight?: boolean };
+
+function SummaryCard({ theme, items }: { theme: Theme; items: SummaryItem[] }) {
+  const isSingle = items.length === 1;
+
   return (
     <View style={[styles.summaryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-      <Text style={[styles.summaryLabel, { color: theme.colors.subtext }]}>{t("Total")} {label}</Text>
-      <Text style={[styles.summaryAmount, { color: theme.colors.primaryText }]}>${centsToDollars(amount)}</Text>
+      <View style={{ flexDirection: "row", width: "100%", justifyContent: isSingle ? "center" : "space-between" }}>
+        {items.map((item, index) => (
+          <View 
+            key={index} 
+            style={{ 
+              alignItems: "center", 
+              flex: isSingle ? 0 : 1,
+              borderRightWidth: !isSingle && index !== items.length - 1 ? 1 : 0,
+              borderRightColor: theme.colors.border,
+            }}
+          >
+            <Text 
+              style={[
+                styles.summaryLabel, 
+                { color: theme.colors.subtext, fontSize: isSingle ? 14 : 11, textAlign: "center" }
+              ]}
+              numberOfLines={1}
+            >
+              {item.label}
+            </Text>
+            <Text 
+              style={[
+                styles.summaryAmount, 
+                { 
+                  color: item.highlight ? theme.colors.primary : theme.colors.primaryText,
+                  fontSize: isSingle ? 36 : 20 
+                }
+              ]}
+            >
+              ${centsToDollars(item.amount)}
+            </Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -478,33 +515,28 @@ export default function Bills() {
     }
   }, []);
 
-  // Find this section inside bills.tsx
-useFocusEffect(
-  useCallback(() => {
-    // ... (Your existing setup code) ...
-    StatusBar.setBarStyle("light-content");
-    if (Platform.OS === "android") {
-      StatusBar.setBackgroundColor("transparent");
-      StatusBar.setTranslucent(true);
-    }
-    
-    load().catch(() => {});
-
-    return () => {
-      // --- START OF FIX ---
-      const defaultStyle =
-        theme.mode === "dark" ? "light-content" : "dark-content";
-      StatusBar.setBarStyle(defaultStyle);
-
-      // ADD THIS: Explicitly disable translucency when leaving the screen
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle("light-content");
       if (Platform.OS === "android") {
-        StatusBar.setTranslucent(false);
-        StatusBar.setBackgroundColor(theme.colors.bg); // Restore your app background color
+        StatusBar.setBackgroundColor("transparent");
+        StatusBar.setTranslucent(true);
       }
-      // --- END OF FIX ---
-    };
-  }, [theme.mode, load, theme.colors.bg]) // Add theme.colors.bg to deps
-);
+      
+      load().catch(() => {});
+  
+      return () => {
+        const defaultStyle =
+          theme.mode === "dark" ? "light-content" : "dark-content";
+        StatusBar.setBarStyle(defaultStyle);
+  
+        if (Platform.OS === "android") {
+          StatusBar.setTranslucent(false);
+          StatusBar.setBackgroundColor(theme.colors.bg); 
+        }
+      };
+    }, [theme.mode, load, theme.colors.bg])
+  );
 
   const pendingBills = useMemo(
     () =>
@@ -525,7 +557,6 @@ useFocusEffect(
       if (sort === "amount")
         return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
       
-      // FIX: Use safe date parsing
       const dateA =
         tab === "pending"
           ? safeDateNum(a.due_date)
@@ -579,18 +610,25 @@ useFocusEffect(
     return result;
   }, [tab, pendingBills, paidBills, sort, t]);
 
+  // --- MODIFIED STATS CALCULATION ---
   const stats = useMemo(() => {
     const today = new Date();
-    const pendingTotal = pendingBills.reduce((sum, b) => {
-      const due = parseISO(b.due_date);
-      const shouldInclude = isOverdue(b) || isSameMonth(due, today);
-      return shouldInclude ? sum + Number(b.amount_cents || 0) : sum;
-    }, 0);
-    const paidTotal = paidBills.reduce(
-      (sum, b) => sum + Number(b.amount_cents || 0),
-      0
-    );
-    return { pendingTotal, paidTotal };
+    const nextWeekDate = addWeeks(today, 1);
+
+    // Filter Logic
+    const thisWeekBills = pendingBills.filter(b => isSameWeek(parseISO(b.due_date), today));
+    const nextWeekBills = pendingBills.filter(b => isSameWeek(parseISO(b.due_date), nextWeekDate));
+    const thisMonthBills = pendingBills.filter(b => isSameMonth(parseISO(b.due_date), today));
+
+    // Sum Logic
+    const sum = (list: any[]) => list.reduce((total, b) => total + Number(b.amount_cents || 0), 0);
+    
+    return {
+      pendingThisWeek: sum(thisWeekBills),
+      pendingNextWeek: sum(nextWeekBills),
+      pendingThisMonth: sum(thisMonthBills),
+      paidTotal: sum(paidBills)
+    };
   }, [pendingBills, paidBills]);
 
   const sortLabel = useMemo(() => {
@@ -605,7 +643,6 @@ useFocusEffect(
     if (isMounted.current) setRefreshing(false);
   }
 
-  // Memoize these to prevent re-creation on every render
   const markPaid = useCallback(async (item: any) => {
     try {
       await api.billsMarkPaid(item.id);
@@ -737,6 +774,20 @@ useFocusEffect(
     Alert.alert(item.creditor || t("Bill"), t("Choose an action"), actions);
   }
 
+  // --- PREPARE SUMMARY DATA ---
+  const summaryItems = useMemo(() => {
+    if (tab === "pending") {
+      return [
+        { label: t("This Week"), amount: stats.pendingThisWeek },
+        { label: t("Next Week"), amount: stats.pendingNextWeek },
+        { label: t("This Month"), amount: stats.pendingThisMonth, highlight: true },
+      ];
+    }
+    return [
+      { label: t("Total Paid"), amount: stats.paidTotal }
+    ];
+  }, [tab, stats, t]);
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -772,15 +823,11 @@ useFocusEffect(
           stickySectionHeadersEnabled={false}
           ListHeaderComponent={
             <View style={{ gap: 16, marginBottom: 16 }}>
+              
+              {/* MODIFIED COMPONENT USAGE */}
               <SummaryCard
                 theme={theme}
-                label={
-                  tab === "pending" ? t("Pending (This Month)") : t("Paid")
-                }
-                amount={
-                  tab === "pending" ? stats.pendingTotal : stats.paidTotal
-                }
-                t={t}
+                items={summaryItems}
               />
 
               <View

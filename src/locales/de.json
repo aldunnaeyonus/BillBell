@@ -14,6 +14,8 @@
     "Semi-Monthly": "Halbmonatlich",
     "Quarterly": "Vierteljährlich",
   "Profile": "Profil",
+  "This Week": "Diese Woche",
+    "Next Week": "Nächste Woche",
   "Shared Settings": "Geteilte Einstellungen",
   "Import Code": "Import-Code (Sicherheitscode für CSV & XLSX Massen-Upload)",
   "CodeExpires": "Code: {{code}} (läuft ab {{expiresAt}})",

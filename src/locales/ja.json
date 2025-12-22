@@ -18,6 +18,8 @@
   "Import Code": "インポートコード (CSVおよびXLSX一括インポート用セキュリティコード)",
   "CodeExpires": "コード: {{code}} (有効期限 {{expiresAt}})",
   "Mark as Paid": "支払い済みにする",
+  "This Week": "今週",
+    "Next Week": "来週",
   "Bill reminder": "請求書リマインダー: ",
   "Can't open link": "リンクを開けません",
   "Login failed": "ログインに失敗しました",
