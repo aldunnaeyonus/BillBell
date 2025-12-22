@@ -14,46 +14,43 @@ import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../ui/useTheme";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import Storage
 
 export function BiometricAuth({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasHardware, setHasHardware] = useState(false);
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false); // New State
+  const [checkingConfig, setCheckingConfig] = useState(true); // Prevent flash
 
   const isAuthedRef = useRef(false);
   const isAuthenticatingRef = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const isMounted = useRef(true); // Track mount status
+  const isMounted = useRef(true);
 
   const theme = useTheme();
   const { t } = useTranslation();
   const segments = useSegments();
-
   const segmentsRef = useRef(segments);
+
   useEffect(() => {
     segmentsRef.current = segments;
   }, [segments]);
 
   useEffect(() => {
     isMounted.current = true;
-    StatusBar.setBarStyle("light-content");
-    if (Platform.OS === "android") {
-      StatusBar.setBackgroundColor("transparent");
-      StatusBar.setTranslucent(true);
-    }
-    
-    checkHardware();
+    checkConfiguration();
 
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "background") {
-        if (!isAuthenticatingRef.current) {
+        // Only reset auth if biometrics are actually enabled
+        if (!isAuthenticatingRef.current && isBiometricEnabled) {
           if (isMounted.current) setIsAuthenticated(false);
           isAuthedRef.current = false;
         }
       }
 
       if (nextAppState === "active") {
-        if (!isAuthedRef.current && !isAuthenticatingRef.current) {
-          // Clear existing timer before setting a new one
+        // Only trigger auth if enabled
+        if (isBiometricEnabled && !isAuthedRef.current && !isAuthenticatingRef.current) {
           if (timerRef.current) clearTimeout(timerRef.current);
           timerRef.current = setTimeout(() => {
             if (isMounted.current) authenticate();
@@ -67,42 +64,62 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
       subscription.remove();
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, []);
+  }, [isBiometricEnabled]); // Re-run if enablement changes
 
-  async function checkHardware() {
-    const compatible = await LocalAuthentication.hasHardwareAsync();
-    if (isMounted.current) {
-      setHasHardware(compatible);
-      if (!compatible) {
+  async function checkConfiguration() {
+    try {
+      // 1. Check User Preference
+      const enabled = await AsyncStorage.getItem("biometrics_enabled");
+      const isEnabled = enabled === "true";
+      
+      if (isMounted.current) setIsBiometricEnabled(isEnabled);
+
+      if (!isEnabled) {
+        // If disabled by user, just let them in
+        setIsAuthenticated(true);
+        isAuthedRef.current = true;
+        setCheckingConfig(false);
+        return;
+      }
+
+      // 2. Check Hardware
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+      if (!hasHardware || !isEnrolled) {
+        // If enabled but no hardware/enrollment, fallback to allowing (or force PIN if you had one)
         setIsAuthenticated(true);
         isAuthedRef.current = true;
       } else {
+        // Enabled AND Hardware exists -> Authenticate
         authenticate();
       }
+    } catch (e) {
+      console.log("Config Check Error", e);
+      setIsAuthenticated(true); // Fallback to open on error to prevent lockout
+    } finally {
+      if (isMounted.current) setCheckingConfig(false);
     }
   }
 
   async function authenticate() {
     if (isAuthedRef.current || isAuthenticatingRef.current) return;
-    if (segmentsRef.current?.[0] === "(auth)") return;
+    
+    // Don't auth on public routes (Login)
+    const currentSegment = segmentsRef.current?.[0];
+    if (currentSegment === "(auth)") {
+        setIsAuthenticated(true);
+        return;
+    }
 
     try {
       isAuthenticatingRef.current = true;
 
-      const hasRecords = await LocalAuthentication.isEnrolledAsync();
-      if (!hasRecords) {
-        if (isMounted.current) {
-          setIsAuthenticated(true);
-          isAuthedRef.current = true;
-        }
-        return;
-      }
-
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: t("Unlock App") || "Unlock App",
-        fallbackLabel: t("Use Passcode") || "Use Passcode",
+        promptMessage: t("Unlock App"),
+        fallbackLabel: t("Use Passcode"),
+        cancelLabel: t("Cancel"),
         disableDeviceFallback: false,
-        cancelLabel: t("Cancel") || "Cancel",
       });
 
       if (result.success && isMounted.current) {
@@ -110,31 +127,27 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
         isAuthedRef.current = true;
       }
     } catch (e) {
-      console.log("Auth Error", e);
+      console.log("Auth Failed", e);
     } finally {
       if (isMounted.current) {
          if (timerRef.current) clearTimeout(timerRef.current);
          timerRef.current = setTimeout(() => {
            isAuthenticatingRef.current = false;
-         }, 500);
-      } else {
-        isAuthenticatingRef.current = false;
+         }, 1000);
       }
     }
   }
 
+  // Bypass logic
   const isPublicRoute = segments[0] === "(auth)";
-  if (isPublicRoute) return <>{children}</>;
+  
+  if (checkingConfig) return null; // Show nothing while checking settings
+  if (isPublicRoute || !isBiometricEnabled) return <>{children}</>;
 
-  if (!isAuthenticated && hasHardware) {
+  if (!isAuthenticated) {
     return (
       <View style={styles.container}>
-        <StatusBar
-          barStyle="light-content"
-          backgroundColor="transparent"
-          translucent
-        />
-
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         <LinearGradient
           colors={[theme.colors.navy, "#1a2c4e"]}
           start={{ x: 0, y: 0 }}
@@ -145,22 +158,10 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
             <View style={styles.iconContainer}>
               <Ionicons name="lock-closed" size={80} color="#FFF" />
             </View>
-
-            <Text style={styles.title}>{t("Locked") || "Locked"}</Text>
-            <Text style={styles.subtitle}>
-              {t("Please authenticate to continue") ||
-                "Please authenticate to continue"}
-            </Text>
-
+            <Text style={styles.title}>{t("Locked")}</Text>
             <Pressable onPress={authenticate} style={styles.unlockBtn}>
-              <Ionicons
-                name="finger-print"
-                size={24}
-                color={theme.colors.navy}
-              />
-              <Text style={[styles.unlockText, { color: theme.colors.navy }]}>
-                {t("Unlock") || "Unlock"}
-              </Text>
+              <Ionicons name="finger-print" size={24} color={theme.colors.navy} />
+              <Text style={[styles.unlockText, { color: theme.colors.navy }]}>{t("Unlock")}</Text>
             </Pressable>
           </View>
         </LinearGradient>
@@ -174,45 +175,9 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   gradient: { flex: 1, justifyContent: "center", alignItems: "center" },
-  content: {
-    alignItems: "center",
-    gap: 20,
-    width: "100%",
-    paddingHorizontal: 40,
-  },
-  iconContainer: {
-    marginBottom: 10,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
+  content: { alignItems: "center", gap: 20, width: "100%", paddingHorizontal: 40 },
+  iconContainer: { marginBottom: 10, width: 120, height: 120, borderRadius: 60, backgroundColor: "rgba(255,255,255,0.1)", justifyContent: "center", alignItems: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.2)" },
   title: { fontSize: 32, fontWeight: "900", color: "#FFF", letterSpacing: 1 },
-  subtitle: {
-    fontSize: 16,
-    color: "rgba(255,255,255,0.7)",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  unlockBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FFF",
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 16,
-    gap: 12,
-    width: "100%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-  },
+  unlockBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#FFF", paddingVertical: 16, paddingHorizontal: 32, borderRadius: 16, gap: 12, width: "100%", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 5 },
   unlockText: { fontSize: 18, fontWeight: "700" },
 });

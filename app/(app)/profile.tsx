@@ -311,7 +311,10 @@ export default function Profile() {
     expires: string;
   } | null>(null);
   const [showLangModal, setShowLangModal] = useState(false);
+  
+  // Settings State
   const [liveActivityEnabled, setLiveActivityEnabled] = useState(true);
+  const [biometricsEnabled, setBiometricsEnabled] = useState(false);
   
   const version = Constants.expoConfig?.version ?? "1.0.0";
   const appName = Constants.expoConfig?.name ?? "BillBell";
@@ -349,8 +352,12 @@ export default function Profile() {
 
   useEffect(() => {
     loadData();
+    // Load persisted settings
     userSettings.getLiveActivityEnabled().then((val) => {
         if(isMounted.current) setLiveActivityEnabled(val);
+    });
+    AsyncStorage.getItem("biometrics_enabled").then((val) => {
+        if(isMounted.current) setBiometricsEnabled(val === "true");
     });
   }, [loadData]);
 
@@ -373,6 +380,11 @@ export default function Profile() {
     if (!val && Platform.OS === "ios") {
       stopActivity();
     }
+  };
+
+  const handleToggleBiometrics = async (val: boolean) => {
+    setBiometricsEnabled(val);
+    await AsyncStorage.setItem("biometrics_enabled", String(val));
   };
 
   const handleRemoveMember = (member: any) => {
@@ -417,37 +429,27 @@ export default function Profile() {
             try {
               setIsRotatingKeys(true);
 
-              // 1) Fetch bills (already decrypted by api.billsList)
               const { bills } = await api.billsList();
-              
-              // 2) Leave the family on Server
               const leaveRes = await api.familyLeave();
-
-              // 3) Generate a NEW family key
               const newKeyHex = EncryptionService.generateNewFamilyKey();
               const NEW_FAMILY_KEY_VERSION = 1;
 
-              // Cache new key as active locally
               await EncryptionService.cacheFamilyKey(
                 newKeyHex,
                 NEW_FAMILY_KEY_VERSION
               );
 
-              // 4) Re-encrypt bills and write back
-              // Note: We use the decrypted data from step 1
               for (const b of bills) {
                 await api.billsUpdate(b.id, {
                   creditor: b.creditor,
                   notes: b.notes,
                   amount_cents: b.amount_cents,
-                  // Preserve other fields
                   due_date: b.due_date,
                   recurrence: b.recurrence,
                   payment_method: b.payment_method
                 });
               }
 
-              // 5) Share the NEW key to the server 
               const myKeys = await EncryptionService.ensureKeyPair();
               if (!myKeys.publicKey) {
                 throw new Error("Security keys missing. Please Hard Reset.");
@@ -595,10 +597,10 @@ export default function Profile() {
       }
 
       const exportData = bills.map((b: any) => ({
-          name: b.creditor, // Plaintext
+          name: b.creditor,
           amount: centsToDollars(b.amount_cents),
           due_date: b.due_date,
-          notes: b.notes || "", // Plaintext
+          notes: b.notes || "",
           recurrence: b.recurrence || "none",
           offset: b.reminder_offset_days || "0",
       }));
@@ -672,16 +674,6 @@ export default function Profile() {
           {data?.members && (
             <View style={styles.section}>
               <SectionTitle title={t("Members")} theme={theme} />
-              <Text
-                style={{
-                  color: theme.colors.subtext,
-                  fontSize: 12,
-                  marginLeft: 6,
-                  marginBottom: 4,
-                }}
-              >
-                {t("Long press to remove member")}
-              </Text>
               <FlatList
                 data={data.members}
                 horizontal
@@ -704,12 +696,10 @@ export default function Profile() {
             </View>
           )}
 
-          {/* Management Section */}
+          {/* APPLICATION SETTINGS */}
           <View style={styles.section}>
             <SectionTitle title={t("Application")} theme={theme} />
-            <View
-              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-            >
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
               {Platform.OS === "ios" && (
                 <SwitchRow
                   icon="notifications-outline"
@@ -719,48 +709,34 @@ export default function Profile() {
                   theme={theme}
                 />
               )}
-            
-            <ActionRow
+              <SwitchRow
+                icon="finger-print-outline"
+                label={t("Biometric Unlock")}
+                value={biometricsEnabled}
+                onValueChange={handleToggleBiometrics}
+                theme={theme}
+              />
+              <ActionRow
                 icon="globe-outline"
                 label={t("Language")}
                 subLabel={i18n.language.toUpperCase()}
                 theme={theme}
                 onPress={handleChangeLanguage}
               />
-              </View></View> 
-              <View style={styles.section}>
-            <SectionTitle title={t("Management")} theme={theme} />
-            <View
-              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-            >
-              <ActionRow
-                icon="settings-outline"
-                label={t("Shared Settings")}
-                theme={theme}
-                onPress={() => router.push("/(app)/family-settings")}
-              />
-               <ActionRow
-                icon="person-add-outline"
-                label={t("Invite Members")}
-                theme={theme}
-                onPress={() => {
-                  shareInvite(data.family_code);
-                }}
-              />
-              
-              <ActionRow
-    icon="git-pull-request-outline"
-    label={t("Join Requests")}
-    subLabel={t("View Join Requests from family or friends")}
-    theme={theme}
-    onPress={() => router.push("/(app)/family-requests")}
-   />
-                            </View>
-          </View>
-       <View style={styles.section}>
-            <SectionTitle title={t("Data")} theme={theme} />
-            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+            </View>
+          </View> 
 
+          {/* SECURITY & DATA */}
+          <View style={styles.section}>
+            <SectionTitle title={t("Security & Data")} theme={theme} />
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+              <ActionRow
+                icon="shield-checkmark-outline"
+                label={t("Recovery Kit")}
+                subLabel={t("Backup your encryption key")}
+                theme={theme}
+                onPress={() => router.push("/(app)/recovery-kit")}
+              />
               <ActionRow
                 icon="cloud-upload-outline"
                 label={t("Bulk Upload")}
@@ -778,24 +754,45 @@ export default function Profile() {
               <ActionRow
                 icon="key-outline"
                 label={t("Generate Import Code")}
-                subLabel={
-                  importInfo
-                    ? `${t("Active")}: ${importInfo.code}`
-                    : t("Create secure code for upload")
-                }
+                subLabel={importInfo ? `${t("Active")}: ${importInfo.code}` : t("Create secure code for upload")}
                 theme={theme}
                 onPress={handleGenerateCode}
-                isLast={data.members.length < 2}
+                isLast
               />
             </View>
           </View>
 
-          {/* Support Section */}
+          {/* FAMILY MANAGEMENT */}
+          <View style={styles.section}>
+            <SectionTitle title={t("Management")} theme={theme} />
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
+              <ActionRow
+                icon="settings-outline"
+                label={t("Shared Settings")}
+                theme={theme}
+                onPress={() => router.push("/(app)/family-settings")}
+              />
+               <ActionRow
+                icon="person-add-outline"
+                label={t("Invite Members")}
+                theme={theme}
+                onPress={() => shareInvite(data.family_code)}
+              />
+              <ActionRow
+                icon="git-pull-request-outline"
+                label={t("Join Requests")}
+                subLabel={t("View Join Requests")}
+                theme={theme}
+                onPress={() => router.push("/(app)/family-requests")}
+                isLast
+              />
+            </View>
+          </View>
+
+          {/* SUPPORT */}
           <View style={styles.section}>
             <SectionTitle title={t("Support")} theme={theme} />
-            <View
-              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-            >
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
               <ActionRow
                 icon="help-circle-outline"
                 label={t("FAQ & Help")}
@@ -808,12 +805,6 @@ export default function Profile() {
                 theme={theme}
                 onPress={() => router.push("/(app)/feedback")}
               />
-              </View>
-          </View>
-       <View style={styles.section}>
-            <SectionTitle title={t("Policies")} theme={theme} />
-            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
-
               <ActionRow
                 icon="shield-checkmark-outline"
                 label={t("Privacy Policy")}
@@ -830,11 +821,9 @@ export default function Profile() {
             </View>
           </View>
 
-          {/* Logout & Delete */}
+          {/* LOGOUT & DELETE */}
           <View style={[styles.section, { marginTop: 20 }]}>
-            <View
-              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-            >
+            <View style={[styles.cardGroup, { borderColor: theme.colors.border }]}>
               {data.members.length > 1 && (
                 <ActionRow
                   icon="exit-outline"
@@ -860,119 +849,40 @@ export default function Profile() {
                 isLast
               />
             </View>
-            <Text
-              style={{
-                textAlign: "center",
-                color: theme.colors.subtext,
-                marginTop: 16,
-                fontSize: 12,
-              }}
-            >
+            <Text style={{ textAlign: "center", color: theme.colors.subtext, marginTop: 16, fontSize: 12 }}>
               {t("Version")} {version} {appName}, Dunn-Carabali, LLC
             </Text>
           </View>
         </View>
       </ScrollView>
 
-      {/* Loading Overlay for Key Rotation */}
+      {/* Loading Overlay */}
       {isRotatingKeys && (
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              backgroundColor: "rgba(0,0,0,0.6)",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 999,
-            },
-          ]}
-        >
-          <View
-            style={{
-              backgroundColor: theme.colors.card,
-              padding: 24,
-              borderRadius: 16,
-              alignItems: "center",
-              gap: 16,
-            }}
-          >
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center", zIndex: 999 }]}>
+          <View style={{ backgroundColor: theme.colors.card, padding: 24, borderRadius: 16, alignItems: "center", gap: 16 }}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
-            <Text
-              style={{ color: theme.colors.primaryText, fontWeight: "600" }}
-            >
-              {t("Securing your data...")}
-            </Text>
+            <Text style={{ color: theme.colors.primaryText, fontWeight: "600" }}>{t("Securing your data...")}</Text>
           </View>
         </View>
       )}
 
-      <Modal
-        visible={showLangModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowLangModal(false)}
-      >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setShowLangModal(false)}
-        >
-          <View
-            style={[
-              styles.modalContent,
-              { backgroundColor: theme.colors.card },
-            ]}
-          >
-            <Text
-              style={[styles.modalTitle, { color: theme.colors.primaryText }]}
-            >
-              {t("Select Language")}
-            </Text>
+      {/* Language Modal */}
+      <Modal visible={showLangModal} transparent animationType="fade" onRequestClose={() => setShowLangModal(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setShowLangModal(false)}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.primaryText }]}>{t("Select Language")}</Text>
             {langs.map((l) => (
               <Pressable
                 key={l.code}
-                onPress={() => {
-                  i18n.changeLanguage(l.code);
-                  setShowLangModal(false);
-                }}
-                style={({ pressed }) => [
-                  styles.modalItem,
-                  {
-                    backgroundColor: pressed
-                      ? theme.colors.border
-                      : "transparent",
-                    borderBottomColor: theme.colors.border,
-                  },
-                ]}
+                onPress={() => { i18n.changeLanguage(l.code); setShowLangModal(false); }}
+                style={({ pressed }) => [styles.modalItem, { backgroundColor: pressed ? theme.colors.border : "transparent", borderBottomColor: theme.colors.border }]}
               >
-                <Text
-                  style={[
-                    styles.modalItemText,
-                    { color: theme.colors.primaryText },
-                  ]}
-                >
-                  {l.label}
-                </Text>
-                {i18n.language === l.code && (
-                  <Ionicons
-                    name="checkmark"
-                    size={20}
-                    color={theme.colors.primary}
-                  />
-                )}
+                <Text style={[styles.modalItemText, { color: theme.colors.primaryText }]}>{l.label}</Text>
+                {i18n.language === l.code && <Ionicons name="checkmark" size={20} color={theme.colors.primary} />}
               </Pressable>
             ))}
-            <Pressable
-              onPress={() => setShowLangModal(false)}
-              style={[
-                styles.modalCancel,
-                { backgroundColor: theme.colors.border },
-              ]}
-            >
-              <Text
-                style={[styles.modalCancelText, { color: theme.colors.text }]}
-              >
-                {t("Cancel")}
-              </Text>
+            <Pressable onPress={() => setShowLangModal(false)} style={[styles.modalCancel, { backgroundColor: theme.colors.border }]}>
+              <Text style={[styles.modalCancelText, { color: theme.colors.text }]}>{t("Cancel")}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -982,165 +892,30 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-    gap: 24,
-  },
-  headerShadowContainer: {
-    backgroundColor: "transparent",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
-    margin: 2,
-    borderRadius: 20,
-    width: "100%",
-  },
-  headerGradient: {
-    borderRadius: 20,
-    height: 120,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingBottom: 24,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    overflow: "hidden",
-  },
-  headerContentLeft: {
-    flex: 1,
-    marginRight: 10,
-    justifyContent: "center",
-    minWidth: 0,
-  },
-  headerLabel: {
-    color: "rgba(255,255,255,0.7)",
-    fontSize: 13,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  headerCode: {
-    color: "#FFF",
-    fontSize: 30,
-    fontWeight: "900",
-    letterSpacing: 1,
-  },
-  copyButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    gap: 6,
-    flexShrink: 0,
-    paddingRight: 50,
-  },
-  copyButtonText: {
-    color: "#FFF",
-    fontWeight: "700",
-    fontSize: 13,
-  },
-  section: {
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginLeft: 4,
-  },
-  cardGroup: {
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: "hidden",
-  },
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    gap: 16,
-  },
-  iconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  actionLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  memberContainer: {
-    alignItems: "center",
-    gap: 8,
-    width: 70,
-  },
-  avatarCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  avatarText: {
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  memberName: {
-    fontSize: 12,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    padding: 20,
-  },
-  modalContent: {
-    borderRadius: 20,
-    padding: 20,
-    gap: 12,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  modalItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-  },
-  modalItemText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  modalCancel: {
-    marginTop: 10,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  modalCancelText: {
-    fontWeight: "700",
-    fontSize: 15,
-  },
+  container: { flex: 1 },
+  content: { padding: 16, gap: 24 },
+  headerShadowContainer: { backgroundColor: "transparent", shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6, margin: 2, borderRadius: 20, width: "100%" },
+  headerGradient: { borderRadius: 20, height: 120, paddingLeft: 10, paddingRight: 10, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
+  headerContentLeft: { flex: 1, marginRight: 10, justifyContent: "center", minWidth: 0 },
+  headerLabel: { color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
+  headerCode: { color: "#FFF", fontSize: 30, fontWeight: "900", letterSpacing: 1 },
+  copyButton: { flexDirection: "row", alignItems: "center", paddingVertical: 8, paddingHorizontal: 12, borderRadius: 20, gap: 6, flexShrink: 0, paddingRight: 50 },
+  copyButtonText: { color: "#FFF", fontWeight: "700", fontSize: 13 },
+  section: { gap: 12 },
+  sectionTitle: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 4 },
+  cardGroup: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
+  actionRow: { flexDirection: "row", alignItems: "center", padding: 16, gap: 16 },
+  iconBox: { width: 38, height: 38, borderRadius: 10, justifyContent: "center", alignItems: "center" },
+  actionLabel: { fontSize: 16, fontWeight: "600" },
+  memberContainer: { alignItems: "center", gap: 8, width: 70 },
+  avatarCircle: { width: 56, height: 56, borderRadius: 28, justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  avatarText: { fontSize: 22, fontWeight: "800" },
+  memberName: { fontSize: 12, fontWeight: "600", textAlign: "center" },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", padding: 20 },
+  modalContent: { borderRadius: 20, padding: 20, gap: 12 },
+  modalTitle: { fontSize: 18, fontWeight: "800", marginBottom: 8, textAlign: "center" },
+  modalItem: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 14, paddingHorizontal: 12, borderBottomWidth: 1 },
+  modalItemText: { fontSize: 16, fontWeight: "600" },
+  modalCancel: { marginTop: 10, paddingVertical: 14, borderRadius: 12, alignItems: "center" },
+  modalCancelText: { fontWeight: "700", fontSize: 15 },
 });

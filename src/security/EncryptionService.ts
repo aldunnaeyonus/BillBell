@@ -11,6 +11,18 @@ export const FAMILY_KEY_VERSION_ALIAS = "billbell_family_key_version";
 
 // --- RSA Key Management ---
 
+export async function getPrivateKey(): Promise<string> {
+  const pair = await ensureKeyPair();
+  
+  if (!pair.privateKey) {
+    throw new Error("CRITICAL: Private Key could not be retrieved or generated.");
+  }
+  
+  // FIX: Explicitly cast to string. 
+  // We know it is a string because we use 'pem' format in ensureKeyPair.
+  return pair.privateKey as string;
+}
+
 export async function ensureKeyPair() {
   const pub = await SecureStore.getItemAsync(PUBLIC_KEY_ALIAS);
   const priv = await SecureStore.getItemAsync(PRIVATE_KEY_ALIAS);

@@ -20,8 +20,9 @@ import { useTranslation } from "react-i18next";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 import { addToCalendar } from "../../src/calendar/calendarSync";
-
+import { CreditorAutocomplete } from "../../src/ui/CreditorAutocomplete";
 // --- Components ---
+import { SyncQueue } from "../../src/sync/SyncQueue";
 
 function Header({
   title,
@@ -137,7 +138,7 @@ function RecurrenceChip({
         {
           backgroundColor: active ? theme.colors.accent : theme.colors.card,
           borderColor: active ? theme.colors.accent : theme.colors.border,
-          opacity: pressed ? 0.8 : 1
+          opacity: pressed ? 0.8 : 1,
         },
       ]}
     >
@@ -166,19 +167,46 @@ function todayISO() {
   return `${y}-${m}-${da}`;
 }
 
+// Helper to convert MM/DD/YYYY (US Scan) to YYYY-MM-DD (ISO)
+function parseScannedDate(dateStr: string): string | null {
+  try {
+    // Check if it matches MM/DD/YYYY or MM/DD/YY
+    const parts = dateStr.split("/");
+    if (parts.length === 3) {
+      const m = parts[0].padStart(2, "0");
+      const d = parts[1].padStart(2, "0");
+      let y = parts[2];
+      if (y.length === 2) y = "20" + y; // Assume 20xx
+      return `${y}-${m}-${d}`;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // --- Main Component ---
 
 export default function BillEdit() {
-  const params = useLocalSearchParams<{ id?: string }>();
+  // 1. Updated Params Type to include Scan Data
+  const params = useLocalSearchParams<{
+    id?: string;
+    scannedAmount?: string;
+    scannedDate?: string;
+    scannedText?: string;
+  }>();
+
   const id = params.id ? Number(params.id) : null;
   const theme = useTheme();
   const { t } = useTranslation();
-  
+
   const isMounted = useRef(true);
 
   useEffect(() => {
     isMounted.current = true;
-    return () => { isMounted.current = false; };
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const [creditor, setCreditor] = useState("");
@@ -229,26 +257,53 @@ export default function BillEdit() {
   // Safe Amount Calculation
   const amountCents = useMemo(() => {
     // Normalize commas to dots for european support
-    const normalized = amount.replace(/,/g, '.');
+    const normalized = amount.replace(/,/g, ".");
     const floatVal = parseFloat(normalized);
     if (isNaN(floatVal)) return 0;
     return Math.round(floatVal * 100);
   }, [amount]);
 
-  // 1. Load Defaults (Create Mode)
+  // 1. Load Defaults (Create Mode) or Scanned Data
   useEffect(() => {
     (async () => {
       if (id) return;
+
+      // Handle Scanned Data
+      if (params.scannedAmount) {
+        setAmount(params.scannedAmount);
+
+        if (params.scannedDate) {
+          const isoDate = parseScannedDate(params.scannedDate);
+          if (isoDate) setDueDate(isoDate);
+        }
+
+        if (params.scannedText) {
+          // Append raw text to notes for reference
+          setNotes((prev) =>
+            prev
+              ? prev + "\n\nScanned Data:\n" + params.scannedText
+              : "Scanned Data:\n" + params.scannedText
+          );
+        }
+
+        Alert.alert(
+          t("Scan Successful"),
+          t("We found an amount of ${{amt}}. Please verify the details.", {
+            amt: params.scannedAmount,
+          })
+        );
+      }
+
       try {
         const s = await api.familySettingsGet();
-        if (!isMounted.current) return; 
+        if (!isMounted.current) return;
         setOffsetDays(String(s.default_reminder_offset_days ?? 0));
         if (s.default_reminder_time_local) {
           setReminderTime(s.default_reminder_time_local);
         }
       } catch {}
     })();
-  }, [id]);
+  }, [id, params.scannedAmount, params.scannedDate, params.scannedText]);
 
   // 2. Load Bill (Edit Mode)
   useEffect(() => {
@@ -296,7 +351,7 @@ export default function BillEdit() {
     try {
       if (!creditor.trim())
         return Alert.alert(t("Validation"), t("Creditor is required"));
-      
+
       // FIX: Robust check for NaN or 0
       if (!amountCents || amountCents <= 0)
         return Alert.alert(t("Validation"), t("Amount must be > 0"));
@@ -313,10 +368,11 @@ export default function BillEdit() {
         payment_method: paymentMethod,
       };
 
-      if (!id) await api.billsCreate(payload);
+      if (!id)
+        await SyncQueue.enqueue(id ? "UPDATE" : "CREATE", { id, ...payload });
       else await api.billsUpdate(id, payload);
 
-      if (isMounted.current) router.back(); 
+      if (isMounted.current) router.back();
     } catch (e: any) {
       if (isMounted.current) Alert.alert(t("Error"), e.message);
     } finally {
@@ -344,10 +400,10 @@ export default function BillEdit() {
   };
 
   const onAmountChange = (text: string) => {
-      // Allow only numbers, dots, commas
-      if (/^[0-9.,]*$/.test(text)) {
-          setAmount(text);
-      }
+    // Allow only numbers, dots, commas
+    if (/^[0-9.,]*$/.test(text)) {
+      setAmount(text);
+    }
   };
 
   return (
@@ -370,13 +426,16 @@ export default function BillEdit() {
             <View style={styles.section}>
               <SectionTitle title={t("Bill Details")} theme={theme} />
               <View style={{ gap: 12 }}>
-                <InputField
-                  icon="person-outline"
-                  placeholder={t("Creditor")}
-                  value={creditor}
-                  onChangeText={setCreditor}
-                  theme={theme}
-                />
+                <View style={{ zIndex: 2000 }}>
+                  {" "}
+                  {/* Z-Index is crucial for dropdowns to sit on top */}
+                  <CreditorAutocomplete
+                    value={creditor}
+                    onChangeText={setCreditor}
+                    theme={theme}
+                    placeholder={t("Creditor (e.g. Netflix)")}
+                  />
+                </View>
                 <InputField
                   icon="cash-outline"
                   placeholder="0.00"
@@ -450,7 +509,7 @@ export default function BillEdit() {
                 ))}
               </View>
             </View>
-            
+
             <View style={styles.section}>
               <SectionTitle title={t("Frequency")} theme={theme} />
               <View style={styles.chipsContainer}>
@@ -667,11 +726,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 10,
   },
-  headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#FFF",
+    marginBottom: 2,
+  },
   headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
   section: { gap: 12 },
-  sectionTitle: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 4 },
-  inputContainer: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, borderRadius: 14, borderWidth: 1, height: 56, gap: 12 },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginLeft: 4,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    height: 56,
+    gap: 12,
+  },
   input: { flex: 1, fontSize: 16, fontWeight: "500" },
   inputText: { flex: 1, fontSize: 16, fontWeight: "500" },
   chipsContainer: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
@@ -682,12 +760,34 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     flexGrow: 1, // FIX: Allow chips to grow to fill space rather than fixed 48%
-    minWidth: "30%", 
+    minWidth: "30%",
   },
   chipText: { fontSize: 14 },
   card: { padding: 16, borderRadius: 16, borderWidth: 1, minHeight: 120 },
-  divider: { height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginVertical: 12 },
-  saveButton: { height: 56, borderRadius: 16, justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    marginVertical: 12,
+  },
+  saveButton: {
+    height: 56,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   saveButtonText: { fontSize: 16, fontWeight: "800" },
-  calendarButton: { flexDirection: "row", height: 50, borderRadius: 16, borderWidth: 1, justifyContent: "center", alignItems: "center", gap: 8 },
+  calendarButton: {
+    flexDirection: "row",
+    height: 50,
+    borderRadius: 16,
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
 });

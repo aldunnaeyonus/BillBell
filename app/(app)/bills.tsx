@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  SectionList,
   Pressable,
   RefreshControl,
   Alert,
@@ -10,7 +9,9 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
-  NativeModules
+  NativeModules,
+  TextInput,
+  Keyboard 
 } from "react-native";
 import { router, useFocusEffect, Stack } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -18,21 +19,18 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import Share from "react-native-share";
 import { SafeAreaView } from "react-native-safe-area-context";
-// FIX: Added isSameWeek and addWeeks
 import { isSameMonth, addMonths, parseISO, startOfDay, isSameWeek, addWeeks } from "date-fns";
 import { userSettings } from "../../src/storage/userSettings";
 import ReanimatedSwipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { RectButton } from "react-native-gesture-handler";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../../src/api/client";
 import {
   resyncLocalNotificationsFromBills,
   cancelBillReminderLocal,
 } from "../../src/notifications/notifications";
 import { useTheme, Theme } from "../../src/ui/useTheme";
-import * as FileSystem from "expo-file-system";
 import {
   startSummaryActivity,
   stopActivity,
@@ -40,6 +38,10 @@ import {
 } from "../../src/native/LiveActivity";
 import { getToken } from "../../src/auth/session";
 import { File, Paths } from 'expo-file-system';
+import { getJson, setJson } from "../../src/storage/storage"; // MMKV
+import * as Haptics from "expo-haptics"; // Haptics
+import { AnimatedAmount } from "../../src/ui/AnimatedAmount"; // Visual Polish
+import { FlashList } from "@shopify/flash-list"; // High Performance List
 
 const getWidgetModule = () => {
   try {
@@ -51,6 +53,13 @@ const getWidgetModule = () => {
 
 // --- Types ---
 type SortKey = "due" | "amount" | "name";
+type SummaryItem = { label: string; amount: number; highlight?: boolean };
+
+// FlatList Types (FlashList requires a flat array)
+type ListItemType = "header" | "bill";
+type FlatListItem = 
+  | { type: "header"; title: string; special?: string; id: string }
+  | { type: "bill"; data: any; id: string };
 
 // --- Helper Functions ---
 function centsToDollars(cents: number) {
@@ -95,7 +104,7 @@ const jsonToCSV = (data: any[]): string => {
   return [headerRow, ...rows].join("\n");
 };
 
-// ICON MAPPING LOGIC (No Changes)
+// ICON MAPPING LOGIC
 const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
   { regex: /netflix/i, icon: "netflix", color: "#E50914" },
   { regex: /spotify/i, icon: "spotify", color: "#1DB954" },
@@ -105,100 +114,32 @@ const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
   { regex: /apple|music|itunes/i, icon: "apple", color: "#A2AAAD" },
   { regex: /youtube|twitch/i, icon: "youtube", color: "#FF0000" },
   { regex: /sirius|audible|podcast|radio/i, icon: "radio", color: "#F07241" },
-  {
-    regex: /visa|mastercard|amex|discover|capital one|bofa/i,
-    icon: "credit-card-multiple-outline",
-    color: "#1F618D",
-  },
-  {
-    regex: /chase|citi|wells fargo|pnc|td bank|us bank/i,
-    icon: "bank",
-    color: "#005691",
-  },
-  {
-    regex: /paypal|venmo|cash app|zelle|crypto/i,
-    icon: "hand-coin-outline",
-    color: "#003087",
-  },
-  {
-    regex: /loan|mortgage|rent|lease|property/i,
-    icon: "home-city",
-    color: "#9D174D",
-  },
+  { regex: /visa|mastercard|amex|discover|capital one|bofa/i, icon: "credit-card-multiple-outline", color: "#1F618D" },
+  { regex: /chase|citi|wells fargo|pnc|td bank|us bank/i, icon: "bank", color: "#005691" },
+  { regex: /paypal|venmo|cash app|zelle|crypto/i, icon: "hand-coin-outline", color: "#003087" },
+  { regex: /loan|mortgage|rent|lease|property/i, icon: "home-city", color: "#9D174D" },
   { regex: /student loan|fedloan/i, icon: "school", color: "#2ECC71" },
-  {
-    regex: /insurance|geico|statefarm|allstate|progressive|liberty/i,
-    icon: "shield-car",
-    color: "#3498DB",
-  },
-  {
-    regex: /power|electric|utility|pge|con edison|duke energy/i,
-    icon: "lightning-bolt",
-    color: "#FBBF24",
-  },
-  {
-    regex: /gas|heating|propane|ng|national grid/i,
-    icon: "fire",
-    color: "#E74C3C",
-  },
-  {
-    regex: /water|sewer|waterworks|sanitation/i,
-    icon: "water",
-    color: "#0E7490",
-  },
-  {
-    regex: /trash|waste|republic services|wm/i,
-    icon: "trash-can",
-    color: "#839192",
-  },
+  { regex: /insurance|geico|statefarm|allstate|progressive|liberty/i, icon: "shield-car", color: "#3498DB" },
+  { regex: /power|electric|utility|pge|con edison|duke energy/i, icon: "lightning-bolt", color: "#FBBF24" },
+  { regex: /gas|heating|propane|ng|national grid/i, icon: "fire", color: "#E74C3C" },
+  { regex: /water|sewer|waterworks|sanitation/i, icon: "water", color: "#0E7490" },
+  { regex: /trash|waste|republic services|wm/i, icon: "trash-can", color: "#839192" },
   { regex: /security|alarm|adt|ring/i, icon: "security", color: "#E67E22" },
   { regex: /hoa|community fees/i, icon: "home-group", color: "#6C3483" },
-  {
-    regex: /att|t-mobile|verizon|sprint|mobile|cellular/i,
-    icon: "cellphone",
-    color: "#E7008A",
-  },
-  {
-    regex: /xfinity|comcast|spectrum|fios|cox|internet/i,
-    icon: "router-wireless",
-    color: "#1D4ED8",
-  },
+  { regex: /att|t-mobile|verizon|sprint|mobile|cellular/i, icon: "cellphone", color: "#E7008A" },
+  { regex: /xfinity|comcast|spectrum|fios|cox|internet/i, icon: "router-wireless", color: "#1D4ED8" },
   { regex: /phone|landline/i, icon: "phone", color: "#3F51B5" },
   { regex: /amazon|aws|cloud/i, icon: "amazon", color: "#FF9900" },
-  {
-    regex: /microsoft|azure|office|xbox/i,
-    icon: "microsoft",
-    color: "#F25022",
-  },
+  { regex: /microsoft|azure|office|xbox/i, icon: "microsoft", color: "#F25022" },
   { regex: /adobe|creative cloud/i, icon: "adobe", color: "#FF0000" },
   { regex: /zoom|webex|teams/i, icon: "video-outline", color: "#2D8CFF" },
-  {
-    regex: /dropbox|onedrive|storage/i,
-    icon: "cloud-upload",
-    color: "#0061FF",
-  },
-  {
-    regex: /steam|playstation|nintendo|xbox live/i,
-    icon: "gamepad-variant",
-    color: "#6A5ACD",
-  },
+  { regex: /dropbox|onedrive|storage/i, icon: "cloud-upload", color: "#0061FF" },
+  { regex: /steam|playstation|nintendo|xbox live/i, icon: "gamepad-variant", color: "#6A5ACD" },
   { regex: /github|gitlab|bitbucket/i, icon: "github", color: "#181717" },
-  {
-    regex: /walmart|target|costco|sams club/i,
-    icon: "shopping",
-    color: "#0071C5",
-  },
-  {
-    regex: /home depot|lowes|hardware/i,
-    icon: "home-assistant",
-    color: "#F96302",
-  },
+  { regex: /walmart|target|costco|sams club/i, icon: "shopping", color: "#0071C5" },
+  { regex: /home depot|lowes|hardware/i, icon: "home-assistant", color: "#F96302" },
   { regex: /etsy|ebay|shopify/i, icon: "cart", color: "#546E7A" },
-  {
-    regex: /car loan|auto payment|lease payment/i,
-    icon: "car",
-    color: "#16A085",
-  },
+  { regex: /car loan|auto payment|lease payment/i, icon: "car", color: "#16A085" },
   { regex: /toll|ezpass|highway|sunpass/i, icon: "highway", color: "#F4D03F" },
   { regex: /uber|lyft|taxi/i, icon: "taxi", color: "#000000" },
 ];
@@ -220,7 +161,15 @@ function getBillIcon(creditor: string): {
 }
 
 // --- Components ---
-function Header({ theme, title, onProfilePress }: { theme: Theme; title: string; onProfilePress: () => void; }) {
+
+function Header({ theme, title, onProfilePress, searchQuery, setSearchQuery, t }: { 
+  theme: Theme; 
+  title: string; 
+  onProfilePress: () => void; 
+  searchQuery: string; 
+  setSearchQuery: (t: string) => void;
+  t: any;
+}) {
   return (
     <View style={{ backgroundColor: theme.colors.navy }}>
       <LinearGradient colors={[theme.colors.navy, theme.colors.navy]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.headerGradient}>
@@ -231,15 +180,30 @@ function Header({ theme, title, onProfilePress }: { theme: Theme; title: string;
               <Ionicons name="person" size={20} color="#FFF" />
             </Pressable>
           </View>
+
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={20} color="rgba(255,255,255,0.6)" />
+            <TextInput 
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder={t("Search bills...")}
+              placeholderTextColor="rgba(255,255,255,0.6)"
+              style={styles.searchInput}
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 && (
+              <Pressable onPress={() => { setSearchQuery(""); Keyboard.dismiss(); }}>
+                <Ionicons name="close-circle" size={18} color="rgba(255,255,255,0.8)" />
+              </Pressable>
+            )}
+          </View>
+
         </SafeAreaView>
       </LinearGradient>
     </View>
   );
 }
-
-// --- MODIFIED SUMMARY CARD ---
-// Now accepts an array of items for multi-column layout or a single object
-type SummaryItem = { label: string; amount: number; highlight?: boolean };
 
 function SummaryCard({ theme, items }: { theme: Theme; items: SummaryItem[] }) {
   const isSingle = items.length === 1;
@@ -266,17 +230,18 @@ function SummaryCard({ theme, items }: { theme: Theme; items: SummaryItem[] }) {
             >
               {item.label}
             </Text>
-            <Text 
-              style={[
-                styles.summaryAmount, 
-                { 
-                  color: item.highlight ? theme.colors.primary : theme.colors.primaryText,
-                  fontSize: isSingle ? 36 : 20 
-                }
-              ]}
-            >
-              ${centsToDollars(item.amount)}
-            </Text>
+            
+            <AnimatedAmount
+              amount={item.amount}
+              style={{
+                color: item.highlight ? theme.colors.primary : theme.colors.primaryText,
+                fontSize: isSingle ? 36 : 20,
+                fontWeight: "900",
+                fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+              }}
+              prefix="$"
+            />
+            
           </View>
         ))}
       </View>
@@ -314,6 +279,7 @@ function BillItem({ item, theme, t, onLongPress, onEdit, onMarkPaid, onDelete }:
       <RectButton
         style={[{ backgroundColor: color }, styles.swipeAction]}
         onPress={() => {
+          Haptics.selectionAsync(); // HAPTIC
           closeSwipe();
           onPress();
         }}
@@ -334,7 +300,10 @@ function BillItem({ item, theme, t, onLongPress, onEdit, onMarkPaid, onDelete }:
 
   const BillContent = (
     <Pressable
-      onLongPress={onLongPress}
+      onLongPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); // HAPTIC
+        onLongPress();
+      }}
       delayLongPress={350}
       style={({ pressed }) => [styles.billCard, { backgroundColor: theme.colors.card, borderColor: overdue ? theme.colors.danger : theme.colors.border, opacity: pressed ? 0.9 : 1, borderWidth: 1 }]}
     >
@@ -376,20 +345,50 @@ function BillItem({ item, theme, t, onLongPress, onEdit, onMarkPaid, onDelete }:
   return BillContent;
 }
 
+function SectionHeader({ title, special, theme }: { title: string; special?: string; theme: Theme }) {
+  return (
+    <View
+      style={{
+        paddingVertical: 12,
+        backgroundColor: theme.colors.bg,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: "800",
+          color: special === "danger" ? theme.colors.danger : theme.colors.text,
+        }}
+      >
+        {title}
+      </Text>
+      {special === "danger" && (
+        <Ionicons name="warning" size={16} color={theme.colors.danger} />
+      )}
+    </View>
+  );
+}
+
 // --- Main Screen ---
 
 export default function Bills() {
   const theme = useTheme();
   const { t } = useTranslation();
 
-  const [bills, setBills] = useState<any[]>([]);
+  const BILLS_CACHE_KEY = "billbell_bills_list_cache";
+  
+  // MMKV: Synchronous instant load
+  const [bills, setBills] = useState<any[]>(() => getJson(BILLS_CACHE_KEY) || []);
+  const [searchQuery, setSearchQuery] = useState(""); // Search State
+  
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<"pending" | "paid">("pending");
   const [sort, setSort] = useState<SortKey>("due");
   const [isExporting, setIsExporting] = useState(false);
   const syncedBillsHash = useRef("");
-  const BILLS_CACHE_KEY = "billbell_bills_list_cache";
-  
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -397,119 +396,76 @@ export default function Bills() {
     return () => { isMounted.current = false; };
   }, []);
 
-  // 1. Notification Sync
-  useEffect(() => {
-    const currentHash = JSON.stringify(
-      bills.map((b) => b.id + b.status + b.due_date)
+  // Filter bills based on search query FIRST
+  const filteredBills = useMemo(() => {
+    if (!searchQuery.trim()) return bills;
+    const lower = searchQuery.toLowerCase();
+    return bills.filter(b => 
+      (b.creditor || "").toLowerCase().includes(lower) || 
+      centsToDollars(b.amount_cents).includes(lower)
     );
+  }, [bills, searchQuery]);
+
+  // Sync Logic (Notifications, Widgets)
+  useEffect(() => {
+    const currentHash = JSON.stringify(bills.map((b) => b.id + b.status + b.due_date));
     if (syncedBillsHash.current !== currentHash && bills.length > 0) {
       resyncLocalNotificationsFromBills(bills);
       syncedBillsHash.current = currentHash;
     }
   }, [bills]);
 
-  // 2. Android Widget & Live Activity Sync
   useEffect(() => {
     const initializeApp = async () => {
       if (Platform.OS !== "android" || bills.length === 0) return;
-
       const widgetModule = getWidgetModule();
-
-      const pending = bills.filter(
-        (b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"
-      );
-
+      const pending = bills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid");
       const overdueBills = pending.filter((b: any) => isOverdue(b));
-      const overdueSum = overdueBills.reduce(
-        (sum: number, b: any) => sum + Number(b.amount_cents || 0),
-        0
-      );
-
+      const overdueSum = overdueBills.reduce((sum: number, b: any) => sum + Number(b.amount_cents || 0), 0);
       const nextBill = pending.find((b: any) => !isOverdue(b));
-      
       if (!isMounted.current) return;
-      
       const token = await getToken(); 
-
       if (widgetModule?.syncWidgetData) {
-        widgetModule.syncWidgetData(
-          overdueBills.length,
-          nextBill?.creditor || t("None"),
-          nextBill?.due_date || "",
-          String(nextBill?.id || ""),
-          nextBill?.payment_method || "manual",
-          token
-        );
+        widgetModule.syncWidgetData(overdueBills.length, nextBill?.creditor || t("None"), nextBill?.due_date || "", String(nextBill?.id || ""), nextBill?.payment_method || "manual", token);
       }
-
-      startAndroidLiveActivity(
-        `$${centsToDollars(overdueSum)}`,
-        overdueBills.length,
-        String(nextBill?.id ?? "")
-      );
+      startAndroidLiveActivity(`$${centsToDollars(overdueSum)}`, overdueBills.length, String(nextBill?.id ?? ""));
     };
     initializeApp();
-
   }, [bills]); 
 
-  // 3. iOS Live Activity Sync
   useEffect(() => {
     if (Platform.OS !== "ios") return;
-
     const syncLiveActivity = async () => {
       const isEnabled = await userSettings.getLiveActivityEnabled();
-
-      const pending = bills.filter(
-        (b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"
-      );
-
+      const pending = bills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid");
       const overdueBills = pending.filter((b: any) => isOverdue(b));
-      const overdueSum = overdueBills.reduce(
-        (sum: number, b: any) => sum + Number(b.amount_cents || 0),
-        0
-      );
-
+      const overdueSum = overdueBills.reduce((sum: number, b: any) => sum + Number(b.amount_cents || 0), 0);
       const today = new Date();
       const thisMonthBills = pending.filter((b: any) => {
         const due = parseISO(b.due_date);
         return isSameMonth(due, today) && !isOverdue(b);
       });
-      const monthSum = thisMonthBills.reduce(
-        (sum: number, b: any) => sum + Number(b.amount_cents || 0),
-        0
-      );
-
+      const monthSum = thisMonthBills.reduce((sum: number, b: any) => sum + Number(b.amount_cents || 0), 0);
       if (overdueBills.length === 0 && thisMonthBills.length === 0) {
         stopActivity();
         return;
       }
-
       if (!isEnabled) {
         stopActivity();
         return;
       }
-
-      startSummaryActivity(
-        `$${centsToDollars(overdueSum)}`,
-        overdueBills.length,
-        `$${centsToDollars(monthSum)}`,
-        thisMonthBills.length
-      );
+      startSummaryActivity(`$${centsToDollars(overdueSum)}`, overdueBills.length, `$${centsToDollars(monthSum)}`, thisMonthBills.length);
     };
-
     syncLiveActivity();
   }, [bills]);
 
   const load = useCallback(async () => {
     try {
-      const cachedData = await AsyncStorage.getItem(BILLS_CACHE_KEY);
-      if (cachedData && isMounted.current) setBills(JSON.parse(cachedData));
-      
       const res = await api.billsList();
       if (!isMounted.current) return;
-      
       setBills(res.bills);
-      await AsyncStorage.setItem(BILLS_CACHE_KEY, JSON.stringify(res.bills));
+      // MMKV: Save instantly
+      setJson(BILLS_CACHE_KEY, res.bills);
     } catch (e) {
       console.log("Failed to load bills:", e);
     }
@@ -522,14 +478,10 @@ export default function Bills() {
         StatusBar.setBackgroundColor("transparent");
         StatusBar.setTranslucent(true);
       }
-      
       load().catch(() => {});
-  
       return () => {
-        const defaultStyle =
-          theme.mode === "dark" ? "light-content" : "dark-content";
+        const defaultStyle = theme.mode === "dark" ? "light-content" : "dark-content";
         StatusBar.setBarStyle(defaultStyle);
-  
         if (Platform.OS === "android") {
           StatusBar.setTranslucent(false);
           StatusBar.setBackgroundColor(theme.colors.bg); 
@@ -538,33 +490,18 @@ export default function Bills() {
     }, [theme.mode, load, theme.colors.bg])
   );
 
-  const pendingBills = useMemo(
-    () =>
-      bills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"),
-    [bills]
-  );
-  const paidBills = useMemo(
-    () =>
-      bills.filter((b: any) => b.paid_at || b.is_paid || b.status === "paid"),
-    [bills]
-  );
+  // Use filteredBills here
+  const pendingBills = useMemo(() => filteredBills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"), [filteredBills]);
+  const paidBills = useMemo(() => filteredBills.filter((b: any) => b.paid_at || b.is_paid || b.status === "paid"), [filteredBills]);
 
+  // Derived Sections Logic
   const sections = useMemo(() => {
     const list = tab === "pending" ? pendingBills : paidBills;
     const sorted = [...list].sort((a: any, b: any) => {
-      if (sort === "name")
-        return String(a.creditor || "").localeCompare(String(b.creditor || ""));
-      if (sort === "amount")
-        return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
-      
-      const dateA =
-        tab === "pending"
-          ? safeDateNum(a.due_date)
-          : safeDateNum(a.paid_at) || safeDateNum(a.due_date);
-      const dateB =
-        tab === "pending"
-          ? safeDateNum(b.due_date)
-          : safeDateNum(b.paid_at) || safeDateNum(b.due_date);
+      if (sort === "name") return String(a.creditor || "").localeCompare(String(b.creditor || ""));
+      if (sort === "amount") return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
+      const dateA = tab === "pending" ? safeDateNum(a.due_date) : safeDateNum(a.paid_at) || safeDateNum(a.due_date);
+      const dateB = tab === "pending" ? safeDateNum(b.due_date) : safeDateNum(b.paid_at) || safeDateNum(b.due_date);
       return tab === "pending" ? dateA - dateB : dateB - dateA;
     });
 
@@ -572,16 +509,10 @@ export default function Bills() {
 
     const today = new Date();
     const nextMonthDate = addMonths(today, 1);
-    const buckets: Record<string, any[]> = {
-      overdue: [],
-      thisMonth: [],
-      nextMonth: [],
-      future: [],
-    };
+    const buckets: Record<string, any[]> = { overdue: [], thisMonth: [], nextMonth: [], future: [] };
 
     sorted.forEach((bill) => {
-      const dateStr =
-        tab === "pending" ? bill.due_date : bill.paid_at || bill.due_date;
+      const dateStr = tab === "pending" ? bill.due_date : bill.paid_at || bill.due_date;
       const billDate = parseISO(dateStr);
       if (tab === "pending" && isOverdue(bill)) {
         buckets.overdue.push(bill);
@@ -595,41 +526,56 @@ export default function Bills() {
     });
 
     const result = [];
-    if (buckets.overdue.length > 0)
-      result.push({
-        title: t("Overdue"),
-        data: buckets.overdue,
-        special: "danger",
-      });
-    if (buckets.thisMonth.length > 0)
-      result.push({ title: t("This Month"), data: buckets.thisMonth });
-    if (buckets.nextMonth.length > 0)
-      result.push({ title: t("Next Month"), data: buckets.nextMonth });
-    if (buckets.future.length > 0)
-      result.push({ title: t("Future"), data: buckets.future });
+    if (buckets.overdue.length > 0) result.push({ title: t("Overdue"), data: buckets.overdue, special: "danger" });
+    if (buckets.thisMonth.length > 0) result.push({ title: t("This Month"), data: buckets.thisMonth });
+    if (buckets.nextMonth.length > 0) result.push({ title: t("Next Month"), data: buckets.nextMonth });
+    if (buckets.future.length > 0) result.push({ title: t("Future"), data: buckets.future });
     return result;
   }, [tab, pendingBills, paidBills, sort, t]);
 
-  // --- MODIFIED STATS CALCULATION ---
+  // FLASHLIST: Flatten Data Memo (Transforms sections into a flat array)
+  const flatData = useMemo(() => {
+    const data: FlatListItem[] = [];
+    sections.forEach((section) => {
+      data.push({ 
+        type: "header", 
+        title: section.title, 
+        special: section.special, 
+        id: `header-${section.title}` 
+      });
+      section.data.forEach((bill) => {
+        data.push({ 
+          type: "bill", 
+          data: bill, 
+          id: String(bill.id) 
+        });
+      });
+    });
+    return data;
+  }, [sections]);
+
   const stats = useMemo(() => {
+    // We calculate stats from ALL bills (ignoring search) to keep the summary card accurate
+    // or from FILTERED bills if you want summary to reflect search. 
+    // Usually summary reflects "Global State", so we use `bills` here, but filtered logic might be desired.
+    // Let's stick to global `bills` for the summary card so "Total Paid" doesn't disappear when searching.
+    const allPending = bills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid");
+    const allPaid = bills.filter((b: any) => b.paid_at || b.is_paid || b.status === "paid");
+
     const today = new Date();
     const nextWeekDate = addWeeks(today, 1);
-
-    // Filter Logic
-    const thisWeekBills = pendingBills.filter(b => isSameWeek(parseISO(b.due_date), today));
-    const nextWeekBills = pendingBills.filter(b => isSameWeek(parseISO(b.due_date), nextWeekDate));
-    const thisMonthBills = pendingBills.filter(b => isSameMonth(parseISO(b.due_date), today));
-
-    // Sum Logic
+    const thisWeekBills = allPending.filter(b => isSameWeek(parseISO(b.due_date), today));
+    const nextWeekBills = allPending.filter(b => isSameWeek(parseISO(b.due_date), nextWeekDate));
+    const thisMonthBills = allPending.filter(b => isSameMonth(parseISO(b.due_date), today));
     const sum = (list: any[]) => list.reduce((total, b) => total + Number(b.amount_cents || 0), 0);
     
     return {
       pendingThisWeek: sum(thisWeekBills),
       pendingNextWeek: sum(nextWeekBills),
       pendingThisMonth: sum(thisMonthBills),
-      paidTotal: sum(paidBills)
+      paidTotal: sum(allPaid)
     };
-  }, [pendingBills, paidBills]);
+  }, [bills]);
 
   const sortLabel = useMemo(() => {
     if (sort === "amount") return t("Amount");
@@ -638,6 +584,7 @@ export default function Bills() {
   }, [sort, tab, t]);
 
   async function onRefresh() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     await load();
     if (isMounted.current) setRefreshing(false);
@@ -645,24 +592,22 @@ export default function Bills() {
 
   const markPaid = useCallback(async (item: any) => {
     try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await api.billsMarkPaid(item.id);
       await cancelBillReminderLocal(item.id);
       if (item.recurrence_rule || item.is_recurring) {
-        Alert.alert(
-          t("Bill Paid"),
-          t(
-            "Since this bill is recurring, we went ahead and recreated it for the next period."
-          )
-        );
+        Alert.alert(t("Bill Paid"), t("Since this bill is recurring, we went ahead and recreated it for the next period."));
       }
       if (isMounted.current) await load();
     } catch (e: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       if (isMounted.current) Alert.alert(t("Error"), e.message);
     }
   }, [load, t]);
 
   const deleteBill = useCallback(async (item: any) => {
     try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await api.billsDelete(item.id);
       await cancelBillReminderLocal(item.id);
       if (isMounted.current) await load();
@@ -671,46 +616,27 @@ export default function Bills() {
     }
   }, [load, t]);
 
-  const onDeleteBill = useCallback(
-    (item: any) => {
-      Alert.alert(
-        t("Delete Bill"),
-        t("Are you sure you want to delete this bill?"),
-        [
+  const onDeleteBill = useCallback((item: any) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      Alert.alert(t("Delete Bill"), t("Are you sure you want to delete this bill?"), [
           { text: t("Cancel"), style: "cancel" },
-          {
-            text: t("Delete"),
-            style: "destructive",
-            onPress: () => deleteBill(item),
-          },
-        ]
-      );
-    },
-    [deleteBill, t]
-  );
+          { text: t("Delete"), style: "destructive", onPress: () => deleteBill(item) },
+        ]);
+    }, [deleteBill, t]);
 
-  const onMarkPaidBill = useCallback(
-    (item: any) => {
-      Alert.alert(
-        t("Mark Paid"),
-        t("Mark {{creditor}} as paid?", { creditor: item.creditor }),
-        [
+  const onMarkPaidBill = useCallback((item: any) => {
+      Alert.alert(t("Mark Paid"), t("Mark {{creditor}} as paid?", { creditor: item.creditor }), [
           { text: t("Cancel"), style: "cancel" },
           { text: t("Mark Paid"), onPress: () => markPaid(item) },
-        ]
-      );
-    },
-    [markPaid, t]
-  );
+        ]);
+    }, [markPaid, t]);
 
   const onEditBill = useCallback((item: any) => {
-    router.push({
-      pathname: "/(app)/bill-edit",
-      params: { id: String(item.id) },
-    });
+    router.push({ pathname: "/(app)/bill-edit", params: { id: String(item.id) } });
   }, []);
 
   function cycleSort() {
+    Haptics.selectionAsync();
     if (sort === "due") setSort("amount");
     else if (sort === "amount") setSort("name");
     else setSort("due");
@@ -725,27 +651,14 @@ export default function Bills() {
       }
       setIsExporting(true);
       const exportData = bills.map((b) => ({
-        ID: b.id,
-        Creditor: b.creditor,
-        Amount: centsToDollars(b.amount_cents),
-        DueDate: b.due_date,
-        Status: b.status === "paid" ? "Paid" : "Pending",
-        Notes: b.notes || "",
-        Recurrence: b.recurrence || "none",
-        Offset: b.reminder_offset_days || "0",
+        ID: b.id, Creditor: b.creditor, Amount: centsToDollars(b.amount_cents), DueDate: b.due_date,
+        Status: b.status === "paid" ? "Paid" : "Pending", Notes: b.notes || "", Recurrence: b.recurrence || "none", Offset: b.reminder_offset_days || "0",
       }));
       const csvString = jsonToCSV(exportData);
       const fileName = "bills_export.csv";
-      
       const templateFile = new File(Paths.cache, fileName);
       templateFile.write(csvString);
-
- await Share.open({
-        url: templateFile.uri,
-        type: "text/csv",
-        filename: "bills_export",
-        title: "Download Bill Export",
-      });
+      await Share.open({ url: templateFile.uri, type: "text/csv", filename: "bills_export", title: "Download Bill Export" });
     } catch (error) {
       console.error("Export failed:", error);
     } finally {
@@ -754,27 +667,14 @@ export default function Bills() {
   };
 
   function onLongPressBill(item: any) {
-    const isPaid = Boolean(
-      item.paid_at || item.is_paid || item.status === "paid"
-    );
-    const actions: any[] = [
-      { text: t("Edit"), onPress: () => onEditBill(item) },
-    ];
-    if (!isPaid)
-      actions.push({
-        text: t("Mark Paid"),
-        onPress: () => onMarkPaidBill(item),
-      });
-    actions.push({
-      text: t("Delete"),
-      style: "destructive",
-      onPress: () => onDeleteBill(item),
-    });
+    const isPaid = Boolean(item.paid_at || item.is_paid || item.status === "paid");
+    const actions: any[] = [{ text: t("Edit"), onPress: () => onEditBill(item) }];
+    if (!isPaid) actions.push({ text: t("Mark Paid"), onPress: () => onMarkPaidBill(item) });
+    actions.push({ text: t("Delete"), style: "destructive", onPress: () => onDeleteBill(item) });
     actions.push({ text: t("Cancel"), style: "cancel" });
     Alert.alert(item.creditor || t("Bill"), t("Choose an action"), actions);
   }
 
-  // --- PREPARE SUMMARY DATA ---
   const summaryItems = useMemo(() => {
     if (tab === "pending") {
       return [
@@ -783,18 +683,36 @@ export default function Bills() {
         { label: t("This Month"), amount: stats.pendingThisMonth, highlight: true },
       ];
     }
-    return [
-      { label: t("Total Paid"), amount: stats.paidTotal }
-    ];
+    return [{ label: t("Total Paid"), amount: stats.paidTotal }];
   }, [tab, stats, t]);
+
+  const renderItem = ({ item }: { item: FlatListItem }) => {
+    if (item.type === "header") {
+      return <SectionHeader title={item.title} special={item.special} theme={theme} />;
+    }
+    return (
+      <BillItem
+        item={item.data}
+        theme={theme}
+        t={t}
+        onLongPress={() => onLongPressBill(item.data)}
+        onEdit={() => onEditBill(item.data)}
+        onMarkPaid={() => onMarkPaidBill(item.data)}
+        onDelete={() => onDeleteBill(item.data)}
+      />
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <Stack.Screen options={{ headerShown: false }} />
-      <Header
-        theme={theme}
-        title={t("My Bills")}
+      <Header 
+        theme={theme} 
+        title={t("My Bills")} 
         onProfilePress={() => router.push("/(app)/profile")}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        t={t}
       />
 
       <View
@@ -808,221 +726,63 @@ export default function Bills() {
           overflow: "hidden",
         }}
       >
-        <SectionList
-          sections={sections}
-          keyExtractor={(item) => String(item.id)}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={theme.colors.primary}
-            />
-          }
+        <FlashList
+          data={flatData}
+          renderItem={renderItem}
+          getItemType={(item) => item.type}
+          keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
           showsVerticalScrollIndicator={false}
-          stickySectionHeadersEnabled={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+          }
           ListHeaderComponent={
             <View style={{ gap: 16, marginBottom: 16 }}>
-              
-              {/* MODIFIED COMPONENT USAGE */}
-              <SummaryCard
-                theme={theme}
-                items={summaryItems}
-              />
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 12,
-                  flexWrap: "wrap",
-                  justifyContent: "flex-start",
-                }}
-              >
-                <Pressable
-                  onPress={() => router.push("/(app)/insights")}
-                  style={[
-                    styles.actionBtn,
-                    { backgroundColor: theme.colors.primary, flex: 1 },
-                  ]}
-                >
-                  <Ionicons
-                    name="bar-chart"
-                    size={18}
-                    color={theme.colors.primaryTextButton}
-                  />
-                  <Text
-                    style={[
-                      styles.actionBtnText,
-                      { color: theme.colors.primaryTextButton },
-                    ]}
-                  >
-                    {t("Insights")}
-                  </Text>
+              <SummaryCard theme={theme} items={summaryItems} />
+              <View style={{ flexDirection: "row", gap: 12, flexWrap: "wrap", justifyContent: "flex-start" }}>
+                <Pressable onPress={() => router.push("/(app)/insights")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
+                  <Ionicons name="bar-chart" size={18} color={theme.colors.primaryTextButton} />
+                  <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("Insights")}</Text>
                 </Pressable>
-                <Pressable
-                  onPress={() => router.push("/(app)/bill-edit")}
-                  style={[
-                    styles.actionBtn,
-                    { backgroundColor: theme.colors.primary, flex: 1 },
-                  ]}
-                >
-                  <Ionicons
-                    name="add"
-                    size={20}
-                    color={theme.colors.primaryTextButton}
-                  />
-                  <Text
-                    style={[
-                      styles.actionBtnText,
-                      { color: theme.colors.primaryTextButton },
-                    ]}
-                  >
-                    {t("+ Add")}
-                  </Text>
+                
+                {/* SCAN BUTTON */}
+                <Pressable onPress={() => router.push("/(app)/bill-scan")} style={[styles.actionBtn, { backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, flex: 0.3 }]}>
+                  <Ionicons name="scan" size={20} color={theme.colors.text} />
+                </Pressable>
+
+                <Pressable onPress={() => router.push("/(app)/bill-edit")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
+                  <Ionicons name="add" size={20} color={theme.colors.primaryTextButton} />
+                  <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("+ Add")}</Text>
                 </Pressable>
               </View>
-
-              <TabSegment
-                theme={theme}
-                activeTab={tab}
-                onTabPress={(key) => setTab(key as any)}
-                tabs={[
-                  { key: "pending", label: t("Pending") },
-                  { key: "paid", label: t("Paid") },
-                ]}
-              />
-
-              <View
-                style={{
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  paddingHorizontal: 4,
-                  gap: 8,
-                }}
-              >
-                <Pressable
-                  onPress={cycleSort}
-                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-                >
-                  <Text style={{ color: theme.colors.subtext, fontSize: 13 }}>
-                    {t("Sort by")}:
-                  </Text>
-                  <Text
-                    style={{
-                      color: theme.colors.text,
-                      fontWeight: "700",
-                      fontSize: 13,
-                    }}
-                  >
-                    {sortLabel}
-                  </Text>
-                  <Ionicons
-                    name="chevron-down"
-                    size={12}
-                    color={theme.colors.text}
-                  />
+              <TabSegment theme={theme} activeTab={tab} onTabPress={(key) => setTab(key as any)} tabs={[{ key: "pending", label: t("Pending") }, { key: "paid", label: t("Paid") }]} />
+              <View style={{ flexDirection: "column", alignItems: "flex-start", paddingHorizontal: 4, gap: 8 }}>
+                <Pressable onPress={cycleSort} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                  <Text style={{ color: theme.colors.subtext, fontSize: 13 }}>{t("Sort by")}:</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: "700", fontSize: 13 }}>{sortLabel}</Text>
+                  <Ionicons name="chevron-down" size={12} color={theme.colors.text} />
                 </Pressable>
-
                 {bills.length > 0 && (
                   <View style={{ width: "100%", alignItems: "flex-end" }}>
-                    <Pressable
-                      onPress={generateAndShareCSV}
-                      disabled={isExporting}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
-                      {isExporting && (
-                        <ActivityIndicator
-                          size="small"
-                          color={theme.colors.accent}
-                        />
-                      )}
-                      <Text
-                        style={{
-                          color: theme.colors.accent,
-                          fontWeight: "700",
-                          fontSize: 13,
-                        }}
-                      >
-                        {isExporting ? t("Exporting...") : t("Export CSV")}
-                      </Text>
+                    <Pressable onPress={generateAndShareCSV} disabled={isExporting} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      {isExporting && <ActivityIndicator size="small" color={theme.colors.accent} />}
+                      <Text style={{ color: theme.colors.accent, fontWeight: "700", fontSize: 13 }}>{isExporting ? t("Exporting...") : t("Export CSV")}</Text>
                     </Pressable>
                   </View>
                 )}
               </View>
             </View>
           }
-          renderSectionHeader={({ section: { title, special } }) => (
-            <View
-              style={{
-                paddingVertical: 12,
-                backgroundColor: theme.colors.bg,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "800",
-                  color:
-                    special === "danger"
-                      ? theme.colors.danger
-                      : theme.colors.text,
-                }}
-              >
-                {title}
-              </Text>
-              {special === "danger" && (
-                <Ionicons
-                  name="warning"
-                  size={16}
-                  color={theme.colors.danger}
-                />
-              )}
-            </View>
-          )}
           ListEmptyComponent={
-            <View
-              style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}
-            >
-              <Ionicons
-                name={
-                  tab === "pending"
-                    ? "checkmark-done-circle-outline"
-                    : "wallet-outline"
-                }
-                size={64}
-                color={theme.colors.border}
-              />
-              <Text
-                style={{
-                  color: theme.colors.subtext,
-                  fontSize: 16,
-                  textAlign: "center",
-                }}
-              >
-                {tab === "pending"
-                  ? t("You have no pending bills. Enjoy the freedom!")
-                  : t("No paid history")}
+            <View style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}>
+              <Ionicons name={tab === "pending" ? "checkmark-done-circle-outline" : "wallet-outline"} size={64} color={theme.colors.border} />
+              <Text style={{ color: theme.colors.subtext, fontSize: 16, textAlign: "center" }}>
+                {searchQuery.length > 0 
+                  ? t("No bills found matching '{{query}}'", { query: searchQuery })
+                  : tab === "pending" ? t("You have no pending bills. Enjoy the freedom!") : t("No paid history")}
               </Text>
             </View>
           }
-          renderItem={({ item }) => (
-            <BillItem
-              item={item}
-              theme={theme}
-              t={t}
-              onLongPress={() => onLongPressBill(item)}
-              onEdit={() => onEditBill(item)}
-              onMarkPaid={() => onMarkPaidBill(item)}
-              onDelete={() => onDeleteBill(item)}
-            />
-          )}
         />
       </View>
     </View>
@@ -1030,7 +790,7 @@ export default function Bills() {
 }
 
 const styles = StyleSheet.create({
-  headerGradient: { paddingBottom: 40 },
+  headerGradient: { paddingBottom: 30 },
   safeArea: {
     paddingHorizontal: 20,
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
@@ -1049,6 +809,23 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.2)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 8,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '500',
+    padding: 0, // Fix alignment on Android
   },
   summaryCard: {
     padding: 20,

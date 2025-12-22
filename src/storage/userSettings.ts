@@ -1,24 +1,25 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storage } from './storage'; // Import your new MMKV instance
 
-const LIVE_ACTIVITY_KEY = 'user_pref_live_activity_enabled';
+const LIVE_ACTIVITY_KEY = "billbell_live_activity_enabled";
+// You likely have a theme key here as well, e.g.
+// const THEME_KEY = "billbell_theme_preference"; 
 
 export const userSettings = {
-  // Get the setting (Default to TRUE if not set)
-  getLiveActivityEnabled: async (): Promise<boolean> => {
-    try {
-      const val = await AsyncStorage.getItem(LIVE_ACTIVITY_KEY);
-      return val === null ? true : val === 'true';
-    } catch {
-      return true;
-    }
+  // 1. Get Synchronously (No Promise needed!)
+  getLiveActivityEnabledSync: (): boolean => {
+    const val = storage.getBoolean(LIVE_ACTIVITY_KEY);
+    // Return true if undefined (default) or true
+    return val === undefined ? true : val;
   },
 
-  // Save the setting
-  setLiveActivityEnabled: async (enabled: boolean) => {
-    try {
-      await AsyncStorage.setItem(LIVE_ACTIVITY_KEY, String(enabled));
-    } catch (e) {
-      console.warn("Failed to save setting", e);
-    }
-  }
+  // Keep async wrapper if your existing code expects promises, 
+  // but internally it is now instant.
+  getLiveActivityEnabled: async (): Promise<boolean> => {
+    const val = storage.getBoolean(LIVE_ACTIVITY_KEY);
+    return val === undefined ? true : val;
+  },
+
+  setLiveActivityEnabled: async (enabled: boolean): Promise<void> => {
+    storage.set(LIVE_ACTIVITY_KEY, enabled);
+  },
 };
