@@ -1,13 +1,13 @@
 /* Calendar Access */
-"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
-"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
+"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME)は、請求書の支払期日や支払状況の追跡に関する自動リマインダーをスケジュールするために、カレンダーへのアクセスを必要とします。";
+"NSCalendarsUsageDescription" = "$(PRODUCT_NAME)は、請求書の支払期日や支払状況の追跡に関する自動リマインダーをスケジュールするために、カレンダーへのアクセスを必要とします。";
 
 /* Face ID Access */
-"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) uses Face ID to securely unlock the app and authorize quick access to your shared bill data.";
+"NSFaceIDUsageDescription" = "$(PRODUCT_NAME)は、Face IDを使用してアプリを安全にロック解除し、共有された請求書データへのクイックアクセスを承認します。";
 
 /* Reminders Access */
-"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
-"NSRemindersUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
+"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME)は、請求書の支払期日や支払状況の追跡に関するタスクをスケジュールするために、リマインダーへのアクセスを必要とします。";
+"NSRemindersUsageDescription" = "$(PRODUCT_NAME)は、請求書の支払期日や支払状況の追跡に関するタスクをスケジュールするために、リマインダーへのアクセスを必要とします。";
 
-/*Camera */
-"NSCameraUsageDescription" = "$(PRODUCT_NAME) needs access to your Camera to scan bills to add them to your lister without having to type them in.";
+/* Camera Access */
+"NSCameraUsageDescription" = "$(PRODUCT_NAME)は、請求書をスキャンしてリストに追加し、入力を省略するためにカメラへのアクセスを必要とします。";

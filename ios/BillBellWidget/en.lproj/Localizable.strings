@@ -1,7 +1,15 @@
-/* 
-  Localizable.strings
-  BillBell
-
-  Created by Andrew Dunn on 12/22/25.
-  
-*/
+"widget_title" = "Factuurbeheer";
+"widget_description" = "Volg en betaal facturen vanaf je beginscherm.";
+"no_data" = "Geen gegevens";
+"sync_prompt" = "Open de app om te synchroniseren";
+"needs_attention" = "Aandacht vereist";
+"all_clear" = "Helemaal bijgewerkt";
+"overdue_bills" = "Achterstallige facturen";
+"nothing_overdue" = "Niets achterstallig";
+"overdue_label" = "te laat";
+"next_bill" = "Volgende factuur:";
+"mark_paid" = "Markeer als betaald";
+"auto_draft" = "Automatische incasso";
+"manual_pay" = "Handmatige betaling";
+"no_upcoming" = "Geen komende facturen";
+"updated_at %@" = "Bijgewerkt op %@";

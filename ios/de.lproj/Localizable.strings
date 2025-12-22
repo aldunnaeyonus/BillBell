@@ -1,13 +1,13 @@
 /* Calendar Access */
-"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
-"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
+"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) benötigt Zugriff auf deinen Kalender, um automatische Erinnerungen für Rechnungsfälligkeiten und Zahlungsverfolgung zu planen.";
+"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) benötigt Zugriff auf deinen Kalender, um automatische Erinnerungen für Rechnungsfälligkeiten und Zahlungsverfolgung zu planen.";
 
 /* Face ID Access */
-"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) uses Face ID to securely unlock the app and authorize quick access to your shared bill data.";
+"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) verwendet Face ID, um die App sicher zu entsperren und schnellen Zugriff auf deine geteilten Rechnungsdaten zu autorisieren.";
 
 /* Reminders Access */
-"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
-"NSRemindersUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
+"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) benötigt Zugriff auf deine Erinnerungen, um automatische, zuverlässige Aufgaben für Rechnungsfälligkeiten und Zahlungsverfolgung zu planen.";
+"NSRemindersUsageDescription" = "$(PRODUCT_NAME) benötigt Zugriff auf deine Erinnerungen, um automatische, zuverlässige Aufgaben für Rechnungsfälligkeiten und Zahlungsverfolgung zu planen.";
 
-/*Camera */
-"NSCameraUsageDescription" = "$(PRODUCT_NAME) needs access to your Camera to scan bills to add them to your lister without having to type them in.";
+/* Camera Access */
+"NSCameraUsageDescription" = "$(PRODUCT_NAME) benötigt Zugriff auf deine Kamera, um Rechnungen zu scannen und deiner Liste hinzuzufügen, ohne sie abtippen zu müssen.";

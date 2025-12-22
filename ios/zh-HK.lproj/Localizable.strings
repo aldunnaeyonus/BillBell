@@ -1,13 +1,13 @@
 /* Calendar Access */
-"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
-"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
+"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) 需要访问您的日历，以便为账单到期日和付款跟踪安排自动提醒。";
+"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) 需要访问您的日历，以便为账单到期日和付款跟踪安排自动提醒。";
 
 /* Face ID Access */
-"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) uses Face ID to securely unlock the app and authorize quick access to your shared bill data.";
+"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) 使用面容 ID 安全解锁 App 并授权快速访问您的共享账单数据。";
 
 /* Reminders Access */
-"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
-"NSRemindersUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
+"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) 需要访问您的提醒事项，以便为账单到期日和付款跟踪安排自动且可靠的任务。";
+"NSRemindersUsageDescription" = "$(PRODUCT_NAME) 需要访问您的提醒事项，以便为账单到期日和付款跟踪安排自动且可靠的任务。";
 
-/*Camera */
-"NSCameraUsageDescription" = "$(PRODUCT_NAME) needs access to your Camera to scan bills to add them to your lister without having to type them in.";
+/* Camera Access */
+"NSCameraUsageDescription" = "$(PRODUCT_NAME) 需要访问您的相机以扫描账单并将其添加到列表中，而无需手动输入。";

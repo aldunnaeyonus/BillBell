@@ -1,7 +1,15 @@
-/* 
-  Localizable.strings
-  BillBell
-
-  Created by Andrew Dunn on 12/22/25.
-  
-*/
+"widget_title" = "Seguidor de facturas";
+"widget_description" = "Rastrea y paga facturas desde tu pantalla de inicio.";
+"no_data" = "Sin datos";
+"sync_prompt" = "Abrir para sincronizar";
+"needs_attention" = "Requiere atención";
+"all_clear" = "Todo al día";
+"overdue_bills" = "Facturas vencidas";
+"nothing_overdue" = "Nada vencido";
+"overdue_label" = "vencido";
+"next_bill" = "Próxima:";
+"mark_paid" = "Marcar pagado";
+"auto_draft" = "Débito auto.";
+"manual_pay" = "Pago manual";
+"no_upcoming" = "No hay próximas";
+"updated_at %@" = "Act. %@";

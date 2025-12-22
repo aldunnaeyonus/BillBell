@@ -1,13 +1,13 @@
 /* Calendar Access */
-"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
-"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
+"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) precisa de acesso ao seu Calendário para agendar lembretes automáticos de vencimento de contas e rastreamento de pagamentos.";
+"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) precisa de acesso ao seu Calendário para agendar lembretes automáticos de vencimento de contas e rastreamento de pagamentos.";
 
 /* Face ID Access */
-"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) uses Face ID to securely unlock the app and authorize quick access to your shared bill data.";
+"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) usa o Face ID para desbloquear o app com segurança e autorizar acesso rápido aos seus dados de contas compartilhadas.";
 
 /* Reminders Access */
-"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
-"NSRemindersUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
+"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) precisa de acesso aos seus Lembretes para agendar tarefas automáticas e confiáveis para vencimento de contas e rastreamento de pagamentos.";
+"NSRemindersUsageDescription" = "$(PRODUCT_NAME) precisa de acesso aos seus Lembretes para agendar tarefas automáticas e confiáveis para vencimento de contas e rastreamento de pagamentos.";
 
-/*Camera */
-"NSCameraUsageDescription" = "$(PRODUCT_NAME) needs access to your Camera to scan bills to add them to your lister without having to type them in.";
+/* Camera Access */
+"NSCameraUsageDescription" = "$(PRODUCT_NAME) precisa de acesso à sua Câmera para escanear contas e adicioná-las à sua lista sem precisar digitar.";

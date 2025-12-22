@@ -1,13 +1,13 @@
 /* Calendar Access */
-"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
-"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
+"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) ha bisogno di accedere al tuo Calendario per programmare promemoria automatici per le scadenze delle bollette e il monitoraggio dei pagamenti.";
+"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) ha bisogno di accedere al tuo Calendario per programmare promemoria automatici per le scadenze delle bollette e il monitoraggio dei pagamenti.";
 
 /* Face ID Access */
-"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) uses Face ID to securely unlock the app and authorize quick access to your shared bill data.";
+"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) utilizza Face ID per sbloccare l'app in modo sicuro e autorizzare l'accesso rapido ai dati condivisi delle bollette.";
 
 /* Reminders Access */
-"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
-"NSRemindersUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
+"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) ha bisogno di accedere ai tuoi Promemoria per programmare attività automatiche e affidabili per le scadenze delle bollette e il monitoraggio dei pagamenti.";
+"NSRemindersUsageDescription" = "$(PRODUCT_NAME) ha bisogno di accedere ai tuoi Promemoria per programmare attività automatiche e affidabili per le scadenze delle bollette e il monitoraggio dei pagamenti.";
 
-/*Camera */
-"NSCameraUsageDescription" = "$(PRODUCT_NAME) needs access to your Camera to scan bills to add them to your lister without having to type them in.";
+/* Camera Access */
+"NSCameraUsageDescription" = "$(PRODUCT_NAME) ha bisogno di accedere alla tua Fotocamera per scansionare le bollette e aggiungerle alla tua lista senza doverle digitare.";

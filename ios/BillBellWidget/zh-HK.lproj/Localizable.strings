@@ -1,7 +1,15 @@
-/* 
-  Localizable.strings
-  BillBell
-
-  Created by Andrew Dunn on 12/22/25.
-  
-*/
+"widget_title" = "账单追踪";
+"widget_description" = "从主屏幕追踪并支付账单。";
+"no_data" = "无账单数据";
+"sync_prompt" = "打开应用进行同步";
+"needs_attention" = "需要关注";
+"all_clear" = "全部清除";
+"overdue_bills" = "逾期账单";
+"nothing_overdue" = "无逾期";
+"overdue_label" = "逾期";
+"next_bill" = "下一笔账单：";
+"mark_paid" = "标记为已付";
+"auto_draft" = "自动扣款";
+"manual_pay" = "手动支付";
+"no_upcoming" = "无待办账单";
+"updated_at %@" = "更新于 %@";

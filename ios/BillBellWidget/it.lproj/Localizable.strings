@@ -1,7 +1,15 @@
-/* 
-  Localizable.strings
-  BillBell
-
-  Created by Andrew Dunn on 12/22/25.
-  
-*/
+"widget_title" = "Tracker fatture";
+"widget_description" = "Traccia e paga fatture dalla home.";
+"no_data" = "Nessun dato";
+"sync_prompt" = "Apri per sincro";
+"needs_attention" = "Richiede attenzione";
+"all_clear" = "Tutto a posto";
+"overdue_bills" = "Fatture scadute";
+"nothing_overdue" = "Nulla di scaduto";
+"overdue_label" = "scaduto";
+"next_bill" = "Prossima:";
+"mark_paid" = "Segna pagata";
+"auto_draft" = "Addebito auto.";
+"manual_pay" = "Pagamento manuale";
+"no_upcoming" = "Nessuna fattura";
+"updated_at %@" = "Aggiornato %@";

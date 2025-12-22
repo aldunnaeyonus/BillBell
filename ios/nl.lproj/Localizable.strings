@@ -1,13 +1,13 @@
 /* Calendar Access */
-"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
-"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
+"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) heeft toegang tot je Agenda nodig om automatische herinneringen voor vervaldatums van rekeningen en betalingsopvolging te plannen.";
+"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) heeft toegang tot je Agenda nodig om automatische herinneringen voor vervaldatums van rekeningen en betalingsopvolging te plannen.";
 
 /* Face ID Access */
-"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) uses Face ID to securely unlock the app and authorize quick access to your shared bill data.";
+"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) gebruikt Face ID om de app veilig te ontgrendelen en snelle toegang tot je gedeelde rekeninggegevens te autoriseren.";
 
 /* Reminders Access */
-"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
-"NSRemindersUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
+"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) heeft toegang tot je Herinneringen nodig om automatische, betrouwbare taken voor vervaldatums van rekeningen en betalingsopvolging te plannen.";
+"NSRemindersUsageDescription" = "$(PRODUCT_NAME) heeft toegang tot je Herinneringen nodig om automatische, betrouwbare taken voor vervaldatums van rekeningen en betalingsopvolging te plannen.";
 
-/*Camera */
-"NSCameraUsageDescription" = "$(PRODUCT_NAME) needs access to your Camera to scan bills to add them to your lister without having to type them in.";
+/* Camera Access */
+"NSCameraUsageDescription" = "$(PRODUCT_NAME) heeft toegang tot je Camera nodig om rekeningen te scannen en aan je lijst toe te voegen zonder dat je ze hoeft in te typen.";

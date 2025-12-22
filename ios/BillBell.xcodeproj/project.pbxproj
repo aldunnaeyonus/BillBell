@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,10 +14,43 @@
 		8581F6562EF9FFA8007AC3AE /* google-services.json in Resources */ = {isa = PBXBuildFile; fileRef = 8581F6542EF9FFA8007AC3AE /* google-services.json */; };
 		8581F6572EF9FFA8007AC3AE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8581F6552EF9FFA8007AC3AE /* GoogleService-Info.plist */; };
 		8581F65A2EFA00EE007AC3AE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8581F6582EFA00EE007AC3AE /* Localizable.strings */; };
+		8581F65F2EFA0601007AC3AE /* LiveActivityModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65B2EFA0601007AC3AE /* LiveActivityModule.m */; };
+		8581F6602EFA0601007AC3AE /* MarkBillPaidIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65D2EFA0601007AC3AE /* MarkBillPaidIntent.swift */; };
+		8581F6612EFA0601007AC3AE /* LiveActivityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65C2EFA0601007AC3AE /* LiveActivityModule.swift */; };
+		8581F6622EFA0601007AC3AE /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65E2EFA0601007AC3AE /* SharedData.swift */; };
+		8581F6692EFA061A007AC3AE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8581F6682EFA061A007AC3AE /* WidgetKit.framework */; };
+		8581F66B2EFA061A007AC3AE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8581F66A2EFA061A007AC3AE /* SwiftUI.framework */; };
+		8581F6782EFA061B007AC3AE /* BillBellWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8581F6672EFA061A007AC3AE /* BillBellWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8581F67E2EFA066D007AC3AE /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65E2EFA0601007AC3AE /* SharedData.swift */; };
+		8581F67F2EFA066D007AC3AE /* MarkBillPaidIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65D2EFA0601007AC3AE /* MarkBillPaidIntent.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		CA23C6B48AA9F498D207F306 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7732A334DE632CEDDD3C61CF /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8581F6762EFA061B007AC3AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8581F6662EFA061A007AC3AE;
+			remoteInfo = BillBellWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8581F67D2EFA061B007AC3AE /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				8581F6782EFA061B007AC3AE /* BillBellWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		13B07F961A680F5B00A75B9A /* BillBell.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BillBell.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -29,6 +62,30 @@
 		8581F6542EF9FFA8007AC3AE /* google-services.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "google-services.json"; sourceTree = "<group>"; };
 		8581F6552EF9FFA8007AC3AE /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8581F6592EFA00EE007AC3AE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		8581F65B2EFA0601007AC3AE /* LiveActivityModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LiveActivityModule.m; sourceTree = "<group>"; };
+		8581F65C2EFA0601007AC3AE /* LiveActivityModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityModule.swift; sourceTree = "<group>"; };
+		8581F65D2EFA0601007AC3AE /* MarkBillPaidIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkBillPaidIntent.swift; sourceTree = "<group>"; };
+		8581F65E2EFA0601007AC3AE /* SharedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedData.swift; sourceTree = "<group>"; };
+		8581F6672EFA061A007AC3AE /* BillBellWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BillBellWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		8581F6682EFA061A007AC3AE /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		8581F66A2EFA061A007AC3AE /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		8581F6882EFA06B8007AC3AE /* zh-HK */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-HK"; path = "zh-HK.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		8581F68B2EFA06BB007AC3AE /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		8581F68E2EFA06BE007AC3AE /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		8581F6912EFA06C4007AC3AE /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; };
+		8581F6942EFA06C9007AC3AE /* en-AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-AU"; path = "en-AU.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		8581F6972EFA06CD007AC3AE /* en-IN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-IN"; path = "en-IN.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		8581F69A2EFA06D0007AC3AE /* en-GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-GB"; path = "en-GB.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		8581F69D2EFA06D4007AC3AE /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		8581F6A02EFA06DA007AC3AE /* fr-CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "fr-CA"; path = "fr-CA.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		8581F6A32EFA06DF007AC3AE /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		8581F6A62EFA06E5007AC3AE /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
+		8581F6A92EFA06EB007AC3AE /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		8581F6AC2EFA06F4007AC3AE /* es-419 */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-419"; path = "es-419.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		8581F6AF2EFA06F8007AC3AE /* es-US */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-US"; path = "es-US.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		8581F6B22EFA06FE007AC3AE /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		8581F6B52EFA0707007AC3AE /* pt-PT */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-PT"; path = "pt-PT.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		8581F6B82EFA070C007AC3AE /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		8D9D6B55BB1A741ECE6BCDF8 /* Pods-BillBell.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BillBell.debug.xcconfig"; path = "Target Support Files/Pods-BillBell/Pods-BillBell.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = BillBell/SplashScreen.storyboard; sourceTree = "<group>"; };
 		B30C9AAEFCA6C61A309ADB87 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = BillBell/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -38,12 +95,42 @@
 		F11748442D0722820044C1D9 /* BillBell-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "BillBell-Bridging-Header.h"; path = "BillBell/BillBell-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8581F6792EFA061B007AC3AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8581F6662EFA061A007AC3AE /* BillBellWidgetExtension */;
+		};
+		8581F6C02EFA0ADA007AC3AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				BillBellWidgetAttributes.swift,
+			);
+			target = 13B07F861A680F5B00A75B9A /* BillBell */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		8581F66C2EFA061A007AC3AE /* BillBellWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (8581F6C02EFA0ADA007AC3AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 8581F6792EFA061B007AC3AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = BillBellWidget; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				619D81797028B4BD6E53C690 /* libPods-BillBell.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8581F6642EFA061A007AC3AE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8581F66B2EFA061A007AC3AE /* SwiftUI.framework in Frameworks */,
+				8581F6692EFA061A007AC3AE /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,6 +148,10 @@
 		13B07FAE1A68108700A75B9A /* BillBell */ = {
 			isa = PBXGroup;
 			children = (
+				8581F65B2EFA0601007AC3AE /* LiveActivityModule.m */,
+				8581F65C2EFA0601007AC3AE /* LiveActivityModule.swift */,
+				8581F65D2EFA0601007AC3AE /* MarkBillPaidIntent.swift */,
+				8581F65E2EFA0601007AC3AE /* SharedData.swift */,
 				8581F6582EFA00EE007AC3AE /* Localizable.strings */,
 				8581F6542EF9FFA8007AC3AE /* google-services.json */,
 				8581F6552EF9FFA8007AC3AE /* GoogleService-Info.plist */,
@@ -80,6 +171,8 @@
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				6BB26BE983B02D4120858254 /* libPods-BillBell.a */,
+				8581F6682EFA061A007AC3AE /* WidgetKit.framework */,
+				8581F66A2EFA061A007AC3AE /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -113,6 +206,7 @@
 			children = (
 				13B07FAE1A68108700A75B9A /* BillBell */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
+				8581F66C2EFA061A007AC3AE /* BillBellWidget */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				3271D14072A06B714F3C1601 /* Pods */,
@@ -127,6 +221,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* BillBell.app */,
+				8581F6672EFA061A007AC3AE /* BillBellWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -155,15 +250,39 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
 				11314E71FC047F7D29EA4908 /* [CP] Embed Pods Frameworks */,
+				8581F67D2EFA061B007AC3AE /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				8581F6772EFA061B007AC3AE /* PBXTargetDependency */,
 			);
 			name = BillBell;
 			productName = BillBell;
 			productReference = 13B07F961A680F5B00A75B9A /* BillBell.app */;
 			productType = "com.apple.product-type.application";
+		};
+		8581F6662EFA061A007AC3AE /* BillBellWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8581F67A2EFA061B007AC3AE /* Build configuration list for PBXNativeTarget "BillBellWidgetExtension" */;
+			buildPhases = (
+				8581F6632EFA061A007AC3AE /* Sources */,
+				8581F6642EFA061A007AC3AE /* Frameworks */,
+				8581F6652EFA061A007AC3AE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8581F66C2EFA061A007AC3AE /* BillBellWidget */,
+			);
+			name = BillBellWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = BillBellWidgetExtension;
+			productReference = 8581F6672EFA061A007AC3AE /* BillBellWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -171,10 +290,14 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
+					};
+					8581F6662EFA061A007AC3AE = {
+						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
@@ -185,6 +308,23 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-HK",
+				"zh-Hans",
+				"zh-Hant",
+				nl,
+				"en-AU",
+				"en-IN",
+				"en-GB",
+				fr,
+				"fr-CA",
+				de,
+				it,
+				ja,
+				"es-419",
+				"es-US",
+				es,
+				"pt-PT",
+				"pt-BR",
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
@@ -192,6 +332,7 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* BillBell */,
+				8581F6662EFA061A007AC3AE /* BillBellWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -208,6 +349,13 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
 				2953A76AEFA64FCD817B3AC2 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8581F6652EFA061A007AC3AE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,16 +534,54 @@
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
 				CA23C6B48AA9F498D207F306 /* ExpoModulesProvider.swift in Sources */,
+				8581F65F2EFA0601007AC3AE /* LiveActivityModule.m in Sources */,
+				8581F6602EFA0601007AC3AE /* MarkBillPaidIntent.swift in Sources */,
+				8581F6612EFA0601007AC3AE /* LiveActivityModule.swift in Sources */,
+				8581F6622EFA0601007AC3AE /* SharedData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8581F6632EFA061A007AC3AE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8581F67E2EFA066D007AC3AE /* SharedData.swift in Sources */,
+				8581F67F2EFA066D007AC3AE /* MarkBillPaidIntent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8581F6772EFA061B007AC3AE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8581F6662EFA061A007AC3AE /* BillBellWidgetExtension */;
+			targetProxy = 8581F6762EFA061B007AC3AE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		8581F6582EFA00EE007AC3AE /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
 				8581F6592EFA00EE007AC3AE /* en */,
+				8581F6882EFA06B8007AC3AE /* zh-HK */,
+				8581F68B2EFA06BB007AC3AE /* zh-Hans */,
+				8581F68E2EFA06BE007AC3AE /* zh-Hant */,
+				8581F6912EFA06C4007AC3AE /* nl */,
+				8581F6942EFA06C9007AC3AE /* en-AU */,
+				8581F6972EFA06CD007AC3AE /* en-IN */,
+				8581F69A2EFA06D0007AC3AE /* en-GB */,
+				8581F69D2EFA06D4007AC3AE /* fr */,
+				8581F6A02EFA06DA007AC3AE /* fr-CA */,
+				8581F6A32EFA06DF007AC3AE /* de */,
+				8581F6A62EFA06E5007AC3AE /* it */,
+				8581F6A92EFA06EB007AC3AE /* ja */,
+				8581F6AC2EFA06F4007AC3AE /* es-419 */,
+				8581F6AF2EFA06F8007AC3AE /* es-US */,
+				8581F6B22EFA06FE007AC3AE /* es */,
+				8581F6B52EFA0707007AC3AE /* pt-PT */,
+				8581F6B82EFA070C007AC3AE /* pt-BR */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -418,12 +604,14 @@
 					"FB_SONARKIT_ENABLED=1",
 				);
 				INFOPLIST_FILE = BillBell/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				INFOPLIST_KEY_CFBundleDisplayName = BillBell;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 26.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -450,12 +638,14 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2899NRK28S;
 				INFOPLIST_FILE = BillBell/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				INFOPLIST_KEY_CFBundleDisplayName = BillBell;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 26.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -589,6 +779,99 @@
 			};
 			name = Release;
 		};
+		8581F67B2EFA061B007AC3AE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 2899NRK28S;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BillBellWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BillBellWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 26.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dunn.carabali.billbell.BillBellWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8581F67C2EFA061B007AC3AE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 2899NRK28S;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BillBellWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BillBellWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 26.1;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dunn.carabali.billbell.BillBellWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -606,6 +889,15 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8581F67A2EFA061B007AC3AE /* Build configuration list for PBXNativeTarget "BillBellWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8581F67B2EFA061B007AC3AE /* Debug */,
+				8581F67C2EFA061B007AC3AE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -1,13 +1,13 @@
 /* Calendar Access */
-"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
-"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
+"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) a besoin d’accéder à votre Calendrier pour programmer des rappels automatiques d’échéance de factures et le suivi des paiements.";
+"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) a besoin d’accéder à votre Calendrier pour programmer des rappels automatiques d’échéance de factures et le suivi des paiements.";
 
 /* Face ID Access */
-"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) uses Face ID to securely unlock the app and authorize quick access to your shared bill data.";
+"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) utilise Face ID pour déverrouiller l’app en toute sécurité et autoriser un accès rapide à vos données de factures partagées.";
 
 /* Reminders Access */
-"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
-"NSRemindersUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
+"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) a besoin d’accéder à vos Rappels pour programmer des tâches automatiques et fiables pour les échéances de factures et le suivi des paiements.";
+"NSRemindersUsageDescription" = "$(PRODUCT_NAME) a besoin d’accéder à vos Rappels pour programmer des tâches automatiques et fiables pour les échéances de factures et le suivi des paiements.";
 
-/*Camera */
-"NSCameraUsageDescription" = "$(PRODUCT_NAME) needs access to your Camera to scan bills to add them to your lister without having to type them in.";
+/* Camera Access */
+"NSCameraUsageDescription" = "$(PRODUCT_NAME) a besoin d’accéder à votre Appareil photo pour scanner les factures et les ajouter à votre liste sans saisie manuelle.";
