@@ -11,7 +11,7 @@ import { Platform, NativeModules, LogBox, AppState, AppStateStatus, NativeEventE
 import { Buffer } from "buffer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur"; 
-
+import { ErrorBoundary } from "../src/ui/ErrorBoundary";
 import { api } from "../src/api/client";
 import { getToken, clearToken } from "../src/auth/session";
 import { initBackgroundFetch, syncAndRefresh } from "../src/native/LiveActivity";
@@ -214,7 +214,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <I18nextProvider i18n={i18n}>
+        <ErrorBoundary>
         <AppStack />
+        </ErrorBoundary>
       </I18nextProvider>
     </GestureHandlerRootView>
   );

@@ -3,30 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet, Image, Keyboard } from 'r
 import { Ionicons } from '@expo/vector-icons';
 import { Theme } from './useTheme';
 import * as Haptics from 'expo-haptics';
-
-// Map common names to domains for Clearbit
-const VENDOR_DOMAINS: Record<string, string> = {
-  "Netflix": "netflix.com",
-  "Spotify": "spotify.com",
-  "Hulu": "hulu.com",
-  "Disney+": "disneyplus.com",
-  "HBO Max": "hbo.com",
-  "Amazon Prime": "amazon.com",
-  "Chase": "chase.com",
-  "Bank of America": "bankofamerica.com",
-  "Wells Fargo": "wellsfargo.com",
-  "Citi": "citi.com",
-  "Capital One": "capitalone.com",
-  "American Express": "americanexpress.com",
-  "Geico": "geico.com",
-  "State Farm": "statefarm.com",
-  "ComEd": "comed.com",
-  "PG&E": "pge.com",
-  "T-Mobile": "t-mobile.com",
-  "Verizon": "verizon.com",
-  "AT&T": "att.com",
-  "Xfinity": "xfinity.com"
-};
+import { VENDOR_DOMAINS, getVendorLogo } from '../data/vendors'; // IMPORTED
 
 interface CreditorAutocompleteProps {
   value: string;
@@ -38,9 +15,12 @@ interface CreditorAutocompleteProps {
 export function CreditorAutocomplete({ value, onChangeText, theme, placeholder }: CreditorAutocompleteProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  // Filter logic using the global list
   const suggestions = useMemo(() => {
     if (!value || value.length < 2) return [];
     const lower = value.toLowerCase();
+    
+    // Convert object keys to array and filter
     return Object.keys(VENDOR_DOMAINS)
       .filter(v => v.toLowerCase().includes(lower))
       .slice(0, 5);
@@ -53,14 +33,18 @@ export function CreditorAutocomplete({ value, onChangeText, theme, placeholder }
     Keyboard.dismiss();
   };
 
+  // Resolve logo using the global helper
+  const currentLogo = getVendorLogo(value);
+
   return (
     <View style={{ zIndex: 100 }}>
       {/* Input Field */}
       <View style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+        
         {/* Dynamic Logo in Input */}
-        {VENDOR_DOMAINS[value] ? (
+        {currentLogo ? (
           <Image 
-            source={{ uri: `https://logo.clearbit.com/${VENDOR_DOMAINS[value]}` }} 
+            source={{ uri: currentLogo }} 
             style={{ width: 24, height: 24, borderRadius: 12 }} 
           />
         ) : (
@@ -80,26 +64,35 @@ export function CreditorAutocomplete({ value, onChangeText, theme, placeholder }
       {/* Dropdown */}
       {showSuggestions && suggestions.length > 0 && (
         <View style={[styles.dropdown, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-          {suggestions.map((item, index) => (
-            <Pressable
-              key={item}
-              onPress={() => handleSelect(item)}
-              style={({ pressed }) => [
-                styles.item,
-                { 
-                  borderBottomWidth: index === suggestions.length - 1 ? 0 : 1,
-                  borderBottomColor: theme.colors.border,
-                  backgroundColor: pressed ? theme.colors.bg : 'transparent'
-                }
-              ]}
-            >
-              <Image 
-                source={{ uri: `https://logo.clearbit.com/${VENDOR_DOMAINS[item]}` }} 
-                style={{ width: 24, height: 24, borderRadius: 4, marginRight: 10, backgroundColor: '#eee' }} 
-              />
-              <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '500' }}>{item}</Text>
-            </Pressable>
-          ))}
+          {suggestions.map((item, index) => {
+            const itemLogo = getVendorLogo(item);
+            return (
+              <Pressable
+                key={item}
+                onPress={() => handleSelect(item)}
+                style={({ pressed }) => [
+                  styles.item,
+                  { 
+                    borderBottomWidth: index === suggestions.length - 1 ? 0 : 1,
+                    borderBottomColor: theme.colors.border,
+                    backgroundColor: pressed ? theme.colors.bg : 'transparent'
+                  }
+                ]}
+              >
+                {/* Logo in Dropdown */}
+                {itemLogo ? (
+                   <Image 
+                    source={{ uri: itemLogo }} 
+                    style={{ width: 24, height: 24, borderRadius: 4, marginRight: 10, backgroundColor: '#fff' }} 
+                  />
+                ) : (
+                   <Ionicons name="business" size={20} color={theme.colors.subtext} style={{ marginRight: 10 }} />
+                )}
+               
+                <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '500' }}>{item}</Text>
+              </Pressable>
+            );
+          })}
         </View>
       )}
     </View>
