@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
+import { useCameraPermissions } from "expo-camera"; // Added: Camera
+import * as Calendar from "expo-calendar"; // Added: Calendar
 import { useTheme } from "../src/ui/useTheme";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-// Added Alert to imports
 import {
   Platform,
   NativeModules,
@@ -42,13 +43,7 @@ import { PrivacyOverlay } from "../src/ui/PrivacyOverlay";
 import { OfflineBanner } from "../src/ui/OfflineBanner";
 import hotUpdate from "react-native-ota-hot-update";
 import ReactNativeBlobUtil from "react-native-blob-util";
-
-// ---------------------------------------------------------
-// NOTE: Ensure these are imported.
-// You did not provide the import path for hotUpdate in the snippet.
-// import ReactNativeBlobUtil from 'react-native-blob-util';
-// import hotUpdate from 'your-hot-update-module';
-// ---------------------------------------------------------
+import { storage } from "../src/storage/storage"; // Added: Storage for tracking permissions
 
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
 
@@ -73,11 +68,46 @@ function AppStack() {
   const [isBlurred, setIsBlurred] = useState(false);
   const [progress, setProgress] = useState(0);
   const [version, setVersion] = useState("0");
+  const [_, requestCameraPermission] = useCameraPermissions(); // Hook for camera
   const apiVersion = "https://dunn-carabali.com/billMVP/ota/update.json";
 
   useEffect(() => {
     configureGoogle();
   }, []);
+
+  // --- NEW: One-time Startup Permission Request ---
+  useEffect(() => {
+    const requestStartupPermissions = async () => {
+      const PERMISSION_KEY = "billbell_startup_permissions_requested";
+      const hasRequested = storage.getBoolean(PERMISSION_KEY);
+
+      if (!hasRequested) {
+        try {
+          // 1. Request Notifications (for due date alerts)
+          await Notifications.requestPermissionsAsync();
+          
+          // 2. Request Camera (for bill scanning)
+          await requestCameraPermission();
+
+          // 3. Request Calendar (for syncing bills)
+          await Calendar.requestCalendarPermissionsAsync();
+          
+          // 4. Request Reminders (iOS specific requirement for full calendar access)
+          if (Platform.OS === 'ios') {
+            await Calendar.requestRemindersPermissionsAsync();
+          }
+          
+          // Mark as requested so it doesn't run again on next boot
+          storage.set(PERMISSION_KEY, true);
+        } catch (error) {
+          console.warn("Failed to request startup permissions:", error);
+        }
+      }
+    };
+
+    requestStartupPermissions();
+  }, []);
+  // ------------------------------------------------
 
   useEffect(() => {
     initBackgroundFetch();
@@ -136,8 +166,7 @@ function AppStack() {
         console.log("update success!");
       },
       updateFail(message?: string) {
-               console.log(message);
-
+        console.log(message);
       },
       progress(received: string, total: string) {
         const percent = (+received / +total) * 100;
