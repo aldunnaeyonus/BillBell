@@ -76,7 +76,7 @@ async function request(path: string, opts: RequestInit = {}) {
 
     if (shouldForceLogout) {
       await clearToken();
-      await hardReset(); // Corrected: Call function directly
+      await hardReset(); 
       router.replace("/(auth)/login");
       return;
     }
@@ -84,7 +84,7 @@ async function request(path: string, opts: RequestInit = {}) {
     if (res.status === 409 && errMsg.includes("User not in family")) {
       router.replace("/(app)/family");
       await AsyncStorage.removeItem("billbell_pending_family_code");
-      return; // Implicitly returns undefined to the caller
+      return; 
     }
 
     throw new Error(errMsg || `Request failed (${res.status})`);
@@ -174,6 +174,7 @@ async function ensureFamilyKeyLoaded() {
   const wrapped = resp?.encrypted_key;
   const keyVersion = Number(resp?.key_version);
   const familyId = Number(resp?.family_id);
+  const history = resp?.history || []; // <--- Capture history
 
   let currentUserId: number | undefined;
   try {
@@ -188,6 +189,22 @@ async function ensureFamilyKeyLoaded() {
   }
 
   try {
+    // 2. PROCESS KEY HISTORY
+    // If server returned history, cache ALL keys to ensure we can read old bills
+    if (Array.isArray(history) && history.length > 0) {
+        console.log(`Syncing ${history.length} family keys from history...`);
+        for (const k of history) {
+            try {
+                if (k.encrypted_key && k.key_version) {
+                    const kHex = await unwrapMyKey(String(k.encrypted_key));
+                    await cacheFamilyKey(kHex, Number(k.key_version));
+                }
+            } catch (err) {
+                console.warn(`Failed to unwrap historical key v${k.key_version}`, err);
+            }
+        }
+    }
+
     const familyKeyHex = await unwrapMyKey(String(wrapped));
     await cacheFamilyKey(familyKeyHex, keyVersion);
     await pruneFamilyKeys(50); 
@@ -249,8 +266,9 @@ async function ensureFamilyKeyLoaded() {
 }
 
 // --- Lazy re-encrypt on read (best-effort) ---
-const REENC_MAX_PER_LOAD = 3;
-const REENC_COOLDOWN_MS = 60 * 60 * 1000; 
+// BOOSTED LIMITS for faster migration
+const REENC_MAX_PER_LOAD = 50; 
+const REENC_COOLDOWN_MS = 5000; 
 const REENC_LAST_MS = "billbell_reencrypt_last_ms";
 
 async function maybeReencryptBills(bills: any[]) {
@@ -263,8 +281,6 @@ async function maybeReencryptBills(bills: any[]) {
 
   let upgraded = 0;
   
-  // Note: We keep this sequential because we don't want to spam the server with 
-  // multiple PUT requests in the background. It is a maintenance task.
   for (const b of bills) {
     if (upgraded >= REENC_MAX_PER_LOAD) break;
 
@@ -330,19 +346,14 @@ async function orchestrateKeyRotation(): Promise<{ familyId: number; keyVersion:
     const membersResponse = await apiMembers();
     const members = membersResponse.members || [];
 
-    // Parallelize requests to speed up rotation
     const sharePromises: Promise<any>[] = [];
 
     for (const member of members) {
         const targetUserId = member.id;
         
-        // We need to await this because we can't map over members and call async inside map 
-        // without handling the promise array.
-        // However, we can create a promise for the whole operation per user.
         sharePromises.push((async () => {
              const pubKeyResponse = await apiGetPublicKey(targetUserId); 
         
-            // Handles legacy (single key) and new (array of keys) response format
             const keysToShare = pubKeyResponse.public_keys || 
                                 (pubKeyResponse.public_key ? [{
                                     public_key: pubKeyResponse.public_key,
@@ -534,6 +545,8 @@ export const api = {
         due_date: bill.due_date,
         status: bill.status,
         recurrence: bill.recurrence_rule ?? bill.recurrence ?? "none",
+        // FIX: Explicitly send the key version used for encryption
+        cipher_version: currentVersion, 
       };
 
       return request("/bills", { method: "POST", body: JSON.stringify(payload) });

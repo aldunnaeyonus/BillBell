@@ -1102,6 +1102,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginTop: 8,
+    marginBottom:15,
     gap: 10,
   },
   searchInput: {

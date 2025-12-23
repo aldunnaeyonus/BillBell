@@ -144,7 +144,7 @@ class KeysController {
     ]);
   }
 
-  // Fetch my wrapped key for the family's CURRENT version
+  // Fetch my wrapped key for the family's CURRENT version AND history
   public static function getMySharedKey() {
     $userId = Auth::requireUserId();
     RateLimit::hit("keys_fetch:{$userId}", 60, 60);
@@ -169,17 +169,16 @@ class KeysController {
     $familyId = (int)$fam["family_id"];
     $keyVersion = (int)($fam["key_version"] ?? 1);
     
-    // FIX 1: Retrieve device_id from the query parameters (sent by client)
-    $deviceId = $_GET['device_id'] ?? '00000000-0000-0000-0000-000000000000'; // Default to legacy ID
+    // Retrieve device_id from the query parameters (sent by client)
+    $deviceId = $_GET['device_id'] ?? '00000000-0000-0000-0000-000000000000'; 
 
-    // FIX 2: Fetch versioned shared key row using device_id
+    // 1. Fetch CURRENT key (primary requirement)
     $stmt = $pdo->prepare("
       SELECT encrypted_key
       FROM family_shared_keys
       WHERE family_id = ? AND user_id = ? AND key_version = ? AND device_id = ?
       LIMIT 1
     ");
-    // Execute with the new device ID
     $stmt->execute([$familyId, $userId, $keyVersion, $deviceId]);
     $row = $stmt->fetch();
 
@@ -191,13 +190,26 @@ class KeysController {
       ], 404);
     }
 
+    // 2. Fetch KEY HISTORY (Fix for rotation/sync issues)
+    // This allows the client to download V1, V2... all at once.
+    $histStmt = $pdo->prepare("
+        SELECT key_version, encrypted_key
+        FROM family_shared_keys
+        WHERE family_id = ? AND user_id = ? AND device_id = ?
+        ORDER BY key_version DESC
+    ");
+    $histStmt->execute([$familyId, $userId, $deviceId]);
+    $history = $histStmt->fetchAll();
+
     Utils::json([
       "encrypted_key" => $row["encrypted_key"],
       "family_id" => $familyId,
-      "key_version" => $keyVersion
+      "key_version" => $keyVersion,
+      "history" => $history // <--- New Field
     ]);
   }
-// --- FIX: Added Missing rotateKey method ---
+
+  // --- FIX: Added Missing rotateKey method ---
   public static function rotateKey() {
     $userId = Auth::requireUserId();
     $pdo = DB::pdo();
