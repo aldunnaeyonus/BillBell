@@ -21,6 +21,7 @@
   "Shared Settings": "Gedeelde Instellingen",
   "Import Code": "Importcode (Beveiligingscode voor CSV & XLSX bulk import)",
   "CodeExpires": "Code: {{code}} (verloopt {{expiresAt}})",
+  "top_3_subs": "Top 3 Abonnementen",
   "Mark as Paid": "Markeren als Betaald",
   "Bill reminder": "Rekeningherinnering: ",
   "Can't open link": "Kan link niet openen",

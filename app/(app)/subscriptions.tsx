@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, StyleSheet, FlatList, LayoutAnimation, Platform, UIManager, TouchableOpacity } from "react-native";
-import { Stack, router } from "expo-router";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../src/ui/useTheme";
 import { useBills } from "../../src/hooks/useBills";
@@ -12,6 +12,8 @@ import { Skeleton } from "../../src/ui/Skeleton";
 import { useCurrency } from "../../src/hooks/useCurrency";
 import { formatCurrency } from "@/utils/currency";
 import { KNOWN_SUBSCRIPTIONS } from "@/data/vendors";
+import LinearGradient from "react-native-linear-gradient";
+import { Theme } from "../../src/ui/useTheme";
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -90,6 +92,27 @@ export default function Subscriptions() {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
+    return (
+      <View style={styles.headerShadowContainer}>
+        <LinearGradient
+          colors={[theme.colors.navy, "#1a2c4e"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerGradient}
+        >
+          <View style={styles.headerIconCircle}>
+            <MaterialIcons name="subscriptions" size={28} color="#FFF" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>{title}</Text>
+            <Text style={styles.headerSubtitle}>{subtitle}</Text>
+          </View>
+        </LinearGradient>
+      </View>
+    );
+  }
+
   const renderItem = ({ item }: { item: Bill }) => {
     // Use the enrichment logic here
     const details = enrichSubscription(item.creditor, theme);
@@ -105,6 +128,7 @@ export default function Subscriptions() {
           borderColor: isExpanded ? theme.colors.primary : theme.colors.border 
         }
       ]}>
+
         <ScaleButton
           onPress={() => toggleExpand(String(item.id))}
           style={styles.cardHeader}
@@ -187,7 +211,7 @@ export default function Subscriptions() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      <Stack.Screen options={{ title: t("Subscriptions") }} />
+                  <Header title={t("Subscriptions")} subtitle={t("Top 3 subscriptions")} theme={theme} />
 
       <FlatList
         data={subs}
@@ -229,6 +253,14 @@ const styles = StyleSheet.create({
   cardContainer: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   cardHeader: { flexDirection: "row", alignItems: "center", padding: 16, gap: 16 },
   
+  // Header
+  headerShadowContainer: { backgroundColor: "transparent", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
+  headerGradient: { borderRadius: 20, height: 100, paddingBottom: 10, paddingHorizontal: 16, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
+  headerIconCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center" },
+  headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
+  headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
+
+
   // Expanded Styles
   expandedContent: { padding: 16, borderTopWidth: 1, gap: 12 },
   sectionTitle: { fontSize: 12, fontWeight: "600", textTransform: 'uppercase', marginBottom: 4 },

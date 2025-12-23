@@ -19,10 +19,11 @@ import Slider from "@react-native-community/slider";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
-import { addToCalendar } from "../../src/calendar/calendarSync";
 import { CreditorAutocomplete } from "../../src/ui/CreditorAutocomplete";
 // --- Components ---
 import { SyncQueue } from "../../src/sync/SyncQueue";
+import { useBills } from "../../src/hooks/useBills"; 
+
 
 function Header({
   title,
@@ -199,6 +200,7 @@ export default function BillEdit() {
   const id = params.id ? Number(params.id) : null;
   const theme = useTheme();
   const { t } = useTranslation();
+  const { refetch } = useBills();
 
   const isMounted = useRef(true);
 
@@ -329,23 +331,6 @@ export default function BillEdit() {
     })();
   }, [id]);
 
-  const handleCalendarSync = async () => {
-    if (!id) {
-      Alert.alert(
-        t("Save First"),
-        t("Please save the bill before syncing to calendar.")
-      );
-      return;
-    }
-    const currentBill = {
-      id,
-      creditor,
-      amount_cents: amountCents,
-      due_date: dueDate,
-      notes: notes,
-    };
-    await addToCalendar(currentBill);
-  };
 
   async function save() {
     try {
@@ -368,10 +353,10 @@ export default function BillEdit() {
         payment_method: paymentMethod,
       };
 
-      if (!id)
+      if (!id) 
         await SyncQueue.enqueue(id ? "UPDATE" : "CREATE", { id, ...payload });
       else await api.billsUpdate(id, payload);
-
+          refetch();
       if (isMounted.current) router.back();
     } catch (e: any) {
       if (isMounted.current) Alert.alert(t("Error"), e.message);

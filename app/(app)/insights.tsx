@@ -15,7 +15,7 @@ import {
   ActionSheetIOS,
   Alert,
 } from "react-native";
-import { Stack, useFocusEffect } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { BarChart, PieChart } from "react-native-gifted-charts";
 import { Ionicons } from "@expo/vector-icons";

@@ -759,6 +759,7 @@ export default function Bills() {
 
   useFocusEffect(
     useCallback(() => {
+      refetch();
       StatusBar.setBarStyle("light-content");
       if (Platform.OS === "android") {
         StatusBar.setBackgroundColor("transparent");
