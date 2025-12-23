@@ -1003,7 +1003,7 @@ export default function Bills() {
                // @ts-ignore
                getItemType={(item) => item.type}
                             // @ts-ignore
-               estimatedItemSize={90}
+               estimatedItemSize={100}
                keyExtractor={(item) => item.id}
                contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
                showsVerticalScrollIndicator={false}
