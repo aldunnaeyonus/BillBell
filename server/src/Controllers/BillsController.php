@@ -24,7 +24,7 @@ class BillsController {
   }
 
   // --- HELPER: Smart Date Addition ---
-  // Prevents the "February Bug" (Jan 31 + 1 mo != Mar 3)
+  // Prevents the "February Bug" and handles all recurrence types consistently
   private static function addRecurrenceInterval(\DateTime $date, string $recurrence) {
     $day = (int)$date->format('j');
     $originalDay = $day;
@@ -105,12 +105,12 @@ class BillsController {
 
     $recurrence = $data["recurrence"] ?? "none";
     
-    // FIX: Added missing recurrence types to validation
+    // VALIDATION FIX: Allow all recurrence types supported by markPaid
     $allowedRecurrence = ["none","monthly","weekly","bi-weekly","quarterly","semi-monthly","semi-annually","annually"];
     if (!in_array($recurrence, $allowedRecurrence, true)) {
         Utils::json(["error" => "Invalid recurrence"], 422);
     }
-
+    $endDate = !empty($data["end_date"]) ? $data["end_date"] : null;
     $amountEncrypted = $data["amount_encrypted"] ?? null;
 
     $cipherVersion = self::getFamilyKeyVersion($familyId);
@@ -120,8 +120,8 @@ class BillsController {
      
     $stmt = $pdo->prepare("
       INSERT INTO bills
-      (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version, payment_method)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, end_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version, payment_method)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     ");
 
     $stmt->execute([
@@ -132,6 +132,7 @@ class BillsController {
       (int)$data["amount_cents"],
       $amountEncrypted,
       $data["due_date"],
+      $endDate,
       "active",
       null,
       $recurrence,
@@ -155,7 +156,7 @@ class BillsController {
     $stmt->execute([$id, $familyId]);
     if (!$stmt->fetch()) Utils::json(["error" => "Not found"], 404);
 
-    $fields = ["creditor","amount_cents","amount_encrypted","due_date","recurrence","reminder_offset_days","reminder_time_local","status","notes","cipher_version", "payment_method"];
+    $fields = ["creditor","amount_cents","amount_encrypted","due_date","recurrence","reminder_offset_days", "end_date", "reminder_time_local","status","notes","cipher_version", "payment_method"];
     $sets = [];
     $vals = [];
 
@@ -166,6 +167,9 @@ class BillsController {
           if ($cv < 1) Utils::json(["error" => "Invalid cipher_version"], 422);
           $sets[] = "$f=?";
           $vals[] = $cv;
+        } else if ($f === "end_date") {
+           $sets[] = "$f=?";
+           $vals[] = !empty($data[$f]) ? $data[$f] : null;
         } else {
           $sets[] = "$f=?";
           $vals[] = $data[$f];
@@ -225,15 +229,20 @@ class BillsController {
     $upd = $pdo->prepare("UPDATE bills SET status='paid', snoozed_until=NULL, updated_by_user_id=? WHERE id=? AND family_id=?");
     $upd->execute([$userId, $id, $familyId]);
 
-    // --- FIX: Use robust date calculation logic (fixes Feb bug & crash) ---
+    // --- FIX: Use robust date calculation helper ---
     if ($bill["recurrence"] !== "none") {
       $dt = new \DateTime($bill["due_date"]);
       
-      // Call the helper function
+      // Use the helper to calculate next date safely
       $dt = self::addRecurrenceInterval($dt, $bill["recurrence"]);
       
       $nextDue = $dt->format("Y-m-d");
 
+     $shouldRecur = true;
+      if (!empty($bill["end_date"]) && $nextDue > $bill["end_date"]) {
+          $shouldRecur = false;
+      }
+      
       // Check for duplicates to prevent double-creation
       $chk = $pdo->prepare("SELECT id FROM bills WHERE family_id=? AND creditor=? AND amount_cents=? AND due_date=? LIMIT 1");
       $chk->execute([(int)$bill["family_id"], $bill["creditor"], (int)$bill["amount_cents"], $nextDue]);
@@ -241,8 +250,8 @@ class BillsController {
       if (!$chk->fetch()) {
         $ins = $pdo->prepare("
           INSERT INTO bills
-          (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version, payment_method)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+          (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, end_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version, payment_method)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ");
         $ins->execute([
           (int)$bill["family_id"],
@@ -252,6 +261,7 @@ class BillsController {
           (int)$bill["amount_cents"],
           $bill["amount_encrypted"],
           $nextDue,
+          $bill["end_date"], // Copy end_date to new bill
           "active",
           null,
           $bill["recurrence"],

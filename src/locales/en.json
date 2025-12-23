@@ -6,6 +6,8 @@
   "Error marking bill as paid": "Error marking bill as paid.",
   "Align invoice within frame":"Align invoice within frame",
   "Processing...":"Processing...",
+  "Ends":"Ends",
+  "End Date (Optional)":"End Date (Optional)",
   "Top 3 subscriptions":"Top 3 subscriptions",
   "category_entertainment": "Entertainment",
   "category_utilities": "Utilities & Internet",
@@ -296,7 +298,7 @@
   "All clear": "All clear",
   "Select Chart": "Select Chart",
   "View": "View",
-
+  "Clear": "Clear",
   "Total Pending": "Total Pending",
   "Avg Bill Amount": "Avg Bill Amount",
   "Top Creditor": "Top Creditor",

@@ -11,6 +11,7 @@ export interface Bill {
   reminder_time_local?: string;
   paid_at?: string | null;
   is_paid?: boolean;
+  end_date?: string | null; // <--- Added this field
 }
 
 export interface User {

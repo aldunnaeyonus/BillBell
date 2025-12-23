@@ -1,3 +1,4 @@
+// app/(app)/bill-edit.tsx
 import { useEffect, useMemo, useState, useRef } from "react";
 import {
   View,
@@ -20,28 +21,13 @@ import { useTranslation } from "react-i18next";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 import { CreditorAutocomplete } from "../../src/ui/CreditorAutocomplete";
-// --- Components ---
 import { SyncQueue } from "../../src/sync/SyncQueue";
 import { useBills } from "../../src/hooks/useBills"; 
 
-
-function Header({
-  title,
-  subtitle,
-  theme,
-}: {
-  title: string;
-  subtitle: string;
-  theme: Theme;
-}) {
+function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
   return (
     <View style={styles.headerShadowContainer}>
-      <LinearGradient
-        colors={[theme.colors.navy, "#1a2c4e"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.headerGradient}
-      >
+      <LinearGradient colors={[theme.colors.navy, "#1a2c4e"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.headerGradient}>
         <View style={styles.headerIconCircle}>
           <Ionicons name="receipt" size={28} color="#FFF" />
         </View>
@@ -62,103 +48,22 @@ function SectionTitle({ title, theme }: { title: string; theme: Theme }) {
   );
 }
 
-function InputField({
-  icon,
-  placeholder,
-  value,
-  onChangeText,
-  keyboardType = "default",
-  theme,
-  multiline = false,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  placeholder: string;
-  value: string;
-  onChangeText: (t: string) => void;
-  keyboardType?: any;
-  theme: Theme;
-  multiline?: boolean;
-}) {
+function InputField({ icon, placeholder, value, onChangeText, keyboardType = "default", theme, multiline = false }: { icon: keyof typeof Ionicons.glyphMap; placeholder: string; value: string; onChangeText: (t: string) => void; keyboardType?: any; theme: Theme; multiline?: boolean; }) {
   return (
-    <View
-      style={[
-        styles.inputContainer,
-        {
-          backgroundColor: theme.colors.card,
-          borderColor: theme.colors.border,
-          height: multiline ? 100 : 56,
-          alignItems: multiline ? "flex-start" : "center",
-        },
-      ]}
-    >
-      <Ionicons
-        name={icon}
-        size={20}
-        color={theme.colors.subtext}
-        style={{ marginTop: multiline ? 12 : 0 }}
-      />
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={theme.colors.subtext}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        style={[
-          styles.input,
-          {
-            color: theme.colors.primaryText,
-            height: "100%",
-            paddingTop: multiline ? 12 : 0,
-            textAlignVertical: multiline ? "top" : "center",
-          },
-        ]}
-      />
+    <View style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border, height: multiline ? 100 : 56, alignItems: multiline ? "flex-start" : "center" }]}>
+      <Ionicons name={icon} size={20} color={theme.colors.subtext} style={{ marginTop: multiline ? 12 : 0 }} />
+      <TextInput value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={theme.colors.subtext} keyboardType={keyboardType} multiline={multiline} style={[styles.input, { color: theme.colors.primaryText, height: "100%", paddingTop: multiline ? 12 : 0, textAlignVertical: multiline ? "top" : "center" }]} />
     </View>
   );
 }
 
-function RecurrenceChip({
-  label,
-  value,
-  active,
-  onPress,
-  theme,
-}: {
-  label: string;
-  value: string;
-  active: boolean;
-  onPress: () => void;
-  theme: Theme;
-}) {
+function RecurrenceChip({ label, value, active, onPress, theme }: { label: string; value: string; active: boolean; onPress: () => void; theme: Theme; }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.chip,
-        {
-          backgroundColor: active ? theme.colors.accent : theme.colors.card,
-          borderColor: active ? theme.colors.accent : theme.colors.border,
-          opacity: pressed ? 0.8 : 1,
-        },
-      ]}
-    >
-      <Text
-        style={[
-          styles.chipText,
-          {
-            color: active ? theme.colors.navy : theme.colors.text,
-            fontWeight: active ? "700" : "500",
-          },
-        ]}
-      >
-        {label}
-      </Text>
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.chip, { backgroundColor: active ? theme.colors.accent : theme.colors.card, borderColor: active ? theme.colors.accent : theme.colors.border, opacity: pressed ? 0.8 : 1 }]}>
+      <Text style={[styles.chipText, { color: active ? theme.colors.navy : theme.colors.text, fontWeight: active ? "700" : "500" }]}>{label}</Text>
     </Pressable>
   );
 }
-
-// --- Helper Functions ---
 
 function todayISO() {
   const d = new Date();
@@ -168,16 +73,14 @@ function todayISO() {
   return `${y}-${m}-${da}`;
 }
 
-// Helper to convert MM/DD/YYYY (US Scan) to YYYY-MM-DD (ISO)
 function parseScannedDate(dateStr: string): string | null {
   try {
-    // Check if it matches MM/DD/YYYY or MM/DD/YY
     const parts = dateStr.split("/");
     if (parts.length === 3) {
       const m = parts[0].padStart(2, "0");
       const d = parts[1].padStart(2, "0");
       let y = parts[2];
-      if (y.length === 2) y = "20" + y; // Assume 20xx
+      if (y.length === 2) y = "20" + y; 
       return `${y}-${m}-${d}`;
     }
     return null;
@@ -186,29 +89,17 @@ function parseScannedDate(dateStr: string): string | null {
   }
 }
 
-// --- Main Component ---
-
 export default function BillEdit() {
-  // 1. Updated Params Type to include Scan Data
-  const params = useLocalSearchParams<{
-    id?: string;
-    scannedAmount?: string;
-    scannedDate?: string;
-    scannedText?: string;
-  }>();
-
+  const params = useLocalSearchParams<{ id?: string; scannedAmount?: string; scannedDate?: string; scannedText?: string; }>();
   const id = params.id ? Number(params.id) : null;
   const theme = useTheme();
   const { t } = useTranslation();
   const { refetch } = useBills();
-
   const isMounted = useRef(true);
 
   useEffect(() => {
     isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
+    return () => { isMounted.current = false; };
   }, []);
 
   const [creditor, setCreditor] = useState("");
@@ -218,32 +109,30 @@ export default function BillEdit() {
   const [reminderTime, setReminderTime] = useState("09:00:00");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // New State for End Date
+  const [endDate, setEndDate] = useState<string | null>(null);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const reminderDateObj = useMemo(() => {
     try {
       const [y, m, d] = dueDate.split("-").map(Number);
       return new Date(y, m - 1, d);
-    } catch {
-      return new Date();
-    }
+    } catch { return new Date(); }
   }, [dueDate]);
+  
+  const endDateObj = useMemo(() => {
+    if (!endDate) return new Date();
+    try {
+      const [y, m, d] = endDate.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    } catch { return new Date(); }
+  }, [endDate]);
 
-  const [recurrence, setRecurrence] = useState<
-    | "none"
-    | "weekly"
-    | "bi-weekly"
-    | "monthly"
-    | "annually"
-    | "semi-annually"
-    | "semi-monthly"
-    | "quarterly"
-  >("none");
-
+  const [recurrence, setRecurrence] = useState<"none" | "weekly" | "bi-weekly" | "monthly" | "annually" | "semi-annually" | "semi-monthly" | "quarterly">("none");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"manual" | "auto">(
-    "manual"
-  );
+  const [paymentMethod, setPaymentMethod] = useState<"manual" | "auto">("manual");
 
   const timeObj = useMemo(() => {
     try {
@@ -251,51 +140,30 @@ export default function BillEdit() {
       const [h, m] = reminderTime.split(":").map(Number);
       d.setHours(h || 9, m || 0, 0, 0);
       return d;
-    } catch {
-      return new Date();
-    }
+    } catch { return new Date(); }
   }, [reminderTime]);
 
-  // Safe Amount Calculation
   const amountCents = useMemo(() => {
-    // Normalize commas to dots for european support
     const normalized = amount.replace(/,/g, ".");
     const floatVal = parseFloat(normalized);
     if (isNaN(floatVal)) return 0;
     return Math.round(floatVal * 100);
   }, [amount]);
 
-  // 1. Load Defaults (Create Mode) or Scanned Data
   useEffect(() => {
     (async () => {
       if (id) return;
-
-      // Handle Scanned Data
       if (params.scannedAmount) {
         setAmount(params.scannedAmount);
-
         if (params.scannedDate) {
           const isoDate = parseScannedDate(params.scannedDate);
           if (isoDate) setDueDate(isoDate);
         }
-
         if (params.scannedText) {
-          // Append raw text to notes for reference
-          setNotes((prev) =>
-            prev
-              ? prev + "\n\nScanned Data:\n" + params.scannedText
-              : "Scanned Data:\n" + params.scannedText
-          );
+          setNotes((prev) => prev ? prev + "\n\nScanned Data:\n" + params.scannedText : "Scanned Data:\n" + params.scannedText);
         }
-
-        Alert.alert(
-          t("Scan Successful"),
-          t("We found an amount of ${{amt}}. Please verify the details.", {
-            amt: params.scannedAmount,
-          })
-        );
+        Alert.alert(t("Scan Successful"), t("We found an amount of ${{amt}}. Please verify the details.", { amt: params.scannedAmount }));
       }
-
       try {
         const s = await api.familySettingsGet();
         if (!isMounted.current) return;
@@ -307,7 +175,6 @@ export default function BillEdit() {
     })();
   }, [id, params.scannedAmount, params.scannedDate, params.scannedText]);
 
-  // 2. Load Bill (Edit Mode)
   useEffect(() => {
     (async () => {
       if (!id) return;
@@ -324,6 +191,7 @@ export default function BillEdit() {
         setPaymentMethod(bill.payment_method);
         setOffsetDays(String(bill.reminder_offset_days ?? 0));
         setNotes(bill.notes || "");
+        setEndDate(bill.end_date || null); // Load end_date
         if (bill.reminder_time_local) {
           setReminderTime(bill.reminder_time_local);
         }
@@ -331,15 +199,10 @@ export default function BillEdit() {
     })();
   }, [id]);
 
-
   async function save() {
     try {
-      if (!creditor.trim())
-        return Alert.alert(t("Validation"), t("Creditor is required"));
-
-      // FIX: Robust check for NaN or 0
-      if (!amountCents || amountCents <= 0)
-        return Alert.alert(t("Validation"), t("Amount must be > 0"));
+      if (!creditor.trim()) return Alert.alert(t("Validation"), t("Creditor is required"));
+      if (!amountCents || amountCents <= 0) return Alert.alert(t("Validation"), t("Amount must be > 0"));
 
       setLoading(true);
       const payload = {
@@ -351,12 +214,13 @@ export default function BillEdit() {
         reminder_time_local: reminderTime,
         notes: notes.trim(),
         payment_method: paymentMethod,
+        end_date: recurrence !== "none" ? endDate : null, // Include end_date
       };
 
-      if (!id) 
-        await SyncQueue.enqueue(id ? "UPDATE" : "CREATE", { id, ...payload });
+      if (!id) await SyncQueue.enqueue(id ? "UPDATE" : "CREATE", { id, ...payload });
       else await api.billsUpdate(id, payload);
-          refetch();
+      
+      refetch();
       if (isMounted.current) router.back();
     } catch (e: any) {
       if (isMounted.current) Alert.alert(t("Error"), e.message);
@@ -374,6 +238,16 @@ export default function BillEdit() {
       setDueDate(`${y}-${m}-${d}`);
     }
   };
+  
+  const onEndDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") setShowEndDatePicker(false);
+    if (selectedDate) {
+        const y = selectedDate.getFullYear();
+        const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+        const d = String(selectedDate.getDate()).padStart(2, "0");
+        setEndDate(`${y}-${m}-${d}`);
+    }
+  };
 
   const onTimeChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === "android") setShowTimePicker(false);
@@ -385,110 +259,39 @@ export default function BillEdit() {
   };
 
   const onAmountChange = (text: string) => {
-    // Allow only numbers, dots, commas
-    if (/^[0-9.,]*$/.test(text)) {
-      setAmount(text);
-    }
+    if (/^[0-9.,]*$/.test(text)) setAmount(text);
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: 60 }}
-          showsVerticalScrollIndicator={false}
-        >
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Header
-              title={id ? t("Edit Bill") : t("New Bill")}
-              subtitle={id ? t("Update details") : t("Add a new debt to track")}
-              theme={theme}
-            />
+            <Header title={id ? t("Edit Bill") : t("New Bill")} subtitle={id ? t("Update details") : t("Add a new debt to track")} theme={theme} />
 
             <View style={styles.section}>
               <SectionTitle title={t("Bill Details")} theme={theme} />
               <View style={{ gap: 12 }}>
                 <View style={{ zIndex: 2000 }}>
-                  <CreditorAutocomplete
-                    value={creditor}
-                    onChangeText={setCreditor}
-                    theme={theme}
-                    placeholder={t("Creditor (e.g. Netflix)")}
-                  />
+                  <CreditorAutocomplete value={creditor} onChangeText={setCreditor} theme={theme} placeholder={t("Creditor (e.g. Netflix)")} />
                 </View>
-                <InputField
-                  icon="cash-outline"
-                  placeholder="0.00"
-                  value={amount}
-                  onChangeText={onAmountChange}
-                  keyboardType="decimal-pad"
-                  theme={theme}
-                />
+                <InputField icon="cash-outline" placeholder="0.00" value={amount} onChangeText={onAmountChange} keyboardType="decimal-pad" theme={theme} />
 
-                <Pressable
-                  onPress={() => setShowDatePicker((prev) => !prev)}
-                  style={[
-                    styles.inputContainer,
-                    {
-                      backgroundColor: theme.colors.card,
-                      borderColor: theme.colors.border,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="calendar-outline"
-                    size={20}
-                    color={theme.colors.subtext}
-                  />
-                  <Text
-                    style={[
-                      styles.inputText,
-                      { color: theme.colors.primaryText },
-                    ]}
-                  >
-                    {reminderDateObj.toDateString()}
-                  </Text>
-                  <Ionicons
-                    name={showDatePicker ? "chevron-up" : "chevron-down"}
-                    size={16}
-                    color={theme.colors.subtext}
-                  />
+                <Pressable onPress={() => setShowDatePicker((prev) => !prev)} style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                  <Ionicons name="calendar-outline" size={20} color={theme.colors.subtext} />
+                  <Text style={[styles.inputText, { color: theme.colors.primaryText }]}>{reminderDateObj.toDateString()}</Text>
+                  <Ionicons name={showDatePicker ? "chevron-up" : "chevron-down"} size={16} color={theme.colors.subtext} />
                 </Pressable>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={reminderDateObj}
-                    mode="date"
-                    display="spinner"
-                    onChange={onDateChange}
-                    textColor={theme.colors.primaryText}
-                  />
-                )}
-
-                <InputField
-                  icon="document-text-outline"
-                  placeholder={t("Notes (Optional)")}
-                  value={notes}
-                  onChangeText={setNotes}
-                  theme={theme}
-                  multiline
-                />
+                {showDatePicker && <DateTimePicker value={reminderDateObj} mode="date" display="spinner" onChange={onDateChange} textColor={theme.colors.primaryText} />}
+                <InputField icon="document-text-outline" placeholder={t("Notes (Optional)")} value={notes} onChangeText={setNotes} theme={theme} multiline />
               </View>
             </View>
+            
             <View style={styles.section}>
               <SectionTitle title={t("Payment Method")} theme={theme} />
               <View style={styles.chipsContainer}>
                 {["manual", "auto"].map((m) => (
-                  <RecurrenceChip
-                    key={m}
-                    label={m === "auto" ? t("Auto Draft") : t("Manual")}
-                    value={m}
-                    active={paymentMethod === m}
-                    onPress={() => setPaymentMethod(m as any)}
-                    theme={theme}
-                  />
+                  <RecurrenceChip key={m} label={m === "auto" ? t("Auto Draft") : t("Manual")} value={m} active={paymentMethod === m} onPress={() => setPaymentMethod(m as any)} theme={theme} />
                 ))}
               </View>
             </View>
@@ -496,180 +299,60 @@ export default function BillEdit() {
             <View style={styles.section}>
               <SectionTitle title={t("Frequency")} theme={theme} />
               <View style={styles.chipsContainer}>
-                {[
-                  "none",
-                  "weekly",
-                  "bi-weekly",
-                  "monthly",
-                  "semi-monthly",
-                  "quarterly",
-                  "semi-annually",
-                  "annually",
-                ].map((r) => (
-                  <RecurrenceChip
-                    key={r}
-                    label={t(
-                      r
-                        .split("-")
-                        .map(
-                          (part) => part.charAt(0).toUpperCase() + part.slice(1)
-                        )
-                        .join("-")
-                    )}
-                    value={r}
-                    active={recurrence === r}
-                    onPress={() => setRecurrence(r as any)}
-                    theme={theme}
-                  />
+                {["none", "weekly", "bi-weekly", "monthly", "semi-monthly", "quarterly", "semi-annually", "annually"].map((r) => (
+                  <RecurrenceChip key={r} label={t(r.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join("-"))} value={r} active={recurrence === r} onPress={() => setRecurrence(r as any)} theme={theme} />
                 ))}
               </View>
+              
+              {/* --- END DATE PICKER --- */}
+              {recurrence !== "none" && (
+                <View style={{ marginTop: 12 }}>
+                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                         <Text style={{ color: theme.colors.subtext, fontWeight: '600', fontSize: 13, marginLeft: 4 }}>{t("End Date (Optional)")}</Text>
+                         {endDate && (
+                             <Pressable onPress={() => setEndDate(null)}>
+                                 <Text style={{ color: theme.colors.danger, fontSize: 12, fontWeight: '700' }}>{t("Clear")}</Text>
+                             </Pressable>
+                         )}
+                     </View>
+                     <Pressable onPress={() => setShowEndDatePicker((prev) => !prev)} style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                        <Ionicons name="calendar-clear-outline" size={20} color={theme.colors.subtext} />
+                        <Text style={[styles.inputText, { color: endDate ? theme.colors.primaryText : theme.colors.subtext }]}>
+                            {endDate ? endDateObj.toDateString() : t("No End Date (Indefinite)")}
+                        </Text>
+                        <Ionicons name={showEndDatePicker ? "chevron-up" : "chevron-down"} size={16} color={theme.colors.subtext} />
+                     </Pressable>
+                     {showEndDatePicker && (
+                        <DateTimePicker value={endDateObj} mode="date" display="spinner" onChange={onEndDateChange} textColor={theme.colors.primaryText} minimumDate={reminderDateObj} />
+                     )}
+                </View>
+              )}
             </View>
 
             <View style={styles.section}>
               <SectionTitle title={t("Reminders")} theme={theme} />
-              <View
-                style={[
-                  styles.card,
-                  {
-                    backgroundColor: theme.colors.card,
-                    borderColor: theme.colors.border,
-                  },
-                ]}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    marginBottom: 10,
-                  }}
-                >
-                  <Text
-                    style={{ color: theme.colors.subtext, fontWeight: "600" }}
-                  >
-                    {t("Remind me")}
-                  </Text>
-                  <Text
-                    style={{ color: theme.colors.accent, fontWeight: "700" }}
-                  >
-                    {offsetDays === "0"
-                      ? t("Same day")
-                      : t("{{days}} day(s) before", { days: offsetDays })}
-                  </Text>
+              <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+                  <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("Remind me")}</Text>
+                  <Text style={{ color: theme.colors.accent, fontWeight: "700" }}>{offsetDays === "0" ? t("Same day") : t("{{days}} day(s) before", { days: offsetDays })}</Text>
                 </View>
-
-                <Slider
-                  style={{ width: "100%", height: 40 }}
-                  minimumValue={0}
-                  maximumValue={3}
-                  step={1}
-                  value={Number(offsetDays) || 0}
-                  onValueChange={(val) => setOffsetDays(String(val))}
-                  thumbTintColor={theme.colors.primary}
-                  minimumTrackTintColor={theme.colors.primary}
-                  maximumTrackTintColor={theme.colors.border}
-                />
-
+                <Slider style={{ width: "100%", height: 40 }} minimumValue={0} maximumValue={3} step={1} value={Number(offsetDays) || 0} onValueChange={(val) => setOffsetDays(String(val))} thumbTintColor={theme.colors.primary} minimumTrackTintColor={theme.colors.primary} maximumTrackTintColor={theme.colors.border} />
                 <View style={styles.divider} />
-
-                <Pressable
-                  onPress={() => setShowTimePicker((prev) => !prev)}
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    paddingVertical: 8,
-                  }}
-                >
-                  <Text
-                    style={{ color: theme.colors.subtext, fontWeight: "600" }}
-                  >
-                    {t("Alert Time")}
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: theme.colors.primaryText,
-                        fontWeight: "700",
-                        fontSize: 16,
-                      }}
-                    >
-                      {timeObj.toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </Text>
-                    <Ionicons
-                      name="time-outline"
-                      size={18}
-                      color={theme.colors.subtext}
-                    />
+                <Pressable onPress={() => setShowTimePicker((prev) => !prev)} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 8 }}>
+                  <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("Alert Time")}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Text style={{ color: theme.colors.primaryText, fontWeight: "700", fontSize: 16 }}>{timeObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</Text>
+                    <Ionicons name="time-outline" size={18} color={theme.colors.subtext} />
                   </View>
                 </Pressable>
-                {showTimePicker && (
-                  <DateTimePicker
-                    value={timeObj}
-                    mode="time"
-                    display="spinner"
-                    onChange={onTimeChange}
-                    textColor={theme.colors.primaryText}
-                  />
-                )}
+                {showTimePicker && <DateTimePicker value={timeObj} mode="time" display="spinner" onChange={onTimeChange} textColor={theme.colors.primaryText} />}
               </View>
             </View>
 
             <View style={{ gap: 12, marginTop: 10 }}>
-              <Pressable
-                onPress={save}
-                disabled={loading}
-                style={({ pressed }) => [
-                  styles.saveButton,
-                  {
-                    backgroundColor: theme.colors.primary,
-                    opacity: loading ? 0.6 : pressed ? 0.8 : 1,
-                  },
-                ]}
-              >
-                {loading ? (
-                  <ActivityIndicator color={theme.colors.primaryTextButton} />
-                ) : (
-                  <Text
-                    style={[
-                      styles.saveButtonText,
-                      { color: theme.colors.primaryTextButton },
-                    ]}
-                  >
-                    {t("Save Bill")}
-                  </Text>
-                )}
+              <Pressable onPress={save} disabled={loading} style={({ pressed }) => [styles.saveButton, { backgroundColor: theme.colors.primary, opacity: loading ? 0.6 : pressed ? 0.8 : 1 }]}>
+                {loading ? <ActivityIndicator color={theme.colors.primaryTextButton} /> : <Text style={[styles.saveButtonText, { color: theme.colors.primaryTextButton }]}>{t("Save Bill")}</Text>}
               </Pressable>
-
-              {/* <Pressable
-                onPress={handleCalendarSync}
-                style={({ pressed }) => [
-                  styles.calendarButton,
-                  {
-                    borderColor: theme.colors.primary,
-                    opacity: pressed ? 0.6 : 1,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="calendar"
-                  size={18}
-                  color={theme.colors.primary}
-                />
-                <Text
-                  style={{ color: theme.colors.primary, fontWeight: "700" }}
-                >
-                  {t("Add to Device Calendar")}
-                </Text>
-              </Pressable> */}
             </View>
           </View>
         </ScrollView>
@@ -681,96 +364,22 @@ export default function BillEdit() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16, gap: 24 },
-  headerShadowContainer: {
-    backgroundColor: "transparent",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-    marginVertical: 4,
-    borderRadius: 20,
-  },
-  headerGradient: {
-    borderRadius: 20,
-    height: 120,
-    paddingBottom: 24,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    overflow: "hidden",
-  },
-  headerIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 10,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#FFF",
-    marginBottom: 2,
-  },
+  headerShadowContainer: { backgroundColor: "transparent", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
+  headerGradient: { borderRadius: 20, height: 120, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
+  headerIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center", marginLeft: 10 },
+  headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
   headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
   section: { gap: 12 },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginLeft: 4,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    height: 56,
-    gap: 12,
-  },
+  sectionTitle: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 4 },
+  inputContainer: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, borderRadius: 14, borderWidth: 1, height: 56, gap: 12 },
   input: { flex: 1, fontSize: 16, fontWeight: "500" },
   inputText: { flex: 1, fontSize: 16, fontWeight: "500" },
   chipsContainer: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  chip: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    alignItems: "center",
-    flexGrow: 1, // FIX: Allow chips to grow to fill space rather than fixed 48%
-    minWidth: "30%",
-  },
+  chip: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, borderWidth: 1, alignItems: "center", flexGrow: 1, minWidth: "30%" },
   chipText: { fontSize: 14 },
   card: { padding: 16, borderRadius: 16, borderWidth: 1, minHeight: 120 },
-  divider: {
-    height: 1,
-    backgroundColor: "rgba(0,0,0,0.05)",
-    marginVertical: 12,
-  },
-  saveButton: {
-    height: 56,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
+  divider: { height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginVertical: 12 },
+  saveButton: { height: 56, borderRadius: 16, justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
   saveButtonText: { fontSize: 16, fontWeight: "800" },
-  calendarButton: {
-    flexDirection: "row",
-    height: 50,
-    borderRadius: 16,
-    borderWidth: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
+  calendarButton: { flexDirection: "row", height: 50, borderRadius: 16, borderWidth: 1, justifyContent: "center", alignItems: "center", gap: 8 },
 });

@@ -20,9 +20,7 @@ import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 import * as FileSystem from 'expo-file-system';
 import { File, Paths } from 'expo-file-system';
-
-// ... (Header and FileDropZone components unchanged) ...
-// NOTE: Please retain Header, SectionTitle, FileDropZone components from original file.
+import { parse, isValid, format } from "date-fns"; // Added date-fns
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
   return (
@@ -139,7 +137,6 @@ export default function BulkImport() {
       const file = res.assets[0];
       if (isMounted.current) setCsvName(file.name);
 
-      // FIX: Use FileSystem to read file content reliably
       const content = await FileSystem.readAsStringAsync(file.uri);
       const parsed = parseCsvToBills(content);
 
@@ -153,6 +150,46 @@ export default function BulkImport() {
       console.error(e);
       if (isMounted.current) Alert.alert(t("Import error"), e?.message ?? t("Failed to read CSV"));
     }
+  }
+
+  // --- Helper: Robust Date Parsing ---
+  function normalizeDate(dateStr: string): string | null {
+    if (!dateStr) return null;
+    const trimmed = dateStr.trim();
+
+    // 1. Try standard JS Date constructor (handles ISO yyyy-mm-dd and standard US formats usually)
+    const d1 = new Date(trimmed);
+    if (!isNaN(d1.getTime())) {
+       // Check reasonable year range to avoid false positives on weird numbers
+       const y = d1.getFullYear();
+       if (y > 2000 && y < 2100) return d1.toISOString().split('T')[0];
+    }
+
+    // 2. Try explicit formats with date-fns
+    // Order matters: specific formats first
+    const formatsToTry = [
+        'MM/dd/yyyy',
+        'dd/MM/yyyy',
+        'yyyy-MM-dd',
+        'yyyy/MM/dd',
+        'dd-MM-yyyy',
+        'MM-dd-yyyy',
+        'd/M/yyyy',
+        'M/d/yyyy',
+        'dd.MM.yyyy',
+        'MMM dd, yyyy', // Dec 25, 2024
+        'dd MMM yyyy'   // 25 Dec 2024
+    ];
+
+    for (const fmt of formatsToTry) {
+        const parsed = parse(trimmed, fmt, new Date());
+        if (isValid(parsed)) {
+            const y = parsed.getFullYear();
+            if (y > 2000 && y < 2100) return format(parsed, 'yyyy-MM-dd');
+        }
+    }
+
+    return null;
   }
 
   function parseCsvToBills(csv: string): any[] {
@@ -196,7 +233,7 @@ export default function BulkImport() {
 
       const name = iName >= 0 && cols.length > iName ? cols[iName] : "";
       const amountStr = iAmount >= 0 && cols.length > iAmount ? cols[iAmount] : "";
-      const dueDate = iDueDate >= 0 && cols.length > iDueDate ? cols[iDueDate] : "";
+      const rawDueDate = iDueDate >= 0 && cols.length > iDueDate ? cols[iDueDate] : "";
       const notes = iNotes >= 0 && cols.length > iNotes ? cols[iNotes] : "";
       const reminder = ireminder >= 0 && cols.length > ireminder ? cols[ireminder] : "0";
       
@@ -217,8 +254,12 @@ export default function BulkImport() {
           if (!isNaN(val) && val >= 0 && val <= 3) offset = val;
       }
 
-      if (!name || !amountStr || !dueDate) continue;
+      if (!name || !amountStr || !rawDueDate) continue;
       
+      // Parse Date
+      const cleanDueDate = normalizeDate(rawDueDate);
+      if (!cleanDueDate) continue; // Skip invalid dates
+
       const cleanAmountStr = amountStr.replace(/[^0-9.-]+/g, "");
       const amount = parseFloat(cleanAmountStr);
       
@@ -227,7 +268,7 @@ export default function BulkImport() {
       result.push({
         name,
         amount,
-        due_date: dueDate,
+        due_date: cleanDueDate, // Send ISO date
         notes,
         recurrence,
         offset, 

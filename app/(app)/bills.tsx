@@ -106,7 +106,8 @@ function isOverdue(item: Bill) {
 // Smart Date Formatter
 function getSmartDueDate(
   dateStr: string,
-  t: any
+  t: any,
+  locale?: string
 ): { label: string; color?: string; urgent?: boolean } {
   const due = parseISO(dateStr);
   const today = startOfDay(new Date());
@@ -133,7 +134,8 @@ function getSmartDueDate(
     };
   }
 
-  return { label: t("Due {{date}}", { date: dateStr }), color: undefined };
+  const formattedDate = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(due);
+  return { label: t("Due {{date}}", { date: formattedDate }), color: undefined };
 }
 
 const jsonToCSV = (data: any[]): string => {
@@ -365,6 +367,7 @@ function BillItem({
   item,
   theme,
   t,
+  locale,
   onLongPress,
   onEdit,
   onMarkPaid,
@@ -379,13 +382,16 @@ function BillItem({
   const overdue = isOverdue(item);
 
   const dateInfo = useMemo(() => {
-    if (isPaid)
+    if (isPaid) {
+      const d = item.paid_at || item.due_date;
+      const formatted = d ? new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(parseISO(d)) : "";
       return {
-        label: `${t("Paid on")} ${item.paid_at || item.due_date}`,
+        label: `${t("Paid on")} ${formatted}`,
         color: undefined,
       };
-    return getSmartDueDate(item.due_date, t);
-  }, [item.due_date, item.paid_at, isPaid, t]);
+    }
+    return getSmartDueDate(item.due_date, t, locale);
+  }, [item.due_date, item.paid_at, isPaid, t, locale]);
 
   const swipeableRef = useRef<SwipeableMethods>(null);
   const iconData = getBillIcon(item.creditor);
@@ -548,6 +554,14 @@ function BillItem({
                 {dateInfo.label}
               </Text>
             </View>
+             {item.recurrence && item.recurrence !== 'none' && item.end_date && (
+                   <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+                       <Text style={{ color: theme.colors.subtext, fontSize: 10 }}>•</Text>
+                       <Text style={{ color: theme.colors.subtext, fontSize: 11, marginLeft: 4 }}>
+                          {t("Ends")}: {new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(parseISO(item.end_date))}
+                       </Text>
+                   </View>
+              )}
           </View>
 
           <View
@@ -649,7 +663,7 @@ function SectionHeader({ title, special, theme }: any) {
 
 export default function Bills() {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const { data: bills, refetch, isRefetching, isLoading } = useBills();
   const { markPaid: markPaidMutation, deleteBill: deleteBillMutation } = useBillMutations();
@@ -938,6 +952,7 @@ export default function Bills() {
         item={item.data}
         theme={theme}
         t={t}
+        locale={i18n.language}
         onLongPress={() => onLongPressBill(item.data)}
         onEdit={() => onEditBill(item.data)}
         onMarkPaid={() => onMarkPaidBill(item.data)}

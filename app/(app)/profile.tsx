@@ -624,6 +624,10 @@ export default function Profile() {
         notes: b.notes || "",
         recurrence: b.recurrence || "none",
         offset: b.reminder_offset_days || "0",
+        payment_method: b.payment_method || "manual",
+        end_date: b.end_date || "",
+        status: b.status || "pending",
+
       }));
 
       const csvString = jsonToCSV(exportData);
