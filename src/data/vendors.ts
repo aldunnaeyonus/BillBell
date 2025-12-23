@@ -15,6 +15,34 @@ export interface VendorInfo {
   categoryKey: string; // Translation key, e.g., 'category_entertainment'
 }
 
+export const normalizeVendorKey = (input: string) =>
+  (input || "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/\+/g, "plus")
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
+
+const VENDOR_DOMAIN_ALIASES: Record<string, string> = {
+  aws: "aws.amazon.com",
+  amazonwebservices: "aws.amazon.com",
+  primevideo: "primevideo.com",
+  amazonprimevideo: "primevideo.com",
+  googleworkspace: "workspace.google.com",
+  gsuite: "workspace.google.com",
+  o365: "microsoft.com",
+  office365: "microsoft.com",
+  microsoft365: "microsoft.com",
+  xfinity: "xfinity.com",
+  att: "att.com",
+  verizonwireless: "verizon.com",
+  tmobile: "t-mobile.com",
+  adobecreativecloud: "adobe.com",
+  icloud: "icloud.com",
+  googleone: "one.google.com",
+  youtubetv: "tv.youtube.com"
+};
+
 // ============================================================================
 // 1. GLOBAL VENDOR DOMAINS (For Logo API)
 // ============================================================================
@@ -792,3 +820,27 @@ export function getVendorInfo(rawName: string, themeIsDark: boolean = false): Ve
     categoryKey: "category_other"
   };
 }
+
+const NORMALIZED_VENDOR_DOMAINS: Record<string, string> = Object.fromEntries(
+  Object.entries(VENDOR_DOMAINS).map(([name, domain]) => [normalizeVendorKey(name), domain])
+);
+
+export const getVendorDomain = (vendorName: string) => {
+  if (!vendorName) return null;
+
+  // 1) Exact match
+  const exact = VENDOR_DOMAINS[vendorName];
+  if (exact) return exact;
+
+  // 2) Normalized match + aliases
+  const key = normalizeVendorKey(vendorName);
+  return VENDOR_DOMAIN_ALIASES[key] ?? NORMALIZED_VENDOR_DOMAINS[key] ?? null;
+};
+
+export const getVendorLogo = (vendorName: string) => {
+  const domain = getVendorDomain(vendorName);
+  if (!domain) return null;
+  
+  // Google's public API. 'sz' controls size (16, 32, 64, 128).
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+};
