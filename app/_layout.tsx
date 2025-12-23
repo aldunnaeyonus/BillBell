@@ -5,7 +5,6 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
 import { useCameraPermissions } from "expo-camera"; // Added: Camera
-import * as Calendar from "expo-calendar"; // Added: Calendar
 import { useTheme } from "../src/ui/useTheme";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -90,12 +89,12 @@ function AppStack() {
           await requestCameraPermission();
 
           // 3. Request Calendar (for syncing bills)
-          await Calendar.requestCalendarPermissionsAsync();
+          //await Calendar.requestCalendarPermissionsAsync();
           
           // 4. Request Reminders (iOS specific requirement for full calendar access)
-          if (Platform.OS === 'ios') {
-            await Calendar.requestRemindersPermissionsAsync();
-          }
+          // if (Platform.OS === 'ios') {
+          //   await Calendar.requestRemindersPermissionsAsync();
+          // }
           
           // Mark as requested so it doesn't run again on next boot
           storage.set(PERMISSION_KEY, true);

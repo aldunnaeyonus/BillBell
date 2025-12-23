@@ -664,7 +664,7 @@ export default function BillEdit() {
                 )}
               </Pressable>
 
-              <Pressable
+              {/* <Pressable
                 onPress={handleCalendarSync}
                 style={({ pressed }) => [
                   styles.calendarButton,
@@ -684,7 +684,7 @@ export default function BillEdit() {
                 >
                   {t("Add to Device Calendar")}
                 </Text>
-              </Pressable>
+              </Pressable> */}
             </View>
           </View>
         </ScrollView>
