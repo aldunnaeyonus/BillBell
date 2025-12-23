@@ -7,10 +7,23 @@ import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from "react-i18next";
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-// Standard US Letter (8.5 x 11) Aspect Ratio
-const SCAN_WIDTH = SCREEN_WIDTH * 0.85; 
-const SCAN_HEIGHT = SCAN_WIDTH * (11 / 8.5);
+// --- DIMENSIONS LOGIC FIX ---
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Standard US Letter (8.5 x 11) Aspect Ratio (approx 1.29)
+const ASPECT_RATIO = 11 / 8.5; 
+
+// 1. Calculate ideal width (85% of screen), but cap it for Tablets (max 500pt)
+const RAW_WIDTH = Math.min(SCREEN_WIDTH * 0.85, 500);
+const RAW_HEIGHT = RAW_WIDTH * ASPECT_RATIO;
+
+// 2. Ensure it fits vertically. If the resulting height takes up more than 70% 
+// of the screen, scale it down to fit. This preserves space for header/footer.
+const MAX_HEIGHT = SCREEN_HEIGHT * 0.70;
+const SCALE = RAW_HEIGHT > MAX_HEIGHT ? (MAX_HEIGHT / RAW_HEIGHT) : 1;
+
+const SCAN_WIDTH = RAW_WIDTH * SCALE;
+const SCAN_HEIGHT = RAW_HEIGHT * SCALE;
 
 export default function BillScan() {
   const [permission, requestPermission] = useCameraPermissions();
