@@ -18,10 +18,15 @@
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="SplashScreenLegacy" translatesAutoresizingMaskIntoConstraints="NO" id="EXPO-SplashScreen" userLabel="SplashScreenLegacy">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                                <color key="backgroundColor" red="0.47656252980000002" green="0.7504882812" blue="0.7094726562" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                             </imageView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="icon" translatesAutoresizingMaskIntoConstraints="NO" id="xBE-ee-qZo">
-                                <rect key="frame" x="46" y="322" width="301" height="209"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon" translatesAutoresizingMaskIntoConstraints="NO" id="xBE-ee-qZo">
+                                <rect key="frame" x="0.0" y="223" width="393" height="308"/>
+                                <color key="backgroundColor" red="0.47656252980000002" green="0.7504882812" blue="0.7094726562" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="393" id="qUU-z0-d07"/>
+                                    <constraint firstAttribute="height" constant="308" id="wPa-nT-tx6"/>
+                                </constraints>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Rmq-lb-GrQ"/>
@@ -29,6 +34,8 @@
                         <constraints>
                             <constraint firstItem="EXPO-SplashScreen" firstAttribute="leading" secondItem="EXPO-ContainerView" secondAttribute="leading" id="61d16215e44b98e39d0a2c74fdbfaaa22601b12c"/>
                             <constraint firstItem="EXPO-SplashScreen" firstAttribute="top" secondItem="EXPO-ContainerView" secondAttribute="top" id="83fcb9b545b870ba44c24f0feeb116490c499c52"/>
+                            <constraint firstItem="xBE-ee-qZo" firstAttribute="leading" secondItem="EXPO-SplashScreen" secondAttribute="leading" id="GxS-SE-ePN"/>
+                            <constraint firstItem="xBE-ee-qZo" firstAttribute="top" secondItem="Rmq-lb-GrQ" secondAttribute="top" constant="105" id="J8X-9k-YCw"/>
                             <constraint firstItem="EXPO-SplashScreen" firstAttribute="bottom" secondItem="EXPO-ContainerView" secondAttribute="bottom" id="d6a0be88096b36fb132659aa90203d39139deda9"/>
                             <constraint firstItem="EXPO-SplashScreen" firstAttribute="trailing" secondItem="EXPO-ContainerView" secondAttribute="trailing" id="f934da460e9ab5acae3ad9987d5b676a108796c1"/>
                         </constraints>
