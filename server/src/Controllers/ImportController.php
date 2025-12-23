@@ -11,7 +11,7 @@ class ImportController {
   }
 
   public static function run() {
-    // Wrap everything in a try-catch to ensure we ALWAYS return JSON (fixes "Unexpected end of JSON input")
+    // Wrap everything in a try-catch to ensure we ALWAYS return JSON
     try {
       $pdo = DB::pdo();
       $data = Utils::bodyJson();
@@ -20,7 +20,6 @@ class ImportController {
       $shareId = isset($data["family_code"]) ? trim((string)$data["family_code"]) : "";
       if ($shareId === "") Utils::json(["error" => "Family Share ID is required"], 422);
 
-      // Note: Ensure your 'families' table has a column for this ID (e.g., 'share_id' or 'code')
       $stmt = $pdo->prepare("SELECT id FROM families WHERE family_code=? LIMIT 1");
       $stmt->execute([$shareId]);
       $familyRow = $stmt->fetch();
@@ -28,13 +27,11 @@ class ImportController {
       if (!$familyRow) Utils::json(["error" => "Invalid Family Share ID"], 404);
       $familyId = (int)$familyRow["id"];
 
-      // --- STEP 2: Find a Family Admin (to assign the bills to) ---
-      // We do this to avoid inserting NULL into 'created_by_user_id', which would crash the DB
+      // --- STEP 2: Find a Family Admin ---
       $adminStmt = $pdo->prepare("SELECT user_id FROM family_members WHERE family_id=? AND role='admin' LIMIT 1");
       $adminStmt->execute([$familyId]);
       $adminRow = $adminStmt->fetch();
       
-      // Fallback: If no admin found, use the first member, or 0 if empty
       $systemUserId = $adminRow ? (int)$adminRow["user_id"] : 0;
 
       // --- STEP 3: Validate Import Code ---
@@ -91,10 +88,11 @@ class ImportController {
       // Mark code as used
       $pdo->prepare("UPDATE import_codes SET used_at=NOW() WHERE id=?")->execute([$codeRow["id"]]);
 
+      // FIX: Added payment_method to INSERT query
       $ins = $pdo->prepare("
         INSERT INTO bills
-        (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, notes, recurrence, reminder_offset_days, reminder_time_local, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+        (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, notes, recurrence, reminder_offset_days, reminder_time_local, status, payment_method)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
       ");
 
       foreach ($bills as $b) {
@@ -105,13 +103,21 @@ class ImportController {
         
         if ($creditor === "" || $amountCents <= 0 || $dueDate === "") continue;
 
-        // Clean input and map to canonical key
+        // Clean recurrence input
         $inputRec = strtolower(trim($b["recurrence"] ?? "none"));
         $recurrence = $recurrenceMap[$inputRec] ?? "none";
 
+        // FIX: Extract and normalize payment_method
+        // Check both 'payment_method' and 'paymentMethod' keys from CSV JSON
+        $rawPayment = isset($b["payment_method"]) ? $b["payment_method"] : ($b["paymentMethod"] ?? "manual");
+        $rawPayment = strtolower(trim($rawPayment));
+        
+        // Map various CSV inputs to DB enum ('auto' or 'manual')
+        $paymentMethod = ($rawPayment === 'auto' || $rawPayment === 'auto_pay' || $rawPayment === 'autopay') ? 'auto' : 'manual';
+
         $ins->execute([
           $familyId,
-          $systemUserId, // Assigned to the Family Admin
+          $systemUserId,
           $systemUserId,
           $creditor,
           $amountCents,
@@ -120,7 +126,8 @@ class ImportController {
           isset($b["notes"]) ? (string)$b["notes"] : null,
           $recurrence,
           1,
-          "09:00:00"
+          "09:00:00",
+          $paymentMethod // FIX: Bound parameter
         ]);
         $inserted++;
       }
@@ -130,7 +137,6 @@ class ImportController {
 
     } catch (\Throwable $e) {
       if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
-      // Return the actual error message to the frontend for debugging
       Utils::json(["error" => "Server Error: " . $e->getMessage()], 500);
     }
   }

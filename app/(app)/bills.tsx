@@ -556,7 +556,7 @@ function BillItem({
             <Text
               style={[styles.billAmount, { color: theme.colors.primaryText }]}
             >
-              ${amt}
+              {amt}
             </Text>
             {overdue && (
               <View
@@ -589,9 +589,10 @@ function BillItem({
   if (Platform.OS === "ios") {
     return (
       <Animated.View 
-        layout={LinearTransition.springify().damping(14)} 
-        entering={FadeIn} 
-        exiting={FadeOut}
+        // Remove 'layout' to stop jumping on reorder/scroll
+        // Remove 'entering' to stop jumping on scroll recycle
+        exiting={FadeOut} 
+        entering={FadeIn} // <-- CAUSE OF JUMP
       >
         <ReanimatedSwipeable
           ref={swipeableRef}
@@ -608,9 +609,9 @@ function BillItem({
 
   return (
     <Animated.View 
-      layout={LinearTransition.springify()} 
-      entering={FadeIn} 
-      exiting={FadeOut}
+       // Remove 'layout' and 'entering' here too
+       exiting={FadeOut}
+       entering={FadeIn} // <-- CAUSE OF JUMP
     >
       {BillContent}
     </Animated.View>
@@ -974,8 +975,9 @@ export default function Bills() {
              data={flatData}
              renderItem={renderItem}
              // @ts-ignore
-             estimatedItemSize={100}
              getItemType={(item) => item.type}
+                          // @ts-ignore
+             estimatedItemSize={90}
              keyExtractor={(item) => item.id}
              contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
              showsVerticalScrollIndicator={false}

@@ -1,18 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, Pressable, Platform, Alert, Dimensions, StatusBar } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera'; // Updated API for Expo 52+
+import { StyleSheet, Text, View, Pressable, Alert, Dimensions, StatusBar } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera'; 
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from "react-i18next";
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const SCAN_AREA_SIZE = SCREEN_WIDTH * 0.8;
+// Standard US Letter (8.5 x 11) Aspect Ratio
+const SCAN_WIDTH = SCREEN_WIDTH * 0.85; 
+const SCAN_HEIGHT = SCAN_WIDTH * (11 / 8.5);
 
 export default function BillScan() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (permission && !permission.granted) {
@@ -20,13 +25,13 @@ export default function BillScan() {
     }
   }, [permission]);
 
-  if (!permission) return <View />;
+  if (!permission) return <View style={{ flex: 1, backgroundColor: '#000' }} />;
   if (!permission.granted) {
     return (
       <View style={styles.permissionContainer}>
-        <Text style={{ color: '#fff', marginBottom: 20 }}>Camera permission is required to scan bills.</Text>
+        <Text style={{ color: '#fff', marginBottom: 20 }}>{t("Camera permission is required to scan bills.")}</Text>
         <Pressable onPress={requestPermission} style={styles.permBtn}>
-          <Text style={{ fontWeight: 'bold' }}>Grant Permission</Text>
+          <Text style={{ fontWeight: 'bold' }}>{t("Grant Permission")}</Text>
         </Pressable>
       </View>
     );
@@ -42,34 +47,28 @@ export default function BillScan() {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
       if (!photo) throw new Error("Failed to take photo");
 
-      // 1. Recognize Text
       const result = await TextRecognition.recognize(photo.uri);
-      
-      // 2. Simple Parsing Logic (We will refine this AI later)
       const text = result.text;
       
-      // Naive Regex Pattern Matching (To be improved)
       const amountMatch = text.match(/\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/);
-      const dateMatch = text.match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/); // Simple MM/DD/YYYY
+      const dateMatch = text.match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/);
       
       const detectedAmount = amountMatch ? amountMatch[1].replace(/,/g, '') : '';
       const detectedDate = dateMatch ? dateMatch[0] : '';
       
-      // 3. Success Feedback
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-      // 4. Navigate to Edit Screen with Params
       router.replace({
         pathname: "/(app)/bill-edit",
         params: {
           scannedAmount: detectedAmount,
           scannedDate: detectedDate,
-          scannedText: text.substring(0, 200) // Pass raw text for debugging/notes
+          scannedText: text.substring(0, 200) 
         }
       });
 
     } catch (e: any) {
-      Alert.alert("Scan Failed", "Could not read bill. Please try again.");
+      Alert.alert(t("Scan Failed"), t("Could not read bill. Please try again."));
       setScanning(false);
     }
   };
@@ -85,9 +84,16 @@ export default function BillScan() {
       
       {/* Overlay Mask */}
       <View style={styles.overlay}>
-        <View style={styles.overlayTop} />
+        
+        {/* TOP: Instructions */}
+        <View style={styles.overlayTop}>
+          <Text style={styles.instructionText}>{t("Align invoice within frame")}</Text>
+        </View>
+
+        {/* MIDDLE: Scan Window */}
         <View style={styles.overlayMiddle}>
           <View style={styles.overlaySide} />
+          
           <View style={styles.scanArea}>
             <View style={[styles.corner, styles.tl]} />
             <View style={[styles.corner, styles.tr]} />
@@ -96,12 +102,15 @@ export default function BillScan() {
             
             {scanning && (
               <View style={styles.loadingOverlay}>
-                <Text style={styles.processingText}>Processing...</Text>
+                <Text style={styles.processingText}>{t("Processing...")}</Text>
               </View>
             )}
           </View>
+
           <View style={styles.overlaySide} />
         </View>
+
+        {/* BOTTOM: Controls */}
         <View style={styles.overlayBottom}>
            <Pressable 
              style={({pressed}) => [styles.captureBtn, pressed && { transform: [{scale: 0.9}] }]} 
@@ -112,7 +121,8 @@ export default function BillScan() {
            </Pressable>
            
            <Pressable style={styles.closeBtn} onPress={() => router.back()}>
-             <Text style={styles.closeText}>Cancel</Text>
+             <Ionicons name="close" size={24} color="#FFF" />
+             <Text style={styles.closeText}>{t("Cancel")}</Text>
            </Pressable>
         </View>
       </View>
@@ -125,22 +135,53 @@ const styles = StyleSheet.create({
   permissionContainer: { flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' },
   permBtn: { padding: 15, backgroundColor: '#fff', borderRadius: 8 },
   
-  // Overlay Mask Strategy
-  overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'space-between' },
-  overlayTop: { height: '20%', backgroundColor: 'rgba(0,0,0,0.6)' },
-  overlayMiddle: { flexDirection: 'row', height: SCAN_AREA_SIZE },
-  overlaySide: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
-  overlayBottom: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', paddingBottom: 40 },
+  overlay: { ...StyleSheet.absoluteFillObject },
+  
+  // Top section now flexible to push content down
+  overlayTop: { 
+    flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.6)', 
+    justifyContent: 'flex-end', 
+    alignItems: 'center',
+    paddingBottom: 20 
+  },
+  
+  instructionText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+
+  overlayMiddle: { 
+    flexDirection: 'row', 
+    height: SCAN_HEIGHT 
+  },
+  
+  overlaySide: { 
+    flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.6)' 
+  },
+  
+  overlayBottom: { 
+    flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.6)', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    paddingBottom: 20 
+  },
   
   scanArea: {
-    width: SCAN_AREA_SIZE,
-    height: SCAN_AREA_SIZE,
-    borderColor: 'transparent', // Corners handles the visuals
+    width: SCAN_WIDTH,
+    height: SCAN_HEIGHT,
+    borderColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
   },
   
-  // Custom Corners
   corner: { position: 'absolute', width: 40, height: 40, borderColor: '#fff', borderWidth: 4 },
   tl: { top: 0, left: 0, borderRightWidth: 0, borderBottomWidth: 0 },
   tr: { top: 0, right: 0, borderLeftWidth: 0, borderBottomWidth: 0 },
@@ -155,7 +196,7 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20
+    marginBottom: 10
   },
   captureBtnInner: {
     width: 60,
@@ -163,8 +204,13 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     backgroundColor: '#fff',
   },
-  closeBtn: { position: 'absolute', top: 40, right: 20 },
-  closeText: { color: '#fff', fontSize: 18, fontWeight: '600' },
+  closeBtn: { 
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    padding: 10
+  },
+  closeText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   
   loadingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
   processingText: { color: '#fff', fontWeight: 'bold', fontSize: 18 }

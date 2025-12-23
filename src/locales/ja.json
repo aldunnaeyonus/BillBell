@@ -19,6 +19,8 @@
   "CodeExpires": "コード: {{code}} (有効期限 {{expiresAt}})",
   "Mark as Paid": "支払い済みにする",
   "This Week": "今週",
+  "Align invoice within frame": "請求書を枠に合わせてください",
+    "Processing...": "処理中...",
     "Next Week": "来週",
   "Bill reminder": "請求書リマインダー: ",
   "Can't open link": "リンクを開けません",

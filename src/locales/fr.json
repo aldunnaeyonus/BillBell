@@ -16,6 +16,8 @@
     "Quarterly": "Trimestriel",
     "This Week": "Cette semaine",
     "Next Week": "Semaine prochaine",
+    "Align invoice within frame": "Alignez la facture dans le cadre",
+    "Processing...": "Traitement en cours...",
   "Shared Settings": "Paramètres partagés",
   "Import Code": "Code d'importation (Code de sécurité pour import CSV & XLSX)",
   "CodeExpires": "Code : {{code}} (expire le {{expiresAt}})",

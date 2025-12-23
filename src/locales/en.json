@@ -1,7 +1,11 @@
 {
   "markedPaid": "Bill marked as paid! ✅",
+  "Camera permission is required to scan bills.":"Camera permission is required to scan bills.",
+  "Grant Permission":"Grant Permission",
   "Failed to mark paid from notification": "Failed to mark paid from notification:",
   "Error marking bill as paid": "Error marking bill as paid.",
+  "Align invoice within frame":"Align invoice within frame",
+  "Processing...":"Processing...",
   "Browser": "Browser",
   "Bulk Upload": "Bulk Upload",
   "Upload":"Upload",
