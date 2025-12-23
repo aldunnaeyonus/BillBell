@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from "../../src/api/client";
 import { setToken } from "../../src/auth/session";
 import { useTheme } from "../../src/ui/useTheme";
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 export default function Login() {
   const theme = useTheme();
@@ -126,7 +127,7 @@ export default function Login() {
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <View style={styles.content}>
+        <View style={[styles.content, { maxWidth: 500 }]}>
           <View style={styles.iconContainer}>
             <Image
               source={require("../../assets/black_logo.png")}

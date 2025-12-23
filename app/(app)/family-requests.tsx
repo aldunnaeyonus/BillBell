@@ -14,25 +14,21 @@ import { api } from "../../src/api/client";
 import { useTheme } from "../../src/ui/useTheme";
 import { useTranslation } from "react-i18next";
 import { getJson, setJson } from "../../src/storage/storage"; 
-import { Skeleton } from "../../src/ui/Skeleton"; // IMPORT SKELETON
+import { Skeleton } from "../../src/ui/Skeleton"; 
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 const CACHE_KEY = "billbell_family_requests_cache";
 
-// --- Skeleton Component ---
 function RequestSkeleton() {
   const theme = useTheme();
   return (
     <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
       <View style={{ flex: 1, gap: 8 }}>
-        {/* Name Placeholder */}
         <Skeleton width={120} height={16} borderRadius={4} />
-        {/* Email Placeholder */}
         <Skeleton width={180} height={12} borderRadius={4} />
       </View>
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        {/* Deny Button Placeholder */}
         <Skeleton width={60} height={34} borderRadius={10} />
-        {/* Approve Button Placeholder */}
         <Skeleton width={70} height={34} borderRadius={10} />
       </View>
     </View>
@@ -57,11 +53,9 @@ export default function FamilyRequests() {
     if (isRefresh || requests.length === 0) {
       if (!isRefresh) setLoading(true);
     }
-
     try {
       const res: any = await api.familyRequests();
       const freshData = res.requests || [];
-      
       if(isMounted.current) {
           setRequests(freshData);
           setJson(CACHE_KEY, freshData);
@@ -76,14 +70,9 @@ export default function FamilyRequests() {
     }
   }, [requests.length]);
 
-  useFocusEffect(useCallback(() => {
-    loadRequests();
-  }, [loadRequests]));
+  useFocusEffect(useCallback(() => { loadRequests(); }, [loadRequests]));
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadRequests(true);
-  };
+  const onRefresh = () => { setRefreshing(true); loadRequests(true); };
 
   async function handleRespond(requestId: number, action: "approve" | "reject") {
     const originalRequests = [...requests];
@@ -92,13 +81,8 @@ export default function FamilyRequests() {
             ? { ...r, status: action === 'reject' ? 'rejected' : 'approved', updated_at: new Date().toISOString() } 
             : r
     );
-    
-    const optimisticList = action === 'approve' 
-        ? requests.filter(r => r.id !== requestId)
-        : updatedRequests;
-
+    const optimisticList = action === 'approve' ? requests.filter(r => r.id !== requestId) : updatedRequests;
     setRequests(optimisticList);
-
     try {
       await api.familyRequestRespond(requestId, action);
       const res: any = await api.familyRequests();
@@ -119,8 +103,7 @@ export default function FamilyRequests() {
       <Stack.Screen options={{ title: t("Join Requests") }} />
 
       {loading && requests.length === 0 ? (
-        // SHOW SKELETON LIST
-        <View style={{ padding: 16, gap: 12 }}>
+        <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', padding: 16, gap: 12 }}>
           <RequestSkeleton />
           <RequestSkeleton />
           <RequestSkeleton />
@@ -129,37 +112,24 @@ export default function FamilyRequests() {
         <FlatList
           data={requests}
           keyExtractor={(item) => item.id.toString()}
+          style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}
           contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           ListEmptyComponent={
             <View style={styles.center}>
               <Ionicons name="people-outline" size={48} color={theme.colors.border} />
-              <Text style={{ color: theme.colors.subtext, marginTop: 12 }}>
-                {t("No pending requests.")}
-              </Text>
+              <Text style={{ color: theme.colors.subtext, marginTop: 12 }}>{t("No pending requests.")}</Text>
             </View>
           }
           renderItem={({ item }) => {
             const isRejected = item.status === 'rejected';
             const isApproved = item.status === 'approved'; 
             if (isApproved) return null; 
-
             return (
-              <View
-                style={[
-                  styles.card,
-                  {
-                    backgroundColor: theme.colors.card,
-                    borderColor: theme.colors.border,
-                    opacity: isRejected ? 0.7 : 1, 
-                  },
-                ]}
-              >
+              <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border, opacity: isRejected ? 0.7 : 1 }]}>
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={[styles.name, { color: theme.colors.primaryText }]}>
-                      {item.name || t("Unknown User")}
-                    </Text>
+                    <Text style={[styles.name, { color: theme.colors.primaryText }]}>{item.name || t("Unknown User")}</Text>
                     {isRejected && <Ionicons name="close-circle" size={18} color={theme.colors.danger} />}
                   </View>
                   <Text style={[styles.email, { color: theme.colors.subtext }]}>{item.email}</Text>
@@ -170,16 +140,10 @@ export default function FamilyRequests() {
                     <Text style={{ color: theme.colors.danger, fontSize: 12, fontWeight: '600' }}>{t("Denied")}</Text>
                   ) : (
                     <>
-                      <Pressable
-                        onPress={() => handleRespond(item.id, "reject")}
-                        style={[styles.btn, { backgroundColor: theme.colors.danger + '20' }]}
-                      >
+                      <Pressable onPress={() => handleRespond(item.id, "reject")} style={[styles.btn, { backgroundColor: theme.colors.danger + '20' }]}>
                         <Text style={[styles.btnText, { color: theme.colors.danger }]}>{t("Deny")}</Text>
                       </Pressable>
-                      <Pressable
-                        onPress={() => handleRespond(item.id, "approve")}
-                        style={[styles.btn, { backgroundColor: theme.colors.primary }]}
-                      >
+                      <Pressable onPress={() => handleRespond(item.id, "approve")} style={[styles.btn, { backgroundColor: theme.colors.primary }]}>
                         <Text style={[styles.btnText, { color: theme.colors.primaryTextButton }]}>{t("Approve")}</Text>
                       </Pressable>
                     </>
@@ -197,13 +161,7 @@ export default function FamilyRequests() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, justifyContent: "center", alignItems: "center", paddingTop: 40 },
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
+  card: { flexDirection: "row", alignItems: "center", padding: 16, borderRadius: 16, borderWidth: 1 },
   name: { fontWeight: "700", fontSize: 16 },
   email: { fontSize: 13, marginTop: 2 },
   actions: { flexDirection: "row", gap: 8, alignItems: 'center' },

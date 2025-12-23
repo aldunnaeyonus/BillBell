@@ -1,6 +1,7 @@
 import { ScrollView, Text, StyleSheet, View } from "react-native";
 import { useTheme } from "../../src/ui/useTheme";
 import { useTranslation } from "react-i18next";
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 export default function Privacy() {
   const theme = useTheme();
@@ -8,10 +9,12 @@ export default function Privacy() {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      <View style={styles.content}>
-        <Text style={[styles.text, { color: theme.colors.text }]}>
-          {t("PrivacyText")}
-        </Text>
+      <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+        <View style={styles.content}>
+          <Text style={[styles.text, { color: theme.colors.text }]}>
+            {t("PrivacyText")}
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );

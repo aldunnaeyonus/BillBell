@@ -16,6 +16,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 // ... (Header and OffsetChip components remain unchanged from previous, included below for completeness) ...
 
@@ -232,141 +233,145 @@ export default function FamilySettings() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      <View style={styles.content}>
-        
-        <Header 
-          title={t("Shared Settings")} 
-          subtitle={t("Defaults for new bills")}
-          theme={theme}
-        />
+      
+      {/* Centered Content Wrapper */}
+      <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+        <View style={styles.content}>
+          
+          <Header 
+            title={t("Shared Settings")} 
+            subtitle={t("Defaults for new bills")}
+            theme={theme}
+          />
 
-        {!editable && (
-          <View style={[styles.warningCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Ionicons name="lock-closed" size={20} color={theme.colors.subtext} />
-            <Text style={[styles.warningText, { color: theme.colors.subtext }]}>
-              {t("Only an admin can change these settings.")}
-            </Text>
+          {!editable && (
+            <View style={[styles.warningCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+              <Ionicons name="lock-closed" size={20} color={theme.colors.subtext} />
+              <Text style={[styles.warningText, { color: theme.colors.subtext }]}>
+                {t("Only an admin can change these settings.")}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Default Reminder Offset")}</Text>
+            <View style={styles.chipsContainer}>
+              {OFFSETS.map((o) => (
+                <OffsetChip
+                  key={o.value}
+                  label={o.label}
+                  active={offset === o.value}
+                  onPress={() => setOffset(o.value)}
+                  theme={theme}
+                  disabled={!editable}
+                />
+              ))}
+            </View>
           </View>
-        )}
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Default Reminder Offset")}</Text>
-          <View style={styles.chipsContainer}>
-            {OFFSETS.map((o) => (
-              <OffsetChip
-                key={o.value}
-                label={o.label}
-                active={offset === o.value}
-                onPress={() => setOffset(o.value)}
-                theme={theme}
-                disabled={!editable}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Default Alert Time")}</Text>
+            <Pressable
+              disabled={!editable}
+              onPress={() => setShowReminderDatePicker(prev => !prev)}
+              style={({ pressed }) => [
+                styles.timeRow,
+                { 
+                  backgroundColor: theme.colors.card,
+                  borderColor: theme.colors.border,
+                  opacity: !editable ? 0.5 : pressed ? 0.7 : 1
+                }
+              ]}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Ionicons name="time-outline" size={22} color={theme.colors.primary} />
+                <Text style={[styles.timeLabel, { color: theme.colors.primaryText }]}>
+                  {t("Time")}
+                </Text>
+              </View>
+              
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text style={[styles.timeValue, { color: theme.colors.accent }]}>
+                  {reminderDateObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                </Text>
+                {editable && (
+                  <Ionicons name={showReminderDatePicker ? "chevron-up" : "chevron-down"} size={16} color={theme.colors.subtext} />
+                )}
+              </View>
+            </Pressable>
+
+            {showReminderDatePicker && (
+              <DateTimePicker
+                value={reminderDateObj}
+                mode="time"
+                display="spinner"
+                onChange={onReminderDateChange}
+                textColor={theme.colors.primaryText}
               />
-            ))}
+            )}
           </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Default Alert Time")}</Text>
-          <Pressable
-            disabled={!editable}
-            onPress={() => setShowReminderDatePicker(prev => !prev)}
-            style={({ pressed }) => [
-              styles.timeRow,
-              { 
-                backgroundColor: theme.colors.card,
-                borderColor: theme.colors.border,
-                opacity: !editable ? 0.5 : pressed ? 0.7 : 1
-              }
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Ionicons name="time-outline" size={22} color={theme.colors.primary} />
-              <Text style={[styles.timeLabel, { color: theme.colors.primaryText }]}>
-                {t("Time")}
-              </Text>
-            </View>
-            
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text style={[styles.timeValue, { color: theme.colors.accent }]}>
-                {reminderDateObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-              </Text>
-              {editable && (
-                <Ionicons name={showReminderDatePicker ? "chevron-up" : "chevron-down"} size={16} color={theme.colors.subtext} />
+          {editable && (
+            <Pressable
+              disabled={loading}
+              onPress={save}
+              style={({ pressed }) => [
+                styles.saveButton,
+                { 
+                  backgroundColor: theme.colors.primary,
+                  opacity: pressed || loading ? 0.8 : 1,
+                  marginTop: 20
+                }
+              ]}
+            >
+              {loading ? (
+                <ActivityIndicator color={theme.colors.primaryTextButton} />
+              ) : (
+                <Text style={[styles.saveButtonText, { color: theme.colors.primaryTextButton }]}>
+                  {t("Save Changes")}
+                </Text>
               )}
-            </View>
-          </Pressable>
+            </Pressable>
+          )}
 
-          {showReminderDatePicker && (
-            <DateTimePicker
-              value={reminderDateObj}
-              mode="time"
-              display="spinner"
-              onChange={onReminderDateChange}
-              textColor={theme.colors.primaryText}
-            />
+          {isAdmin && (
+              <View style={{ marginTop: 40, borderTopWidth: 1, borderColor: theme.colors.border, paddingBottom: 40 }}>
+                <Text style={[styles.sectionTitle, { color: theme.colors.danger, marginTop: 20 }]}>
+                  {t("Advanced Security")}
+                </Text>
+                
+                <Pressable 
+                  onPress={handleKeyRotation} 
+                  disabled={isRotating}
+                  style={({ pressed }) => [
+                    styles.rotationButton, 
+                    { 
+                      backgroundColor: theme.colors.card, 
+                      borderColor: theme.colors.danger,
+                      opacity: pressed || isRotating ? 0.6 : 1
+                    }
+                  ]}
+                >
+                  <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                      <Ionicons 
+                      name="refresh-circle" 
+                      size={24} 
+                      color={theme.colors.danger} 
+                      style={isRotating ? { transform: [{ rotate: "45deg" }] } : {}}
+                      />
+                      <Text style={[styles.rowText, { color: theme.colors.danger }]}>
+                      {isRotating ? t("Rotating Keys...") : t("Rotate Family Encryption Key")}
+                      </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={theme.colors.danger} />
+                </Pressable>
+                
+                <Text style={[styles.helpText, { color: theme.colors.subtext }]}>
+                    {t("Use this if a member cannot decrypt data. It will re-encrypt all bills with a new key and share it with all members.")}
+                </Text>
+              </View>
           )}
         </View>
-
-        {editable && (
-          <Pressable
-            disabled={loading}
-            onPress={save}
-            style={({ pressed }) => [
-              styles.saveButton,
-              { 
-                backgroundColor: theme.colors.primary,
-                opacity: pressed || loading ? 0.8 : 1,
-                marginTop: 20
-              }
-            ]}
-          >
-            {loading ? (
-              <ActivityIndicator color={theme.colors.primaryTextButton} />
-            ) : (
-              <Text style={[styles.saveButtonText, { color: theme.colors.primaryTextButton }]}>
-                {t("Save Changes")}
-              </Text>
-            )}
-          </Pressable>
-        )}
-
-        {isAdmin && (
-            <View style={{ marginTop: 40, borderTopWidth: 1, borderColor: theme.colors.border, paddingBottom: 40 }}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.danger, marginTop: 20 }]}>
-                {t("Advanced Security")}
-              </Text>
-              
-              <Pressable 
-                onPress={handleKeyRotation} 
-                disabled={isRotating}
-                style={({ pressed }) => [
-                  styles.rotationButton, 
-                  { 
-                    backgroundColor: theme.colors.card, 
-                    borderColor: theme.colors.danger,
-                    opacity: pressed || isRotating ? 0.6 : 1
-                  }
-                ]}
-              >
-                <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                    <Ionicons 
-                    name="refresh-circle" 
-                    size={24} 
-                    color={theme.colors.danger} 
-                    style={isRotating ? { transform: [{ rotate: "45deg" }] } : {}}
-                    />
-                    <Text style={[styles.rowText, { color: theme.colors.danger }]}>
-                    {isRotating ? t("Rotating Keys...") : t("Rotate Family Encryption Key")}
-                    </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={theme.colors.danger} />
-              </Pressable>
-              
-              <Text style={[styles.helpText, { color: theme.colors.subtext }]}>
-                  {t("Use this if a member cannot decrypt data. It will re-encrypt all bills with a new key and share it with all members.")}
-              </Text>
-            </View>
-        )}
       </View>
     </ScrollView>
   );

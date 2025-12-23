@@ -16,11 +16,9 @@ import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useTheme, Theme } from "../../src/ui/useTheme";
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 const SUPPORT_EMAIL = "support@dunn-carabali.com";
-
-// ... (Components Header and FeedbackTypeToggle remain unchanged) ...
-// Please retain Header and FeedbackTypeToggle components here.
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
   return (
@@ -43,61 +41,17 @@ function Header({ title, subtitle, theme }: { title: string; subtitle: string; t
   );
 }
 
-function FeedbackTypeToggle({
-  type,
-  setType,
-  theme,
-  t,
-}: {
-  type: "feedback" | "bug";
-  setType: (t: "feedback" | "bug") => void;
-  theme: Theme;
-  t: any;
-}) {
+function FeedbackTypeToggle({ type, setType, theme, t }: { type: "feedback" | "bug"; setType: (t: "feedback" | "bug") => void; theme: Theme; t: any; }) {
   return (
     <View style={[styles.toggleContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-      <Pressable
-        onPress={() => setType("feedback")}
-        style={[
-          styles.toggleButton,
-          type === "feedback" && { backgroundColor: theme.colors.primary },
-        ]}
-      >
-        <Ionicons 
-          name="bulb-outline" 
-          size={18} 
-          color={type === "feedback" ? theme.colors.primaryTextButton : theme.colors.subtext} 
-        />
-        <Text
-          style={[
-            styles.toggleText,
-            { color: type === "feedback" ? theme.colors.primaryTextButton : theme.colors.subtext },
-          ]}
-        >
-          {t("Feedback")}
-        </Text>
+      <Pressable onPress={() => setType("feedback")} style={[styles.toggleButton, type === "feedback" && { backgroundColor: theme.colors.primary }]}>
+        <Ionicons name="bulb-outline" size={18} color={type === "feedback" ? theme.colors.primaryTextButton : theme.colors.subtext} />
+        <Text style={[styles.toggleText, { color: type === "feedback" ? theme.colors.primaryTextButton : theme.colors.subtext }]}>{t("Feedback")}</Text>
       </Pressable>
 
-      <Pressable
-        onPress={() => setType("bug")}
-        style={[
-          styles.toggleButton,
-          type === "bug" && { backgroundColor: theme.colors.danger },
-        ]}
-      >
-        <Ionicons 
-          name="bug-outline" 
-          size={18} 
-          color={type === "bug" ? "#FFF" : theme.colors.subtext} 
-        />
-        <Text
-          style={[
-            styles.toggleText,
-            { color: type === "bug" ? "#FFF" : theme.colors.subtext },
-          ]}
-        >
-          {t("Bug Report")}
-        </Text>
+      <Pressable onPress={() => setType("bug")} style={[styles.toggleButton, type === "bug" && { backgroundColor: theme.colors.danger }]}>
+        <Ionicons name="bug-outline" size={18} color={type === "bug" ? "#FFF" : theme.colors.subtext} />
+        <Text style={[styles.toggleText, { color: type === "bug" ? "#FFF" : theme.colors.subtext }]}>{t("Bug Report")}</Text>
       </Pressable>
     </View>
   );
@@ -120,18 +74,8 @@ export default function FeedbackScreen() {
   }, []);
 
   async function onSubmit() {
-    if (!title.trim() || !description.trim()) {
-      Alert.alert(
-        t("Missing info"),
-        t("Please add a title and description first.")
-      );
-      return;
-    }
-
-    const subject = `[${
-      type === "bug" ? "Bug" : "Feedback"
-    }] ${title.trim()}`;
-
+    if (!title.trim() || !description.trim()) { Alert.alert(t("Missing info"), t("Please add a title and description first.")); return; }
+    const subject = `[${type === "bug" ? "Bug" : "Feedback"}] ${title.trim()}`;
     const bodyLines = [
       `Type: ${type === "bug" ? t("Bug Report") : t("General Feedback")}`,
       `Platform: ${Platform.OS} ${Platform.Version ?? ""}`,
@@ -139,29 +83,14 @@ export default function FeedbackScreen() {
       "--------------------------------",
       description.trim(),
     ].filter(Boolean);
-
     const body = bodyLines.join("\n");
     const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-    // FIX: Check URL length to prevent crashes with very long descriptions
-    if (mailto.length > 2000) {
-        Alert.alert(t("Too Long"), t("Your feedback is too long to send via the mail app. Please shorten it."));
-        return;
-    }
-
+    if (mailto.length > 2000) { Alert.alert(t("Too Long"), t("Your feedback is too long to send via the mail app. Please shorten it.")); return; }
     try {
       setSubmitting(true);
       const canOpen = await Linking.canOpenURL(mailto);
-      
       if (!isMounted.current) return;
-
-      if (!canOpen) {
-        Alert.alert(
-          t("Error"),
-          `${t("Unable to open mail app")}\n\n${SUPPORT_EMAIL}`
-        );
-        return;
-      }
+      if (!canOpen) { Alert.alert(t("Error"), `${t("Unable to open mail app")}\n\n${SUPPORT_EMAIL}`); return; }
       await Linking.openURL(mailto);
     } catch (e: any) {
       if (isMounted.current) Alert.alert(t("Error"), e?.message || "Error opening mail app");
@@ -172,101 +101,54 @@ export default function FeedbackScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-          <View style={styles.content}>
-            
-            <Header
-              title={t("FeedbackTitle")}
-              subtitle={t("FeedbackSubtitle")}
-              theme={theme}
-            />
-
-            <FeedbackTypeToggle type={type} setType={setType} theme={theme} t={t} />
-
-            <View style={styles.formGroup}>
-              <View>
-                <Text style={[styles.label, { color: theme.colors.primaryText }]}>{t("Title")}</Text>
-                <TextInput
-                  placeholder={t("TitlePlaceholder")}
-                  placeholderTextColor={theme.colors.subtext}
-                  value={title}
-                  onChangeText={setTitle}
-                  style={[styles.input, { 
-                    backgroundColor: theme.colors.card, 
-                    borderColor: theme.colors.border,
-                    color: theme.colors.primaryText
-                  }]}
-                />
+          <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+            <View style={styles.content}>
+              <Header title={t("FeedbackTitle")} subtitle={t("FeedbackSubtitle")} theme={theme} />
+              <FeedbackTypeToggle type={type} setType={setType} theme={theme} t={t} />
+              <View style={styles.formGroup}>
+                <View>
+                  <Text style={[styles.label, { color: theme.colors.primaryText }]}>{t("Title")}</Text>
+                  <TextInput
+                    placeholder={t("TitlePlaceholder")}
+                    placeholderTextColor={theme.colors.subtext}
+                    value={title}
+                    onChangeText={setTitle}
+                    style={[styles.input, { backgroundColor: theme.colors.card, borderColor: theme.colors.border, color: theme.colors.primaryText }]}
+                  />
+                </View>
+                <View>
+                  <Text style={[styles.label, { color: theme.colors.primaryText }]}>{t("Details")}</Text>
+                  <TextInput
+                    placeholder={type === "bug" ? t("DetailsPlaceholderBug") : t("DetailsPlaceholderFeedback")}
+                    placeholderTextColor={theme.colors.subtext}
+                    value={description}
+                    onChangeText={setDescription}
+                    multiline
+                    textAlignVertical="top"
+                    style={[styles.input, styles.textArea, { backgroundColor: theme.colors.card, borderColor: theme.colors.border, color: theme.colors.primaryText }]}
+                  />
+                </View>
+                <View>
+                  <Text style={[styles.label, { color: theme.colors.primaryText }]}>{t("ContactLabel")}</Text>
+                  <TextInput
+                    placeholder={t("ContactPlaceholder")}
+                    placeholderTextColor={theme.colors.subtext}
+                    value={contact}
+                    onChangeText={setContact}
+                    autoCapitalize="none"
+                    style={[styles.input, { backgroundColor: theme.colors.card, borderColor: theme.colors.border, color: theme.colors.primaryText }]}
+                  />
+                </View>
               </View>
-
               <View>
-                <Text style={[styles.label, { color: theme.colors.primaryText }]}>{t("Details")}</Text>
-                <TextInput
-                  placeholder={
-                    type === "bug"
-                      ? t("DetailsPlaceholderBug")
-                      : t("DetailsPlaceholderFeedback")
-                  }
-                  placeholderTextColor={theme.colors.subtext}
-                  value={description}
-                  onChangeText={setDescription}
-                  multiline
-                  textAlignVertical="top"
-                  style={[styles.input, styles.textArea, { 
-                    backgroundColor: theme.colors.card, 
-                    borderColor: theme.colors.border,
-                    color: theme.colors.primaryText
-                  }]}
-                />
+                  <Pressable onPress={onSubmit} disabled={submitting} style={({ pressed }) => [styles.submitButton, { backgroundColor: theme.colors.primary, opacity: submitting ? 0.6 : pressed ? 0.8 : 1 }]}>
+                  {submitting ? <ActivityIndicator color={theme.colors.primaryTextButton} /> : <Text style={[styles.submitButtonText, { color: theme.colors.primaryTextButton }]}>{t("Send")}</Text>}
+                  </Pressable>
+                  <Text style={[styles.disclaimer, { color: theme.colors.subtext }]}>{t("MailAppDisclaimer")}</Text>
               </View>
-
-              <View>
-                <Text style={[styles.label, { color: theme.colors.primaryText }]}>{t("ContactLabel")}</Text>
-                <TextInput
-                  placeholder={t("ContactPlaceholder")}
-                  placeholderTextColor={theme.colors.subtext}
-                  value={contact}
-                  onChangeText={setContact}
-                  autoCapitalize="none"
-                  style={[styles.input, { 
-                    backgroundColor: theme.colors.card, 
-                    borderColor: theme.colors.border,
-                    color: theme.colors.primaryText
-                  }]}
-                />
-              </View>
-
             </View>
-
-            <View>
-                <Pressable
-                onPress={onSubmit}
-                disabled={submitting}
-                style={({ pressed }) => [
-                    styles.submitButton,
-                    {
-                    backgroundColor: theme.colors.primary,
-                    opacity: submitting ? 0.6 : pressed ? 0.8 : 1,
-                    },
-                ]}
-                >
-                {submitting ? (
-                    <ActivityIndicator color={theme.colors.primaryTextButton} />
-                ) : (
-                    <Text style={[styles.submitButtonText, { color: theme.colors.primaryTextButton }]}>
-                    {t("Send")}
-                    </Text>
-                )}
-                </Pressable>
-                <Text style={[styles.disclaimer, { color: theme.colors.subtext }]}>
-                    {t("MailAppDisclaimer")}
-                </Text>
-            </View>
-
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

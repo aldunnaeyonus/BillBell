@@ -1,5 +1,11 @@
 import { Theme } from "./theme";
-import type { TextStyle } from "react-native";
+import { Dimensions, Platform, type TextStyle } from "react-native";
+
+// --- Tablet Layout Constants ---
+const { width } = Dimensions.get('window');
+export const isTablet = width >= 768;
+export const MAX_CONTENT_WIDTH = 700;
+// ------------------------------
 
 export function screen(theme: Theme) {
   return { flex: 1, padding: 16, backgroundColor: theme.colors.bg };

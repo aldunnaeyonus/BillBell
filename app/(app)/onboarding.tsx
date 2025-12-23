@@ -8,6 +8,7 @@ import {
   Pressable,
   Platform,
   StatusBar,
+  useWindowDimensions
 } from "react-native";
 import { router, useFocusEffect, Stack } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -16,12 +17,12 @@ import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useTheme } from "../../src/ui/useTheme";
-
-const { width } = Dimensions.get("window");
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 export default function Onboarding() {
   const theme = useTheme();
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -124,12 +125,14 @@ export default function Onboarding() {
             showsHorizontalScrollIndicator={false}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <View style={styles.slide}>
-                <View style={styles.iconContainer}>
-                  <Ionicons name={item.icon as any} size={100} color="#FFF" />
+              <View style={[styles.slide, { width }]}>
+                <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignItems: 'center' }}>
+                  <View style={styles.iconContainer}>
+                    <Ionicons name={item.icon as any} size={100} color="#FFF" />
+                  </View>
+                  <Text style={styles.title}>{item.title}</Text>
+                  <Text style={styles.description}>{item.description}</Text>
                 </View>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.description}>{item.description}</Text>
               </View>
             )}
             onViewableItemsChanged={onViewableItemsChanged}
@@ -196,7 +199,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   slide: {
-    width: width,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 40,
@@ -225,6 +227,9 @@ const styles = StyleSheet.create({
   footer: {
     padding: 32,
     gap: 32,
+    width: '100%', 
+    maxWidth: 500, 
+    alignSelf: 'center'
   },
   paginator: {
     flexDirection: "row",

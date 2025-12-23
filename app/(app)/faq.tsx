@@ -15,6 +15,7 @@ import { useTheme, Theme } from "../../src/ui/useTheme";
 import { useTranslation } from "react-i18next";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 // Enable LayoutAnimation for Android
 if (
@@ -163,44 +164,48 @@ export default function FAQ() {
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-          <View style={styles.content}>
-            
-            <Header
-              title={t("FAQ")}
-              subtitle={t("Frequently Asked Questions")}
-              theme={theme}
-            />
+          
+          {/* Centered Content Wrapper */}
+          <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+            <View style={styles.content}>
+              
+              <Header
+                title={t("FAQ")}
+                subtitle={t("Frequently Asked Questions")}
+                theme={theme}
+              />
 
-            <SearchBar value={searchQuery} onChange={setSearchQuery} theme={theme} t={t} />
+              <SearchBar value={searchQuery} onChange={setSearchQuery} theme={theme} t={t} />
 
-            {filteredFaqItems.length === 0 ? (
-              <View style={[styles.emptyState, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                <Ionicons name="search-outline" size={48} color={theme.colors.subtext} />
-                <Text style={[styles.emptyText, { color: theme.colors.subtext }]}>
-                  {t("No results found for")} "{searchQuery}"
-                </Text>
-              </View>
-            ) : (
-              <View style={{ gap: 24 }}>
-                {filteredFaqItems.map((section, sIdx) => (
-                  <View key={sIdx}>
-                    <Text style={[styles.sectionHeader, { color: theme.colors.subtext }]}>
-                      {t(section.title)}
-                    </Text>
-                    <View style={{ gap: 10 }}>
-                      {section.items.map((item, index) => (
-                        <AccordionItem
-                          key={index}
-                          question={t(item.q)}
-                          answer={t(item.a)}
-                          theme={theme}
-                        />
-                      ))}
+              {filteredFaqItems.length === 0 ? (
+                <View style={[styles.emptyState, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                  <Ionicons name="search-outline" size={48} color={theme.colors.subtext} />
+                  <Text style={[styles.emptyText, { color: theme.colors.subtext }]}>
+                    {t("No results found for")} "{searchQuery}"
+                  </Text>
+                </View>
+              ) : (
+                <View style={{ gap: 24 }}>
+                  {filteredFaqItems.map((section, sIdx) => (
+                    <View key={sIdx}>
+                      <Text style={[styles.sectionHeader, { color: theme.colors.subtext }]}>
+                        {t(section.title)}
+                      </Text>
+                      <View style={{ gap: 10 }}>
+                        {section.items.map((item, index) => (
+                          <AccordionItem
+                            key={index}
+                            question={t(item.q)}
+                            answer={t(item.a)}
+                            theme={theme}
+                          />
+                        ))}
+                      </View>
                     </View>
-                  </View>
-                ))}
-              </View>
-            )}
+                  ))}
+                </View>
+              )}
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

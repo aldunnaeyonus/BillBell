@@ -12,6 +12,7 @@ import {
   NativeModules,
   TextInput,
   Keyboard,
+  useWindowDimensions
 } from "react-native";
 import { router, useFocusEffect, Stack } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -54,13 +55,14 @@ import { FlashList } from "@shopify/flash-list";
 import ConfettiCannon from "react-native-confetti-cannon";
 import * as StoreReview from "expo-store-review";
 import { BILL_ICON_MAP } from '../../src/data/vendors';
-import { formatCurrency } from "@/utils/currency";
+import { formatCurrency } from "../../src/utils/currency";
 // --- NEW VISUAL IMPORTS ---
 import Animated, { LinearTransition, FadeIn, FadeOut } from 'react-native-reanimated';
 import { ScaleButton } from "../../src/ui/ScaleButton";
 import { useBills, useBillMutations } from "../../src/hooks/useBills"; 
 import { Bill } from "../../src/types/domain";
 import { Skeleton } from "../../src/ui/Skeleton";
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 
 const getWidgetModule = () => {
@@ -191,37 +193,40 @@ function Header({
         style={styles.headerGradient}
       >
         <SafeAreaView edges={["top"]} style={styles.safeArea}>
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>{title}</Text>
-            <Pressable onPress={onProfilePress} style={styles.profileButton}>
-              <Ionicons name="person" size={20} color="#FFF" />
-            </Pressable>
-          </View>
-
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color="rgba(255,255,255,0.6)" />
-            <TextInput
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder={t("Search bills...")}
-              placeholderTextColor="rgba(255,255,255,0.6)"
-              style={styles.searchInput}
-              returnKeyType="search"
-            />
-            {searchQuery.length > 0 && (
-              <Pressable
-                onPress={() => {
-                  setSearchQuery("");
-                  Keyboard.dismiss();
-                }}
-              >
-                <Ionicons
-                  name="close-circle"
-                  size={18}
-                  color="rgba(255,255,255,0.8)"
-                />
+          {/* Centered Content Wrapper for iPad/Tablet */}
+          <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+            <View style={styles.headerContent}>
+              <Text style={styles.headerTitle}>{title}</Text>
+              <Pressable onPress={onProfilePress} style={styles.profileButton}>
+                <Ionicons name="person" size={20} color="#FFF" />
               </Pressable>
-            )}
+            </View>
+
+            <View style={styles.searchContainer}>
+              <Ionicons name="search" size={20} color="rgba(255,255,255,0.6)" />
+              <TextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t("Search bills...")}
+                placeholderTextColor="rgba(255,255,255,0.6)"
+                style={styles.searchInput}
+                returnKeyType="search"
+              />
+              {searchQuery.length > 0 && (
+                <Pressable
+                  onPress={() => {
+                    setSearchQuery("");
+                    Keyboard.dismiss();
+                  }}
+                >
+                  <Ionicons
+                    name="close-circle"
+                    size={18}
+                    color="rgba(255,255,255,0.8)"
+                  />
+                </Pressable>
+              )}
+            </View>
           </View>
         </SafeAreaView>
       </LinearGradient>
@@ -336,7 +341,7 @@ function TabSegment({ tabs, activeTab, onTabPress, theme }: any) {
 function BillListSkeleton() {
   const theme = useTheme();
   return (
-    <View style={{ paddingHorizontal: 16, gap: 12, paddingTop: 24 }}>
+    <View style={{ gap: 12, paddingTop: 24 }}>
       {[1, 2, 3].map((i) => (
         <View 
           key={i} 
@@ -975,80 +980,86 @@ export default function Bills() {
         t={t}
       />
 
-      <View style={{ flex: 1, marginTop: -24, borderTopLeftRadius: 24, borderTopRightRadius: 24, backgroundColor: theme.colors.bg, paddingHorizontal: 16, overflow: "hidden" }}>
-        {showSkeleton ? (
-           <View>
-              <View style={{ height: 24 }} /> 
-              <View style={{ marginBottom: 16 }}><Skeleton width="100%" height={100} borderRadius={20} /></View>
-              <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
-                 <Skeleton width="48%" height={50} borderRadius={16} />
-                 <Skeleton width="48%" height={50} borderRadius={16} />
-              </View>
-              <BillListSkeleton />
-           </View>
-        ) : (
-           <FlashList<FlatListItem>
-             data={flatData}
-             renderItem={renderItem}
-             // @ts-ignore
-             getItemType={(item) => item.type}
-                          // @ts-ignore
-             estimatedItemSize={90}
-             keyExtractor={(item) => item.id}
-             contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
-             showsVerticalScrollIndicator={false}
-             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={theme.colors.primary} />}
-             ListHeaderComponent={
-               <View style={{ gap: 16, marginBottom: 16 }}>
-                  <SummaryCard theme={theme} items={summaryItems} />
-                  <View style={{ flexDirection: "row", gap: 12, flexWrap: "wrap", justifyContent: "flex-start" }}>
-                    
-                    {/* --- REPLACED BUTTONS WITH SCALEBUTTON --- */}
-                    <ScaleButton onPress={() => router.push("/(app)/insights")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
-                      <Ionicons name="bar-chart" size={18} color={theme.colors.primaryTextButton} />
-                      <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("Insights")}</Text>
-                    </ScaleButton>
-                    
-                    <ScaleButton onPress={() => router.push("/(app)/bill-scan")} style={[styles.actionBtn, { backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, flex: 0.3 }]}>
-                      <Ionicons name="scan" size={20} color={theme.colors.text} />
-                    </ScaleButton>
+      {/* Main Body Sheet */}
+      <View style={{ flex: 1, marginTop: -24, borderTopLeftRadius: 24, borderTopRightRadius: 24, backgroundColor: theme.colors.bg, overflow: "hidden" }}>
+        
+        {/* Centered Content Wrapper for iPad/Tablet */}
+        <View style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', paddingHorizontal: 16 }}>
+          
+          {showSkeleton ? (
+             <View>
+                <View style={{ height: 24 }} /> 
+                <View style={{ marginBottom: 16 }}><Skeleton width="100%" height={100} borderRadius={20} /></View>
+                <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
+                   <Skeleton width="48%" height={50} borderRadius={16} />
+                   <Skeleton width="48%" height={50} borderRadius={16} />
+                </View>
+                <BillListSkeleton />
+             </View>
+          ) : (
+             <FlashList<FlatListItem>
+               data={flatData}
+               renderItem={renderItem}
+               // @ts-ignore
+               getItemType={(item) => item.type}
+                            // @ts-ignore
+               estimatedItemSize={90}
+               keyExtractor={(item) => item.id}
+               contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
+               showsVerticalScrollIndicator={false}
+               refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={theme.colors.primary} />}
+               ListHeaderComponent={
+                 <View style={{ gap: 16, marginBottom: 16 }}>
+                    <SummaryCard theme={theme} items={summaryItems} />
+                    <View style={{ flexDirection: "row", gap: 12, flexWrap: "wrap", justifyContent: "flex-start" }}>
+                      
+                      {/* --- REPLACED BUTTONS WITH SCALEBUTTON --- */}
+                      <ScaleButton onPress={() => router.push("/(app)/insights")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
+                        <Ionicons name="bar-chart" size={18} color={theme.colors.primaryTextButton} />
+                        <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("Insights")}</Text>
+                      </ScaleButton>
+                      
+                      <ScaleButton onPress={() => router.push("/(app)/bill-scan")} style={[styles.actionBtn, { backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, flex: 0.3 }]}>
+                        <Ionicons name="scan" size={20} color={theme.colors.text} />
+                      </ScaleButton>
 
-                    <ScaleButton onPress={() => router.push("/(app)/bill-edit")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
-                      <Ionicons name="add" size={20} color={theme.colors.primaryTextButton} />
-                      <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("+ Add")}</Text>
-                    </ScaleButton>
-                  </View>
-                  <TabSegment theme={theme} activeTab={tab} onTabPress={(key: any) => setTab(key)} tabs={[{ key: "pending", label: t("Pending") }, { key: "paid", label: t("Paid") }]} />
-                  
-                  <View style={{ flexDirection: "column", alignItems: "flex-start", paddingHorizontal: 4, gap: 8 }}>
-                    <Pressable onPress={cycleSort} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                      <Text style={{ color: theme.colors.subtext, fontSize: 13 }}>{t("Sort by")}:</Text>
-                      <Text style={{ color: theme.colors.text, fontWeight: "700", fontSize: 13 }}>{sortLabel}</Text>
-                      <Ionicons name="chevron-down" size={12} color={theme.colors.text} />
-                    </Pressable>
-                    {safeBills.length > 0 && (
-                      <View style={{ width: "100%", alignItems: "flex-end" }}>
-                        <Pressable onPress={generateAndShareCSV} disabled={isExporting} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                          {isExporting && <ActivityIndicator size="small" color={theme.colors.accent} />}
-                          <Text style={{ color: theme.colors.accent, fontWeight: "700", fontSize: 13 }}>{isExporting ? t("Exporting...") : t("Export CSV")}</Text>
-                        </Pressable>
-                      </View>
-                    )}
-                  </View>
-               </View>
-             }
-             ListEmptyComponent={
-               <View style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}>
-                  <Ionicons name={tab === "pending" ? "checkmark-done-circle-outline" : "wallet-outline"} size={64} color={theme.colors.border} />
-                  <Text style={{ color: theme.colors.subtext, fontSize: 16, textAlign: "center" }}>
-                    {searchQuery.length > 0 
-                      ? t("No bills found matching '{{query}}'", { query: searchQuery })
-                      : tab === "pending" ? t("You have no pending bills. Enjoy the freedom!") : t("No paid history")}
-                  </Text>
-               </View>
-             }
-           />
-        )}
+                      <ScaleButton onPress={() => router.push("/(app)/bill-edit")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
+                        <Ionicons name="add" size={20} color={theme.colors.primaryTextButton} />
+                        <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("+ Add")}</Text>
+                      </ScaleButton>
+                    </View>
+                    <TabSegment theme={theme} activeTab={tab} onTabPress={(key: any) => setTab(key)} tabs={[{ key: "pending", label: t("Pending") }, { key: "paid", label: t("Paid") }]} />
+                    
+                    <View style={{ flexDirection: "column", alignItems: "flex-start", paddingHorizontal: 4, gap: 8 }}>
+                      <Pressable onPress={cycleSort} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                        <Text style={{ color: theme.colors.subtext, fontSize: 13 }}>{t("Sort by")}:</Text>
+                        <Text style={{ color: theme.colors.text, fontWeight: "700", fontSize: 13 }}>{sortLabel}</Text>
+                        <Ionicons name="chevron-down" size={12} color={theme.colors.text} />
+                      </Pressable>
+                      {safeBills.length > 0 && (
+                        <View style={{ width: "100%", alignItems: "flex-end" }}>
+                          <Pressable onPress={generateAndShareCSV} disabled={isExporting} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                            {isExporting && <ActivityIndicator size="small" color={theme.colors.accent} />}
+                            <Text style={{ color: theme.colors.accent, fontWeight: "700", fontSize: 13 }}>{isExporting ? t("Exporting...") : t("Export CSV")}</Text>
+                          </Pressable>
+                        </View>
+                      )}
+                    </View>
+                 </View>
+               }
+               ListEmptyComponent={
+                 <View style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}>
+                    <Ionicons name={tab === "pending" ? "checkmark-done-circle-outline" : "wallet-outline"} size={64} color={theme.colors.border} />
+                    <Text style={{ color: theme.colors.subtext, fontSize: 16, textAlign: "center" }}>
+                      {searchQuery.length > 0 
+                        ? t("No bills found matching '{{query}}'", { query: searchQuery })
+                        : tab === "pending" ? t("You have no pending bills. Enjoy the freedom!") : t("No paid history")}
+                    </Text>
+                 </View>
+               }
+             />
+          )}
+        </View>
       </View>
 
       <ConfettiCannon

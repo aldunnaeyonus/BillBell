@@ -28,6 +28,7 @@ import { api } from "../../src/api/client";
 import { getJson } from "../../src/storage/storage";
 import { userSettings } from "../../src/storage/userSettings";
 import { ScaleButton } from "../../src/ui/ScaleButton";
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 // --- HELPERS ---
 
@@ -265,7 +266,9 @@ function ChartDropdown({ theme, activeChart, onSelect, t }: { theme: Theme, acti
 
 function ChartRenderer({ bills, activeChart, theme, t }: { bills: any[], activeChart: ChartType, theme: Theme, t: any }) {
     const { width } = Dimensions.get('window');
-    const chartWidth = width - 64; // padding adjustments
+    // Adjust chart width based on content width, ensuring it doesn't overflow on small screens or look too small on large ones
+    const contentWidth = Math.min(width, MAX_CONTENT_WIDTH);
+    const chartWidth = contentWidth - 64; // padding adjustments
 
     if (activeChart === 'creditor_pie' || activeChart === 'recurrence_pie') {
         const { data, total } = activeChart === 'creditor_pie' ? groupDataByCreditor(bills) : groupDataByRecurrence(bills);
@@ -446,68 +449,70 @@ export default function Insights() {
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
       >
-        <View style={styles.content}>
-          <Header title={t("Financial Insights")} subtitle={t("Visualize your spending")} theme={theme} />
+        <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+          <View style={styles.content}>
+            <Header title={t("Financial Insights")} subtitle={t("Visualize your spending")} theme={theme} />
 
-          {/* STATS ROW */}
-          <View style={styles.statsContainer}>
-            <StatCard icon="wallet-outline" label={t('Pending')} value={`$${centsToDollars(totalDue)}`} color={theme.colors.danger} theme={theme} />
-            <StatCard icon="stats-chart-outline" label={t('Avg Bill')} value={`$${centsToDollars(averageBill)}`} color={theme.colors.primary} theme={theme} />
-            <StatCard icon="people-outline" label={t('Top')} value={topCreditor} color={theme.colors.accent} theme={theme} />
-          </View>
-
-          {/* CHARTS SECTION */}
-          <View>
-             <ChartDropdown theme={theme} activeChart={activeChart} onSelect={setActiveChart} t={t} />
-             <View style={[styles.chartCard, { borderColor: theme.colors.border, backgroundColor: theme.colors.card, marginTop: 12 }]}>
-                 <ChartRenderer bills={bills} activeChart={activeChart} theme={theme} t={t} />
-             </View>
-          </View>
-
-          {/* SMART BUDGETS SECTION */}
-          <View>
-            <Text style={[styles.sectionHeader, { color: theme.colors.primaryText }]}>{t("Smart Budgets")}</Text>
-            <Text style={{ color: theme.colors.subtext, marginBottom: 12 }}>{t("Tap a category to set a monthly limit.")}</Text>
-            
-            <View style={{ gap: 12 }}>
-              {CATEGORY_MAP.map((cat) => {
-                const spendCents = currentMonthStats[cat.label] || 0;
-                const spend = spendCents / 100;
-                const limit = budgets[cat.label] || 0;
-                const hasLimit = limit > 0;
-                const percent = hasLimit ? (spend / limit) * 100 : 0;
-
-                return (
-                  <ScaleButton 
-                    key={cat.label} 
-                    onPress={() => handleEditBudget(cat.label)}
-                    style={[styles.budgetRow, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
-                  >
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: cat.color }} />
-                        <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.primaryText }}>{cat.label}</Text>
-                      </View>
-                      <View style={{ alignItems: 'flex-end' }}>
-                        <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.primaryText }}>
-                          ${spend.toFixed(0)} 
-                          <Text style={{ color: theme.colors.subtext, fontSize: 14, fontWeight: '400' }}>
-                             {hasLimit ? ` / $${limit}` : ''}
-                          </Text>
-                        </Text>
-                      </View>
-                    </View>
-                    {hasLimit ? (
-                      <ProgressBar percent={percent} color={cat.color} theme={theme} />
-                    ) : (
-                      <Text style={{ fontSize: 12, color: theme.colors.accent, marginTop: 4 }}>{t("Set Budget")}</Text>
-                    )}
-                  </ScaleButton>
-                );
-              })}
+            {/* STATS ROW */}
+            <View style={styles.statsContainer}>
+              <StatCard icon="wallet-outline" label={t('Pending')} value={`$${centsToDollars(totalDue)}`} color={theme.colors.danger} theme={theme} />
+              <StatCard icon="stats-chart-outline" label={t('Avg Bill')} value={`$${centsToDollars(averageBill)}`} color={theme.colors.primary} theme={theme} />
+              <StatCard icon="people-outline" label={t('Top')} value={topCreditor} color={theme.colors.accent} theme={theme} />
             </View>
-          </View>
 
+            {/* CHARTS SECTION */}
+            <View>
+              <ChartDropdown theme={theme} activeChart={activeChart} onSelect={setActiveChart} t={t} />
+              <View style={[styles.chartCard, { borderColor: theme.colors.border, backgroundColor: theme.colors.card, marginTop: 12 }]}>
+                  <ChartRenderer bills={bills} activeChart={activeChart} theme={theme} t={t} />
+              </View>
+            </View>
+
+            {/* SMART BUDGETS SECTION */}
+            <View>
+              <Text style={[styles.sectionHeader, { color: theme.colors.primaryText }]}>{t("Smart Budgets")}</Text>
+              <Text style={{ color: theme.colors.subtext, marginBottom: 12 }}>{t("Tap a category to set a monthly limit.")}</Text>
+              
+              <View style={{ gap: 12 }}>
+                {CATEGORY_MAP.map((cat) => {
+                  const spendCents = currentMonthStats[cat.label] || 0;
+                  const spend = spendCents / 100;
+                  const limit = budgets[cat.label] || 0;
+                  const hasLimit = limit > 0;
+                  const percent = hasLimit ? (spend / limit) * 100 : 0;
+
+                  return (
+                    <ScaleButton 
+                      key={cat.label} 
+                      onPress={() => handleEditBudget(cat.label)}
+                      style={[styles.budgetRow, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
+                    >
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                          <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: cat.color }} />
+                          <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.primaryText }}>{cat.label}</Text>
+                        </View>
+                        <View style={{ alignItems: 'flex-end' }}>
+                          <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.primaryText }}>
+                            ${spend.toFixed(0)} 
+                            <Text style={{ color: theme.colors.subtext, fontSize: 14, fontWeight: '400' }}>
+                              {hasLimit ? ` / $${limit}` : ''}
+                            </Text>
+                          </Text>
+                        </View>
+                      </View>
+                      {hasLimit ? (
+                        <ProgressBar percent={percent} color={cat.color} theme={theme} />
+                      ) : (
+                        <Text style={{ fontSize: 12, color: theme.colors.accent, marginTop: 4 }}>{t("Set Budget")}</Text>
+                      )}
+                    </ScaleButton>
+                  );
+                })}
+              </View>
+            </View>
+
+          </View>
         </View>
       </ScrollView>
 

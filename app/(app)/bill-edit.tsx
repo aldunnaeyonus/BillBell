@@ -1,4 +1,3 @@
-// app/(app)/bill-edit.tsx
 import { useEffect, useMemo, useState, useRef } from "react";
 import {
   View,
@@ -23,6 +22,7 @@ import { useTheme, Theme } from "../../src/ui/useTheme";
 import { CreditorAutocomplete } from "../../src/ui/CreditorAutocomplete";
 import { SyncQueue } from "../../src/sync/SyncQueue";
 import { useBills } from "../../src/hooks/useBills"; 
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
   return (
@@ -266,93 +266,95 @@ export default function BillEdit() {
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-          <View style={styles.content}>
-            <Header title={id ? t("Edit Bill") : t("New Bill")} subtitle={id ? t("Update details") : t("Add a new debt to track")} theme={theme} />
+          <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+            <View style={styles.content}>
+              <Header title={id ? t("Edit Bill") : t("New Bill")} subtitle={id ? t("Update details") : t("Add a new debt to track")} theme={theme} />
 
-            <View style={styles.section}>
-              <SectionTitle title={t("Bill Details")} theme={theme} />
-              <View style={{ gap: 12 }}>
-                <View style={{ zIndex: 2000 }}>
-                  <CreditorAutocomplete value={creditor} onChangeText={setCreditor} theme={theme} placeholder={t("Creditor (e.g. Netflix)")} />
+              <View style={styles.section}>
+                <SectionTitle title={t("Bill Details")} theme={theme} />
+                <View style={{ gap: 12 }}>
+                  <View style={{ zIndex: 2000 }}>
+                    <CreditorAutocomplete value={creditor} onChangeText={setCreditor} theme={theme} placeholder={t("Creditor (e.g. Netflix)")} />
+                  </View>
+                  <InputField icon="cash-outline" placeholder="0.00" value={amount} onChangeText={onAmountChange} keyboardType="decimal-pad" theme={theme} />
+
+                  <Pressable onPress={() => setShowDatePicker((prev) => !prev)} style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                    <Ionicons name="calendar-outline" size={20} color={theme.colors.subtext} />
+                    <Text style={[styles.inputText, { color: theme.colors.primaryText }]}>{reminderDateObj.toDateString()}</Text>
+                    <Ionicons name={showDatePicker ? "chevron-up" : "chevron-down"} size={16} color={theme.colors.subtext} />
+                  </Pressable>
+                  {showDatePicker && <DateTimePicker value={reminderDateObj} mode="date" display="spinner" onChange={onDateChange} textColor={theme.colors.primaryText} />}
+                  <InputField icon="document-text-outline" placeholder={t("Notes (Optional)")} value={notes} onChangeText={setNotes} theme={theme} multiline />
                 </View>
-                <InputField icon="cash-outline" placeholder="0.00" value={amount} onChangeText={onAmountChange} keyboardType="decimal-pad" theme={theme} />
-
-                <Pressable onPress={() => setShowDatePicker((prev) => !prev)} style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                  <Ionicons name="calendar-outline" size={20} color={theme.colors.subtext} />
-                  <Text style={[styles.inputText, { color: theme.colors.primaryText }]}>{reminderDateObj.toDateString()}</Text>
-                  <Ionicons name={showDatePicker ? "chevron-up" : "chevron-down"} size={16} color={theme.colors.subtext} />
-                </Pressable>
-                {showDatePicker && <DateTimePicker value={reminderDateObj} mode="date" display="spinner" onChange={onDateChange} textColor={theme.colors.primaryText} />}
-                <InputField icon="document-text-outline" placeholder={t("Notes (Optional)")} value={notes} onChangeText={setNotes} theme={theme} multiline />
-              </View>
-            </View>
-            
-            <View style={styles.section}>
-              <SectionTitle title={t("Payment Method")} theme={theme} />
-              <View style={styles.chipsContainer}>
-                {["manual", "auto"].map((m) => (
-                  <RecurrenceChip key={m} label={m === "auto" ? t("Auto Draft") : t("Manual")} value={m} active={paymentMethod === m} onPress={() => setPaymentMethod(m as any)} theme={theme} />
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <SectionTitle title={t("Frequency")} theme={theme} />
-              <View style={styles.chipsContainer}>
-                {["none", "weekly", "bi-weekly", "monthly", "semi-monthly", "quarterly", "semi-annually", "annually"].map((r) => (
-                  <RecurrenceChip key={r} label={t(r.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join("-"))} value={r} active={recurrence === r} onPress={() => setRecurrence(r as any)} theme={theme} />
-                ))}
               </View>
               
-              {/* --- END DATE PICKER --- */}
-              {recurrence !== "none" && (
-                <View style={{ marginTop: 12 }}>
-                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                         <Text style={{ color: theme.colors.subtext, fontWeight: '600', fontSize: 13, marginLeft: 4 }}>{t("End Date (Optional)")}</Text>
-                         {endDate && (
-                             <Pressable onPress={() => setEndDate(null)}>
-                                 <Text style={{ color: theme.colors.danger, fontSize: 12, fontWeight: '700' }}>{t("Clear")}</Text>
-                             </Pressable>
-                         )}
-                     </View>
-                     <Pressable onPress={() => setShowEndDatePicker((prev) => !prev)} style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                        <Ionicons name="calendar-clear-outline" size={20} color={theme.colors.subtext} />
-                        <Text style={[styles.inputText, { color: endDate ? theme.colors.primaryText : theme.colors.subtext }]}>
-                            {endDate ? endDateObj.toDateString() : t("No End Date (Indefinite)")}
-                        </Text>
-                        <Ionicons name={showEndDatePicker ? "chevron-up" : "chevron-down"} size={16} color={theme.colors.subtext} />
-                     </Pressable>
-                     {showEndDatePicker && (
-                        <DateTimePicker value={endDateObj} mode="date" display="spinner" onChange={onEndDateChange} textColor={theme.colors.primaryText} minimumDate={reminderDateObj} />
-                     )}
+              <View style={styles.section}>
+                <SectionTitle title={t("Payment Method")} theme={theme} />
+                <View style={styles.chipsContainer}>
+                  {["manual", "auto"].map((m) => (
+                    <RecurrenceChip key={m} label={m === "auto" ? t("Auto Draft") : t("Manual")} value={m} active={paymentMethod === m} onPress={() => setPaymentMethod(m as any)} theme={theme} />
+                  ))}
                 </View>
-              )}
-            </View>
-
-            <View style={styles.section}>
-              <SectionTitle title={t("Reminders")} theme={theme} />
-              <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
-                  <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("Remind me")}</Text>
-                  <Text style={{ color: theme.colors.accent, fontWeight: "700" }}>{offsetDays === "0" ? t("Same day") : t("{{days}} day(s) before", { days: offsetDays })}</Text>
-                </View>
-                <Slider style={{ width: "100%", height: 40 }} minimumValue={0} maximumValue={3} step={1} value={Number(offsetDays) || 0} onValueChange={(val) => setOffsetDays(String(val))} thumbTintColor={theme.colors.primary} minimumTrackTintColor={theme.colors.primary} maximumTrackTintColor={theme.colors.border} />
-                <View style={styles.divider} />
-                <Pressable onPress={() => setShowTimePicker((prev) => !prev)} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 8 }}>
-                  <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("Alert Time")}</Text>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <Text style={{ color: theme.colors.primaryText, fontWeight: "700", fontSize: 16 }}>{timeObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</Text>
-                    <Ionicons name="time-outline" size={18} color={theme.colors.subtext} />
-                  </View>
-                </Pressable>
-                {showTimePicker && <DateTimePicker value={timeObj} mode="time" display="spinner" onChange={onTimeChange} textColor={theme.colors.primaryText} />}
               </View>
-            </View>
 
-            <View style={{ gap: 12, marginTop: 10 }}>
-              <Pressable onPress={save} disabled={loading} style={({ pressed }) => [styles.saveButton, { backgroundColor: theme.colors.primary, opacity: loading ? 0.6 : pressed ? 0.8 : 1 }]}>
-                {loading ? <ActivityIndicator color={theme.colors.primaryTextButton} /> : <Text style={[styles.saveButtonText, { color: theme.colors.primaryTextButton }]}>{t("Save Bill")}</Text>}
-              </Pressable>
+              <View style={styles.section}>
+                <SectionTitle title={t("Frequency")} theme={theme} />
+                <View style={styles.chipsContainer}>
+                  {["none", "weekly", "bi-weekly", "monthly", "semi-monthly", "quarterly", "semi-annually", "annually"].map((r) => (
+                    <RecurrenceChip key={r} label={t(r.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join("-"))} value={r} active={recurrence === r} onPress={() => setRecurrence(r as any)} theme={theme} />
+                  ))}
+                </View>
+                
+                {/* --- END DATE PICKER --- */}
+                {recurrence !== "none" && (
+                  <View style={{ marginTop: 12 }}>
+                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                           <Text style={{ color: theme.colors.subtext, fontWeight: '600', fontSize: 13, marginLeft: 4 }}>{t("End Date (Optional)")}</Text>
+                           {endDate && (
+                               <Pressable onPress={() => setEndDate(null)}>
+                                   <Text style={{ color: theme.colors.danger, fontSize: 12, fontWeight: '700' }}>{t("Clear")}</Text>
+                               </Pressable>
+                           )}
+                       </View>
+                       <Pressable onPress={() => setShowEndDatePicker((prev) => !prev)} style={[styles.inputContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                          <Ionicons name="calendar-clear-outline" size={20} color={theme.colors.subtext} />
+                          <Text style={[styles.inputText, { color: endDate ? theme.colors.primaryText : theme.colors.subtext }]}>
+                              {endDate ? endDateObj.toDateString() : t("No End Date (Indefinite)")}
+                          </Text>
+                          <Ionicons name={showEndDatePicker ? "chevron-up" : "chevron-down"} size={16} color={theme.colors.subtext} />
+                       </Pressable>
+                       {showEndDatePicker && (
+                          <DateTimePicker value={endDateObj} mode="date" display="spinner" onChange={onEndDateChange} textColor={theme.colors.primaryText} minimumDate={reminderDateObj} />
+                       )}
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.section}>
+                <SectionTitle title={t("Reminders")} theme={theme} />
+                <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+                    <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("Remind me")}</Text>
+                    <Text style={{ color: theme.colors.accent, fontWeight: "700" }}>{offsetDays === "0" ? t("Same day") : t("{{days}} day(s) before", { days: offsetDays })}</Text>
+                  </View>
+                  <Slider style={{ width: "100%", height: 40 }} minimumValue={0} maximumValue={3} step={1} value={Number(offsetDays) || 0} onValueChange={(val) => setOffsetDays(String(val))} thumbTintColor={theme.colors.primary} minimumTrackTintColor={theme.colors.primary} maximumTrackTintColor={theme.colors.border} />
+                  <View style={styles.divider} />
+                  <Pressable onPress={() => setShowTimePicker((prev) => !prev)} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 8 }}>
+                    <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("Alert Time")}</Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      <Text style={{ color: theme.colors.primaryText, fontWeight: "700", fontSize: 16 }}>{timeObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</Text>
+                      <Ionicons name="time-outline" size={18} color={theme.colors.subtext} />
+                    </View>
+                  </Pressable>
+                  {showTimePicker && <DateTimePicker value={timeObj} mode="time" display="spinner" onChange={onTimeChange} textColor={theme.colors.primaryText} />}
+                </View>
+              </View>
+
+              <View style={{ gap: 12, marginTop: 10 }}>
+                <Pressable onPress={save} disabled={loading} style={({ pressed }) => [styles.saveButton, { backgroundColor: theme.colors.primary, opacity: loading ? 0.6 : pressed ? 0.8 : 1 }]}>
+                  {loading ? <ActivityIndicator color={theme.colors.primaryTextButton} /> : <Text style={[styles.saveButtonText, { color: theme.colors.primaryTextButton }]}>{t("Save Bill")}</Text>}
+                </Pressable>
+              </View>
             </View>
           </View>
         </ScrollView>

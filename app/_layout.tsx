@@ -347,13 +347,15 @@ function AppStack() {
           />
           <Stack.Screen
             name="(app)/recovery-kit"
-            options={{ headerShown: false }}
+            options={{ title: t("Save Recovery Kit") }}
+
           />
           <Stack.Screen
             name="(app)/subscriptions"
             options={{ title: t("Subscriptions") }}
           />
         </Stack>
+        
       </BiometricAuth>
 
       {isBlurred && (

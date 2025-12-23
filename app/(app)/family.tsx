@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../../src/api/client";
 import { useTheme, Theme } from "../../src/ui/useTheme";
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
   return (
@@ -199,17 +200,19 @@ export default function Family() {
   if (pendingCode) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.bg, justifyContent:'center', alignItems:'center', padding: 20 }]}>
-         <Ionicons name="time-outline" size={64} color={theme.colors.primary} style={{marginBottom: 20}} />
-         <Text style={{color: theme.colors.text, fontSize: 18, marginBottom: 8, fontWeight: '700'}}>Request Pending</Text>
-         <Text style={{color: theme.colors.subtext, fontSize: 14, marginBottom: 30}}>Code: {pendingCode}</Text>
-         
-         <Pressable onPress={() => handleJoin(pendingCode)} style={{paddingVertical: 12, paddingHorizontal: 24, backgroundColor: theme.colors.primary, borderRadius: 12, marginBottom: 16, width: '100%', alignItems: 'center'}}>
-            <Text style={{color: '#FFF', fontWeight: '700'}}>Check Status</Text>
-         </Pressable>
-         
-         <Pressable onPress={handleCancel} style={{padding: 10}}>
-            <Text style={{color: theme.colors.danger}}>Cancel Request</Text>
-         </Pressable>
+         <View style={{ width: '100%', maxWidth: 400, alignItems: 'center' }}>
+             <Ionicons name="time-outline" size={64} color={theme.colors.primary} style={{marginBottom: 20}} />
+             <Text style={{color: theme.colors.text, fontSize: 18, marginBottom: 8, fontWeight: '700'}}>Request Pending</Text>
+             <Text style={{color: theme.colors.subtext, fontSize: 14, marginBottom: 30}}>Code: {pendingCode}</Text>
+             
+             <Pressable onPress={() => handleJoin(pendingCode)} style={{paddingVertical: 12, paddingHorizontal: 24, backgroundColor: theme.colors.primary, borderRadius: 12, marginBottom: 16, width: '100%', alignItems: 'center'}}>
+                <Text style={{color: '#FFF', fontWeight: '700'}}>Check Status</Text>
+             </Pressable>
+             
+             <Pressable onPress={handleCancel} style={{padding: 10}}>
+                <Text style={{color: theme.colors.danger}}>Cancel Request</Text>
+             </Pressable>
+         </View>
       </View>
     );
   }
@@ -224,106 +227,108 @@ export default function Family() {
           contentContainerStyle={{ paddingBottom: 60 }}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.content}>
-            <Header
-              title={t("Family Setup")}
-              subtitle={t("Sync bills with your family or housemates.")}
-              theme={theme}
-            />
+          <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+              <View style={styles.content}>
+                <Header
+                  title={t("Family Setup")}
+                  subtitle={t("Sync bills with your family or housemates.")}
+                  theme={theme}
+                />
 
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>
-                {t("Join a Group")}
-              </Text>
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>
+                    {t("Join a Group")}
+                  </Text>
 
-              <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
-                  <View style={[styles.iconBox, { backgroundColor: theme.mode === "dark" ? "#1E293B" : "#F1F5F9" }]}>
-                    <Ionicons name="enter-outline" size={24} color={theme.colors.primary} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>
-                      {t("Have an ID?")}
-                    </Text>
-                    <Text style={[styles.cardBody, { color: theme.colors.subtext }]}>
-                      {t("Enter the Family ID shared with you to join an existing group.")}
-                    </Text>
+                  <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                    <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
+                      <View style={[styles.iconBox, { backgroundColor: theme.mode === "dark" ? "#1E293B" : "#F1F5F9" }]}>
+                        <Ionicons name="enter-outline" size={24} color={theme.colors.primary} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>
+                          {t("Have an ID?")}
+                        </Text>
+                        <Text style={[styles.cardBody, { color: theme.colors.subtext }]}>
+                          {t("Enter the Family ID shared with you to join an existing group.")}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={[styles.inputContainer, { borderColor: theme.colors.border, backgroundColor: theme.colors.bg }]}>
+                      <TextInput
+                        value={code}
+                        onChangeText={onChangeCode}
+                        placeholder={t("e.g. K7P3D9")}
+                        placeholderTextColor={theme.colors.subtext}
+                        autoCapitalize="characters"
+                        autoCorrect={false}
+                        style={[styles.input, { color: theme.colors.primaryText }]}
+                      />
+                    </View>
+
+                    <Pressable
+                      onPress={() => handleJoin()}
+                      disabled={loading || !code.trim()}
+                      style={({ pressed }) => [
+                        styles.actionButton,
+                        {
+                          backgroundColor: theme.colors.primary,
+                          opacity: loading || !code.trim() ? 0.5 : pressed ? 0.8 : 1,
+                        },
+                      ]}
+                    >
+                      {loading ? (
+                        <ActivityIndicator color={theme.colors.primaryTextButton} />
+                      ) : (
+                        <Text style={[styles.actionButtonText, { color: theme.colors.primaryTextButton }]}>
+                          {t("Join Family")}
+                        </Text>
+                      )}
+                    </Pressable>
                   </View>
                 </View>
 
-                <View style={[styles.inputContainer, { borderColor: theme.colors.border, backgroundColor: theme.colors.bg }]}>
-                  <TextInput
-                    value={code}
-                    onChangeText={onChangeCode}
-                    placeholder={t("e.g. K7P3D9")}
-                    placeholderTextColor={theme.colors.subtext}
-                    autoCapitalize="characters"
-                    autoCorrect={false}
-                    style={[styles.input, { color: theme.colors.primaryText }]}
-                  />
+                <View style={styles.orContainer}>
+                  <View style={[styles.line, { backgroundColor: theme.colors.border }]} />
+                  <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("OR")}</Text>
+                  <View style={[styles.line, { backgroundColor: theme.colors.border }]} />
                 </View>
 
-                <Pressable
-                  onPress={() => handleJoin()}
-                  disabled={loading || !code.trim()}
-                  style={({ pressed }) => [
-                    styles.actionButton,
-                    {
-                      backgroundColor: theme.colors.primary,
-                      opacity: loading || !code.trim() ? 0.5 : pressed ? 0.8 : 1,
-                    },
-                  ]}
-                >
-                  {loading ? (
-                    <ActivityIndicator color={theme.colors.primaryTextButton} />
-                  ) : (
-                    <Text style={[styles.actionButtonText, { color: theme.colors.primaryTextButton }]}>
-                      {t("Join Family")}
-                    </Text>
-                  )}
-                </Pressable>
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>
+                    {t("Start Fresh")}
+                  </Text>
+
+                  <Pressable
+                    onPress={handleCreate}
+                    disabled={loading}
+                    style={({ pressed }) => [
+                      styles.card,
+                      {
+                        backgroundColor: theme.colors.card,
+                        borderColor: theme.colors.border,
+                        opacity: pressed ? 0.9 : 1,
+                      },
+                    ]}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                      <View style={[styles.iconBox, { backgroundColor: theme.colors.accent + "20" }]}>
+                        <Ionicons name="add-circle" size={28} color={theme.colors.accent} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>
+                          {t("Create New Family")}
+                        </Text>
+                        <Text style={[styles.cardBody, { color: theme.colors.subtext }]}>
+                          {t("Become an admin and invite others.")}
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={theme.colors.subtext} />
+                    </View>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-
-            <View style={styles.orContainer}>
-              <View style={[styles.line, { backgroundColor: theme.colors.border }]} />
-              <Text style={{ color: theme.colors.subtext, fontWeight: "600" }}>{t("OR")}</Text>
-              <View style={[styles.line, { backgroundColor: theme.colors.border }]} />
-            </View>
-
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>
-                {t("Start Fresh")}
-              </Text>
-
-              <Pressable
-                onPress={handleCreate}
-                disabled={loading}
-                style={({ pressed }) => [
-                  styles.card,
-                  {
-                    backgroundColor: theme.colors.card,
-                    borderColor: theme.colors.border,
-                    opacity: pressed ? 0.9 : 1,
-                  },
-                ]}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                  <View style={[styles.iconBox, { backgroundColor: theme.colors.accent + "20" }]}>
-                    <Ionicons name="add-circle" size={28} color={theme.colors.accent} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.cardTitle, { color: theme.colors.primaryText }]}>
-                      {t("Create New Family")}
-                    </Text>
-                    <Text style={[styles.cardBody, { color: theme.colors.subtext }]}>
-                      {t("Become an admin and invite others.")}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={theme.colors.subtext} />
-                </View>
-              </Pressable>
-            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
