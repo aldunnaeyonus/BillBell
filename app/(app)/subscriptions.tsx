@@ -92,6 +92,7 @@ export default function Subscriptions() {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  
   function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
     return (
       <View style={styles.headerShadowContainer}>
@@ -211,8 +212,10 @@ export default function Subscriptions() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
+              <View style={styles.content}>
+    
                   <Header title={t("Subscriptions")} subtitle={t("Top 3 subscriptions")} theme={theme} />
-
+</View>
       <FlatList
         data={subs}
         keyExtractor={(item) => String(item.id)}
@@ -254,12 +257,13 @@ const styles = StyleSheet.create({
   cardHeader: { flexDirection: "row", alignItems: "center", padding: 16, gap: 16 },
   
   // Header
-  headerShadowContainer: { backgroundColor: "transparent", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
-  headerGradient: { borderRadius: 20, height: 100, paddingBottom: 10, paddingHorizontal: 16, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
-  headerIconCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center" },
+  headerShadowContainer: { backgroundColor: 'transparent', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
+  headerGradient: { borderRadius: 20, height:120, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
+  headerIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center", marginLeft:10 },
   headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
   headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
-
+  
+  content: { padding: 16, gap: 20 },
 
   // Expanded Styles
   expandedContent: { padding: 16, borderTopWidth: 1, gap: 12 },
