@@ -725,3 +725,87 @@ export const BILL_ICON_MAP: { regex: RegExp; icon: string; color: string }[] = [
   { regex: /phone|landline/i, icon: "phone", color: "#3F51B5" },
   { regex: /storage/i, icon: "archive", color: "#E67E22" }
 ];
+
+
+export const KNOWN_SUBSCRIPTIONS = [
+  // ==========================================
+  // 1. STREAMING & ENTERTAINMENT (Global)
+  // ==========================================
+  { id: 'netflix', name: 'Netflix', patterns: [/netflix/i], color: '#E50914', icon: 'netflix', type: 'MaterialCommunityIcons' },
+  { id: 'spotify', name: 'Spotify', patterns: [/spotify/i], color: '#1DB954', icon: 'spotify', type: 'MaterialCommunityIcons' },
+  { id: 'youtube', name: 'YouTube Premium', patterns: [/youtube/i, /google.*yt/i], color: '#FF0000', icon: 'youtube', type: 'MaterialCommunityIcons' },
+  { id: 'hulu', name: 'Hulu', patterns: [/hulu/i], color: '#1CE783', icon: 'hulu', type: 'MaterialCommunityIcons' },
+  { id: 'hbo', name: 'HBO / Max', patterns: [/hbo/i, /hbomax/i, /wb.*discovery/i], color: '#560FD1', icon: 'movie-roll', type: 'MaterialCommunityIcons' },
+  { id: 'disney', name: 'Disney+', patterns: [/disney/i], color: '#113CCF', icon: 'creation', type: 'MaterialCommunityIcons' },
+  { id: 'prime_video', name: 'Prime Video', patterns: [/prime video/i], color: '#00A8E1', icon: 'amazon', type: 'MaterialCommunityIcons' },
+  { id: 'apple_tv', name: 'Apple TV+', patterns: [/apple.*tv/i], color: '#000000', icon: 'apple', type: 'MaterialCommunityIcons' },
+  { id: 'paramount', name: 'Paramount+', patterns: [/paramount/i], color: '#0064FF', icon: 'movie', type: 'MaterialCommunityIcons' },
+  { id: 'peacock', name: 'Peacock', patterns: [/peacock.*tv/i], color: '#000000', icon: 'feather', type: 'MaterialCommunityIcons' },
+  { id: 'dazn', name: 'DAZN', patterns: [/dazn/i], color: '#F5EB00', icon: 'soccer', type: 'MaterialCommunityIcons' }, // Huge in EU/Japan
+  { id: 'sky', name: 'Sky', patterns: [/sky.*digital/i, /sky.*tv/i, /now tv/i], color: '#E71409', icon: 'satellite-uplink', type: 'MaterialCommunityIcons' }, // UK/EU
+  { id: 'canal', name: 'Canal+', patterns: [/canal\+/i, /canal plus/i], color: '#000000', icon: 'television-classic', type: 'MaterialCommunityIcons' }, // France
+
+  // ==========================================
+  // 2. TELECOM & INTERNET (High Value)
+  // ==========================================
+  // USA / Canada
+  { id: 'att', name: 'AT&T', patterns: [/at&t/i, /att\*bill/i], color: '#00A8E0', icon: 'phone', type: 'MaterialCommunityIcons' },
+  { id: 'verizon', name: 'Verizon', patterns: [/verizon/i, /vzw/i], color: '#CD040B', icon: 'check', type: 'MaterialCommunityIcons' },
+  { id: 'tmobile', name: 'T-Mobile', patterns: [/t-mobile/i, /tmobile/i], color: '#E20074', icon: 'signal', type: 'MaterialCommunityIcons' },
+  { id: 'xfinity', name: 'Xfinity / Comcast', patterns: [/comcast/i, /xfinity/i], color: '#FF0000', icon: 'router-wireless', type: 'MaterialCommunityIcons' },
+  { id: 'rogers', name: 'Rogers', patterns: [/rogers/i], color: '#FF0000', icon: 'cellphone', type: 'MaterialCommunityIcons' },
+  { id: 'telus', name: 'Telus', patterns: [/telus/i], color: '#4B286D', icon: 'leaf', type: 'MaterialCommunityIcons' },
+  // Europe / Global
+  { id: 'vodafone', name: 'Vodafone', patterns: [/vodafone/i], color: '#E60000', icon: 'sim', type: 'MaterialCommunityIcons' },
+  { id: 'orange', name: 'Orange', patterns: [/orange/i], color: '#FF7900', icon: 'access-point', type: 'MaterialCommunityIcons' },
+  { id: 'deutsche_telekom', name: 'Telekom', patterns: [/telekom/i], color: '#E20074', icon: 'network', type: 'MaterialCommunityIcons' },
+  { id: 'telefonica', name: 'O2 / Telefónica', patterns: [/telefonica/i, /o2/i], color: '#032D56', icon: 'molecule', type: 'MaterialCommunityIcons' },
+  { id: 'bt', name: 'BT Group', patterns: [/bt group/i, /british telecom/i], color: '#5514B4', icon: 'phone-classic', type: 'MaterialCommunityIcons' },
+
+  // ==========================================
+  // 3. CLOUD, HOSTING & SOFTWARE (Tech)
+  // ==========================================
+  { id: 'aws', name: 'AWS', patterns: [/aws/i, /amazon web/i], color: '#FF9900', icon: 'aws', type: 'MaterialCommunityIcons' },
+  { id: 'google_cloud', name: 'Google Cloud', patterns: [/google.*cloud/i, /gcp/i], color: '#4285F4', icon: 'cloud', type: 'MaterialCommunityIcons' },
+  { id: 'azure', name: 'Azure', patterns: [/azure/i, /msft.*azure/i], color: '#0078D4', icon: 'microsoft-azure', type: 'MaterialCommunityIcons' },
+  { id: 'digitalocean', name: 'DigitalOcean', patterns: [/digitalocean/i, /digital ocean/i], color: '#0080FF', icon: 'water', type: 'MaterialCommunityIcons' },
+  { id: 'heroku', name: 'Heroku', patterns: [/heroku/i], color: '#430098', icon: 'code-braces', type: 'MaterialCommunityIcons' },
+  { id: 'godaddy', name: 'GoDaddy', patterns: [/godaddy/i], color: '#1BDBDB', icon: 'domain', type: 'MaterialCommunityIcons' },
+  { id: 'namecheap', name: 'Namecheap', patterns: [/namecheap/i], color: '#DE3723', icon: 'tag-text', type: 'MaterialCommunityIcons' },
+  { id: 'github', name: 'GitHub', patterns: [/github/i], color: '#181717', icon: 'github', type: 'MaterialCommunityIcons' },
+  { id: 'vercel', name: 'Vercel', patterns: [/vercel/i], color: '#000000', icon: 'triangle', type: 'MaterialCommunityIcons' },
+
+  // ==========================================
+  // 4. LIFESTYLE, FOOD & GYM
+  // ==========================================
+  { id: 'uber_one', name: 'Uber One', patterns: [/uber.*one/i, /uber.*pass/i], color: '#000000', icon: 'uber', type: 'MaterialCommunityIcons' },
+  { id: 'doordash', name: 'DoorDash', patterns: [/doordash/i, /dashpass/i], color: '#FF3008', icon: 'food', type: 'MaterialCommunityIcons' },
+  { id: 'hellofresh', name: 'HelloFresh', patterns: [/hellofresh/i], color: '#96D600', icon: 'food-apple', type: 'MaterialCommunityIcons' },
+  { id: 'peloton', name: 'Peloton', patterns: [/peloton/i], color: '#DF1C2F', icon: 'bike', type: 'MaterialCommunityIcons' },
+  { id: 'planet_fitness', name: 'Planet Fitness', patterns: [/planet fit/i], color: '#7D228F', icon: 'dumbbell', type: 'MaterialCommunityIcons' },
+  { id: 'equinox', name: 'Equinox', patterns: [/equinox/i], color: '#000000', icon: 'yoga', type: 'MaterialCommunityIcons' },
+
+  // ==========================================
+  // 5. PRODUCTIVITY & TOOLS
+  // ==========================================
+  { id: 'microsoft_365', name: 'Microsoft 365', patterns: [/microsoft.*365/i, /msft.*office/i], color: '#0078D4', icon: 'microsoft', type: 'MaterialCommunityIcons' },
+  { id: 'adobe', name: 'Adobe', patterns: [/adobe/i], color: '#FF0000', icon: 'pencil-ruler', type: 'MaterialCommunityIcons' },
+  { id: 'zoom', name: 'Zoom', patterns: [/zoom\.us/i], color: '#2D8CFF', icon: 'video', type: 'MaterialCommunityIcons' },
+  { id: 'slack', name: 'Slack', patterns: [/slack/i], color: '#4A154B', icon: 'slack', type: 'MaterialCommunityIcons' },
+  { id: 'linkedin', name: 'LinkedIn', patterns: [/linkedin/i], color: '#0077B5', icon: 'linkedin', type: 'MaterialCommunityIcons' },
+  { id: 'dropbox', name: 'Dropbox', patterns: [/dropbox/i], color: '#0061FF', icon: 'dropbox', type: 'MaterialCommunityIcons' },
+  { id: 'notion', name: 'Notion', patterns: [/notion/i], color: '#000000', icon: 'notebook', type: 'MaterialCommunityIcons' },
+  { id: 'chatgpt', name: 'ChatGPT', patterns: [/openai/i, /chatgpt/i], color: '#74AA9C', icon: 'robot', type: 'MaterialCommunityIcons' },
+
+  // ==========================================
+  // 6. INSURANCE & FINANCE (Recurring)
+  // ==========================================
+  { id: 'geico', name: 'Geico', patterns: [/geico/i], color: '#004990', icon: 'car', type: 'MaterialCommunityIcons' },
+  { id: 'progressive', name: 'Progressive', patterns: [/progressive/i], color: '#00549E', icon: 'car-hatchback', type: 'MaterialCommunityIcons' },
+  { id: 'state_farm', name: 'State Farm', patterns: [/state farm/i], color: '#E00309', icon: 'home-heart', type: 'MaterialCommunityIcons' },
+  { id: 'allianz', name: 'Allianz', patterns: [/allianz/i], color: '#003781', icon: 'shield-home', type: 'MaterialCommunityIcons' },
+  { id: 'axa', name: 'AXA', patterns: [/axa/i], color: '#00008F', icon: 'hospital-box', type: 'MaterialCommunityIcons' },
+  { id: 'amex', name: 'Amex Fee', patterns: [/american express/i, /amex.*fee/i], color: '#006FCF', icon: 'credit-card', type: 'MaterialCommunityIcons' },
+  { id: 'chase', name: 'Chase Fee', patterns: [/chase.*fee/i], color: '#117ACA', icon: 'bank', type: 'MaterialCommunityIcons' },
+
+];

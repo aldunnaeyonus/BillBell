@@ -24,6 +24,7 @@ export const palette = {
 export type Theme = {
   mode: "light" | "dark";
   colors: {
+    warning: ColorValue | undefined;
     textSecondary?: ColorValue;
     destructive?: string | OpaqueColorValue;
     textTertiary?: ColorValue;
@@ -39,6 +40,8 @@ export type Theme = {
     danger: string;
     navy: string;
     primaryTextButton: string;
+    success: ColorValue | undefined;
+
   };
 };
 
@@ -57,7 +60,7 @@ export function makeTheme(mode: "light" | "dark"): Theme {
       primary: isDark ? palette.mint : palette.navy,
 
       // text ON TOP of primary
-      primaryText: isDark ? "#FFFFFF" : palette.darkBg ,
+      primaryText: isDark ? "#FFFFFF" : palette.darkBg,
       primaryTextButton: isDark ? palette.darkBg : "#FFFFFF",
 
       // text ON TOP of danger
@@ -66,6 +69,8 @@ export function makeTheme(mode: "light" | "dark"): Theme {
       accent: palette.mint,
       navy: palette.navy,
       danger: palette.danger,
+      warning: palette.danger,
+      success: palette.mint
     },
   };
 }
