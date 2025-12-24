@@ -331,6 +331,8 @@ export default function Profile() {
   const langs = [
     { code: "en", label: "English" },
     { code: "es", label: "Español" },
+    { code: "es-MX", label: "Español (Mexico)" },
+    { code: "es-ES", label: "Español (España)" },
     { code: "de", label: "Deutsch" },
     { code: "nl", label: "Nederlands" },
     { code: "fr", label: "Français" },
