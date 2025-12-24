@@ -14,6 +14,10 @@
     },
     "newArchEnabled": true,
     "ios": {
+      "config": {
+        "usesNonExemptEncryption": false,
+        "NSSupportsLiveActivities": true,
+      },
       "bundleIdentifier": "com.dunn.carabali.billbell",
       "appleTeamId": "2899NRK28S",
       "supportsTablet": true,
@@ -23,8 +27,7 @@
         "NSCalendarsUsageDescription": "BillBell needs access to your Calendar to schedule automatic reminders.",
         "NSFaceIDUsageDescription": "BillBell uses Face ID to securely unlock the app.",
         "NSRemindersFullAccessUsageDescription": "BillBell needs access to your Reminders to schedule tasks.",
-        "NSRemindersUsageDescription": "BillBell needs access to your Reminders to schedule tasks.",
-        "NSSupportsLiveActivities": true
+        "NSRemindersUsageDescription": "BillBell needs access to your Reminders to schedule tasks."
       }
     },
     "android": {

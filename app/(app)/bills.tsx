@@ -12,9 +12,9 @@ import {
   NativeModules,
   TextInput,
   Keyboard,
-  useWindowDimensions
+  Button
 } from "react-native";
-import { router, useFocusEffect, Stack } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -53,16 +53,16 @@ import * as Haptics from "expo-haptics";
 import { AnimatedAmount } from "../../src/ui/AnimatedAmount";
 import ConfettiCannon from "react-native-confetti-cannon";
 import * as StoreReview from "expo-store-review";
-import { BILL_ICON_MAP } from '../../src/data/vendors';
+import { BILL_ICON_MAP } from "../../src/data/vendors";
 import { formatCurrency } from "../../src/utils/currency";
 // --- NEW VISUAL IMPORTS ---
-import Animated, { LinearTransition, FadeIn, FadeOut } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { ScaleButton } from "../../src/ui/ScaleButton";
-import { useBills, useBillMutations } from "../../src/hooks/useBills"; 
+import { useBills, useBillMutations } from "../../src/hooks/useBills";
 import { Bill } from "../../src/types/domain";
 import { Skeleton } from "../../src/ui/Skeleton";
 import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
-
+import { api } from "@/api/client";
 
 const getWidgetModule = () => {
   try {
@@ -81,8 +81,6 @@ type ListItemType = "header" | "bill";
 type FlatListItem =
   | { type: "header"; title: string; special?: string; id: string }
   | { type: "bill"; data: Bill; id: string };
-
-
 
 function safeDateNum(s?: string | null) {
   if (!s) return 0;
@@ -135,8 +133,13 @@ function getSmartDueDate(
     };
   }
 
-  const formattedDate = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(due);
-  return { label: t("Due {{date}}", { date: formattedDate }), color: undefined };
+  const formattedDate = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+  }).format(due);
+  return {
+    label: t("Due {{date}}", { date: formattedDate }),
+    color: undefined,
+  };
 }
 
 const jsonToCSV = (data: any[]): string => {
@@ -193,7 +196,13 @@ function Header({
       >
         <SafeAreaView edges={["top"]} style={styles.safeArea}>
           {/* Centered Content Wrapper for iPad/Tablet */}
-          <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+          <View
+            style={{
+              width: "100%",
+              maxWidth: MAX_CONTENT_WIDTH,
+              alignSelf: "center",
+            }}
+          >
             <View style={styles.headerContent}>
               <Text style={styles.headerTitle}>{title}</Text>
               <Pressable onPress={onProfilePress} style={styles.profileButton}>
@@ -277,7 +286,7 @@ function SummaryCard({ theme, items }: { theme: Theme; items: SummaryItem[] }) {
               {item.label}
             </Text>
             <AnimatedAmount
-            currency={currency}
+              currency={currency}
               amount={item.amount}
               style={{
                 color: item.highlight
@@ -342,23 +351,23 @@ function BillListSkeleton() {
   return (
     <View style={{ gap: 12, paddingTop: 24 }}>
       {[1, 2, 3].map((i) => (
-        <View 
-          key={i} 
-          style={{ 
-            padding: 16, 
-            borderRadius: 16, 
-            borderWidth: 1, 
-            borderColor: theme.colors.border, 
+        <View
+          key={i}
+          style={{
+            padding: 16,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
             backgroundColor: theme.colors.card,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 12
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
           }}
         >
           <Skeleton width={36} height={36} borderRadius={10} />
           <View style={{ flex: 1, gap: 6 }}>
-             <Skeleton width="60%" height={16} borderRadius={4} />
-             <Skeleton width="40%" height={12} borderRadius={4} />
+            <Skeleton width="60%" height={16} borderRadius={4} />
+            <Skeleton width="40%" height={12} borderRadius={4} />
           </View>
           <Skeleton width={60} height={20} borderRadius={4} />
         </View>
@@ -378,8 +387,8 @@ function BillItem({
   onDelete,
 }: any) {
   const currency = useCurrency();
-  
-  const amt = formatCurrency(item.amount_cents, currency)
+
+  const amt = formatCurrency(item.amount_cents, currency);
   const isPaid = Boolean(
     item.paid_at || item.is_paid || item.status === "paid"
   );
@@ -388,7 +397,11 @@ function BillItem({
   const dateInfo = useMemo(() => {
     if (isPaid) {
       const d = item.paid_at || item.due_date;
-      const formatted = d ? new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(parseISO(d)) : "";
+      const formatted = d
+        ? new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(
+            parseISO(d)
+          )
+        : "";
       return {
         label: `${t("Paid on")} ${formatted}`,
         color: undefined,
@@ -445,7 +458,7 @@ function BillItem({
 
   const BillContent = (
     <Pressable
-      onPress={onEdit} 
+      onPress={onEdit}
       onLongPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
         onLongPress();
@@ -558,14 +571,31 @@ function BillItem({
                 {dateInfo.label}
               </Text>
             </View>
-             {item.recurrence && item.recurrence !== 'none' && item.end_date && (
-                   <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
-                       <Text style={{ color: theme.colors.subtext, fontSize: 10 }}>•</Text>
-                       <Text style={{ color: theme.colors.subtext, fontSize: 11, marginLeft: 4 }}>
-                          {t("Ends")}: {new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(parseISO(item.end_date))}
-                       </Text>
-                   </View>
-              )}
+            {item.recurrence && item.recurrence !== "none" && item.end_date && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginLeft: 8,
+                }}
+              >
+                <Text style={{ color: theme.colors.subtext, fontSize: 10 }}>
+                  •
+                </Text>
+                <Text
+                  style={{
+                    color: theme.colors.subtext,
+                    fontSize: 11,
+                    marginLeft: 4,
+                  }}
+                >
+                  {t("Ends")}:{" "}
+                  {new Intl.DateTimeFormat(locale, {
+                    dateStyle: "medium",
+                  }).format(parseISO(item.end_date))}
+                </Text>
+              </View>
+            )}
           </View>
 
           <View
@@ -606,10 +636,10 @@ function BillItem({
   // --- LAYOUT ANIMATION WRAPPER ---
   if (Platform.OS === "ios") {
     return (
-      <Animated.View 
+      <Animated.View
         // Remove 'layout' to stop jumping on reorder/scroll
         // Remove 'entering' to stop jumping on scroll recycle
-        exiting={FadeOut} 
+        exiting={FadeOut}
         entering={FadeIn} // <-- CAUSE OF JUMP
       >
         <ReanimatedSwipeable
@@ -626,10 +656,10 @@ function BillItem({
   }
 
   return (
-    <Animated.View 
-       // Remove 'layout' and 'entering' here too
-       exiting={FadeOut}
-       entering={FadeIn} // <-- CAUSE OF JUMP
+    <Animated.View
+      // Remove 'layout' and 'entering' here too
+      exiting={FadeOut}
+      entering={FadeIn} // <-- CAUSE OF JUMP
     >
       {BillContent}
     </Animated.View>
@@ -669,8 +699,16 @@ export default function Bills() {
   const theme = useTheme();
   const { t, i18n } = useTranslation();
 
-  const { data: bills, refetch, isRefetching, isLoading } = useBills();
-  const { markPaid: markPaidMutation, deleteBill: deleteBillMutation } = useBillMutations();
+  const {
+    data: bills,
+    refetch,
+    isRefetching,
+    isLoading,
+    isError, // <--- 1. Add this
+    error,
+  } = useBills();
+  const { markPaid: markPaidMutation, deleteBill: deleteBillMutation } =
+    useBillMutations();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [tab, setTab] = useState<"pending" | "paid">("pending");
@@ -686,7 +724,7 @@ export default function Bills() {
     if (!searchQuery.trim()) return safeBills;
     const lower = searchQuery.toLowerCase();
     return safeBills.filter(
-      (b: { creditor: any; amount_cents: number; }) =>
+      (b: { creditor: any; amount_cents: number }) =>
         (b.creditor || "").toLowerCase().includes(lower) ||
         formatCurrency(b.amount_cents, currency)
     );
@@ -694,7 +732,12 @@ export default function Bills() {
 
   // Effects & Logic...
   useEffect(() => {
-    const currentHash = JSON.stringify(safeBills.map((b: { id: any; status: any; due_date: any; }) => b.id + b.status + b.due_date));
+    const currentHash = JSON.stringify(
+      safeBills.map(
+        (b: { id: any; status: any; due_date: any }) =>
+          b.id + b.status + b.due_date
+      )
+    );
     if (syncedBillsHash.current !== currentHash && safeBills.length > 0) {
       resyncLocalNotificationsFromBills(safeBills);
       syncedBillsHash.current = currentHash;
@@ -704,34 +747,36 @@ export default function Bills() {
   // Live Activity & Widget Logic
   useEffect(() => {
     const initializeApp = async () => {
-        if (Platform.OS !== "android" || safeBills.length === 0) return;
-        const widgetModule = getWidgetModule();
-        const pending = safeBills.filter(
-          (b: { paid_at: any; is_paid: any; status: string; }) => !b.paid_at && !b.is_paid && b.status !== "paid"
-        );
-        const overdueBills = pending.filter((b: Bill) => isOverdue(b));
-        const overdueSum = overdueBills.reduce(
-          (sum: number, b: { amount_cents: any; }) => sum + Number(b.amount_cents || 0),
-          0
-        );
-        const nextBill = pending.find((b: Bill) => !isOverdue(b));
-        
-        const token = await getToken();
-        if (widgetModule?.syncWidgetData) {
-          widgetModule.syncWidgetData(
-            overdueBills.length,
-            nextBill?.creditor || t("None"),
-            nextBill?.due_date || "",
-            String(nextBill?.id || ""),
-            nextBill?.payment_method || "manual",
-            token
-          );
-        }
-        startAndroidLiveActivity(
-          formatCurrency(overdueSum, currency),
+      if (Platform.OS !== "android" || safeBills.length === 0) return;
+      const widgetModule = getWidgetModule();
+      const pending = safeBills.filter(
+        (b: { paid_at: any; is_paid: any; status: string }) =>
+          !b.paid_at && !b.is_paid && b.status !== "paid"
+      );
+      const overdueBills = pending.filter((b: Bill) => isOverdue(b));
+      const overdueSum = overdueBills.reduce(
+        (sum: number, b: { amount_cents: any }) =>
+          sum + Number(b.amount_cents || 0),
+        0
+      );
+      const nextBill = pending.find((b: Bill) => !isOverdue(b));
+
+      const token = await getToken();
+      if (widgetModule?.syncWidgetData) {
+        widgetModule.syncWidgetData(
           overdueBills.length,
-          String(nextBill?.id ?? "")
+          nextBill?.creditor || t("None"),
+          nextBill?.due_date || "",
+          String(nextBill?.id || ""),
+          nextBill?.payment_method || "manual",
+          token
         );
+      }
+      startAndroidLiveActivity(
+        formatCurrency(overdueSum, currency),
+        overdueBills.length,
+        String(nextBill?.id ?? "")
+      );
     };
     initializeApp();
   }, [safeBills, t]);
@@ -741,11 +786,13 @@ export default function Bills() {
     const syncLiveActivity = async () => {
       const isEnabled = await userSettings.getLiveActivityEnabled();
       const pending = safeBills.filter(
-        (b: { paid_at: any; is_paid: any; status: string; }) => !b.paid_at && !b.is_paid && b.status !== "paid"
+        (b: { paid_at: any; is_paid: any; status: string }) =>
+          !b.paid_at && !b.is_paid && b.status !== "paid"
       );
       const overdueBills = pending.filter((b: Bill) => isOverdue(b));
       const overdueSum = overdueBills.reduce(
-        (sum: number, b: { amount_cents: any; }) => sum + Number(b.amount_cents || 0),
+        (sum: number, b: { amount_cents: any }) =>
+          sum + Number(b.amount_cents || 0),
         0
       );
       const today = new Date();
@@ -754,7 +801,8 @@ export default function Bills() {
         return isSameMonth(due, today) && !isOverdue(b);
       });
       const monthSum = thisMonthBills.reduce(
-        (sum: number, b: { amount_cents: any; }) => sum + Number(b.amount_cents || 0),
+        (sum: number, b: { amount_cents: any }) =>
+          sum + Number(b.amount_cents || 0),
         0
       );
       if (overdueBills.length === 0 && thisMonthBills.length === 0) {
@@ -784,26 +832,47 @@ export default function Bills() {
         StatusBar.setTranslucent(true);
       }
       return () => {
-        const defaultStyle = theme.mode === "dark" ? "light-content" : "dark-content";
+        const defaultStyle =
+          theme.mode === "dark" ? "light-content" : "dark-content";
         StatusBar.setBarStyle(defaultStyle);
         if (Platform.OS === "android") {
           StatusBar.setTranslucent(false);
           StatusBar.setBackgroundColor(theme.colors.bg);
         }
       };
-    }, [theme.mode, theme.colors.bg, ])
+    }, [theme.mode, theme.colors.bg])
   );
 
-  const pendingBills = useMemo(() => filteredBills.filter((b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"), [filteredBills]);
-  const paidBills = useMemo(() => filteredBills.filter((b: any) => b.paid_at || b.is_paid || b.status === "paid"), [filteredBills]);
+  const pendingBills = useMemo(
+    () =>
+      filteredBills.filter(
+        (b: any) => !b.paid_at && !b.is_paid && b.status !== "paid"
+      ),
+    [filteredBills]
+  );
+  const paidBills = useMemo(
+    () =>
+      filteredBills.filter(
+        (b: any) => b.paid_at || b.is_paid || b.status === "paid"
+      ),
+    [filteredBills]
+  );
 
   const sections = useMemo(() => {
     const list = tab === "pending" ? pendingBills : paidBills;
     const sorted = [...list].sort((a, b) => {
-      if (sort === "name") return String(a.creditor || "").localeCompare(String(b.creditor || ""));
-      if (sort === "amount") return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
-      const dateA = tab === "pending" ? safeDateNum(a.due_date) : safeDateNum(a.paid_at) || safeDateNum(a.due_date);
-      const dateB = tab === "pending" ? safeDateNum(b.due_date) : safeDateNum(b.paid_at) || safeDateNum(b.due_date);
+      if (sort === "name")
+        return String(a.creditor || "").localeCompare(String(b.creditor || ""));
+      if (sort === "amount")
+        return Number(b.amount_cents || 0) - Number(a.amount_cents || 0);
+      const dateA =
+        tab === "pending"
+          ? safeDateNum(a.due_date)
+          : safeDateNum(a.paid_at) || safeDateNum(a.due_date);
+      const dateB =
+        tab === "pending"
+          ? safeDateNum(b.due_date)
+          : safeDateNum(b.paid_at) || safeDateNum(b.due_date);
       return tab === "pending" ? dateA - dateB : dateB - dateA;
     });
 
@@ -811,43 +880,78 @@ export default function Bills() {
 
     const today = new Date();
     const nextMonthDate = addMonths(today, 1);
-    const buckets: Record<string, any[]> = { overdue: [], thisMonth: [], nextMonth: [], future: [] };
+    const buckets: Record<string, any[]> = {
+      overdue: [],
+      thisMonth: [],
+      nextMonth: [],
+      future: [],
+    };
 
     sorted.forEach((bill) => {
-      const dateStr = tab === "pending" ? bill.due_date : bill.paid_at || bill.due_date;
+      const dateStr =
+        tab === "pending" ? bill.due_date : bill.paid_at || bill.due_date;
       const billDate = parseISO(dateStr);
       if (tab === "pending" && isOverdue(bill)) buckets.overdue.push(bill);
       else if (isSameMonth(billDate, today)) buckets.thisMonth.push(bill);
-      else if (isSameMonth(billDate, nextMonthDate)) buckets.nextMonth.push(bill);
+      else if (isSameMonth(billDate, nextMonthDate))
+        buckets.nextMonth.push(bill);
       else buckets.future.push(bill);
     });
 
     const result = [];
-    if (buckets.overdue.length > 0) result.push({ title: t("Overdue"), data: buckets.overdue, special: "danger" });
-    if (buckets.thisMonth.length > 0) result.push({ title: t("This Month"), data: buckets.thisMonth });
-    if (buckets.nextMonth.length > 0) result.push({ title: t("Next Month"), data: buckets.nextMonth });
-    if (buckets.future.length > 0) result.push({ title: t("Future"), data: buckets.future });
+    if (buckets.overdue.length > 0)
+      result.push({
+        title: t("Overdue"),
+        data: buckets.overdue,
+        special: "danger",
+      });
+    if (buckets.thisMonth.length > 0)
+      result.push({ title: t("This Month"), data: buckets.thisMonth });
+    if (buckets.nextMonth.length > 0)
+      result.push({ title: t("Next Month"), data: buckets.nextMonth });
+    if (buckets.future.length > 0)
+      result.push({ title: t("Future"), data: buckets.future });
     return result;
   }, [tab, pendingBills, paidBills, sort, t]);
 
   const flatData = useMemo(() => {
     const data: FlatListItem[] = [];
     sections.forEach((section) => {
-      data.push({ type: "header", title: section.title, special: section.special, id: `header-${section.title}` });
-      section.data.forEach((bill) => data.push({ type: "bill", data: bill, id: String(bill.id) }));
+      data.push({
+        type: "header",
+        title: section.title,
+        special: section.special,
+        id: `header-${section.title}`,
+      });
+      section.data.forEach((bill) =>
+        data.push({ type: "bill", data: bill, id: String(bill.id) })
+      );
     });
     return data;
   }, [sections]);
 
   const stats = useMemo(() => {
-    const allPending = safeBills.filter((b: { paid_at: any; is_paid: any; status: string; }) => !b.paid_at && !b.is_paid && b.status !== "paid");
-    const allPaid = safeBills.filter((b: { paid_at: any; is_paid: any; status: string; }) => b.paid_at || b.is_paid || b.status === "paid");
+    const allPending = safeBills.filter(
+      (b: { paid_at: any; is_paid: any; status: string }) =>
+        !b.paid_at && !b.is_paid && b.status !== "paid"
+    );
+    const allPaid = safeBills.filter(
+      (b: { paid_at: any; is_paid: any; status: string }) =>
+        b.paid_at || b.is_paid || b.status === "paid"
+    );
     const today = new Date();
     const nextWeekDate = addWeeks(today, 1);
-    const thisWeekBills = allPending.filter((b: { due_date: string; }) => isSameWeek(parseISO(b.due_date), today));
-    const nextWeekBills = allPending.filter((b: { due_date: string; }) => isSameWeek(parseISO(b.due_date), nextWeekDate));
-    const thisMonthBills = allPending.filter((b: { due_date: string; }) => isSameMonth(parseISO(b.due_date), today));
-    const sum = (list: any[]) => list.reduce((total, b) => total + Number(b.amount_cents || 0), 0);
+    const thisWeekBills = allPending.filter((b: { due_date: string }) =>
+      isSameWeek(parseISO(b.due_date), today)
+    );
+    const nextWeekBills = allPending.filter((b: { due_date: string }) =>
+      isSameWeek(parseISO(b.due_date), nextWeekDate)
+    );
+    const thisMonthBills = allPending.filter((b: { due_date: string }) =>
+      isSameMonth(parseISO(b.due_date), today)
+    );
+    const sum = (list: any[]) =>
+      list.reduce((total, b) => total + Number(b.amount_cents || 0), 0);
     return {
       pendingThisWeek: sum(thisWeekBills),
       pendingNextWeek: sum(nextWeekBills),
@@ -866,7 +970,8 @@ export default function Bills() {
     try {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       confettiRef.current?.start();
-      if ((await StoreReview.hasAction()) && Math.random() > 0.8) setTimeout(() => StoreReview.requestReview(), 2000);
+      if ((await StoreReview.hasAction()) && Math.random() > 0.8)
+        setTimeout(() => StoreReview.requestReview(), 2000);
       markPaidMutation.mutate(item.id);
       await cancelBillReminderLocal(item.id);
     } catch (e: any) {
@@ -885,23 +990,44 @@ export default function Bills() {
     }
   };
 
-  const onDeleteBill = useCallback((item: Bill) => {
+  const onDeleteBill = useCallback(
+    (item: Bill) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      Alert.alert(t("Delete Bill"), t("Are you sure you want to delete this bill?"), [
+      Alert.alert(
+        t("Delete Bill"),
+        t("Are you sure you want to delete this bill?"),
+        [
           { text: t("Cancel"), style: "cancel" },
-          { text: t("Delete"), style: "destructive", onPress: () => deleteBill(item) },
-      ]);
-  }, [deleteBill, t]);
+          {
+            text: t("Delete"),
+            style: "destructive",
+            onPress: () => deleteBill(item),
+          },
+        ]
+      );
+    },
+    [deleteBill, t]
+  );
 
-  const onMarkPaidBill = useCallback((item: Bill) => {
-      Alert.alert(t("Mark Paid"), t("Mark {{creditor}} as paid?", { creditor: item.creditor }), [
+  const onMarkPaidBill = useCallback(
+    (item: Bill) => {
+      Alert.alert(
+        t("Mark Paid"),
+        t("Mark {{creditor}} as paid?", { creditor: item.creditor }),
+        [
           { text: t("Cancel"), style: "cancel" },
           { text: t("Mark Paid"), onPress: () => markPaid(item) },
-      ]);
-  }, [markPaid, t]);
+        ]
+      );
+    },
+    [markPaid, t]
+  );
 
   const onEditBill = useCallback((item: Bill) => {
-    router.push({ pathname: "/(app)/bill-edit", params: { id: String(item.id) } });
+    router.push({
+      pathname: "/(app)/bill-edit",
+      params: { id: String(item.id) },
+    });
   }, []);
 
   function cycleSort() {
@@ -914,26 +1040,66 @@ export default function Bills() {
   const generateAndShareCSV = async () => {
     if (isExporting) return;
     try {
-      if (safeBills.length === 0) { Alert.alert(t("No Data"), t("There are no bills to export.")); return; }
+      if (safeBills.length === 0) {
+        Alert.alert(t("No Data"), t("There are no bills to export."));
+        return;
+      }
       setIsExporting(true);
-      const exportData = safeBills.map((b: { id: any; creditor: any; amount_cents: number; due_date: any; status: string; notes: any; recurrence: any; reminder_offset_days: any; }) => ({
-        ID: b.id, Creditor: b.creditor, Amount: formatCurrency(b.amount_cents, currency), DueDate: b.due_date,
-        Status: b.status === "paid" ? "Paid" : "Pending", Notes: b.notes || "",
-        Recurrence: b.recurrence || "none", Offset: b.reminder_offset_days || "0",
-      }));
+      const exportData = safeBills.map(
+        (b: {
+          id: any;
+          creditor: any;
+          amount_cents: number;
+          due_date: any;
+          status: string;
+          notes: any;
+          recurrence: any;
+          reminder_offset_days: any;
+        }) => ({
+          ID: b.id,
+          Creditor: b.creditor,
+          Amount: formatCurrency(b.amount_cents, currency),
+          DueDate: b.due_date,
+          Status: b.status === "paid" ? "Paid" : "Pending",
+          Notes: b.notes || "",
+          Recurrence: b.recurrence || "none",
+          Offset: b.reminder_offset_days || "0",
+        })
+      );
       const csvString = jsonToCSV(exportData);
       const fileName = "bills_export.csv";
       const templateFile = new File(Paths.cache, fileName);
       templateFile.write(csvString);
-      await Share.open({ url: templateFile.uri, type: "text/csv", filename: "bills_export", title: "Download Bill Export" });
-    } catch (error) { console.error("Export failed:", error); } finally { setIsExporting(false); }
+      await Share.open({
+        url: templateFile.uri,
+        type: "text/csv",
+        filename: "bills_export",
+        title: "Download Bill Export",
+      });
+    } catch (error) {
+      console.error("Export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   function onLongPressBill(item: Bill) {
-    const isPaid = Boolean(item.paid_at || item.is_paid || item.status === "paid");
-    const actions: any[] = [{ text: t("Edit"), onPress: () => onEditBill(item) }];
-    if (!isPaid) actions.push({ text: t("Mark Paid"), onPress: () => onMarkPaidBill(item) });
-    actions.push({ text: t("Delete"), style: "destructive", onPress: () => onDeleteBill(item) });
+    const isPaid = Boolean(
+      item.paid_at || item.is_paid || item.status === "paid"
+    );
+    const actions: any[] = [
+      { text: t("Edit"), onPress: () => onEditBill(item) },
+    ];
+    if (!isPaid)
+      actions.push({
+        text: t("Mark Paid"),
+        onPress: () => onMarkPaidBill(item),
+      });
+    actions.push({
+      text: t("Delete"),
+      style: "destructive",
+      onPress: () => onDeleteBill(item),
+    });
     actions.push({ text: t("Cancel"), style: "cancel" });
     Alert.alert(item.creditor || t("Bill"), t("Choose an action"), actions);
   }
@@ -943,14 +1109,25 @@ export default function Bills() {
       return [
         { label: t("This Week"), amount: stats.pendingThisWeek },
         { label: t("Next Week"), amount: stats.pendingNextWeek },
-        { label: t("This Month"), amount: stats.pendingThisMonth, highlight: true },
+        {
+          label: t("This Month"),
+          amount: stats.pendingThisMonth,
+          highlight: true,
+        },
       ];
     }
     return [{ label: t("Total Paid"), amount: stats.paidTotal }];
   }, [tab, stats, t]);
 
   const renderItem = ({ item }: { item: FlatListItem }) => {
-    if (item.type === "header") return <SectionHeader title={item.title} special={item.special} theme={theme} />;
+    if (item.type === "header")
+      return (
+        <SectionHeader
+          title={item.title}
+          special={item.special}
+          theme={theme}
+        />
+      );
     return (
       <BillItem
         item={item.data}
@@ -967,6 +1144,15 @@ export default function Bills() {
 
   const showSkeleton = isLoading && safeBills.length === 0;
 
+  if (isError) {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 }}>
+      <Text style={{ color: theme.colors.danger }}>Failed to load bills</Text>
+      <Text style={{ color: theme.colors.subtext }}>{error?.message || "Unknown error"}</Text>
+    </View>
+  );
+}
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <Header
@@ -979,83 +1165,241 @@ export default function Bills() {
       />
 
       {/* Main Body Sheet */}
-      <View style={{ flex: 1, marginTop: -24, borderTopLeftRadius: 24, borderTopRightRadius: 24, backgroundColor: theme.colors.bg, overflow: "hidden" }}>
-        
+      <View
+        style={{
+          flex: 1,
+          marginTop: -24,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          backgroundColor: theme.colors.bg,
+          overflow: "hidden",
+        }}
+      >
         {/* Centered Content Wrapper for iPad/Tablet */}
-        <View style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', paddingHorizontal: 16 }}>
+        <View
+          style={{
+            flex: 1,
+            width: "100%",
+            maxWidth: MAX_CONTENT_WIDTH,
+            alignSelf: "center",
+            paddingHorizontal: 16,
+          }}
+        >
           
           {showSkeleton ? (
-             <View>
-                <View style={{ height: 24 }} /> 
-                <View style={{ marginBottom: 16 }}><Skeleton width="100%" height={100} borderRadius={20} /></View>
-                <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
-                   <Skeleton width="48%" height={50} borderRadius={16} />
-                   <Skeleton width="48%" height={50} borderRadius={16} />
-                </View>
-                <BillListSkeleton />
-             </View>
+            <View>
+              <View style={{ height: 24 }} />
+              <View style={{ marginBottom: 16 }}>
+                <Skeleton width="100%" height={100} borderRadius={20} />
+              </View>
+              <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
+                <Skeleton width="48%" height={50} borderRadius={16} />
+                <Skeleton width="48%" height={50} borderRadius={16} />
+              </View>
+              <BillListSkeleton />
+            </View>
           ) : (
-             <FlatList
-               data={flatData}
-               renderItem={renderItem}
-               // @ts-ignore
-               getItemType={(item) => item.type}
-                            // @ts-ignore
-               estimatedItemSize={100}
-               keyExtractor={(item) => item.id}
-               contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
-               showsVerticalScrollIndicator={false}
-               refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={theme.colors.primary} />}
-               ListHeaderComponent={
-                 <View style={{ gap: 16, marginBottom: 16 }}>
-                    <SummaryCard theme={theme} items={summaryItems} />
-                    <View style={{ flexDirection: "row", gap: 12, flexWrap: "wrap", justifyContent: "flex-start" }}>
-                      
-                      {/* --- REPLACED BUTTONS WITH SCALEBUTTON --- */}
-                      <ScaleButton onPress={() => router.push("/(app)/insights")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
-                        <Ionicons name="bar-chart" size={18} color={theme.colors.primaryTextButton} />
-                        <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("Insights")}</Text>
-                      </ScaleButton>
-                      
-                      <ScaleButton onPress={() => router.push("/(app)/bill-scan")} style={[styles.actionBtn, { backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, flex: 0.3 }]}>
-                        <Ionicons name="scan" size={20} color={theme.colors.text} />
-                      </ScaleButton>
+            <FlatList
+              data={flatData}
+              renderItem={renderItem}
+              // @ts-ignore
+              getItemType={(item) => item.type}
+              // @ts-ignore
+              estimatedItemSize={100}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={isRefetching}
+                  onRefresh={refetch}
+                  tintColor={theme.colors.primary}
+                />
+              }
+              ListHeaderComponent={
+                <View style={{ gap: 16, marginBottom: 16 }}>
+                  <SummaryCard theme={theme} items={summaryItems} />
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: 12,
+                      flexWrap: "wrap",
+                      justifyContent: "flex-start",
+                    }}
+                  >
+                    {/* --- REPLACED BUTTONS WITH SCALEBUTTON --- */}
+                    <ScaleButton
+                      onPress={() => router.push("/(app)/insights")}
+                      style={[
+                        styles.actionBtn,
+                        { backgroundColor: theme.colors.primary, flex: 1 },
+                      ]}
+                    >
+                      <Ionicons
+                        name="bar-chart"
+                        size={18}
+                        color={theme.colors.primaryTextButton}
+                      />
+                      <Text
+                        style={[
+                          styles.actionBtnText,
+                          { color: theme.colors.primaryTextButton },
+                        ]}
+                      >
+                        {t("Insights")}
+                      </Text>
+                    </ScaleButton>
 
-                      <ScaleButton onPress={() => router.push("/(app)/bill-edit")} style={[styles.actionBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}>
-                        <Ionicons name="add" size={20} color={theme.colors.primaryTextButton} />
-                        <Text style={[styles.actionBtnText, { color: theme.colors.primaryTextButton }]}>{t("+ Add")}</Text>
-                      </ScaleButton>
-                    </View>
-                    <TabSegment theme={theme} activeTab={tab} onTabPress={(key: any) => setTab(key)} tabs={[{ key: "pending", label: t("Pending") }, { key: "paid", label: t("Paid") }]} />
-                    
-                    <View style={{ flexDirection: "column", alignItems: "flex-start", paddingHorizontal: 4, gap: 8 }}>
-                      <Pressable onPress={cycleSort} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                        <Text style={{ color: theme.colors.subtext, fontSize: 13 }}>{t("Sort by")}:</Text>
-                        <Text style={{ color: theme.colors.text, fontWeight: "700", fontSize: 13 }}>{sortLabel}</Text>
-                        <Ionicons name="chevron-down" size={12} color={theme.colors.text} />
-                      </Pressable>
-                      {safeBills.length > 0 && (
-                        <View style={{ width: "100%", alignItems: "flex-end" }}>
-                          <Pressable onPress={generateAndShareCSV} disabled={isExporting} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                            {isExporting && <ActivityIndicator size="small" color={theme.colors.accent} />}
-                            <Text style={{ color: theme.colors.accent, fontWeight: "700", fontSize: 13 }}>{isExporting ? t("Exporting...") : t("Export CSV")}</Text>
-                          </Pressable>
-                        </View>
-                      )}
-                    </View>
-                 </View>
-               }
-               ListEmptyComponent={
-                 <View style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}>
-                    <Ionicons name={tab === "pending" ? "checkmark-done-circle-outline" : "wallet-outline"} size={64} color={theme.colors.border} />
-                    <Text style={{ color: theme.colors.subtext, fontSize: 16, textAlign: "center" }}>
-                      {searchQuery.length > 0 
-                        ? t("No bills found matching '{{query}}'", { query: searchQuery })
-                        : tab === "pending" ? t("You have no pending bills. Enjoy the freedom!") : t("No paid history")}
-                    </Text>
-                 </View>
-               }
-             />
+                    <ScaleButton
+                      onPress={() => router.push("/(app)/bill-scan")}
+                      style={[
+                        styles.actionBtn,
+                        {
+                          backgroundColor: theme.colors.card,
+                          borderWidth: 1,
+                          borderColor: theme.colors.border,
+                          flex: 0.3,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="scan"
+                        size={20}
+                        color={theme.colors.text}
+                      />
+                    </ScaleButton>
+
+                    <ScaleButton
+                      onPress={() => router.push("/(app)/bill-edit")}
+                      style={[
+                        styles.actionBtn,
+                        { backgroundColor: theme.colors.primary, flex: 1 },
+                      ]}
+                    >
+                      <Ionicons
+                        name="add"
+                        size={20}
+                        color={theme.colors.primaryTextButton}
+                      />
+                      <Text
+                        style={[
+                          styles.actionBtnText,
+                          { color: theme.colors.primaryTextButton },
+                        ]}
+                      >
+                        {t("+ Add")}
+                      </Text>
+                    </ScaleButton>
+                  </View>
+                  <TabSegment
+                    theme={theme}
+                    activeTab={tab}
+                    onTabPress={(key: any) => setTab(key)}
+                    tabs={[
+                      { key: "pending", label: t("Pending") },
+                      { key: "paid", label: t("Paid") },
+                    ]}
+                  />
+
+                  <View
+                    style={{
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      paddingHorizontal: 4,
+                      gap: 8,
+                    }}
+                  >
+                    <Pressable
+                      onPress={cycleSort}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <Text
+                        style={{ color: theme.colors.subtext, fontSize: 13 }}
+                      >
+                        {t("Sort by")}:
+                      </Text>
+                      <Text
+                        style={{
+                          color: theme.colors.text,
+                          fontWeight: "700",
+                          fontSize: 13,
+                        }}
+                      >
+                        {sortLabel}
+                      </Text>
+                      <Ionicons
+                        name="chevron-down"
+                        size={12}
+                        color={theme.colors.text}
+                      />
+                    </Pressable>
+                    {safeBills.length > 0 && (
+                      <View style={{ width: "100%", alignItems: "flex-end" }}>
+                        <Pressable
+                          onPress={generateAndShareCSV}
+                          disabled={isExporting}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          {isExporting && (
+                            <ActivityIndicator
+                              size="small"
+                              color={theme.colors.accent}
+                            />
+                          )}
+                          <Text
+                            style={{
+                              color: theme.colors.accent,
+                              fontWeight: "700",
+                              fontSize: 13,
+                            }}
+                          >
+                            {isExporting ? t("Exporting...") : t("Export CSV")}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              }
+              ListEmptyComponent={
+                <View
+                  style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}
+                >
+                  <Ionicons
+                    name={
+                      tab === "pending"
+                        ? "checkmark-done-circle-outline"
+                        : "wallet-outline"
+                    }
+                    size={64}
+                    color={theme.colors.border}
+                  />
+                  <Text
+                    style={{
+                      color: theme.colors.subtext,
+                      fontSize: 16,
+                      textAlign: "center",
+                    }}
+                  >
+                    {searchQuery.length > 0
+                      ? t("No bills found matching '{{query}}'", {
+                          query: searchQuery,
+                        })
+                      : tab === "pending"
+                      ? t("You have no pending bills. Enjoy the freedom!")
+                      : t("No paid history")}
+                  </Text>
+                </View>
+              }
+            />
           )}
         </View>
       </View>
@@ -1100,7 +1444,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginTop: 8,
-    marginBottom:15,
+    marginBottom: 15,
     gap: 10,
   },
   searchInput: {
