@@ -293,7 +293,7 @@ function AppStack() {
               headerShown: false,
               headerBackVisible: false,
               title: "",
-              gestureEnabled: true,
+              
             }}
           />
           <Stack.Screen

@@ -42,51 +42,25 @@ From `frontend/`:
    Use clear section headings per file.
    Ensure the revised code is complete, valid, and ready to replace the original file.
 
-7) Bill Bell – Shared Bill & Debt Reminders
-   Master your household finances with the most advanced shared bill tracker on the App Store. Bill Bell combines AI-powered scanning, military-grade encryption, and blazing-fast offline performance to ensure you never miss a due date again.
+7) Track Bills. No Subscriptions.
+   Master your household finances with the most advanced shared bill tracker on the App Store. Bill Bell combines AI-powered scanning, military-grade encryption, and blazing-fast offline performance.
+
+   Pay once, use forever. No subscriptions. No ads. No data tracking.
 
    Designed for couples, roommates, and families who demand clarity, privacy, and speed.
 
-   INTELLIGENT AUTOMATION
-   OCR Bill Scanning: Stop typing. Simply snap a photo of your paper bill, and Bill Bell automatically extracts the amount, due date, and vendor.
+   INTELLIGENT AUTOMATION • OCR Bill Scanning: Stop typing. Simply snap a photo of your paper bill, and Bill Bell automatically extracts the amount, due date, and vendor. • Smart Autocomplete: Instantly recognizes popular vendors (Netflix, Chase, Spotify) and auto-fills brand logos for a beautiful, organized list. • Predictive Dates: See at a glance if a bill is "Due Tomorrow," "Due in 3 Days," or "Overdue."
 
-   Smart Autocomplete: Instantly recognizes popular vendors (Netflix, Chase, Spotify, etc.) and auto-fills brand logos for a beautiful, organized list.
+   BUILT FOR HOUSEHOLDS • Unlimited Collaboration: Invite partners or roommates to your group. Changes sync instantly across all devices (Supports Family Sharing). • Offline-First Architecture: No signal? No problem. Add or edit bills while offline; we sync everything securely once you reconnect. • Conflict-Free Management: Ideal for joint accounts, split rent, and shared utilities.
 
-   Predictive Dates: See at a glance if a bill is "Due Tomorrow," "Due in 3 Days," or "Overdue."
+   PREMIUM EXPERIENCE • Interactive Widgets: View upcoming bills and mark them as paid directly from your Home Screen. • Live Activities: Keep track of due dates in real-time on your Lock Screen and Dynamic Island. • Actionable Notifications: Long-press a reminder to "Mark Paid" or "Snooze" instantly. • Tactile Feedback: Enjoy a premium feel with custom Haptic feedback and confetti animations.
 
-   BUILT FOR HOUSEHOLDS
-   Real-Time Family Sync: Invite partners or roommates to your group. Changes sync instantly across all devices.
+   FINANCIAL INSIGHTS • Interactive Charts: Visualize spending with beautiful bar and donut charts. • Category Breakdown: See exactly how much goes to Streaming, Housing, Utilities, and Debt. • Trend Analysis: Track spending history over 6 months to spot trends early.
 
-   Offline-First Architecture: No signal? No problem. Add or edit bills while offline; we sync everything securely once you reconnect.
+   PRIVACY & SECURITY • End-to-End Encryption: Your data is encrypted before it leaves your device. Only you hold the keys. • Recovery Kit: Generate a secure PDF Recovery Kit with your private key to ensure you never lose access. • Biometric Lock: Secure the app with Face ID or Touch ID for an extra layer of privacy.
 
-   Conflict-Free Management: Ideal for joint accounts, split rent, and shared utilities.
-
-   PREMIUM iOS EXPERIENCE
-   Interactive Widgets: View upcoming bills and mark them as paid directly from your Home Screen without opening the app.
-
-   Live Activities: Keep track of due dates in real-time on your Lock Screen and Dynamic Island.
-
-   Actionable Notifications: Long-press a reminder to "Mark Paid" or "Snooze" instantly from the notification center.
-
-   Tactile Feedback: Enjoy a premium feel with custom Haptic feedback and a celebratory confetti animation when you pay a bill.
-
-   FINANCIAL INSIGHTS
-   Interactive Charts: Visualize your spending with beautiful bar and donut charts.
-
-   Category Breakdown: See exactly how much you spend on Streaming, Housing, Utilities, and Debt.
-
-   Trend Analysis: Track your spending history over the last 6 months to spot trends early.
-
-   UNCOMPROMISED SECURITY
-   End-to-End Encryption (E2EE): Your financial data is encrypted before it leaves your device. Not even we can see it.
-
-   Recovery Kit: Generate a secure PDF Recovery Kit with your private key to ensure you never lose access to your data.
-
-   Biometric Lock: Secure the app with Face ID or Touch ID for an extra layer of privacy.
-
-   EFFORTLESS MIGRATION
-   Bulk Import: Moving from spreadsheets? Upload a CSV to populate your account in seconds.
-
-   Search & Filter: Instantly find any bill by name or amount with our high-performance search engine.
+   EFFORTLESS MIGRATION • Bulk Import: Moving from spreadsheets? Upload a CSV to populate your account in seconds. • Search & Filter: Instantly find any bill by name or amount with our high-performance search engine.
 
    Stop the stress of manual tracking. Download Bill Bell today and experience the fastest, safest way to manage household bills together.
+
+   Privacy Policy: https://dunn-carabali.com/billMVP/?page=privacy

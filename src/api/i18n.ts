@@ -14,6 +14,11 @@ import zhHans from "../locales/zh-Hans.json";
 import ptBR from "../locales/pt-BR.json";
 import it from "../locales/it.json";
 import nl from "../locales/nl.json";
+import ptPT from "../locales/pt-PT.json";
+import zhHant from "../locales/zh-Hant.json";
+import pt from "../locales/pt.json";
+import zh from "../locales/zh.json";
+import zhCN from "../locales/zh-CN.json";
 
 // --- 1. Define Language -> Currency Map ---
 const CURRENCY_MAP: Record<string, string> = {
@@ -30,6 +35,7 @@ const CURRENCY_MAP: Record<string, string> = {
   "ja-JP": "JPY", // Japan -> Yen
   "zh-CN": "CNY", "zh-Hans": "CNY", "zh-SG": "SGD", // China -> Yuan
   "pt-BR": "BRL", // Brazil -> Real
+  "pt-PT": "PT", // Portugal -> EUR
   "es-MX": "MXN", // Mexico -> Peso
   "fr-CA": "CAD", // Quebec -> CAD
   "fr-CH": "CHF", "de-CH": "CHF", "it-CH": "CHF", // Switzerland -> Franc
@@ -38,7 +44,7 @@ const CURRENCY_MAP: Record<string, string> = {
 
   // Fallbacks
   "en": "USD", "de": "EUR", "fr": "EUR", "it": "EUR", 
-  "es": "EUR", "ja": "JPY", "pt": "BRL", "zh": "CNY", "nl": "EUR"
+  "es": "EUR", "ja": "JPY", "pt": "EUR", "zh": "CNY", "nl": "EUR"
 };
 
 const resources: Resource = {
@@ -79,11 +85,14 @@ const resources: Resource = {
   "ja-JP": { translation: ja },
 
   "zh-Hans": { translation: zhHans },
-  "zh-CN": { translation: zhHans },
+  "zh-CN": { translation: zhCN },
   "zh-SG": { translation: zhHans },
+  "zh-Hant": { translation: zhHant },
+  "zh": { translation: zh },
 
+   pt: { translation: pt },
   "pt-BR": { translation: ptBR },
-  pt: { translation: ptBR },
+  "pt-PT": { translation: ptPT },
 
   it: { translation: it },
   "it-IT": { translation: it },

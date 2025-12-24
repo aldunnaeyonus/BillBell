@@ -42,13 +42,13 @@ class Routes {
 
     if ($method === "POST" && $path === "/keys/shared") { KeysController::storeSharedKey(); return; }
     if ($method === "GET"  && $path === "/keys/shared") { KeysController::getMySharedKey(); return; }
-if ($method === "POST" && $path === "/family/join") { FamilyController::join(); return; }
-if ($method === "GET"  && $path === "/family/requests") { FamilyController::listRequests(); return; }
-if ($method === "POST" && $path === "/family/requests/respond") { FamilyController::respondRequest(); return; }
+    if ($method === "POST" && $path === "/family/join") { FamilyController::join(); return; }
+    if ($method === "GET"  && $path === "/family/requests") { FamilyController::listRequests(); return; }
+    if ($method === "POST" && $path === "/family/requests/respond") { FamilyController::respondRequest(); return; }
     // --- Account / Health ---
     if ($method === "DELETE" && $path === "/auth/user") { AuthController::delete(); return; }
     if ($method === "GET" && $path === "/health") { Utils::json(["ok" => true]); return; }
-
+    if ($method === "POST" && $path === "/purchases/verify") { PurchaseController::verify(); return; }
     // --- Import / Export ---
     if ($method === "POST" && $path === "/import-code/create") { ImportCodeController::create(); return; }
     if ($method === "POST" && $path === "/import/bills") { ImportController::upload(); return; }
