@@ -35,7 +35,7 @@ import { userSettings } from "../../src/storage/userSettings";
 import ReanimatedSwipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
-import { RectButton } from "react-native-gesture-handler";
+import { FlatList, RectButton } from "react-native-gesture-handler";
 import { useCurrency } from "../../src/hooks/useCurrency";
 import {
   resyncLocalNotificationsFromBills,
@@ -51,7 +51,6 @@ import { getToken } from "../../src/auth/session";
 import { File, Paths } from "expo-file-system";
 import * as Haptics from "expo-haptics";
 import { AnimatedAmount } from "../../src/ui/AnimatedAmount";
-import { FlashList } from "@shopify/flash-list";
 import ConfettiCannon from "react-native-confetti-cannon";
 import * as StoreReview from "expo-store-review";
 import { BILL_ICON_MAP } from '../../src/data/vendors';
@@ -996,7 +995,7 @@ export default function Bills() {
                 <BillListSkeleton />
              </View>
           ) : (
-             <FlashList<FlatListItem>
+             <FlatList
                data={flatData}
                renderItem={renderItem}
                // @ts-ignore

@@ -1,587 +1,282 @@
-import { useCallback, useMemo, useState, useRef, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Dimensions,
-  Pressable,
-  ActivityIndicator,
-  Platform,
-  Modal,
-  TextInput,
-  KeyboardAvoidingView,
-  RefreshControl,
-  ActionSheetIOS,
-  Alert,
-} from "react-native";
-import { useFocusEffect } from "expo-router";
+import React, { useMemo, useState } from "react";
+import { View, Text, StyleSheet, FlatList, LayoutAnimation, Platform, UIManager, TouchableOpacity } from "react-native";
+import { router } from "expo-router";
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import { BarChart, PieChart } from "react-native-gifted-charts";
-import { Ionicons } from "@expo/vector-icons";
-import LinearGradient from "react-native-linear-gradient";
-import * as Haptics from "expo-haptics";
-import { startOfMonth, addMonths, format, parseISO, isSameMonth } from "date-fns";
-
-import { useTheme, Theme } from "../../src/ui/useTheme";
-import { api } from "../../src/api/client";
-import { getJson } from "../../src/storage/storage";
-import { userSettings } from "../../src/storage/userSettings";
+import { useTheme } from "../../src/ui/useTheme";
+import { useBills } from "../../src/hooks/useBills";
+import { Bill } from "../../src/types/domain";
+import { AnimatedAmount } from "../../src/ui/AnimatedAmount";
 import { ScaleButton } from "../../src/ui/ScaleButton";
-import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
+import { Skeleton } from "../../src/ui/Skeleton";
+import { useCurrency } from "../../src/hooks/useCurrency";
+import { formatCurrency } from "@/utils/currency";
+import { KNOWN_SUBSCRIPTIONS } from "@/data/vendors";
+import LinearGradient from "react-native-linear-gradient";
+import { Theme } from "../../src/ui/useTheme";
 
-// --- HELPERS ---
-
-function centsToDollars(cents: number) {
-  return (Number(cents || 0) / 100).toFixed(2);
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// --- CHART LOGIC ---
+// --- WORLDWIDE SUBSCRIPTION DATABASE ---
+// Add more patterns here as needed.
 
-type ChartType = 'creditor_pie' | 'monthly_bar' | 'recurrence_pie';
-const chartTypes: { key: ChartType, labelKey: string }[] = [
-    { key: 'creditor_pie', labelKey: 'Creditor Breakdown' },
-    { key: 'monthly_bar', labelKey: 'Monthly Spending Trend' },
-    { key: 'recurrence_pie', labelKey: 'Recurrence Frequency' },
-];
 
-function groupDataByCreditor(bills: any[]) {
-    const creditorMap: { [key: string]: number } = {};
-    let total = 0;
-    const colors = ['#2ECC71', '#3498DB', '#E67E22', '#F1C40F', '#9B59B6', '#E74C3C', '#1ABC9C'];
-    let colorIndex = 0;
-
-    for (const bill of bills) {
-        const amount = Number(bill.amount_cents || 0);
-        if (amount > 0) {
-            const name = bill.creditor || 'Unknown';
-            creditorMap[name] = (creditorMap[name] || 0) + amount;
-            total += amount;
-        }
-    }
-
-    const data = Object.keys(creditorMap)
-        .map(creditor => ({
-            value: creditorMap[creditor],
-            label: creditor,
-            color: colors[colorIndex++ % colors.length],
-            text: `$${centsToDollars(creditorMap[creditor])}`,
-            key: creditor,
-        }))
-        .sort((a, b) => b.value - a.value);
-
-    return { data, total };
-}
-
-function groupDataByMonth(bills: any[], theme: Theme) {
-    const monthMap: { [key: string]: number } = {};
-    const today = new Date();
-    let total = 0;
-    const numMonths = 6;
-
-    for (let i = numMonths - 1; i >= 0; i--) {
-        const month = startOfMonth(addMonths(today, -i));
-        monthMap[format(month, 'yyyy-MM')] = 0;
-    }
-
-    for (const bill of bills) {
-        if (!bill.due_date) continue;
-        const date = parseISO(bill.due_date);
-        const amount = Number(bill.amount_cents || 0);
-        const dateKey = format(date, 'yyyy-MM');
-        
-        if (monthMap.hasOwnProperty(dateKey)) {
-            monthMap[dateKey] += amount;
-            total += amount;
-        }
-    }
-
-    const data = Object.keys(monthMap)
-        .sort()
-        .map(key => ({
-            value: monthMap[key],
-            label: format(parseISO(key), 'MMM'),
-            frontColor: theme.colors.primary,
-        }));
-        
-    const average = total / numMonths;
-    return { data, total, average };
-}
-
-function groupDataByRecurrence(bills: any[]) {
-    const recurrenceMap: { [key: string]: number } = {};
-    let total = 0;
-    const colors = ['#3498DB', '#9B59B6', '#E74C3C', '#F1C40F', '#2ECC71'];
-    let colorIndex = 0;
-
-    for (const bill of bills) {
-        const amount = Number(bill.amount_cents || 0);
-        if (amount > 0) {
-            const key = bill.recurrence || 'none';
-            recurrenceMap[key] = (recurrenceMap[key] || 0) + amount;
-            total += amount;
-        }
-    }
-
-    const data = Object.keys(recurrenceMap)
-        .map(key => ({
-            value: recurrenceMap[key],
-            label: key.charAt(0).toUpperCase() + key.slice(1),
-            color: colors[colorIndex++ % colors.length],
-            key: key,
-        }))
-        .sort((a, b) => b.value - a.value);
-
-    return { data, total };
-}
-
-// --- BUDGET LOGIC ---
-
-const CATEGORY_MAP: { regex: RegExp; label: string; color: string }[] = [
-  { 
-    regex: /netflix|spotify|hulu|disney|hbo|apple|youtube|twitch|sirius|pandora|tidal|audible|peacock|paramount|sling|fubo|roku|xbox|playstation|nintendo|steam|nytimes|wsj|crunchyroll|patreon|onlyfans|starz|showtime|amc|fandango|espn|dazn|nba|nfl|mlb/i, 
-    label: "Entertainment", 
-    color: "#E50914" 
-  },
-  { 
-    regex: /loan|mortgage|rent|lease|property|hoa|storage|public storage|extra space|adt|ring|simplisafe|vivint|lawn|pest|apartments|invitation homes|greystar|lincoln property|camden|equity residential|terminix|orkin|merry maids|cleaning/i, 
-    label: "Housing", 
-    color: "#9D174D" 
-  },
-  { 
-    regex: /power|electric|gas|water|trash|sewer|internet|wifi|phone|att|verizon|t-mobile|sprint|boost|mint|google fi|xfinity|comcast|spectrum|cox|centurylink|frontier|optimum|directv|dish|waste|republic services|pge|edison|coned|duke energy|fpl|national grid|dominion|entergy|xcel|dte|pepco|eversource|constellation|reliant|solar|sunrun|tesla energy/i, 
-    label: "Utilities", 
-    color: "#FBBF24" 
-  },
-  { 
-    regex: /chase|citi|amex|discover|visa|mastercard|capital one|wells fargo|bofa|bank of america|pnc|us bank|affirm|klarna|afterpay|sezzle|paypal credit|synchrony|navient|nelnet|sallie mae|mohela|aidvantage|sofi|lending|rocket|freedom|target card|best buy card|macys|kohls|credit one|ally|schwab|fidelity/i, 
-    label: "Debt & Credit", 
-    color: "#3B82F6" 
-  },
-  { 
-    regex: /insurance|geico|state farm|progressive|liberty|allstate|usaa|aaa|farmers|nationwide|travelers|hartford|metlife|prudential|aetna|cigna|united|uhc|bcbs|anthem|humana|kaiser|lemonade|root|esurance|amica|erie|chubb|aflac/i, 
-    label: "Insurance", 
-    color: "#10B981" 
-  },
-  { 
-    regex: /gym|fitness|peloton|planet|equinox|24 hour|la fitness|anytime|gold's|orange theory|crossfit|strava|myfitnesspal|doctor|dental|vision|quest|labcorp|cvs|walgreens|rite aid|capsule|pillpack|calm|headspace|betterhelp|talkspace|weight watchers|noom/i, 
-    label: "Health", 
-    color: "#8B5CF6" 
-  },
-  { 
-    regex: /uber|lyft|ezpass|fastrak|sunpass|ipass|toll|parking|spothero|zipcar|turo|tesla|toyota|honda|ford|gm financial|nissan|bmw|mercedes|hyundai|kia|carmax|carvana|siriusxm|onstar/i, 
-    label: "Auto & Transport", 
-    color: "#F97316" // Orange
-  },
-  { 
-    regex: /tuition|school|university|college|udemy|coursera|chegg|duolingo|masterclass|babble|skillshare|linkedin learning|pluralsight|codecademy|kumon|daycare|kinderqaure|bright horizons/i, 
-    label: "Education", 
-    color: "#EC4899" // Pink
-  },
-  { 
-    regex: /adobe|microsoft|google storage|icloud|dropbox|zoom|slack|chatgpt|openai|github|vercel|aws|digitalocean|heroku|godaddy|namecheap|squarespace|wix|wordpress|canva|figma|notion|evernote|lastpass|1password|nordvpn|expressvpn/i, 
-    label: "Software", 
-    color: "#6366F1" // Indigo
-  },
-  { 
-    regex: /chewy|barkbox|farmers dog|petco|petsmart|rover|wag|care\.com|hellofresh|blue apron|factor|instacart|doordash|grubhub|uber eats|amazon prime|walmart\+|costco|sams club/i, 
-    label: "Family & Lifestyle", 
-    color: "#14B8A6" // Teal
-  },
-];
-
-function getCategory(creditor: string) {
-  for (const cat of CATEGORY_MAP) {
-    if (creditor.match(cat.regex)) return cat.label;
-  }
-  return "Other";
-}
-
-// --- SUB-COMPONENTS ---
-
-function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
-  return (
-    <View style={styles.headerShadowContainer}>
-      <LinearGradient
-        colors={[theme.colors.navy, "#1a2c4e"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.headerGradient}
-      >
-        <View style={styles.headerIconCircle}>
-          <Ionicons name="stats-chart" size={28} color="#FFF" />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.headerTitle}>{title}</Text>
-          <Text style={styles.headerSubtitle}>{subtitle}</Text>
-        </View>
-      </LinearGradient>
-    </View>
+// Helper to match raw creditor string to known brand
+function enrichSubscription(creditorRaw: string, theme: any) {
+  const match = KNOWN_SUBSCRIPTIONS.find(sub => 
+    sub.patterns.some(pattern => pattern.test(creditorRaw))
   );
-}
 
-function StatCard({ icon, label, value, color, theme }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string; color: string; theme: Theme; }) {
-    return (
-        <View style={[styles.statCard, { borderColor: theme.colors.border, backgroundColor: theme.colors.card }]}>
-            <View style={[styles.iconBox, { backgroundColor: color + '20' }]}>
-                <Ionicons name={icon} size={20} color={color} />
-            </View>
-            <Text style={[styles.statLabel, { color: theme.colors.subtext }]}>{label}</Text>
-            <Text style={[styles.statValue, { color: theme.colors.primaryText }]}>{value}</Text>
-        </View>
-    );
-}
+  if (match) {
+    // Special handling for Apple black icon in dark mode
+    let iconColor = match.color;
+    if (match.id === 'apple' && theme.isDark) {
+        iconColor = '#FFFFFF';
+    }
 
-function ProgressBar({ percent, color, theme }: { percent: number; color: string; theme: Theme }) {
-  const cappedPercent = Math.min(Math.max(percent, 0), 100);
-  const barColor = percent > 100 ? theme.colors.danger : color;
-  
-  return (
-    <View style={{ height: 8, backgroundColor: theme.mode === 'dark' ? '#333' : '#E2E8F0', borderRadius: 4, overflow: 'hidden', marginTop: 8 }}>
-      <View style={{ width: `${cappedPercent}%`, height: '100%', backgroundColor: barColor, borderRadius: 4 }} />
-    </View>
-  );
-}
-
-function ChartDropdown({ theme, activeChart, onSelect, t }: { theme: Theme, activeChart: ChartType, onSelect: (type: ChartType) => void, t: any }) {
-    const activeLabel = chartTypes.find(c => c.key === activeChart)?.labelKey || 'Creditor Breakdown';
-    const showDropdown = () => {
-        const options = chartTypes.map(c => t(c.labelKey));
-        if (Platform.OS === 'ios') {
-            const cancelIndex = options.length;
-            options.push(t('Cancel'));
-            ActionSheetIOS.showActionSheetWithOptions({ options, cancelButtonIndex: cancelIndex, title: t('Select Chart') }, (buttonIndex) => { if (buttonIndex < chartTypes.length) { onSelect(chartTypes[buttonIndex].key); } });
-        } else {
-            Alert.alert(t('Select Chart'), '', chartTypes.map((c, index) => ({ text: t(c.labelKey), onPress: () => onSelect(c.key) })));
-        }
+    return {
+      displayName: match.name,
+      icon: match.icon,
+      color: iconColor,
+      type: match.type,
+      isKnown: true
     };
-    return (
-        <Pressable onPress={showDropdown} style={({ pressed }) => [styles.dropdownContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border, opacity: pressed ? 0.8 : 1 }]}>
-            <Text style={[styles.dropdownLabel, { color: theme.colors.subtext }]}>{t('View')}:</Text>
-            <Text style={[styles.dropdownValue, { color: theme.colors.primary }]}>{t(activeLabel)}</Text>
-            <Ionicons name="chevron-down" size={16} color={theme.colors.primary} />
-        </Pressable>
-    );
+  }
+
+  // Fallback for unknown
+  return {
+    displayName: creditorRaw,
+    icon: 'card-outline',
+    color: theme.colors.subtext, // Neutral color for unknown
+    type: 'Ionicons',
+    isKnown: false
+  };
 }
 
-function ChartRenderer({ bills, activeChart, theme, t }: { bills: any[], activeChart: ChartType, theme: Theme, t: any }) {
-    const { width } = Dimensions.get('window');
-    // Adjust chart width based on content width, ensuring it doesn't overflow on small screens or look too small on large ones
-    const contentWidth = Math.min(width, MAX_CONTENT_WIDTH);
-    const chartWidth = contentWidth - 64; // padding adjustments
+// Mock History
+const getMockHistory = (amount: number) => {
+  const today = new Date();
+  return [
+    { id: 1, date: new Date(today.getFullYear(), today.getMonth() + 1, 15), status: 'upcoming', label: 'Next Payment' },
+    { id: 2, date: new Date(today.getFullYear(), today.getMonth(), 15), status: 'paid', label: 'Paid' },
+    { id: 3, date: new Date(today.getFullYear(), today.getMonth() - 1, 15), status: 'paid', label: 'Paid' },
+  ];
+};
 
-    if (activeChart === 'creditor_pie' || activeChart === 'recurrence_pie') {
-        const { data, total } = activeChart === 'creditor_pie' ? groupDataByCreditor(bills) : groupDataByRecurrence(bills);
-        if (data.length === 0) return <Text style={[styles.noData, { color: theme.colors.subtext }]}>{t('No data to display.')}</Text>;
-        return (
-            <View style={styles.chartInnerContainer}>
-                <Text style={[styles.chartTotal, { color: theme.colors.primaryText }]}>{t('Total Amount')}: ${centsToDollars(total)}</Text>
-                <PieChart data={data} donut radius={chartWidth * 0.3} innerRadius={chartWidth * 0.2} centerLabelComponent={() => (<View style={{ justifyContent: 'center', alignItems: 'center' }}><Text style={{ fontSize: 14, color: theme.colors.subtext, fontWeight: '600' }}>{activeChart === 'creditor_pie' ? t('Creditors') : t('Recurrence')}</Text></View>)} />
-                <View style={styles.legendContainer}>
-                    {data.map((item, index) => (
-                        <View key={item.key} style={styles.legendItem}>
-                            <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-                            <Text style={[styles.legendText, { color: theme.colors.primaryText }]}>{item.label} ({Math.round((item.value / total) * 100)}%)</Text>
-                        </View>
-                    ))}
-                </View>
-            </View>
-        );
-    }
-    
-    if (activeChart === 'monthly_bar') {
-        const { data, total, average } = groupDataByMonth(bills, theme);
-        if (data.length === 0) return <Text style={[styles.noData, { color: theme.colors.subtext }]}>{t('No data to display.')}</Text>;
-        const maxValue = Math.max(...data.map(item => item.value), average, 0);
-        
-        return (
-            <View style={styles.chartInnerContainer}>
-                <Text style={[styles.chartTotal, { color: theme.colors.primaryText }]}>{t('Total 6-Month Spend')}: ${centsToDollars(total)}</Text>
-                <BarChart 
-                    barWidth={24}
-                    noOfSections={4} 
-                    maxValue={maxValue > 0 ? maxValue * 1.1 : 100} 
-                    data={data} 
-                    hideYAxisText 
-                    showFractionalValues={false} 
-                    yAxisThickness={0} 
-                    xAxisThickness={1} 
-                    xAxisColor={theme.colors.border} 
-                    yAxisTextStyle={{ color: theme.colors.subtext }} 
-                    xAxisLabelTextStyle={{ color: theme.colors.subtext }} 
-                    spacing={20}
-                    width={chartWidth}
-                    
-                    showLine
-                    lineData={data.map(() => ({ value: average }))} 
-                    lineConfig={{ color: theme.colors.accent, thickness: 3, curved: false, hideDataPoints: true }} 
-                    
-                    renderTooltip={(item: any) => (
-                        <View style={[styles.tooltip, { backgroundColor: theme.colors.card }]}>
-                            <Text style={{ color: theme.colors.primaryText, fontWeight: '700' }}>{item.label}</Text>
-                            <Text style={{ color: theme.colors.primaryText }}>${centsToDollars(item.value)}</Text>
-                        </View>
-                    )} 
-                />
-                <View style={[styles.legendContainer, { justifyContent: 'flex-start', marginTop: 10 }]}>
-                    <View style={styles.legendItem}>
-                        <View style={[styles.legendColor, { backgroundColor: theme.colors.accent, width: 20, height: 3, borderRadius: 0 }]} />
-                        <Text style={[styles.legendText, { color: theme.colors.primaryText, fontWeight: '700' }]}>{t('6-Month Avg')}: ${centsToDollars(average)}</Text>
-                    </View>
-                </View>
-            </View>
-        );
-    }
-    return null;
-}
-
-// --- MAIN SCREEN ---
-
-export default function Insights() {
+export default function Subscriptions() {
   const theme = useTheme();
   const { t } = useTranslation();
-  
-  const [bills, setBills] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [budgets, setBudgets] = useState<Record<string, number>>({});
-  
-  // Chart State
-  const [activeChart, setActiveChart] = useState<ChartType>('creditor_pie');
+  const { data: bills, isLoading } = useBills();
+  const currency = useCurrency();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Modal State
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [newLimit, setNewLimit] = useState("");
-
-  const isMounted = useRef(true);
-  useEffect(() => {
-    isMounted.current = true;
-    return () => { isMounted.current = false; };
-  }, []);
-
-  const loadData = useCallback(async () => {
-    try {
-      if (loading) setLoading(true); // only show full loader on initial mount
-
-      // 1. Load Bills
-      const cached = getJson("billbell_bills_list_cache");
-      if (cached && bills.length === 0) setBills(cached);
-      
-      const res = await api.billsList();
-      if (isMounted.current) setBills(res.bills || []);
-      
-      // 2. Load Budgets
-      const savedBudgets = userSettings.getBudgets();
-      if (isMounted.current) setBudgets(savedBudgets);
-
-    } catch (e) {
-      console.error("Load failed", e);
-    } finally {
-      if (isMounted.current) {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    }
-  }, []);
-
-  useFocusEffect(useCallback(() => {
-    loadData();
-  }, [loadData]));
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadData();
-  };
-
-  // --- STATS CALCULATION ---
-  const currentMonthStats = useMemo(() => {
-    const today = new Date();
-    // Filter for Active bills OR Paid bills in THIS month
-    const active = bills.filter(b => b.status === 'active' || (b.status === 'paid' && isSameMonth(parseISO(b.paid_at || b.due_date), today)));
-    
-    const spendByCategory: Record<string, number> = {};
-    active.forEach(b => {
-      const cat = getCategory(b.creditor);
-      spendByCategory[cat] = (spendByCategory[cat] || 0) + (b.amount_cents || 0);
-    });
-
-    return spendByCategory;
+  // Filter for "Subscriptions"
+  const subs = useMemo(() => {
+    if (!bills) return [];
+    return bills.filter(
+      (b: { status: string; payment_method: string; recurrence: string; }) =>
+        b.status === "active" &&
+        (b.payment_method === "auto" || (b.recurrence && b.recurrence !== "none"))
+    ).sort((a: { amount_cents: number; }, b: { amount_cents: number; }) => b.amount_cents - a.amount_cents); 
   }, [bills]);
 
-  const totalDue = useMemo(() => bills.filter(b => !b.paid_at && !b.is_paid && b.status !== 'paid').reduce((sum, b) => sum + Number(b.amount_cents || 0), 0), [bills]);
-  const averageBill = useMemo(() => bills.length > 0 ? totalDue / bills.length : 0, [totalDue, bills.length]);
-  const topCreditor = useMemo(() => {
-    const { data } = groupDataByCreditor(bills);
-    return data[0]?.label || t('N/A');
-  }, [bills, t]);
+  const totalMonthly = useMemo(() => {
+    return subs.reduce((sum: any, b: { amount_cents: any; }) => sum + b.amount_cents, 0);
+  }, [subs]);
 
-  // --- HANDLERS ---
-  const handleEditBudget = (category: string) => {
-    Haptics.selectionAsync();
-    setSelectedCategory(category);
-    setNewLimit(budgets[category] ? String(budgets[category]) : "");
-    setModalVisible(true);
+  const toggleExpand = (id: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedId(expandedId === id ? null : id);
   };
 
-  const saveBudget = () => {
-    if (selectedCategory) {
-      const limit = parseInt(newLimit.replace(/[^0-9]/g, ''), 10) || 0;
-      userSettings.setCategoryBudget(selectedCategory, limit);
-      setBudgets(prev => ({ ...prev, [selectedCategory]: limit }));
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-    setModalVisible(false);
-  };
-
-  if (loading && bills.length === 0) {
+  
+  function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+      <View style={styles.headerShadowContainer}>
+        <LinearGradient
+          colors={[theme.colors.navy, "#1a2c4e"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerGradient}
+        >
+          <View style={styles.headerIconCircle}>
+            <MaterialIcons name="subscriptions" size={28} color="#FFF" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>{title}</Text>
+            <Text style={styles.headerSubtitle}>{subtitle}</Text>
+          </View>
+        </LinearGradient>
+      </View>
+    );
+  }
+
+  const renderItem = ({ item }: { item: Bill }) => {
+    // Use the enrichment logic here
+    const details = enrichSubscription(item.creditor, theme);
+    const IconLib = details.type === "Ionicons" ? Ionicons : MaterialCommunityIcons;
+    const isExpanded = expandedId === String(item.id);
+    const history = getMockHistory(item.amount_cents);
+
+    return (
+      <View style={[
+        styles.cardContainer, 
+        { 
+          backgroundColor: theme.colors.card, 
+          borderColor: isExpanded ? theme.colors.primary : theme.colors.border 
+        }
+      ]}>
+
+        <ScaleButton
+          onPress={() => toggleExpand(String(item.id))}
+          style={styles.cardHeader}
+        >
+          {/* Icon Box with Brand Color Background (Low Opacity) */}
+          <View style={[styles.iconBox, { backgroundColor: details.isKnown ? details.color + "20" : theme.colors.border }]}>
+            <IconLib name={details.icon as any} size={24} color={details.color} />
+          </View>
+          
+          <View style={{ flex: 1 }}>
+            {/* Use Display Name (Clean) */}
+            <Text style={[styles.name, { color: theme.colors.primaryText }]}>
+              {details.displayName}
+            </Text>
+            {/* Show original creditor name if we renamed it, for clarity */}
+            {details.isKnown && details.displayName !== item.creditor && (
+               <Text style={[styles.originalName, { color: theme.colors.subtext }]}>
+                 {item.creditor}
+               </Text>
+            )}
+            <Text style={[styles.date, { color: theme.colors.subtext }]}>
+              {item.recurrence ? t("Repeats: {{freq}}", { freq: item.recurrence }) : t("Auto-Payment")}
+            </Text>
+          </View>
+
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={[styles.amount, { color: theme.colors.primaryText }]}>
+              {formatCurrency(item.amount_cents, currency)}
+            </Text>
+            <Ionicons 
+              name={isExpanded ? "chevron-up" : "chevron-down"} 
+              size={16} 
+              color={theme.colors.subtext} 
+              style={{ marginTop: 4 }}
+            />
+          </View>
+        </ScaleButton>
+
+        {isExpanded && (
+          <View style={[styles.expandedContent, { borderTopColor: theme.colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.subtext }]}>{t("Recent & Upcoming")}</Text>
+            
+            {history.map((h, index) => (
+              <View key={h.id} style={styles.historyRow}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={[styles.dot, { backgroundColor: h.status === 'upcoming' ? theme.colors.warning : theme.colors.success }]} />
+                  <Text style={{ color: theme.colors.primaryText, fontSize: 14 }}>
+                    {h.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  </Text>
+                </View>
+                <Text style={{ color: h.status === 'upcoming' ? theme.colors.primaryText : theme.colors.subtext, fontSize: 14 }}>
+                  {h.status === 'upcoming' ? t("Due") : t("Paid")}
+                </Text>
+              </View>
+            ))}
+
+            <View style={styles.actionRow}>
+              <TouchableOpacity 
+                style={[styles.actionButton, { backgroundColor: theme.colors.bg }]}
+                onPress={() => router.push({ pathname: "/(app)/bill-edit", params: { id: String(item.id) } })}
+              >
+                <Text style={{ color: theme.colors.primaryText, fontWeight: "600" }}>{t("Edit Bill Details")}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.colors.bg, padding: 16, gap: 16 }]}>
+        <Skeleton width="100%" height={120} borderRadius={20} />
+        <Skeleton width="100%" height={80} borderRadius={16} />
+        <Skeleton width="100%" height={80} borderRadius={16} />
       </View>
     );
   }
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      
-      <ScrollView 
-        contentContainerStyle={{ paddingBottom: 100 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
-      >
-        <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
-          <View style={styles.content}>
-            <Header title={t("Financial Insights")} subtitle={t("Visualize your spending")} theme={theme} />
-
-            {/* STATS ROW */}
-            <View style={styles.statsContainer}>
-              <StatCard icon="wallet-outline" label={t('Pending')} value={`$${centsToDollars(totalDue)}`} color={theme.colors.danger} theme={theme} />
-              <StatCard icon="stats-chart-outline" label={t('Avg Bill')} value={`$${centsToDollars(averageBill)}`} color={theme.colors.primary} theme={theme} />
-              <StatCard icon="people-outline" label={t('Top')} value={topCreditor} color={theme.colors.accent} theme={theme} />
-            </View>
-
-            {/* CHARTS SECTION */}
-            <View>
-              <ChartDropdown theme={theme} activeChart={activeChart} onSelect={setActiveChart} t={t} />
-              <View style={[styles.chartCard, { borderColor: theme.colors.border, backgroundColor: theme.colors.card, marginTop: 12 }]}>
-                  <ChartRenderer bills={bills} activeChart={activeChart} theme={theme} t={t} />
-              </View>
-            </View>
-
-            {/* SMART BUDGETS SECTION */}
-            <View>
-              <Text style={[styles.sectionHeader, { color: theme.colors.primaryText }]}>{t("Smart Budgets")}</Text>
-              <Text style={{ color: theme.colors.subtext, marginBottom: 12 }}>{t("Tap a category to set a monthly limit.")}</Text>
-              
-              <View style={{ gap: 12 }}>
-                {CATEGORY_MAP.map((cat) => {
-                  const spendCents = currentMonthStats[cat.label] || 0;
-                  const spend = spendCents / 100;
-                  const limit = budgets[cat.label] || 0;
-                  const hasLimit = limit > 0;
-                  const percent = hasLimit ? (spend / limit) * 100 : 0;
-
-                  return (
-                    <ScaleButton 
-                      key={cat.label} 
-                      onPress={() => handleEditBudget(cat.label)}
-                      style={[styles.budgetRow, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
-                    >
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                          <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: cat.color }} />
-                          <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.primaryText }}>{cat.label}</Text>
-                        </View>
-                        <View style={{ alignItems: 'flex-end' }}>
-                          <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.primaryText }}>
-                            ${spend.toFixed(0)} 
-                            <Text style={{ color: theme.colors.subtext, fontSize: 14, fontWeight: '400' }}>
-                              {hasLimit ? ` / $${limit}` : ''}
-                            </Text>
-                          </Text>
-                        </View>
-                      </View>
-                      {hasLimit ? (
-                        <ProgressBar percent={percent} color={cat.color} theme={theme} />
-                      ) : (
-                        <Text style={{ fontSize: 12, color: theme.colors.accent, marginTop: 4 }}>{t("Set Budget")}</Text>
-                      )}
-                    </ScaleButton>
-                  );
-                })}
-              </View>
-            </View>
-
+              <View style={styles.content}>
+    
+                  <Header title={t("Subscriptions")} subtitle={t("")} theme={theme} />
+</View>
+      <FlatList
+        data={subs}
+        keyExtractor={(item) => String(item.id)}
+        contentContainerStyle={{ padding: 16, gap: 12 }}
+        ListHeaderComponent={
+          <View style={[styles.summary, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <Text style={[styles.label, { color: theme.colors.subtext }]}>{t("Monthly Fixed Cost")}</Text>
+            <AnimatedAmount
+              currency={currency}
+              amount={totalMonthly}
+              style={{ fontSize: 40, fontWeight: "900", color: theme.colors.primaryText }}
+            />
+            <Text style={{ color: theme.colors.subtext, marginTop: 4, fontSize: 12 }}>
+              {t("{{count}} active subscriptions", { count: subs.length })}
+            </Text>
           </View>
-        </View>
-      </ScrollView>
-
-      {/* MODAL */}
-      <Modal animationType="fade" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.modalTitle, { color: theme.colors.primaryText }]}>{t("Set Limit for {{category}}", { category: selectedCategory })}</Text>
-            <View style={[styles.inputContainer, { backgroundColor: theme.colors.bg }]}>
-              <Text style={{ fontSize: 20, color: theme.colors.primaryText, fontWeight: '700' }}>$</Text>
-              <TextInput autoFocus keyboardType="numeric" value={newLimit} onChangeText={setNewLimit} placeholder="0" placeholderTextColor={theme.colors.subtext} style={[styles.input, { color: theme.colors.primaryText }]} />
-            </View>
-            <View style={styles.modalActions}>
-              <Pressable onPress={() => setModalVisible(false)} style={styles.modalBtn}>
-                <Text style={{ color: theme.colors.subtext, fontWeight: '600' }}>{t("Cancel")}</Text>
-              </Pressable>
-              <Pressable onPress={saveBudget} style={[styles.modalBtn, { backgroundColor: theme.colors.primary, paddingHorizontal: 24 }]}>
-                <Text style={{ color: theme.colors.primaryTextButton, fontWeight: '700' }}>{t("Save")}</Text>
-              </Pressable>
-            </View>
+        }
+        renderItem={renderItem}
+        ListEmptyComponent={
+          <View style={{ alignItems: "center", marginTop: 40 }}>
+            <Ionicons name="infinite" size={64} color={theme.colors.border} />
+            <Text style={{ color: theme.colors.subtext, marginTop: 12, textAlign: 'center' }}>
+              {t("No subscriptions found.\nSet a bill to 'Auto-Pay' or 'Recurring' to see it here.")}
+            </Text>
           </View>
-        </KeyboardAvoidingView>
-      </Modal>
+        }
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 16, gap: 24 },
+  summary: { padding: 24, borderRadius: 24, borderWidth: 1, alignItems: "center", marginBottom: 24 },
+  label: { fontSize: 14, textTransform: "uppercase", letterSpacing: 1, fontWeight: "600", marginBottom: 4 },
+  
+  // Card Styles
+  cardContainer: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  cardHeader: { flexDirection: "row", alignItems: "center", padding: 16, gap: 16 },
   
   // Header
-  headerShadowContainer: { backgroundColor: "transparent", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
-  headerGradient: { borderRadius: 20, height: 100, paddingBottom: 10, paddingHorizontal: 16, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
-  headerIconCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center" },
+  headerShadowContainer: { backgroundColor: 'transparent', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
+  headerGradient: { borderRadius: 20, height:120, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
+  headerIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center", marginLeft:10 },
   headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
   headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
-
-  // Stats
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
-  statCard: { flex: 1, padding: 12, borderRadius: 16, borderWidth: 1, gap: 8 },
-  iconBox: { width: 32, height: 32, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
-  statLabel: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
-  statValue: { fontSize: 16, fontWeight: '900' },
-
-  // Charts
-  dropdownContainer: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16, borderRadius: 14, borderWidth: 1, justifyContent: 'space-between' },
-  dropdownLabel: { fontSize: 14, fontWeight: '600' },
-  dropdownValue: { fontSize: 16, fontWeight: '700' },
-  chartCard: { borderRadius: 20, borderWidth: 1, padding: 16, alignItems: 'center', justifyContent: 'center', minHeight: 300 },
-  chartInnerContainer: { width: '100%', alignItems: 'center' },
-  chartTotal: { fontSize: 14, fontWeight: '700', marginBottom: 20 },
-  legendContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 20, gap: 10 },
-  legendItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6 },
-  legendColor: { width: 10, height: 10, borderRadius: 5, marginRight: 6 },
-  legendText: { fontSize: 12 },
-  noData: { fontSize: 16, textAlign: 'center', paddingVertical: 40 },
-  tooltip: { padding: 8, borderRadius: 8, opacity: 0.9 },
-
-  // Budgets
-  sectionHeader: { fontSize: 20, fontWeight: "800", marginBottom: 4 },
-  budgetRow: { padding: 16, borderRadius: 16, borderWidth: 1 },
   
-  // Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 24 },
-  modalContent: { borderRadius: 24, padding: 24, alignItems: 'center', gap: 20 },
-  modalTitle: { fontSize: 18, fontWeight: '700', textAlign: 'center' },
-  inputContainer: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, paddingHorizontal: 16, height: 60, width: '100%', borderWidth: 1, borderColor: 'rgba(150,150,150,0.2)' },
-  input: { flex: 1, fontSize: 24, fontWeight: '700', marginLeft: 8 },
-  modalActions: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 8 },
-  modalBtn: { paddingVertical: 12, borderRadius: 12, alignItems: 'center', minWidth: 80 },
+  content: { padding: 16, gap: 20 },
+
+  // Expanded Styles
+  expandedContent: { padding: 16, borderTopWidth: 1, gap: 12 },
+  sectionTitle: { fontSize: 12, fontWeight: "600", textTransform: 'uppercase', marginBottom: 4 },
+  historyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  actionRow: { flexDirection: 'row', marginTop: 8, justifyContent: 'flex-end' },
+  actionButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
+
+  // Icon & Text Styles
+  iconBox: { width: 48, height: 48, borderRadius: 12, justifyContent: "center", alignItems: "center" },
+  name: { fontSize: 16, fontWeight: "700" },
+  originalName: { fontSize: 11, marginBottom: 2 },
+  date: { fontSize: 13, marginTop: 0 },
+  amount: { fontSize: 18, fontWeight: "700" },
 });
