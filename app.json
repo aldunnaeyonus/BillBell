@@ -16,7 +16,7 @@
     "ios": {
       "config": {
         "usesNonExemptEncryption": false,
-        "NSSupportsLiveActivities": true,
+        "NSSupportsLiveActivities": true
       },
       "bundleIdentifier": "com.dunn.carabali.billbell",
       "appleTeamId": "2899NRK28S",
