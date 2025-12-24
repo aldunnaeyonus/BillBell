@@ -281,6 +281,7 @@ function AppStack() {
           <Stack.Screen
             name="(app)/bills"
             options={{
+              headerShown: false,
               title: "",
               headerBackVisible: false,
               gestureEnabled: true,
@@ -292,6 +293,7 @@ function AppStack() {
               headerShown: false,
               headerBackVisible: false,
               title: "",
+              gestureEnabled: true,
             }}
           />
           <Stack.Screen

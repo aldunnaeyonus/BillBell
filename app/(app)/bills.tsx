@@ -970,7 +970,6 @@ export default function Bills() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <Stack.Screen options={{ headerShown: false }} />
       <Header
         theme={theme}
         title={t("My Bills")}
