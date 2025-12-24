@@ -327,7 +327,7 @@ export default function Profile() {
       isMounted.current = false;
     };
   }, []);
- 
+
   const langs = [
     { code: "en", label: "English" },
     { code: "es", label: "Español" },
@@ -336,10 +336,11 @@ export default function Profile() {
     { code: "fr", label: "Français" },
     { code: "it", label: "Italiano" },
     { code: "pt-BR", label: "Português (BR)" },
+    { code: "pt-PT", label: "Português (PT)" },
+    { code: "zh-Hant", label: "繁體中文" },
     { code: "zh-Hans", label: "简体中文" },
     { code: "ja", label: "日本語" },
   ];
-
   const loadData = useCallback(async () => {
     try {
       const res = await api.familyMembers();
@@ -627,7 +628,6 @@ export default function Profile() {
         payment_method: b.payment_method || "manual",
         end_date: b.end_date || "",
         status: b.status || "pending",
-
       }));
 
       const csvString = jsonToCSV(exportData);
@@ -687,7 +687,13 @@ export default function Profile() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+        <View
+          style={{
+            width: "100%",
+            maxWidth: MAX_CONTENT_WIDTH,
+            alignSelf: "center",
+          }}
+        >
           <View style={styles.content}>
             {data && (
               <ProfileHeader
@@ -773,7 +779,6 @@ export default function Profile() {
                   theme={theme}
                   onPress={() => setShowCurrencyModal(true)}
                   isLast
-
                 />
               </View>
             </View>
@@ -816,7 +821,6 @@ export default function Profile() {
                   theme={theme}
                   onPress={() => router.push("/(app)/recovery-kit")}
                   isLast
-
                 />
               </View>
             </View>
@@ -1033,33 +1037,78 @@ export default function Profile() {
           </View>
         </Pressable>
       </Modal>
-      <Modal visible={showCurrencyModal} transparent animationType="fade" onRequestClose={() => setShowCurrencyModal(false)}>
-        <Pressable style={styles.modalOverlay} onPress={() => setShowCurrencyModal(false)}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.card, maxHeight: '80%' }]}>
-            <Text style={[styles.modalTitle, { color: theme.colors.primaryText }]}>{t("Select Currency")}</Text>
-            <FlatList 
+      <Modal
+        visible={showCurrencyModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowCurrencyModal(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowCurrencyModal(false)}
+        >
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.colors.card, maxHeight: "80%" },
+            ]}
+          >
+            <Text
+              style={[styles.modalTitle, { color: theme.colors.primaryText }]}
+            >
+              {t("Select Currency")}
+            </Text>
+            <FlatList
               data={SUPPORTED_CURRENCIES}
               keyExtractor={(item) => item.code}
               renderItem={({ item }) => (
                 <Pressable
                   onPress={() => handleCurrencyChange(item.code)}
-                  style={({ pressed }) => [styles.modalItem, { backgroundColor: pressed ? theme.colors.border : "transparent", borderBottomColor: theme.colors.border }]}
+                  style={({ pressed }) => [
+                    styles.modalItem,
+                    {
+                      backgroundColor: pressed
+                        ? theme.colors.border
+                        : "transparent",
+                      borderBottomColor: theme.colors.border,
+                    },
+                  ]}
                 >
-                  <Text style={[styles.modalItemText, { color: theme.colors.primaryText }]}>
+                  <Text
+                    style={[
+                      styles.modalItemText,
+                      { color: theme.colors.primaryText },
+                    ]}
+                  >
                     {item.label} ({item.symbol})
                   </Text>
-                  {currency === item.code && <Ionicons name="checkmark" size={20} color={theme.colors.primary} />}
+                  {currency === item.code && (
+                    <Ionicons
+                      name="checkmark"
+                      size={20}
+                      color={theme.colors.primary}
+                    />
+                  )}
                 </Pressable>
               )}
             />
-            <Pressable onPress={() => setShowCurrencyModal(false)} style={[styles.modalCancel, { backgroundColor: theme.colors.border }]}>
-              <Text style={[styles.modalCancelText, { color: theme.colors.text }]}>{t("Cancel")}</Text>
+            <Pressable
+              onPress={() => setShowCurrencyModal(false)}
+              style={[
+                styles.modalCancel,
+                { backgroundColor: theme.colors.border },
+              ]}
+            >
+              <Text
+                style={[styles.modalCancelText, { color: theme.colors.text }]}
+              >
+                {t("Cancel")}
+              </Text>
             </Pressable>
           </View>
         </Pressable>
       </Modal>
     </>
-    
   );
 }
 
