@@ -5,7 +5,7 @@ API_KEY="AIzaSyB8tJ_aDJo55STfOty6RwAKHjo4HDxk_Is"
 SOURCE_FILE="/Users/andrewdunn/Documents/GitHubDunn/BillBell/src/locales/en.json"
 MODEL="gemini-2.5-flash"
 #LANGUAGES=("es" "de" "nl" "fr" "it" "ja" "zh-Hans" "pt-BR", "pt-PT", "zh-CN", "zh-Hant", "pt", "zh")
-#LANGUAGES=("")
+LANGUAGES=("es-MS", "es-ES")
 
 # ---------------------
 
