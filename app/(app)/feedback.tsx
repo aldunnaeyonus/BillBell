@@ -17,9 +17,10 @@ import { useTranslation } from "react-i18next";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 import { getToken } from "../../src/auth/session"; // Assuming you have this helper
+import { serverURL } from "@/data/vendors";
 
 // Point to your actual PHP server
-const SERVER_URL = "https://dunn-carabali.com/billMVP/feedback";
+const SERVER_URL = serverURL+"/feedback";
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
   // ... (Header code remains exactly the same)

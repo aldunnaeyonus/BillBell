@@ -36,6 +36,7 @@ import { stopActivity } from "../../src/native/LiveActivity";
 import { useCurrency, useSetCurrency } from "../../src/hooks/useCurrency";
 import { SUPPORTED_CURRENCIES, formatCurrency } from "../../src/utils/currency";
 import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
+import { serverURL } from "@/data/vendors";
 
 // --- Helpers ---
 
@@ -537,7 +538,7 @@ export default function Profile() {
     if (!familyCode) {
       return Alert.alert(t("Error"), t("Family ID not found."));
     }
-    const inviteLink = `https://dunn-carabali.com/billMVP/?code=${familyCode}`;
+    const inviteLink = `${serverURL}/?code=${familyCode}`;
 
     const shareOptions = {
       title: t("Invite to Group"),

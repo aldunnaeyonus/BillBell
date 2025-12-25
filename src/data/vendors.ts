@@ -15,6 +15,9 @@ export interface VendorInfo {
   categoryKey: string; // Translation key, e.g., 'category_entertainment'
 }
 
+export const bulkURL = "https://tinyurl.com/billMVP";
+export const serverURL = "https://dunn-carabali.com/billMVP";
+
 export const normalizeVendorKey = (input: string) =>
   (input || "")
     .toLowerCase()

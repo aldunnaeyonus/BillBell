@@ -1,3 +1,4 @@
+import { serverURL } from '@/data/vendors';
 import { getToken } from '../auth/session'; // <--- 1. Import Auth Helper
 
 export interface BillData {
@@ -10,7 +11,7 @@ export interface BillData {
 }
 
 // Ensure this matches where you actually saved the PHP script
-const SERVER_URL = 'https://dunn-carabali.com/billMVP/chat';
+const SERVER_URL = serverURL+'/chat';
 
 // <--- 2. Add 'context' parameter here
 export const sendMessageToBillBell = async (

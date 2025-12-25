@@ -43,6 +43,7 @@ import { OfflineBanner } from "../src/ui/OfflineBanner";
 import hotUpdate from "react-native-ota-hot-update";
 import ReactNativeBlobUtil from "react-native-blob-util";
 import { storage } from "../src/storage/storage"; // Added: Storage for tracking permissions
+import { serverURL } from "@/data/vendors";
 
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
 
@@ -68,7 +69,7 @@ function AppStack() {
   const [progress, setProgress] = useState(0);
   const [version, setVersion] = useState("0");
   const [_, requestCameraPermission] = useCameraPermissions(); // Hook for camera
-  const apiVersion = "https://dunn-carabali.com/billMVP/ota/update.json";
+  const apiVersion = serverURL+"/ota/update.json";
 
   useEffect(() => {
     configureGoogle();

@@ -18,8 +18,9 @@ import { router } from "expo-router";
 import { getDeviceId } from '../security/device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from "./i18n"; 
+import { serverURL } from "@/data/vendors";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://dunn-carabali.com/billMVP";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || serverURL;
 
 // --- Helper Types ---
 interface KeySharePayload {
