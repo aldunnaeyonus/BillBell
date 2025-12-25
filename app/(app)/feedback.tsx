@@ -11,16 +11,18 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import * as Linking from "expo-linking";
 import LinearGradient from "react-native-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useTheme, Theme } from "../../src/ui/useTheme";
 import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
+import { getToken } from "../../src/auth/session"; // Assuming you have this helper
 
-const SUPPORT_EMAIL = "support@dunn-carabali.com";
+// Point to your actual PHP server
+const SERVER_URL = "https://dunn-carabali.com/billMVP/feedback";
 
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
+  // ... (Header code remains exactly the same)
   return (
     <View style={styles.headerShadowContainer}>
       <LinearGradient
@@ -42,6 +44,7 @@ function Header({ title, subtitle, theme }: { title: string; subtitle: string; t
 }
 
 function FeedbackTypeToggle({ type, setType, theme, t }: { type: "feedback" | "bug"; setType: (t: "feedback" | "bug") => void; theme: Theme; t: any; }) {
+  // ... (Toggle code remains exactly the same)
   return (
     <View style={[styles.toggleContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
       <Pressable onPress={() => setType("feedback")} style={[styles.toggleButton, type === "feedback" && { backgroundColor: theme.colors.primary }]}>
@@ -73,27 +76,52 @@ export default function FeedbackScreen() {
     return () => { isMounted.current = false; };
   }, []);
 
+  // --- UPDATED SUBMIT LOGIC ---
   async function onSubmit() {
-    if (!title.trim() || !description.trim()) { Alert.alert(t("Missing info"), t("Please add a title and description first.")); return; }
-    const subject = `[${type === "bug" ? "Bug" : "Feedback"}] ${title.trim()}`;
-    const bodyLines = [
-      `Type: ${type === "bug" ? t("Bug Report") : t("General Feedback")}`,
-      `Platform: ${Platform.OS} ${Platform.Version ?? ""}`,
-      contact ? `Contact: ${contact.trim()}` : "",
-      "--------------------------------",
-      description.trim(),
-    ].filter(Boolean);
-    const body = bodyLines.join("\n");
-    const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    if (mailto.length > 2000) { Alert.alert(t("Too Long"), t("Your feedback is too long to send via the mail app. Please shorten it.")); return; }
+    if (!title.trim() || !description.trim()) { 
+        Alert.alert(t("Missing info"), t("Please add a title and description first.")); 
+        return; 
+    }
+
     try {
       setSubmitting(true);
-      const canOpen = await Linking.canOpenURL(mailto);
+      
+      const token = await getToken(); // Optional: If you want to verify the user
+      
+      const response = await fetch(SERVER_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+            type: type,
+            title: title.trim(),
+            description: description.trim(),
+            contact: contact.trim(),
+            platform: `${Platform.OS} ${Platform.Version}`
+        })
+      });
+
+      const data = await response.json();
+
       if (!isMounted.current) return;
-      if (!canOpen) { Alert.alert(t("Error"), `${t("Unable to open mail app")}\n\n${SUPPORT_EMAIL}`); return; }
-      await Linking.openURL(mailto);
+
+      if (response.ok) {
+        Alert.alert(t("Thank You"), t("Your feedback has been sent successfully."));
+        // Clear form
+        setTitle("");
+        setDescription("");
+        setContact("");
+      } else {
+        throw new Error(data.error || "Failed to send");
+      }
+
     } catch (e: any) {
-      if (isMounted.current) Alert.alert(t("Error"), e?.message || "Error opening mail app");
+      if (isMounted.current) {
+        Alert.alert(t("Error"), t("Unable to send feedback. Please try again later."));
+        console.error("Feedback error:", e);
+      }
     } finally {
       if (isMounted.current) setSubmitting(false);
     }
@@ -146,7 +174,7 @@ export default function FeedbackScreen() {
                   <Pressable onPress={onSubmit} disabled={submitting} style={({ pressed }) => [styles.submitButton, { backgroundColor: theme.colors.primary, opacity: submitting ? 0.6 : pressed ? 0.8 : 1 }]}>
                   {submitting ? <ActivityIndicator color={theme.colors.primaryTextButton} /> : <Text style={[styles.submitButtonText, { color: theme.colors.primaryTextButton }]}>{t("Send")}</Text>}
                   </Pressable>
-                  <Text style={[styles.disclaimer, { color: theme.colors.subtext }]}>{t("MailAppDisclaimer")}</Text>
+                  {/* Removed MailAppDisclaimer since we are handling it internally now */}
               </View>
             </View>
           </View>
