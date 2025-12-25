@@ -12,7 +12,9 @@ import {
   NativeModules,
   TextInput,
   Keyboard,
-  Button
+  Modal,
+  TouchableOpacity,
+  KeyboardAvoidingView
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -62,7 +64,8 @@ import { useBills, useBillMutations } from "../../src/hooks/useBills";
 import { Bill } from "../../src/types/domain";
 import { Skeleton } from "../../src/ui/Skeleton";
 import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
-import { api } from "@/api/client";
+// --- CHAT IMPORT ---
+import { sendMessageToBillBell } from "../../src/api/chat";
 
 const getWidgetModule = () => {
   try {
@@ -158,6 +161,17 @@ const jsonToCSV = (data: any[]): string => {
     headers.map((header) => escapeField(row[header])).join(",")
   );
   return [headerRow, ...rows].join("\n");
+};
+
+// --- HELPER FOR CHAT CONTEXT ---
+const generateBillContext = (bills: any[], currencySymbol: string) => {
+  if (!bills || bills.length === 0) return "The user has no bills.";
+  
+  return bills.map(b => {
+    const amt = (b.amount_cents || 0) / 100;
+    const status = b.paid_at || b.status === 'paid' ? "Paid" : "Unpaid";
+    return `- ${b.creditor}: ${currencySymbol}${amt.toFixed(2)} (Due: ${b.due_date}, Status: ${status})`;
+  }).join("\n");
 };
 
 function getBillIcon(creditor: string): {
@@ -637,10 +651,8 @@ function BillItem({
   if (Platform.OS === "ios") {
     return (
       <Animated.View
-        // Remove 'layout' to stop jumping on reorder/scroll
-        // Remove 'entering' to stop jumping on scroll recycle
         exiting={FadeOut}
-        entering={FadeIn} // <-- CAUSE OF JUMP
+        entering={FadeIn}
       >
         <ReanimatedSwipeable
           ref={swipeableRef}
@@ -657,9 +669,8 @@ function BillItem({
 
   return (
     <Animated.View
-      // Remove 'layout' and 'entering' here too
       exiting={FadeOut}
-      entering={FadeIn} // <-- CAUSE OF JUMP
+      entering={FadeIn}
     >
       {BillContent}
     </Animated.View>
@@ -704,7 +715,7 @@ export default function Bills() {
     refetch,
     isRefetching,
     isLoading,
-    isError, // <--- 1. Add this
+    isError,
     error,
   } = useBills();
   const { markPaid: markPaidMutation, deleteBill: deleteBillMutation } =
@@ -716,6 +727,15 @@ export default function Bills() {
   const [isExporting, setIsExporting] = useState(false);
   const syncedBillsHash = useRef("");
   const confettiRef = useRef<ConfettiCannon>(null);
+
+  // --- CHAT STATE ---
+  const [isChatVisible, setChatVisible] = useState(false);
+  const [messages, setMessages] = useState<{role: 'user'|'bot', text: string}[]>([
+    { role: 'bot', text: t("Hi! I'm Bill Bell. Ask me about your finances.") }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setChatLoading] = useState(false);
+  const flatListRef = useRef<any>(null); // For chat auto-scroll
 
   const safeBills = bills || [];
   const currency = useCurrency();
@@ -1104,6 +1124,33 @@ export default function Bills() {
     Alert.alert(item.creditor || t("Bill"), t("Choose an action"), actions);
   }
 
+  // --- HANDLE CHAT SEND ---
+  const handleSendMessage = async () => {
+    if (!chatInput.trim()) return;
+
+    const userMsg = chatInput;
+    setChatInput('');
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setChatLoading(true);
+
+    // 1. GENERATE CONTEXT FROM DECRYPTED DATA
+    // safeBills is the array you already use for the FlatList
+    const contextString = generateBillContext(safeBills, "$"); 
+
+    try {
+      // 2. SEND CONTEXT + MESSAGE
+      const response = await sendMessageToBillBell(userMsg, contextString);
+      
+      if (response) {
+        setMessages(prev => [...prev, { role: 'bot', text: response }]);
+      }
+    } catch (err) {
+       setMessages(prev => [...prev, { role: 'bot', text: t("Network error.") }]);
+    } finally {
+       setChatLoading(false);
+    }
+  };
+
   const summaryItems = useMemo(() => {
     if (tab === "pending") {
       return [
@@ -1404,6 +1451,77 @@ export default function Bills() {
         </View>
       </View>
 
+      {/* --- FLOATING CHAT BUTTON --- */}
+      <TouchableOpacity 
+        style={styles.fab} 
+        onPress={() => setChatVisible(true)}
+      >
+        <Ionicons name="chatbubble-ellipses" size={28} color="white" />
+      </TouchableOpacity>
+
+      {/* --- CHAT MODAL --- */}
+      <Modal
+        visible={isChatVisible}
+        animationType="slide"
+        presentationStyle="pageSheet" 
+        onRequestClose={() => setChatVisible(false)}
+      >
+        <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={[styles.chatContainer, { backgroundColor: theme.colors.bg }]}
+            // FIX: This offset prevents the keyboard from covering the input in pageSheet modal
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        >
+            <View style={[styles.chatHeader, { borderBottomColor: theme.colors.border }]}>
+                <Text style={[styles.chatTitle, { color: theme.colors.text }]}>Bill Bell AI</Text>
+                <TouchableOpacity onPress={() => setChatVisible(false)}>
+                    <Ionicons name="close" size={24} color={theme.colors.text} />
+                </TouchableOpacity>
+            </View>
+
+            <FlatList
+                ref={flatListRef}
+                data={messages}
+                keyExtractor={(_, i) => i.toString()}
+                contentContainerStyle={{ padding: 16 }}
+                onContentSizeChange={() => messages.length > 0 && flatListRef.current?.scrollToEnd({ animated: true })}
+                renderItem={({ item }) => (
+                    <View style={[
+                        styles.msgBubble, 
+                        item.role === 'user' ? styles.msgUser : styles.msgBot,
+                        item.role === 'bot' && { backgroundColor: theme.colors.card }
+                    ]}>
+                        <Text style={[
+                          item.role === 'user' ? styles.textUser : styles.textBot,
+                          item.role === 'bot' && { color: theme.colors.text }
+                        ]}>
+                            {item.text}
+                        </Text>
+                    </View>
+                )}
+            />
+
+            <View style={[styles.inputArea, { borderTopColor: theme.colors.border }]}>
+                <TextInput
+                    style={[styles.input, { backgroundColor: theme.colors.card, color: theme.colors.text }]}
+                    placeholder={t("Ask about your bills...")}
+                    placeholderTextColor={theme.colors.subtext}
+                    value={chatInput}
+                    onChangeText={setChatInput}
+                    onSubmitEditing={handleSendMessage}
+                    returnKeyType="send"
+                />
+                <TouchableOpacity 
+                    onPress={handleSendMessage} 
+                    disabled={isChatLoading}
+                    style={[styles.sendBtn, isChatLoading && { opacity: 0.5 }, { backgroundColor: theme.colors.primary }]}
+                >
+                    <Ionicons name="send" size={20} color="white" />
+                </TouchableOpacity>
+            </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
       <ConfettiCannon
         count={200}
         origin={{ x: -10, y: 0 }}
@@ -1527,4 +1645,71 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   actionText: { color: "#FFF", fontSize: 12, fontWeight: "600", marginTop: 4 },
+
+  // --- FAB ---
+  fab: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 4,
+    elevation: 6,
+    zIndex: 100
+  },
+
+  // --- CHAT MODAL STYLES ---
+  chatContainer: { flex: 1 },
+  chatHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    alignItems: 'center'
+  },
+  chatTitle: { fontSize: 18, fontWeight: 'bold' },
+  msgBubble: {
+    padding: 12,
+    borderRadius: 16,
+    marginBottom: 8,
+    maxWidth: '80%',
+  },
+  msgUser: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#007AFF',
+  },
+  msgBot: {
+    alignSelf: 'flex-start',
+    // backgroundColor handled dynamically
+  },
+  textUser: { color: 'white' },
+  textBot: { color: 'black' }, // handled dynamically
+  
+  inputArea: {
+    flexDirection: 'row',
+    padding: 10,
+    borderTopWidth: 1,
+    alignItems: 'center',
+    marginBottom: Platform.OS === 'ios' ? 20 : 0
+  },
+  input: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  sendBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
