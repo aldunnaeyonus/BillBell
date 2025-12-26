@@ -1,6 +1,8 @@
 
 {
   "markedPaid": "請求書が支払い済みとしてマークされました！✅",
+  "Currency": "通貨",
+  "No subscriptions found.\nSet a bill to 'Auto-Pay' or 'Recurring' to see it here.": "サブスクリプションが見つかりません。\n請求書を「自動支払い」または「定期払い」に設定するとここに表示されます。",
   "Avg Bill": "平均請求額",
   "Top": "トップ",
   "No data to display": "表示するデータがありません",

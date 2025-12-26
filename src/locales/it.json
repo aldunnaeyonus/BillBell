@@ -1,6 +1,8 @@
 
 {
   "markedPaid": "Bill marked as paid! ✅",
+  "Currency": "Valuta",
+  "No subscriptions found.\nSet a bill to 'Auto-Pay' or 'Recurring' to see it here.": "Nessun abbonamento trovato.\nImposta una bolletta su 'Auto-Pay' o 'Ricorrente' per vederla qui.",
   "Avg Bill": "Bolletta Media",
   "Top": "Top",
   "No data to display": "Nessun dato da visualizzare",

@@ -1,6 +1,8 @@
 
 {
   "markedPaid": "청구서가 지불됨! ✅",
+  "Currency": "통화",
+  "No subscriptions found.\nSet a bill to 'Auto-Pay' or 'Recurring' to see it here.": "구독을 찾을 수 없습니다.\n청구서를 '자동 납부' 또는 '반복'으로 설정하면 여기에 표시됩니다.",
   "Avg Bill": "평균 청구액",
   "Top": "상위",
   "No data to display": "표시할 데이터 없음",

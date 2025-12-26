@@ -1,6 +1,8 @@
 
 {
   "markedPaid": "Factuur gemarkeerd als betaald! ✅",
+  "Currency": "Valuta",
+  "No subscriptions found.\nSet a bill to 'Auto-Pay' or 'Recurring' to see it here.": "Geen abonnementen gevonden.\nStel een rekening in op 'Automatisch betalen' of 'Terugkerend' om deze hier te zien.",
   "Avg Bill": "Gem. Rekening",
   "Top": "Top",
   "No data to display": "Geen gegevens om weer te geven",

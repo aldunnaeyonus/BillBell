@@ -1,5 +1,7 @@
 {
   "markedPaid": "Bill marked as paid! ✅",
+  "Currency":"Currency",
+  "No subscriptions found.\nSet a bill to 'Auto-Pay' or 'Recurring' to see it here.":"No subscriptions found.\nSet a bill to 'Auto-Pay' or 'Recurring' to see it here.",
   "Avg Bill":"Avg Bill",
   "Top":"Top",
   "No data to display":"No data to display",

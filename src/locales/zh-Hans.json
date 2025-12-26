@@ -1,6 +1,8 @@
 
 {
   "markedPaid": "账单已标记为已支付！✅",
+  "Currency": "货币",
+  "No subscriptions found.\nSet a bill to 'Auto-Pay' or 'Recurring' to see it here.": "未找到订阅。\n将账单设置为“自动支付”或“定期”以在此处查看。",
   "Avg Bill": "平均账单",
   "Top": "榜首",
   "No data to display": "暂无数据",

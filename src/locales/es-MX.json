@@ -1,6 +1,8 @@
 
 {
   "markedPaid": "¡Factura marcada como pagada! ✅",
+  "Currency": "Moneda",
+  "No subscriptions found.\nSet a bill to 'Auto-Pay' or 'Recurring' to see it here.": "No se encontraron suscripciones.\nConfigura una factura como 'Pago Automático' o 'Recurrente' para verla aquí.",
   "Avg Bill": "Factura Promedio",
   "Top": "Top",
   "No data to display": "No hay datos para mostrar",
