@@ -1,13 +1,13 @@
 /* Calendar Access */
-"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
-"NSCalendarsUsageDescription" = "$(PRODUCT_NAME) needs access to your Calendar to schedule automatic reminders for bill due dates and payment tracking.";
+"NSCalendarsFullAccessUsageDescription" = "$(PRODUCT_NAME)이(가) 청구서 납부 기한 및 관리 알림을 캘린더에 자동으로 등록하기 위해 접근 권한이 필요합니다.";
+"NSCalendarsUsageDescription" = "$(PRODUCT_NAME)이(가) 청구서 납부 기한 및 관리 알림을 캘린더에 자동으로 등록하기 위해 접근 권한이 필요합니다.";
 
 /* Face ID Access */
-"NSFaceIDUsageDescription" = "$(PRODUCT_NAME) uses Face ID to securely unlock the app and authorize quick access to your shared bill data.";
+"NSFaceIDUsageDescription" = "$(PRODUCT_NAME)이(가) 앱을 안전하게 잠금 해제하고 공유된 청구서 데이터에 빠르게 접근하기 위해 Face ID를 사용합니다.";
 
 /* Reminders Access */
-"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
-"NSRemindersUsageDescription" = "$(PRODUCT_NAME) needs access to your Reminders to schedule automatic, reliable tasks for bill due dates and payment tracking.";
+"NSRemindersFullAccessUsageDescription" = "$(PRODUCT_NAME)이(가) 청구서 납부 기한 및 관리를 위한 할 일을 '미리 알림'에 자동으로 등록하기 위해 접근 권한이 필요합니다.";
+"NSRemindersUsageDescription" = "$(PRODUCT_NAME)이(가) 청구서 납부 기한 및 관리를 위한 할 일을 '미리 알림'에 자동으로 등록하기 위해 접근 권한이 필요합니다.";
 
-/*Camera */
-"NSCameraUsageDescription" = "$(PRODUCT_NAME) needs access to your Camera to scan bills to add them to your lister without having to type them in.";
+/* Camera */
+"NSCameraUsageDescription" = "$(PRODUCT_NAME)이(가) 내용을 직접 입력하지 않고 청구서를 스캔하여 목록에 추가하기 위해 카메라 접근 권한이 필요합니다.";

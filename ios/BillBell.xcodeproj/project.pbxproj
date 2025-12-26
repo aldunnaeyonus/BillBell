@@ -59,6 +59,7 @@
 		1D617D1F3A4BFD4577CF8FED /* Pods-BillBell.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BillBell.release.xcconfig"; path = "Target Support Files/Pods-BillBell/Pods-BillBell.release.xcconfig"; sourceTree = "<group>"; };
 		6BB26BE983B02D4120858254 /* libPods-BillBell.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BillBell.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7732A334DE632CEDDD3C61CF /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-BillBell/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		853A29E52EFEF5F700E14273 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
 		8581F6542EF9FFA8007AC3AE /* google-services.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "google-services.json"; sourceTree = "<group>"; };
 		8581F6552EF9FFA8007AC3AE /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8581F6592EFA00EE007AC3AE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -325,6 +326,7 @@
 				es,
 				"pt-PT",
 				"pt-BR",
+				ko,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
@@ -582,6 +584,7 @@
 				8581F6B22EFA06FE007AC3AE /* es */,
 				8581F6B52EFA0707007AC3AE /* pt-PT */,
 				8581F6B82EFA070C007AC3AE /* pt-BR */,
+				853A29E52EFEF5F700E14273 /* ko */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";

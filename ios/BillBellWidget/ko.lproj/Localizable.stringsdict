@@ -11,9 +11,9 @@
         <key>NSStringFormatValueTypeKey</key>
         <string>d</string>
         <key>one</key>
-        <string>1 bill overdue</string>
+        <string>연체된 청구서 1건</string>
         <key>other</key>
-        <string>%d bills overdue</string>
+        <string>연체된 청구서 %d건</string>
       </dict>
     </dict>
   </dict>
