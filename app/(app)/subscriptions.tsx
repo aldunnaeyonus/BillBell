@@ -213,26 +213,28 @@ export default function Subscriptions() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      {/* ADDED flex: 1 HERE */}
-      <View style={{ flex: 0, width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
-                  <Header title={t("Subscriptions")} subtitle={t("")} theme={theme} />
-</View>
+      <View style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
+      
+      {/* Header moved inside ListHeaderComponent */}
       <FlatList
         data={subs}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{ padding: 16, gap: 12 }}
         showsHorizontalScrollIndicator={false}
         ListHeaderComponent={
-          <View style={[styles.summary, { width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={[styles.label, { color: theme.colors.subtext }]}>{t("Monthly Fixed Cost")}</Text>
-            <AnimatedAmount
-              currency={currency}
-              amount={totalMonthly}
-              style={{ fontSize: 40, fontWeight: "900", color: theme.colors.primaryText }}
-            />
-            <Text style={{ color: theme.colors.subtext, marginTop: 4, fontSize: 12 }}>
-              {t("{{count}} active subscriptions", { count: subs.length })}
-            </Text>
+          <View>
+            <Header title={t("Subscriptions")} subtitle={t("")} theme={theme} />
+            <View style={[styles.summary, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+              <Text style={[styles.label, { color: theme.colors.subtext }]}>{t("Monthly Fixed Cost")}</Text>
+              <AnimatedAmount
+                currency={currency}
+                amount={totalMonthly}
+                style={{ fontSize: 40, fontWeight: "900", color: theme.colors.primaryText }}
+              />
+              <Text style={{ color: theme.colors.subtext, marginTop: 4, fontSize: 12 }}>
+                {t("{{count}} active subscriptions", { count: subs.length })}
+              </Text>
+            </View>
           </View>
         }
         renderItem={renderItem}
@@ -245,6 +247,7 @@ export default function Subscriptions() {
           </View>
         }
       />
+      </View>
     </View>
   );
 }
@@ -258,13 +261,13 @@ const styles = StyleSheet.create({
   cardContainer: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   cardHeader: { flexDirection: "row", alignItems: "center", padding: 16, gap: 16 },
   
-  // Header
-  headerShadowContainer: { backgroundColor: 'transparent', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
+  // Header - Margin Vertical reduced slightly as it is now inside the padded container
+  headerShadowContainer: { backgroundColor: 'transparent', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginBottom: 20, borderRadius: 20 },
   headerGradient: { borderRadius: 20, height:120, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
   headerIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center", marginLeft:10 },
   headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
   headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
-  
+ 
   content: { padding: 16, gap: 20, maxWidth: MAX_CONTENT_WIDTH },
 
   // Expanded Styles

@@ -65,20 +65,21 @@ export default function AchievementsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      {/* ADDED flex: 1 HERE */}
       <View style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
         
-        <Header
-          title={t("Achievements")}
-          subtitle={t("Celebrate your financial wins.")}
-          theme={theme}
-        />
-
+        {/* Header moved inside ListHeaderComponent to inherit padding */}
         <FlatList
           showsVerticalScrollIndicator={false}
           data={BADGES}
           renderItem={renderBadge}
           keyExtractor={(item) => item.id}
+          ListHeaderComponent={
+            <Header
+              title={t("Achievements")}
+              subtitle={t("Celebrate your financial wins.")}
+              theme={theme}
+            />
+          }
           contentContainerStyle={styles.listContent}
         />
       </View> 
@@ -88,14 +89,12 @@ export default function AchievementsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 24, paddingBottom: 32, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-  headerShadowContainer: { backgroundColor: 'transparent', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginVertical: 4, borderRadius: 20 },
-  headerGradient: { borderRadius: 20, height: 120, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
-  headerIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center", marginLeft: 10 },
-  headerTitle: { fontSize: 20, fontWeight: "800", color: "#FFF", marginBottom: 2 },
+  headerShadowContainer: { backgroundColor: 'transparent', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6, marginBottom: 12, borderRadius: 20 },
+  headerGradient: { borderRadius: 20, height:120, paddingBottom: 24, flexDirection: "row", alignItems: "center", gap: 16, overflow: "hidden" },
+  headerIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center", marginLeft:10 },
+  headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
   headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
   
-  // ADDED paddingBottom: 100
   listContent: { padding: 16, gap: 12, paddingBottom: 100 },
   
   card: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 16, borderWidth: 1, gap: 16 },
