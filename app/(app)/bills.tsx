@@ -1,3 +1,4 @@
+// app/(app)/bills.tsx
 import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import {
   View,
@@ -12,13 +13,12 @@ import {
   NativeModules,
   TextInput,
   Keyboard,
-  Modal,
   TouchableOpacity,
-  KeyboardAvoidingView
+  FlatList // Import FlatList here
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import Share from "react-native-share";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -26,18 +26,10 @@ import {
   isSameMonth,
   addMonths,
   parseISO,
-  startOfDay,
   isSameWeek,
   addWeeks,
-  isToday,
-  isTomorrow,
-  differenceInCalendarDays,
 } from "date-fns";
 import { userSettings } from "../../src/storage/userSettings";
-import ReanimatedSwipeable, {
-  SwipeableMethods,
-} from "react-native-gesture-handler/ReanimatedSwipeable";
-import { FlatList, RectButton } from "react-native-gesture-handler";
 import { useCurrency } from "../../src/hooks/useCurrency";
 import {
   resyncLocalNotificationsFromBills,
@@ -55,18 +47,18 @@ import * as Haptics from "expo-haptics";
 import { AnimatedAmount } from "../../src/ui/AnimatedAmount";
 import ConfettiCannon from "react-native-confetti-cannon";
 import * as StoreReview from "expo-store-review";
-import { BILL_ICON_MAP } from "../../src/data/vendors";
 import { formatCurrency } from "../../src/utils/currency";
-// --- NEW VISUAL IMPORTS ---
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { ScaleButton } from "../../src/ui/ScaleButton";
 import { useBills, useBillMutations } from "../../src/hooks/useBills";
 import { Bill } from "../../src/types/domain";
 import { Skeleton } from "../../src/ui/Skeleton";
 import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
-// --- CHAT IMPORT ---
-import { sendMessageToBillBell } from "../../src/api/chat";
 import { useBadges } from "../../src/hooks/useBadges";
+
+// --- NEW REFACTORED IMPORTS ---
+import { isOverdue, safeDateNum, jsonToCSV } from "../../src/utils/billLogic";
+import BillItem from "../../src/components/bills/BillItem";
+import BillChatModal from "../../src/components/bills/BillChatModal";
 
 const getWidgetModule = () => {
   try {
@@ -76,122 +68,12 @@ const getWidgetModule = () => {
   }
 };
 
-// --- Types ---
 type SortKey = "due" | "amount" | "name";
-type SummaryItem = { label: string; amount: number; highlight?: boolean };
-
-// FlatList Types
-type ListItemType = "header" | "bill";
 type FlatListItem =
   | { type: "header"; title: string; special?: string; id: string }
   | { type: "bill"; data: Bill; id: string };
 
-function safeDateNum(s?: string | null) {
-  if (!s) return 0;
-  try {
-    return parseISO(s).getTime();
-  } catch {
-    return 0;
-  }
-}
-
-function isOverdue(item: Bill) {
-  const isPaid = Boolean(
-    item.paid_at || item.is_paid || item.status === "paid"
-  );
-  if (isPaid) return false;
-
-  const due = parseISO(item.due_date);
-  const today = startOfDay(new Date());
-  return due < today;
-}
-
-// Smart Date Formatter
-function getSmartDueDate(
-  dateStr: string,
-  t: any,
-  locale?: string
-): { label: string; color?: string; urgent?: boolean } {
-  const due = parseISO(dateStr);
-  const today = startOfDay(new Date());
-
-  if (isToday(due))
-    return { label: t("Due Today"), color: "#E67E22", urgent: true };
-  if (isTomorrow(due))
-    return { label: t("Due Tomorrow"), color: "#F1C40F", urgent: true };
-
-  const diff = differenceInCalendarDays(due, today);
-
-  if (diff < 0) {
-    return {
-      label: t("Overdue by {{days}} days", { days: Math.abs(diff) }),
-      color: "#E74C3C",
-      urgent: true,
-    };
-  }
-
-  if (diff < 7) {
-    return {
-      label: t("Due in {{days}} days", { days: diff }),
-      color: undefined,
-    };
-  }
-
-  const formattedDate = new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-  }).format(due);
-  return {
-    label: t("Due {{date}}", { date: formattedDate }),
-    color: undefined,
-  };
-}
-
-const jsonToCSV = (data: any[]): string => {
-  if (!data || data.length === 0) return "";
-  const headers = Object.keys(data[0]);
-  const escapeField = (field: any) => {
-    if (field === null || field === undefined) return "";
-    const stringField = String(field);
-    if (stringField.match(/["\n,]/)) {
-      return `"${stringField.replace(/"/g, '""')}"`;
-    }
-    return stringField;
-  };
-  const headerRow = headers.map(escapeField).join(",");
-  const rows = data.map((row) =>
-    headers.map((header) => escapeField(row[header])).join(",")
-  );
-  return [headerRow, ...rows].join("\n");
-};
-
-// --- HELPER FOR CHAT CONTEXT ---
-const generateBillContext = (bills: any[], currencySymbol: string, t: any) => {
-  if (!bills || bills.length === 0) return t("The user has no bills.");
-  
-  return bills.map(b => {
-    const amt = (b.amount_cents || 0) / 100;
-    const status = b.paid_at || b.status === 'paid' ? t("Paid") : t("Unpaid");
-     return `- ${b.creditor}: ${currencySymbol}${amt.toFixed(2)} (${t("Due")}: ${b.due_date}, ${t("Status")}: ${status})`;
-  }).join("\n");
-};
-
-function getBillIcon(creditor: string): {
-  name: string;
-  color: string;
-  type: "MaterialCommunityIcons" | "Ionicons";
-} {
-  const match = BILL_ICON_MAP.find((m) => creditor.match(m.regex));
-  if (match) {
-    return {
-      name: match.icon,
-      color: match.color,
-      type: "MaterialCommunityIcons",
-    };
-  }
-  return { name: "receipt-outline", color: "#808080", type: "Ionicons" };
-}
-
-// --- Components ---
+// --- SUB-COMPONENTS ---
 
 function Header({
   theme,
@@ -210,7 +92,6 @@ function Header({
         style={styles.headerGradient}
       >
         <SafeAreaView edges={["top"]} style={styles.safeArea}>
-          {/* Centered Content Wrapper for iPad/Tablet */}
           <View
             style={{
               width: "100%",
@@ -257,7 +138,7 @@ function Header({
   );
 }
 
-function SummaryCard({ theme, items }: { theme: Theme; items: SummaryItem[] }) {
+function SummaryCard({ theme, items }: { theme: Theme; items: any[] }) {
   const isSingle = items.length === 1;
   const currency = useCurrency();
   return (
@@ -319,44 +200,29 @@ function SummaryCard({ theme, items }: { theme: Theme; items: SummaryItem[] }) {
   );
 }
 
-function TabSegment({ tabs, activeTab, onTabPress, theme }: any) {
+function SectionHeader({ title, special, theme }: any) {
   return (
     <View
-      style={[
-        styles.tabContainer,
-        {
-          backgroundColor: theme.colors.card,
-          borderColor: theme.colors.border,
-        },
-      ]}
+      style={{
+        paddingVertical: 12,
+        backgroundColor: theme.colors.bg,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+      }}
     >
-      {tabs.map((tab: any) => {
-        const isActive = activeTab === tab.key;
-        return (
-          <Pressable
-            key={tab.key}
-            onPress={() => onTabPress(tab.key)}
-            style={[
-              styles.tabButton,
-              isActive && { backgroundColor: theme.colors.primary },
-            ]}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                {
-                  color: isActive
-                    ? theme.colors.primaryTextButton
-                    : theme.colors.subtext,
-                  fontWeight: isActive ? "700" : "500",
-                },
-              ]}
-            >
-              {tab.label}
-            </Text>
-          </Pressable>
-        );
-      })}
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: "800",
+          color: special === "danger" ? theme.colors.danger : theme.colors.text,
+        }}
+      >
+        {title}
+      </Text>
+      {special === "danger" && (
+        <Ionicons name="warning" size={16} color={theme.colors.danger} />
+      )}
     </View>
   );
 }
@@ -391,321 +257,26 @@ function BillListSkeleton() {
   );
 }
 
-function BillItem({
-  item,
-  theme,
-  t,
-  locale,
-  onLongPress,
-  onEdit,
-  onMarkPaid,
-  onDelete,
-}: any) {
-  const currency = useCurrency();
-
-  const amt = formatCurrency(item.amount_cents, currency);
-  const isPaid = Boolean(
-    item.paid_at || item.is_paid || item.status === "paid"
-  );
-  const overdue = isOverdue(item);
-
-  const dateInfo = useMemo(() => {
-    if (isPaid) {
-      const d = item.paid_at || item.due_date;
-      const formatted = d
-        ? new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(
-            parseISO(d)
-          )
-        : "";
-      return {
-        label: `${t("Paid on")} ${formatted}`,
-        color: undefined,
-      };
-    }
-    return getSmartDueDate(item.due_date, t, locale);
-  }, [item.due_date, item.paid_at, isPaid, t, locale]);
-
-  const swipeableRef = useRef<SwipeableMethods>(null);
-  const iconData = getBillIcon(item.creditor);
-  const IconComponent =
-    iconData.type === "Ionicons" ? Ionicons : MaterialCommunityIcons;
-
-  const renderRightActions = useCallback(() => {
-    const ActionButton = ({ icon, color, label, onPress }: any) => (
-      <RectButton
-        style={[{ backgroundColor: color }, styles.swipeAction]}
-        onPress={() => {
-          Haptics.selectionAsync();
-          swipeableRef.current?.close();
-          onPress();
-        }}
-      >
-        <Ionicons name={icon} size={24} color="#FFF" />
-        <Text style={styles.actionText}>{label}</Text>
-      </RectButton>
-    );
-
-    return (
-      <View style={styles.rightActionsContainer}>
-        <ActionButton
-          icon="create-outline"
-          color="#3498DB"
-          label={t("Edit")}
-          onPress={onEdit}
-        />
-        {!isPaid && (
-          <ActionButton
-            icon="checkmark-done-circle-outline"
-            color="#2ECC71"
-            label={t("Paid")}
-            onPress={onMarkPaid}
-          />
-        )}
-        <ActionButton
-          icon="trash-outline"
-          color="#E74C3C"
-          label={t("Delete")}
-          onPress={onDelete}
-        />
-      </View>
-    );
-  }, [isPaid, onEdit, onMarkPaid, onDelete, t]);
-
-  const BillContent = (
-    <Pressable
-      onPress={onEdit}
-      onLongPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        onLongPress();
-      }}
-      delayLongPress={350}
-      style={({ pressed }) => [
-        styles.billCard,
-        {
-          backgroundColor: theme.colors.card,
-          borderColor: overdue ? theme.colors.danger : theme.colors.border,
-          opacity: pressed ? 0.9 : 1,
-          borderWidth: 1,
-        },
-      ]}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={[styles.iconBox, { backgroundColor: iconData.color + "20" }]}
-        >
-          <IconComponent
-            name={iconData.name as any}
-            size={20}
-            color={iconData.color}
-          />
-        </View>
-
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <View style={{ flexShrink: 1 }}>
-            <Text
-              style={[styles.billCreditor, { color: theme.colors.primaryText }]}
-              numberOfLines={1}
-            >
-              {item.creditor}
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: 2,
-              }}
-            >
-              <MaterialCommunityIcons
-                name={
-                  item.payment_method === "auto"
-                    ? "refresh-auto"
-                    : "hand-pointing-right"
-                }
-                size={14}
-                color={
-                  item.payment_method === "auto"
-                    ? theme.colors.accent
-                    : theme.colors.subtext
-                }
-              />
-              <Text
-                style={{
-                  color:
-                    item.payment_method === "auto"
-                      ? theme.colors.accent
-                      : theme.colors.subtext,
-                  fontSize: 11,
-                  fontWeight: "600",
-                  marginLeft: 4,
-                  textTransform: "uppercase",
-                }}
-              >
-                {item.payment_method === "auto"
-                  ? t("Auto-Draft")
-                  : t("Manual Pay")}
-              </Text>
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-                marginTop: 4,
-              }}
-            >
-              <Ionicons
-                name={isPaid ? "checkmark-circle" : "calendar-outline"}
-                size={14}
-                color={
-                  dateInfo.color ||
-                  (isPaid ? theme.colors.accent : theme.colors.subtext)
-                }
-              />
-              <Text
-                style={{
-                  color:
-                    dateInfo.color ||
-                    (isPaid ? theme.colors.accent : theme.colors.subtext),
-                  fontSize: 13,
-                  fontWeight: "500",
-                }}
-              >
-                {dateInfo.label}
-              </Text>
-            </View>
-            {item.recurrence && item.recurrence !== "none" && item.end_date && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginLeft: 8,
-                }}
-              >
-                <Text style={{ color: theme.colors.subtext, fontSize: 10 }}>
-                  •
-                </Text>
-                <Text
-                  style={{
-                    color: theme.colors.subtext,
-                    fontSize: 11,
-                    marginLeft: 4,
-                  }}
-                >
-                  {t("Ends")}:{" "}
-                  {new Intl.DateTimeFormat(locale, {
-                    dateStyle: "medium",
-                  }).format(parseISO(item.end_date))}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          <View
-            style={{ alignItems: "flex-end", marginLeft: 10, flexShrink: 0 }}
-          >
-            <Text
-              style={[styles.billAmount, { color: theme.colors.primaryText }]}
-            >
-              {amt}
-            </Text>
-            {overdue && (
-              <View
-                style={{
-                  backgroundColor: "#FFE5E5",
-                  paddingHorizontal: 6,
-                  paddingVertical: 2,
-                  borderRadius: 4,
-                  marginTop: 4,
-                }}
-              >
-                <Text
-                  style={{
-                    color: theme.colors.danger,
-                    fontSize: 10,
-                    fontWeight: "800",
-                  }}
-                >
-                  {t("OVERDUE")}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-      </View>
-    </Pressable>
-  );
-
-  // --- LAYOUT ANIMATION WRAPPER ---
-  if (Platform.OS === "ios") {
-    return (
-      <Animated.View
-        exiting={FadeOut}
-        entering={FadeIn}
-      >
-        <ReanimatedSwipeable
-          ref={swipeableRef}
-          friction={2}
-          rightThreshold={40}
-          renderRightActions={renderRightActions}
-          containerStyle={{ marginVertical: 0 }}
-        >
-          {BillContent}
-        </ReanimatedSwipeable>
-      </Animated.View>
-    );
-  }
-
+function BillListEmpty({ tab, searchQuery, theme, t }: { tab: string; searchQuery: string; theme: any; t: any }) {
   return (
-    <Animated.View
-      exiting={FadeOut}
-      entering={FadeIn}
-    >
-      {BillContent}
-    </Animated.View>
-  );
-}
-
-function SectionHeader({ title, special, theme }: any) {
-  return (
-    <View
-      style={{
-        paddingVertical: 12,
-        backgroundColor: theme.colors.bg,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-      }}
-    >
-      <Text
-        style={{
-          fontSize: 18,
-          fontWeight: "800",
-          color: special === "danger" ? theme.colors.danger : theme.colors.text,
-        }}
-      >
-        {title}
+    <View style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}>
+      <Ionicons
+        name={tab === "pending" ? "checkmark-done-circle-outline" : "wallet-outline"}
+        size={64}
+        color={theme.colors.border}
+      />
+      <Text style={{ color: theme.colors.subtext, fontSize: 16, textAlign: "center" }}>
+        {searchQuery.length > 0
+          ? t("No bills found matching '{{query}}'", { query: searchQuery })
+          : tab === "pending"
+          ? t("You have no pending bills. Enjoy the freedom!")
+          : t("No paid history")}
       </Text>
-      {special === "danger" && (
-        <Ionicons name="warning" size={16} color={theme.colors.danger} />
-      )}
     </View>
   );
 }
 
-// --- Main Screen ---
+// --- MAIN COMPONENT ---
 
 export default function Bills() {
   const theme = useTheme();
@@ -721,51 +292,48 @@ export default function Bills() {
   } = useBills();
   const { markPaid: markPaidMutation, deleteBill: deleteBillMutation } =
     useBillMutations();
+  const { checkPaymentBadges, checkAddBillBadges, checkStatusBadges } = useBadges();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [tab, setTab] = useState<"pending" | "paid">("pending");
   const [sort, setSort] = useState<SortKey>("due");
   const [isExporting, setIsExporting] = useState(false);
+  const [isChatVisible, setChatVisible] = useState(false);
+
   const syncedBillsHash = useRef("");
   const confettiRef = useRef<ConfettiCannon>(null);
-const { checkPaymentBadges, checkAddBillBadges, checkStatusBadges } = useBadges();
-  // --- CHAT STATE ---
-  const [isChatVisible, setChatVisible] = useState(false);
-  const [messages, setMessages] = useState<{role: 'user'|'bot', text: string}[]>([
-    { role: 'bot', text: t("Hi! I'm Bill Bell. Ask me about your finances.") }
-  ]);
-  const [chatInput, setChatInput] = useState('');
-  const [isChatLoading, setChatLoading] = useState(false);
-  const flatListRef = useRef<any>(null); // For chat auto-scroll
 
   const safeBills = bills || [];
   const currency = useCurrency();
 
-const filteredBills = useMemo(() => {
+  // --- FILTERING ---
+  const filteredBills = useMemo(() => {
     if (!searchQuery.trim()) return safeBills;
-    
+
     const lower = searchQuery.toLowerCase();
-    
+
     return safeBills.filter((b: { creditor: any; amount_cents: number }) => {
       const creditorMatch = (b.creditor || "").toLowerCase().includes(lower);
-      
-      // FIX: We must check if the formatted string INCLUDES the search query
-      const amountString = formatCurrency(b.amount_cents, currency).toLowerCase();
+      const amountString = formatCurrency(
+        b.amount_cents,
+        currency
+      ).toLowerCase();
       const amountMatch = amountString.includes(lower);
 
       return creditorMatch || amountMatch;
     });
   }, [safeBills, searchQuery, currency]);
 
+  // --- BADGES CHECK ---
   useEffect(() => {
-  if (safeBills.length > 0) {
-    checkAddBillBadges(safeBills.length);
-    const overdue = safeBills.filter((b: any) => isOverdue(b));
-    checkStatusBadges(overdue);
-  }
-}, [safeBills]);
+    if (safeBills.length > 0) {
+      checkAddBillBadges(safeBills.length);
+      const overdue = safeBills.filter((b: any) => isOverdue(b));
+      checkStatusBadges(overdue);
+    }
+  }, [safeBills]);
 
-  // Effects & Logic...
+  // --- LOCAL NOTIFICATIONS SYNC ---
   useEffect(() => {
     const currentHash = JSON.stringify(
       safeBills.map(
@@ -779,11 +347,9 @@ const filteredBills = useMemo(() => {
     }
   }, [safeBills]);
 
-  // Live Activity & Widget Logic
+  // --- WIDGET & ANDROID LIVE ACTIVITY ---
   useEffect(() => {
     const initializeApp = async () => {
-            refetch();
-
       if (Platform.OS !== "android" || safeBills.length === 0) return;
       const widgetModule = getWidgetModule();
       const pending = safeBills.filter(
@@ -816,8 +382,9 @@ const filteredBills = useMemo(() => {
       );
     };
     initializeApp();
-  }, [safeBills, t]);
+  }, [safeBills, t, currency]);
 
+  // --- IOS LIVE ACTIVITY ---
   useEffect(() => {
     if (Platform.OS !== "ios") return;
     const syncLiveActivity = async () => {
@@ -858,8 +425,9 @@ const filteredBills = useMemo(() => {
       );
     };
     syncLiveActivity();
-  }, [safeBills]);
+  }, [safeBills, currency]);
 
+  // --- STATUS BAR EFFECT ---
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle("light-content");
@@ -1006,6 +574,7 @@ const filteredBills = useMemo(() => {
     try {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       confettiRef.current?.start();
+      // StoreReview usage
       if ((await StoreReview.hasAction()) && Math.random() > 0.8)
         setTimeout(() => StoreReview.requestReview(), 2000);
       markPaidMutation.mutate(item.id);
@@ -1103,6 +672,7 @@ const filteredBills = useMemo(() => {
           Offset: b.reminder_offset_days || "0",
         })
       );
+      // NOTE: jsonToCSV must be imported from billLogic or defined locally if not in utils
       const csvString = jsonToCSV(exportData);
       const fileName = "bills_export.csv";
       const templateFile = new File(Paths.cache, fileName);
@@ -1141,33 +711,6 @@ const filteredBills = useMemo(() => {
     Alert.alert(item.creditor || t("Bill"), t("Choose an action"), actions);
   }
 
-  // --- HANDLE CHAT SEND ---
-  const handleSendMessage = async () => {
-    if (!chatInput.trim()) return;
-
-    const userMsg = chatInput;
-    setChatInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    setChatLoading(true);
-
-    // 1. GENERATE CONTEXT FROM DECRYPTED DATA
-    // safeBills is the array you already use for the FlatList
-    const contextString = generateBillContext(safeBills, "$", t); 
-
-    try {
-      // 2. SEND CONTEXT + MESSAGE
-      const response = await sendMessageToBillBell(userMsg, contextString);
-      
-      if (response) {
-        setMessages(prev => [...prev, { role: 'bot', text: response }]);
-      }
-    } catch (err) {
-       setMessages(prev => [...prev, { role: 'bot', text: t("Network error.") }]);
-    } finally {
-       setChatLoading(false);
-    }
-  };
-
   const summaryItems = useMemo(() => {
     if (tab === "pending") {
       return [
@@ -1183,39 +726,50 @@ const filteredBills = useMemo(() => {
     return [{ label: t("Total Paid"), amount: stats.paidTotal }];
   }, [tab, stats, t]);
 
-  const renderItem = ({ item }: { item: FlatListItem }) => {
-    if (item.type === "header")
+  const renderItem = useCallback(
+    ({ item }: { item: FlatListItem }) => {
+      if (item.type === "header")
+        return (
+          <SectionHeader
+            title={item.title}
+            special={item.special}
+            theme={theme}
+          />
+        );
       return (
-        <SectionHeader
-          title={item.title}
-          special={item.special}
-          theme={theme}
+        <BillItem
+          item={item.data}
+          t={t}
+          locale={i18n.language}
+          onLongPress={onLongPressBill}
+          onEdit={onEditBill}
+          onMarkPaid={onMarkPaidBill}
+          onDelete={onDeleteBill}
         />
       );
-    return (
-      <BillItem
-        item={item.data}
-        theme={theme}
-        t={t}
-        locale={i18n.language}
-        onLongPress={() => onLongPressBill(item.data)}
-        onEdit={() => onEditBill(item.data)}
-        onMarkPaid={() => onMarkPaidBill(item.data)}
-        onDelete={() => onDeleteBill(item.data)}
-      />
-    );
-  };
+    },
+    [theme, t, i18n.language, onLongPressBill, onEditBill, onMarkPaidBill, onDeleteBill]
+  );
 
   const showSkeleton = isLoading && safeBills.length === 0;
 
   if (isError) {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 }}>
-      <Text style={{ color: theme.colors.danger }}>Failed to load bills</Text>
-      <Text style={{ color: theme.colors.subtext }}>{error?.message || "Unknown error"}</Text>
-    </View>
-  );
-}
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          marginTop: 100,
+        }}
+      >
+        <Text style={{ color: theme.colors.danger }}>Failed to load bills</Text>
+        <Text style={{ color: theme.colors.subtext }}>
+          {error?.message || "Unknown error"}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
@@ -1239,7 +793,6 @@ const filteredBills = useMemo(() => {
           overflow: "hidden",
         }}
       >
-        {/* Centered Content Wrapper for iPad/Tablet */}
         <View
           style={{
             flex: 1,
@@ -1249,7 +802,6 @@ const filteredBills = useMemo(() => {
             paddingHorizontal: 16,
           }}
         >
-          
           {showSkeleton ? (
             <View>
               <View style={{ height: 24 }} />
@@ -1280,6 +832,14 @@ const filteredBills = useMemo(() => {
                   tintColor={theme.colors.primary}
                 />
               }
+              ListEmptyComponent={
+                <BillListEmpty
+                  tab={tab}
+                  searchQuery={searchQuery}
+                  theme={theme}
+                  t={t}
+                />
+              }
               ListHeaderComponent={
                 <View style={{ gap: 16, marginBottom: 16 }}>
                   <SummaryCard theme={theme} items={summaryItems} />
@@ -1291,7 +851,6 @@ const filteredBills = useMemo(() => {
                       justifyContent: "flex-start",
                     }}
                   >
-                    {/* --- REPLACED BUTTONS WITH SCALEBUTTON --- */}
                     <ScaleButton
                       onPress={() => router.push("/(app)/insights")}
                       style={[
@@ -1355,15 +914,46 @@ const filteredBills = useMemo(() => {
                       </Text>
                     </ScaleButton>
                   </View>
-                  <TabSegment
-                    theme={theme}
-                    activeTab={tab}
-                    onTabPress={(key: any) => setTab(key)}
-                    tabs={[
+
+                  <View
+                    style={[
+                      styles.tabContainer,
+                      {
+                        backgroundColor: theme.colors.card,
+                        borderColor: theme.colors.border,
+                      },
+                    ]}
+                  >
+                    {[
                       { key: "pending", label: t("Pending") },
                       { key: "paid", label: t("Paid") },
-                    ]}
-                  />
+                    ].map((item) => (
+                      <Pressable
+                        key={item.key}
+                        onPress={() => setTab(item.key as any)}
+                        style={[
+                          styles.tabButton,
+                          tab === item.key && {
+                            backgroundColor: theme.colors.primary,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.tabText,
+                            {
+                              color:
+                                tab === item.key
+                                  ? theme.colors.primaryTextButton
+                                  : theme.colors.subtext,
+                            },
+                          ]}
+                        >
+                          {item.label}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
 
                   <View
                     style={{
@@ -1433,112 +1023,21 @@ const filteredBills = useMemo(() => {
                   </View>
                 </View>
               }
-              ListEmptyComponent={
-                <View
-                  style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}
-                >
-                  <Ionicons
-                    name={
-                      tab === "pending"
-                        ? "checkmark-done-circle-outline"
-                        : "wallet-outline"
-                    }
-                    size={64}
-                    color={theme.colors.border}
-                  />
-                  <Text
-                    style={{
-                      color: theme.colors.subtext,
-                      fontSize: 16,
-                      textAlign: "center",
-                    }}
-                  >
-                    {searchQuery.length > 0
-                      ? t("No bills found matching '{{query}}'", {
-                          query: searchQuery,
-                        })
-                      : tab === "pending"
-                      ? t("You have no pending bills. Enjoy the freedom!")
-                      : t("No paid history")}
-                  </Text>
-                </View>
-              }
             />
           )}
         </View>
       </View>
 
-      {/* --- FLOATING CHAT BUTTON --- */}
-      <TouchableOpacity 
-        style={styles.fab} 
-        onPress={() => setChatVisible(true)}
-      >
+      <TouchableOpacity style={styles.fab} onPress={() => setChatVisible(true)}>
         <Ionicons name="chatbubble-ellipses" size={28} color="white" />
       </TouchableOpacity>
 
-      {/* --- CHAT MODAL --- */}
-      <Modal
+      <BillChatModal
         visible={isChatVisible}
-        animationType="slide"
-        presentationStyle="pageSheet" 
-        onRequestClose={() => setChatVisible(false)}
-      >
-        <KeyboardAvoidingView 
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={[styles.chatContainer, { backgroundColor: theme.colors.bg }]}
-            // FIX: This offset prevents the keyboard from covering the input in pageSheet modal
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        >
-            <View style={[styles.chatHeader, { borderBottomColor: theme.colors.border }]}>
-                <Text style={[styles.chatTitle, { color: theme.colors.text }]}>{t("Bill Bell AI")}</Text>
-                <TouchableOpacity onPress={() => setChatVisible(false)}>
-                    <Ionicons name="close" size={24} color={theme.colors.text} />
-                </TouchableOpacity>
-            </View>
-
-            <FlatList
-                ref={flatListRef}
-                data={messages}
-                        showsHorizontalScrollIndicator={false}
-                keyExtractor={(_, i) => i.toString()}
-                contentContainerStyle={{ padding: 16 }}
-                onContentSizeChange={() => messages.length > 0 && flatListRef.current?.scrollToEnd({ animated: true })}
-                renderItem={({ item }) => (
-                    <View style={[
-                        styles.msgBubble, 
-                        item.role === 'user' ? styles.msgUser : styles.msgBot,
-                        item.role === 'bot' && { backgroundColor: theme.colors.card }
-                    ]}>
-                        <Text style={[
-                          item.role === 'user' ? styles.textUser : styles.textBot,
-                          item.role === 'bot' && { color: theme.colors.text }
-                        ]}>
-                            {item.text}
-                        </Text>
-                    </View>
-                )}
-            />
-
-            <View style={[styles.inputArea, { borderTopColor: theme.colors.border }]}>
-                <TextInput
-                    style={[styles.input, { backgroundColor: theme.colors.card, color: theme.colors.text }]}
-                    placeholder={t("Ask about your bills...")}
-                    placeholderTextColor={theme.colors.subtext}
-                    value={chatInput}
-                    onChangeText={setChatInput}
-                    onSubmitEditing={handleSendMessage}
-                    returnKeyType="send"
-                />
-                <TouchableOpacity 
-                    onPress={handleSendMessage} 
-                    disabled={isChatLoading}
-                    style={[styles.sendBtn, isChatLoading && { opacity: 0.5 }, { backgroundColor: theme.colors.primary }]}
-                >
-                    <Ionicons name="send" size={20} color="white" />
-                </TouchableOpacity>
-            </View>
-        </KeyboardAvoidingView>
-      </Modal>
+        onClose={() => setChatVisible(false)}
+        bills={safeBills}
+        t={t}
+      />
 
       <ConfettiCannon
         count={200}
@@ -1608,7 +1107,6 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1,
   },
-  summaryAmount: { fontSize: 36, fontWeight: "900" },
   actionBtn: {
     paddingHorizontal: 16,
     flexDirection: "row",
@@ -1636,98 +1134,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 12,
   },
-  tabText: { fontSize: 14 },
-  billCard: { padding: 16, borderRadius: 16, marginBottom: 12, borderWidth: 1 },
-  billCreditor: { fontSize: 16, fontWeight: "700" },
-  billAmount: { fontSize: 18, fontWeight: "800" },
-  iconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  rightActionsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    marginBottom: 12,
-    borderRadius: 16,
-    overflow: "hidden",
-  },
-  swipeAction: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 80,
-    height: "100%",
-  },
-  actionText: { color: "#FFF", fontSize: 12, fontWeight: "600", marginTop: 4 },
-
-  // --- FAB ---
+  tabText: { fontSize: 14, fontWeight: "600" },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 30,
     right: 20,
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#007AFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
+    backgroundColor: "#007AFF",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 4,
     elevation: 6,
-    zIndex: 100
-  },
-
-  // --- CHAT MODAL STYLES ---
-  chatContainer: { flex: 1 },
-  chatHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    alignItems: 'center'
-  },
-  chatTitle: { fontSize: 18, fontWeight: 'bold' },
-  msgBubble: {
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 8,
-    maxWidth: '80%',
-  },
-  msgUser: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#007AFF',
-  },
-  msgBot: {
-    alignSelf: 'flex-start',
-    // backgroundColor handled dynamically
-  },
-  textUser: { color: 'white' },
-  textBot: { color: 'black' }, // handled dynamically
-  
-  inputArea: {
-    flexDirection: 'row',
-    padding: 10,
-    borderTopWidth: 1,
-    alignItems: 'center',
-    marginBottom: Platform.OS === 'ios' ? 20 : 0
-  },
-  input: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  sendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    zIndex: 100,
   },
 });

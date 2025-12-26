@@ -37,26 +37,11 @@ import { useCurrency, useSetCurrency } from "../../src/hooks/useCurrency";
 import { SUPPORTED_CURRENCIES, formatCurrency } from "../../src/utils/currency";
 import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 import { serverURL } from "@/data/vendors";
+import { jsonToCSV } from "../../src/utils/billLogic";
 
 // --- Helpers ---
 
-const jsonToCSV = (data: any[]): string => {
-  if (!data || data.length === 0) return "";
-  const headers = Object.keys(data[0]);
-  const escapeField = (field: any) => {
-    if (field === null || field === undefined) return "";
-    const stringField = String(field);
-    if (stringField.match(/["\n,]/)) {
-      return `"${stringField.replace(/"/g, '""')}"`;
-    }
-    return stringField;
-  };
-  const headerRow = headers.map(escapeField).join(",");
-  const rows = data.map((row) =>
-    headers.map((header) => escapeField(row[header])).join(",")
-  );
-  return [headerRow, ...rows].join("\n");
-};
+
 
 // --- Components ---
 
