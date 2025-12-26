@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   AppState,
   Pressable,
   StatusBar,
+  Platform,
 } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import { useSegments } from "expo-router";
@@ -30,16 +31,72 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
   const segments = useSegments();
   const segmentsRef = useRef(segments);
 
+  // Keep ref in sync to access current route in async callbacks
   useEffect(() => {
     segmentsRef.current = segments;
   }, [segments]);
 
+  // Main Authentication Trigger
+  const authenticate = useCallback(async () => {
+    if (isAuthedRef.current || isAuthenticatingRef.current) return;
+
+    const currentSegments = segmentsRef.current;
+    
+    // FIX: Cast to string[] to avoid TS error "types '1' and '0' have no overlap"
+    // TypeScript thinks segments is always populated due to Typed Routes, 
+    // but at runtime, it can be empty during initialization.
+    if (!currentSegments || (currentSegments as string[]).length === 0) return;
+
+    // 2. If on a public route, mark as authenticated and exit.
+    if (currentSegments[0] === "(auth)") {
+      setIsAuthenticated(true);
+      isAuthedRef.current = true;
+      return;
+    }
+
+    try {
+      isAuthenticatingRef.current = true;
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: t("Unlock App"),
+        fallbackLabel: t("Use Passcode"),
+        cancelLabel: t("Cancel"),
+        disableDeviceFallback: false,
+      });
+
+      if (result.success && isMounted.current) {
+        setIsAuthenticated(true);
+        isAuthedRef.current = true;
+      }
+    } catch (e) {
+      console.log("Auth Failed", e);
+    } finally {
+      if (isMounted.current) {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => {
+          isAuthenticatingRef.current = false;
+        }, 1000);
+      }
+    }
+  }, [t]);
+
+  // Configuration & AppState Listener
   useEffect(() => {
     isMounted.current = true;
-    checkConfiguration();
+    
+    const init = async () => {
+      await checkConfiguration();
+    };
+    init();
 
     const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (nextAppState === "background") {
+      // iOS: Lock on 'inactive' to hide content in App Switcher
+      // Android: Lock on 'background'
+      const shouldLock = 
+        Platform.OS === "ios" 
+          ? nextAppState === "inactive" || nextAppState === "background"
+          : nextAppState === "background";
+
+      if (shouldLock) {
         if (!isAuthenticatingRef.current && isBiometricEnabled) {
           if (isMounted.current) setIsAuthenticated(false);
           isAuthedRef.current = false;
@@ -52,10 +109,11 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
           !isAuthedRef.current &&
           !isAuthenticatingRef.current
         ) {
+          // Delay prompt slightly to allow UI to settle
           if (timerRef.current) clearTimeout(timerRef.current);
           timerRef.current = setTimeout(() => {
             if (isMounted.current) authenticate();
-          }, 500);
+          }, 300);
         }
       }
     });
@@ -65,7 +123,7 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
       subscription.remove();
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [isBiometricEnabled]);
+  }, [isBiometricEnabled, authenticate]);
 
   async function checkConfiguration() {
     try {
@@ -98,56 +156,19 @@ export function BiometricAuth({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function authenticate() {
-    if (isAuthedRef.current || isAuthenticatingRef.current) return;
-
-    const currentSegment = segmentsRef.current?.[0];
-    if (currentSegment === "(auth)") {
-      setIsAuthenticated(true);
-      return;
-    }
-
-    try {
-      isAuthenticatingRef.current = true;
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: t("Unlock App"),
-        fallbackLabel: t("Use Passcode"),
-        cancelLabel: t("Cancel"),
-        disableDeviceFallback: false,
-      });
-
-      if (result.success && isMounted.current) {
-        setIsAuthenticated(true);
-        isAuthedRef.current = true;
-      }
-    } catch (e) {
-      console.log("Auth Failed", e);
-    } finally {
-      if (isMounted.current) {
-        if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => {
-          isAuthenticatingRef.current = false;
-        }, 1000);
-      }
-    }
-  }
-
   const isPublicRoute = segments[0] === "(auth)";
+  
+  // FIX: Cast here as well for consistency
+  const isNavigationReady = (segments as string[]).length > 0;
 
-  // If initial check is running, render nothing (or a splash) to prevent flashes
   if (checkingConfig) return null;
 
-  // Logic: 
-  // 1. Always render {children} (this preserves the navigation state).
-  // 2. If locked, render the Lock View on TOP (absolute positioning).
-  const isLocked = !isAuthenticated && !isPublicRoute && isBiometricEnabled;
+  const isLocked = !isAuthenticated && isNavigationReady && !isPublicRoute && isBiometricEnabled;
 
   return (
     <View style={{ flex: 1 }}>
-      {/* 1. The App (always rendered) */}
       <View style={{ flex: 1 }}>{children}</View>
 
-      {/* 2. The Lock Screen Overlay */}
       {isLocked && (
         <View style={[StyleSheet.absoluteFill, { zIndex: 99999 }]}>
           <StatusBar

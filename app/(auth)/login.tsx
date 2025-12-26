@@ -21,7 +21,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from "../../src/api/client";
 import { setToken } from "../../src/auth/session";
 import { useTheme } from "../../src/ui/useTheme";
-import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 export default function Login() {
   const theme = useTheme();

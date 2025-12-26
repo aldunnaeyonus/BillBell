@@ -6,13 +6,14 @@ import { BadgeId, Bill } from '../types/domain';
 import * as Haptics from 'expo-haptics';
 import { Alert } from 'react-native';
 import { isBefore, parseISO, startOfDay } from 'date-fns';
-import { useTranslation } from "react-i18next"; // <--- Import this
+import { useTranslation } from "react-i18next"; 
 
 export function useBadges() {
+  const { t } = useTranslation(); // <--- Moved to top level
   const [achievements, setAchievements] = useState(userSettings.getAchievements());
 
   const unlockBadge = useCallback((badgeId: BadgeId) => {
-    const { t } = useTranslation(); // <--- Initialize hook
+    // Hook call removed from here
     const current = userSettings.getAchievements();
     if (!current.unlockedBadges.includes(badgeId)) {
       const updated = {
@@ -26,13 +27,13 @@ export function useBadges() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const badgeInfo = BADGES.find(b => b.id === badgeId);
       if (badgeInfo) {
-Alert.alert(
+        Alert.alert(
           t("Badge Unlocked! 🏆"), 
           t("You earned the {{name}} badge.", { name: t(badgeInfo.title) }) 
         );
-            }
+      }
     }
-  }, []);
+  }, [t]); // <--- Added 't' to dependency array
 
   // Call this when a bill is added
   const checkAddBillBadges = (billsCount: number) => {
