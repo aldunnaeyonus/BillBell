@@ -12,6 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#F7F9FC"
     },
+    "updates": {
+      "enabled": false
+    },
     "newArchEnabled": true,
     "ios": {
       "config": {
