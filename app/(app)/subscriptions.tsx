@@ -220,6 +220,7 @@ export default function Subscriptions() {
         data={subs}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{ padding: 16, gap: 12 }}
+        showsHorizontalScrollIndicator={false}
         ListHeaderComponent={
           <View style={[styles.summary, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
             <Text style={[styles.label, { color: theme.colors.subtext }]}>{t("Monthly Fixed Cost")}</Text>

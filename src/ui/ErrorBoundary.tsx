@@ -70,7 +70,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             {/* Optional: Show error details in DEV mode */}
             {__DEV__ && (
-              <ScrollView style={styles.debugBox}>
+              <ScrollView style={styles.debugBox} showsVerticalScrollIndicator={false}>
                 <Text style={styles.debugText}>{this.state.error?.toString()}</Text>
               </ScrollView>
             )}

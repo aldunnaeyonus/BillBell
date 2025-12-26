@@ -562,6 +562,7 @@ export const BILL_ICON_MAP: {
   { regex: /pnc/i, icon: "bank", color: "#F48024", categoryKey: "category_finance" },
   { regex: /goldman sachs|fidelity|schwab/i, icon: "bank", color: "#7399C6", categoryKey: "category_finance" },
   { regex: /chime|sofi|ally/i, icon: "bank-circle", color: "#00D588", categoryKey: "category_finance" },
+  { regex: /usaa/i, icon: "bank-circle", color: "#0C2074", categoryKey: "category_finance" },
 
   // --- BANKS & FINANCE (GLOBAL) ---
   { regex: /hsbc/i, icon: "bank", color: "#DB0011", categoryKey: "category_finance" },

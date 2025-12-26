@@ -111,6 +111,7 @@ export default function FamilyRequests() {
       ) : (
         <FlatList
           data={requests}
+                  showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
           style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}
           contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}

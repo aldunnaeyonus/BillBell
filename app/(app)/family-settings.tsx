@@ -232,7 +232,7 @@ export default function FamilySettings() {
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.bg }]}>
+    <ScrollView showsVerticalScrollIndicator={false} style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       
       {/* Centered Content Wrapper */}
       <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>

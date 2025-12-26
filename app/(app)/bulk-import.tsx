@@ -282,6 +282,7 @@ export default function BulkImport() {
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.bg }]}
       contentContainerStyle={{ paddingBottom: 60 }}
+      showsVerticalScrollIndicator={false}
     >
       <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
         <View style={styles.content}>

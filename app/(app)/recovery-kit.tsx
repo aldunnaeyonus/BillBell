@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Alert, ActivityIndicator, Platform, StyleSheet } from 'react-native';
-import { router, Stack } from "expo-router";
+import { View, Text, Pressable, Alert, ActivityIndicator, Platform, StyleSheet, ScrollView } from 'react-native';
+import { restoreIdentity } from '../../src/security/EncryptionService';
 import * as Print from 'expo-print';
 import Share from 'react-native-share';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,8 @@ import * as Haptics from 'expo-haptics';
 import { getPrivateKey } from '../../src/security/EncryptionService'; 
 import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 import LinearGradient from "react-native-linear-gradient";
+import { QRScannerModal } from '../../src/ui/QRScannerModal';
+import { router } from "expo-router";
 
 // --- Header Component ---
 function Header({ title, subtitle, theme }: { title: string; subtitle: string; theme: Theme }) {
@@ -38,6 +40,7 @@ export default function RecoveryKit() {
   const theme = useTheme();
   const { t } = useTranslation();
   const [generating, setGenerating] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const generatePDF = async () => {
     try {
@@ -75,15 +78,68 @@ export default function RecoveryKit() {
     }
   };
 
+const handleScan = async (scannedKey: string) => {
+    setShowScanner(false);
+    
+    try {
+      const currentKey = await getPrivateKey();
+
+      // Scenario A: Verification (User is just checking their backup)
+      if (scannedKey.trim() === currentKey.trim()) {
+        Alert.alert(
+          t("Verified"),
+          t("Great! This Recovery Kit matches your current device.")
+        );
+        return;
+      }
+
+      // Scenario B: Restoration (User is on a new phone/install)
+      Alert.alert(
+        t("Restore Account?"),
+        t("This key does not match your current device. Would you like to restore this key to recover your encrypted data?"),
+        [
+          { text: t("Cancel"), style: "cancel" },
+          {
+            text: t("Restore Identity"),
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await restoreIdentity(scannedKey);
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                
+                Alert.alert(
+                  t("Success"),
+                  t("Your encryption key has been restored. The app will now reload to apply changes."),
+                  [{ 
+                    text: "OK", 
+                    onPress: async () => {
+                      // Reload to ensure all services pick up the new key
+                        router.replace("/(app)/bills");
+                    } 
+                  }]
+                );
+              } catch (e: any) {
+                Alert.alert(t("Error"), e.message);
+              }
+            }
+          }
+        ]
+      );
+
+    } catch (e) {
+      Alert.alert(t("Error"), t("Could not validate key."));
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <View style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
-              <Header 
-        title={t("Recovery Kit")} 
-        subtitle={t("Backup your encryption key")} 
-        theme={theme} 
-      />
-        <View style={styles.content}>
+        <Header 
+          title={t("Recovery Kit")} 
+          subtitle={t("Backup your encryption key")} 
+          theme={theme} 
+        />
+        <ScrollView contentContainerStyle={styles.content}>
           <Ionicons name="document-lock-outline" size={80} color={theme.colors.accent} />
           
           <Text style={{ fontSize: 18, fontWeight: '700', color: theme.colors.text, textAlign: 'center' }}>
@@ -94,50 +150,81 @@ export default function RecoveryKit() {
             {t("Your data is end-to-end encrypted. If you lose this device, you will need your Recovery Kit to restore your bills. We do not store your private key.")}
           </Text>
 
-          <Pressable
-            onPress={generatePDF}
-            disabled={generating}
-            style={({ pressed }) => ({
-              backgroundColor: theme.colors.primary,
-              paddingVertical: 16,
-              paddingHorizontal: 32,
-              borderRadius: 16,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              opacity: pressed ? 0.8 : 1,
-              width: '100%',
-              justifyContent: 'center',
-              marginTop: 20,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.2,
-              shadowRadius: 8,
-              elevation: 4
-            })}
-          >
-            {generating ? (
-              <ActivityIndicator color="#FFF" />
-            ) : (
-              <>
-                <Ionicons name="print-outline" size={20} color="#FFF" />
-                <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 16 }}>{t("Generate PDF")}</Text>
-              </>
-            )}
-          </Pressable>
-        </View>
+          <View style={{ width: '100%', gap: 12, marginTop: 20 }}>
+            {/* Generate Button */}
+            <Pressable
+              onPress={generatePDF}
+              disabled={generating}
+              style={({ pressed }) => ({
+                backgroundColor: theme.colors.primary,
+                paddingVertical: 16,
+                paddingHorizontal: 32,
+                borderRadius: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                opacity: pressed ? 0.8 : 1,
+                width: '100%',
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 4
+              })}
+            >
+              {generating ? (
+                <ActivityIndicator color={theme.colors.primaryTextButton} />
+              ) : (
+                <>
+                  <Ionicons name="print-outline" size={20} color={theme.colors.primaryTextButton} />
+                  <Text style={{ color: theme.colors.primaryTextButton, fontWeight: '700', fontSize: 16 }}>{t("Generate PDF")}</Text>
+                </>
+              )}
+            </Pressable>
+
+            {/* Verify Button */}
+            <Pressable
+              onPress={() => setShowScanner(true)}
+              style={({ pressed }) => ({
+                backgroundColor: theme.colors.card,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                paddingVertical: 16,
+                paddingHorizontal: 32,
+                borderRadius: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                opacity: pressed ? 0.8 : 1,
+                width: '100%',
+              })}
+            >
+              <Ionicons name="qr-code-outline" size={20} color={theme.colors.text} />
+              <Text style={{ color: theme.colors.text, fontWeight: '600', fontSize: 16 }}>{t("Verify Backup")}</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
       </View>
+
+      <QRScannerModal 
+        visible={showScanner} 
+        onClose={() => setShowScanner(false)} 
+        onScan={handleScan}
+        title={t("Scan Recovery Kit")}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   content: {
-    flex: 1,
     padding: 24,
     gap: 24,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingBottom: 50,
   },
   headerShadowContainer: { 
     backgroundColor: "transparent", 

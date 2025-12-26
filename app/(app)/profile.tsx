@@ -686,6 +686,7 @@ export default function Profile() {
       <ScrollView
         style={[styles.container, { backgroundColor: theme.colors.bg }]}
         contentContainerStyle={{ paddingBottom: 60 }}
+              showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -1064,6 +1065,7 @@ export default function Profile() {
             <FlatList
               data={SUPPORTED_CURRENCIES}
               keyExtractor={(item) => item.code}
+                      showsHorizontalScrollIndicator={false}
               renderItem={({ item }) => (
                 <Pressable
                   onPress={() => handleCurrencyChange(item.code)}

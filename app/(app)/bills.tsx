@@ -740,15 +740,21 @@ export default function Bills() {
   const safeBills = bills || [];
   const currency = useCurrency();
 
-  const filteredBills = useMemo(() => {
+const filteredBills = useMemo(() => {
     if (!searchQuery.trim()) return safeBills;
+    
     const lower = searchQuery.toLowerCase();
-    return safeBills.filter(
-      (b: { creditor: any; amount_cents: number }) =>
-        (b.creditor || "").toLowerCase().includes(lower) ||
-        formatCurrency(b.amount_cents, currency)
-    );
-  }, [safeBills, searchQuery]);
+    
+    return safeBills.filter((b: { creditor: any; amount_cents: number }) => {
+      const creditorMatch = (b.creditor || "").toLowerCase().includes(lower);
+      
+      // FIX: We must check if the formatted string INCLUDES the search query
+      const amountString = formatCurrency(b.amount_cents, currency).toLowerCase();
+      const amountMatch = amountString.includes(lower);
+
+      return creditorMatch || amountMatch;
+    });
+  }, [safeBills, searchQuery, currency]);
 
   // Effects & Logic...
   useEffect(() => {
@@ -767,6 +773,8 @@ export default function Bills() {
   // Live Activity & Widget Logic
   useEffect(() => {
     const initializeApp = async () => {
+            refetch();
+
       if (Platform.OS !== "android" || safeBills.length === 0) return;
       const widgetModule = getWidgetModule();
       const pending = safeBills.filter(
@@ -845,7 +853,6 @@ export default function Bills() {
 
   useFocusEffect(
     useCallback(() => {
-      refetch();
       StatusBar.setBarStyle("light-content");
       if (Platform.OS === "android") {
         StatusBar.setBackgroundColor("transparent");
@@ -1482,6 +1489,7 @@ export default function Bills() {
             <FlatList
                 ref={flatListRef}
                 data={messages}
+                        showsHorizontalScrollIndicator={false}
                 keyExtractor={(_, i) => i.toString()}
                 contentContainerStyle={{ padding: 16 }}
                 onContentSizeChange={() => messages.length > 0 && flatListRef.current?.scrollToEnd({ animated: true })}

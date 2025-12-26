@@ -10,6 +10,36 @@ export const FAMILY_KEY_PREFIX = "billbell_family_key_cache_v";
 export const FAMILY_KEY_VERSION_ALIAS = "billbell_family_key_version";
 
 // --- RSA Key Management ---
+export async function restoreIdentity(privateKeyPem: string): Promise<void> {
+  if (!privateKeyPem.includes("BEGIN PRIVATE KEY")) {
+    throw new Error("Invalid Key Format. Please scan a valid BillBell Recovery Kit.");
+  }
+
+  try {
+    // 1. Derive the Public Key from the Private Key
+    // We use the Node.js crypto polyfill provided by react-native-quick-crypto
+    const privateKeyObj = Crypto.createPrivateKey(privateKeyPem);
+    const publicKeyObj = Crypto.createPublicKey(privateKeyObj);
+    
+    const publicKeyPem = publicKeyObj.export({
+      type: 'spki',
+      format: 'pem'
+    }) as string;
+
+    // 2. Overwrite the SecureStore slots
+    await SecureStore.setItemAsync(PRIVATE_KEY_ALIAS, privateKeyPem);
+    await SecureStore.setItemAsync(PUBLIC_KEY_ALIAS, publicKeyPem);
+
+    console.log("Identity successfully restored from backup.");
+    
+    // 3. Optional: Clear cached family keys to force a re-fetch/unwrap with the new (restored) key
+    // await SecureStore.deleteItemAsync(FAMILY_KEY_VERSION_ALIAS);
+    
+  } catch (e: any) {
+    console.error("Failed to restore identity:", e);
+    throw new Error("Failed to process the recovery key. It may be corrupted.");
+  }
+}
 
 export async function getPrivateKey(): Promise<string> {
   const pair = await ensureKeyPair();

@@ -447,6 +447,7 @@ export default function Insights() {
       
       <ScrollView 
         contentContainerStyle={{ paddingBottom: 100 }}
+              showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
       >
         <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
