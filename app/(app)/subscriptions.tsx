@@ -14,6 +14,7 @@ import { formatCurrency } from "@/utils/currency";
 import { KNOWN_SUBSCRIPTIONS } from "@/data/vendors";
 import LinearGradient from "react-native-linear-gradient";
 import { Theme } from "../../src/ui/useTheme";
+import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -212,8 +213,8 @@ export default function Subscriptions() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-              <View style={styles.content}>
-    
+      {/* ADDED flex: 1 HERE */}
+      <View style={{ flex: 0, width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' }}>
                   <Header title={t("Subscriptions")} subtitle={t("")} theme={theme} />
 </View>
       <FlatList
@@ -222,7 +223,7 @@ export default function Subscriptions() {
         contentContainerStyle={{ padding: 16, gap: 12 }}
         showsHorizontalScrollIndicator={false}
         ListHeaderComponent={
-          <View style={[styles.summary, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+          <View style={[styles.summary, { width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
             <Text style={[styles.label, { color: theme.colors.subtext }]}>{t("Monthly Fixed Cost")}</Text>
             <AnimatedAmount
               currency={currency}
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 22, fontWeight: "800", color: "#FFF", marginBottom: 2 },
   headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.7)" },
   
-  content: { padding: 16, gap: 20 },
+  content: { padding: 16, gap: 20, maxWidth: MAX_CONTENT_WIDTH },
 
   // Expanded Styles
   expandedContent: { padding: 16, borderTopWidth: 1, gap: 12 },
