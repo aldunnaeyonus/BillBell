@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # --- CONFIGURATION ---
-API_KEY=""
+API_KEY="AIzaSyCdQXEPJGp_1ngigx6nnjCzhzIkw20yuPw"
 SOURCE_FILE="/Users/andrewdunn/Documents/GitHubDunn/BillBell/src/locales/en.json"
 MODEL="gemini-2.5-flash"
-LANGUAGES=("es-MX", "es-ES", "es" "de" "nl" "fr" "it" "ja" "zh-Hans" "pt-BR", "pt-PT", "zh-CN", "zh-Hant", "pt", "zh")
+LANGUAGES=("es-MX", "es-ES", "es" "de" "nl" "fr" "it" "ja" "zh-Hans" "pt-BR", "pt-PT", "zh-CN", "zh-Hant", "pt", "zh", "es-419")
 
 # ---------------------
 

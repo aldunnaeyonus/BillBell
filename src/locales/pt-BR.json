@@ -1,26 +1,26 @@
 
 {
   "markedPaid": "Conta marcada como paga! ✅",
-  "Camera permission is required to scan bills.": "Permissão da câmera é necessária para escanear contas.",
+  "Camera permission is required to scan bills.": "A permissão da câmera é necessária para escanear contas.",
   "Grant Permission": "Conceder Permissão",
-  "Failed to mark paid from notification": "Falha ao marcar como pago pela notificação:",
-  "Error marking bill as paid": "Erro ao marcar conta como paga.",
+  "Failed to mark paid from notification": "Falha ao marcar como pago da notificação:",
+  "Error marking bill as paid": "Erro ao marcar a conta como paga.",
   "Align invoice within frame": "Alinhe a fatura dentro do quadro",
   "Processing...": "Processando...",
   "Ends": "Termina",
   "End Date (Optional)": "Data de Término (Opcional)",
   "Top 3 subscriptions": "Top 3 assinaturas",
   "category_entertainment": "Entretenimento",
-  "category_utilities": "Serviços Públicos e Internet",
+  "category_utilities": "Utilidades e Internet",
   "category_housing": "Moradia",
-  "category_insurance": "Seguro",
+  "category_insurance": "Seguros",
   "category_finance": "Finanças e Bancos",
   "category_debt": "Dívidas e Empréstimos",
   "category_transport": "Automóvel e Transporte",
-  "category_travel": "Viagem",
+  "category_travel": "Viagens",
   "category_shopping": "Compras",
   "category_food": "Alimentação e Mercearia",
-  "category_health": "Saúde e Bem-estar",
+  "category_health": "Saúde e Bem-Estar",
   "category_software": "Software e Tecnologia",
   "category_education": "Educação",
   "category_other": "Outros",
@@ -38,11 +38,11 @@
   "CodeExpires": "Código: {{code}} (expira em {{expiresAt}})",
   "Mark as Paid": "Marcar como Pago",
   "Bill reminder": "Lembrete de conta: ",
-  "Can't open link": "Não foi possível abrir o link",
+  "Can't open link": "Não é possível abrir o link",
   "Login failed": "Falha no login",
   "Notification vibes.": "Vibrações de notificação.",
   "Never miss a due date again.": "Nunca mais perca uma data de vencimento.",
-  "Apple sign-in": "Entrar com Apple",
+  "Apple sign-in": "Login com Apple",
   "Continue with Apple": "Continuar com Apple",
   "Continue with Google": "Continuar com Google",
   "Cancelled": "Cancelado",
@@ -94,21 +94,21 @@
   "Import error": "Erro de importação",
   "Failed to read CSV": "Falha ao ler CSV",
   "Please enter an import code.": "Por favor, insira um código de importação.",
-  "Please pick a CSV otr XLSX and parse some bills first.": "Por favor, selecione um CSV ou XLSX e analise algumas contas primeiro.",
+  "Please pick a CSV otr XLSX and parse some bills first.": "Por favor, escolha um CSV ou XLSX e analise algumas contas primeiro.",
   "Bills imported successfully!": "Contas importadas com sucesso!",
   "Unknown error": "Erro desconhecido",
   "Import failed": "Importação falhou",
   "Import Bills": "Importar Contas",
   "Import code (Generated in Profile)": "Código de importação (Gerado no Perfil)",
   "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time": "Credor, Valor, Data de Vencimento, Recorrência, Dias de Antecedência do Lembrete, Hora do Lembrete",
-  "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:": "Cole o código de importação que você gerou (ou recebeu), então selecione um arquivo CSV com suas contas. Faça o upload de um CSV ou XLSX com os seguintes cabeçalhos:",
+  "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:": "Cole o código de importação que você gerou (ou recebeu), então escolha um arquivo CSV com suas contas. Faça o upload de um CSV ou XLSX com os seguintes cabeçalhos:",
   "Pick another  or XLSX": "Escolha outro arquivo CSV ou XLSX",
   "Pick CSV or XLSX file": "Escolha um arquivo CSV ou XLSX",
   "Selected:": "Selecionado: ",
   "Parsed": "{{bills}} conta(s) analisada(s)",
   "ParsedCSV": "{{bills}} conta(s) analisada(s) do arquivo.",
   "Importing...": "Importando...",
-  "Same day": "No mesmo dia",
+  "Same day": "Mesmo dia",
   "1 day before": "1 dia antes",
   "2 day before": "2 dias antes",
   "3 day before": "3 dias antes",
@@ -120,7 +120,7 @@
   "Keep all your subscriptions, utilities, and debts in one organized list.": "Mantenha todas as suas assinaturas, contas de consumo e dívidas em uma lista organizada.",
   "Never Miss a Date": "Nunca Perca uma Data",
   "Receive timely reminders before bills are due so you can avoid late fees.": "Receba lembretes oportunos antes do vencimento das contas para evitar multas por atraso.",
-  "Share with Family": "Compartilhe com o Grupo",
+  "Share with Family": "Compartilhe com a Família",
   "Create a Shared Group to manage household expenses and bills together.": "Crie um Grupo Compartilhado para gerenciar despesas e contas domésticas juntos.",
   "Skip": "Pular",
   "Visualize your spending habits and see exactly where your money goes.": "Visualize seus hábitos de gastos e veja exatamente para onde seu dinheiro vai.",
@@ -137,7 +137,7 @@
   "Share Settings": "Configurações de Compartilhamento",
   "Shared reminder defaults for the whole group.": "Padrões de lembrete compartilhados para todo o grupo.",
   "Default offset": "Deslocamento padrão",
-  "Default time (local)": "Hora padrão do alerta",
+  "Default time (local)": "Hora de Alerta Padrão",
   "Ask a family admin to change these.": "Peça a um administrador do grupo para alterar estas configurações.",
   "Family created": "Conta criada",
   "`Your Family ID": "Seu ID de Compartilhamento: {{family_code}}",
@@ -149,8 +149,8 @@
   "Feedback & Bugs": "Feedback e Bugs",
   "Found a bug or have a suggestion? Let us know!": "Encontrou um bug ou tem uma sugestão? Deixe-nos saber!",
   "Feedback": "Feedback",
-  "Bug Report": "Relatar Bug",
-  "Your Email (Optional)": "Seu E-mail (Opcional)",
+  "Bug Report": "Relatório de Bug",
+  "Your Email (Optional)": "Seu Email (Opcional)",
   "so we can reply...": "para que possamos responder...",
   "Describe the Bug": "Descreva o Bug",
   "Your Feedback": "Seu Feedback",
@@ -158,7 +158,7 @@
   "How can we improve the app?": "Como podemos melhorar o aplicativo?",
   "Submit": "Enviar",
   "Thank You!": "Obrigado!",
-  "We appreciate you catching that bug. We will look into it.": "Agradecemos por encontrar esse bug. Iremos investigá-lo.",
+  "We appreciate you catching that bug. We will look into it.": "Agradecemos por ter encontrado o bug. Iremos investigá-lo.",
   "Thanks for the feedback! We read every message.": "Obrigado pelo feedback! Lemos todas as mensagens.",
   "Please enter some details first.": "Por favor, insira alguns detalhes primeiro.",
   "Failed to send feedback. Please try again later.": "Falha ao enviar feedback. Por favor, tente novamente mais tarde.",
@@ -195,7 +195,7 @@
   "Support": "Suporte",
   "Import via CSV/XLSX": "Importar via CSV/XLSX",
   "Active": "Ativo",
-  "Create secure code for upload": "Criar código de segurança para upload",
+  "Create secure code for upload": "Criar código seguro para upload",
   "Share ID copied to clipboard.": "ID de Compartilhamento copiado para a área de transferência.",
   "Code": "Código",
   "Expires": "Expira",
@@ -219,7 +219,7 @@
   "Privacy Policy": "Política de Privacidade",
   "Terms of Use": "Termos de Uso",
   "Legal": "Legal",
-  "Import multiple bills via CSV": "Importar múltiplas contas via CSV",
+  "Import multiple bills via CSV": "Importar várias contas via CSV",
   "Step 1: Preparation": "Passo 1: Preparação",
   "Download Template": "Baixar Modelo",
   "Get the CSV template to ensure correct formatting.": "Obtenha o modelo CSV para garantir a formatação correta.",
@@ -238,17 +238,17 @@
   "DetailsPlaceholderFeedback": "Compartilhe seus pensamentos, ideias ou sugestões.",
   "DetailsPlaceholderBug": "O que aconteceu? Passos para reproduzir?",
   "ContactLabel": "Contato (Opcional)",
-  "ContactPlaceholder": "E-mail ou @usuário se quiser uma resposta",
+  "ContactPlaceholder": "Email ou @usuário se quiser uma resposta",
   "Send": "Enviar",
-  "Opening mail…": "Abrindo e-mail…",
-  "MailAppDisclaimer": "Isso abrirá seu aplicativo de e-mail com uma mensagem pré-preenchida.",
-  "Missing info": "Informações ausentes",
+  "Opening mail…": "Abrindo email…",
+  "MailAppDisclaimer": "Isso abrirá seu aplicativo de email com uma mensagem pré-preenchida.",
+  "Missing info": "Informação faltando",
   "Please add a title and description first.": "Por favor, adicione um título e uma descrição primeiro.",
-  "Unable to open mail app": "Não foi possível abrir o aplicativo de e-mail",
+  "Unable to open mail app": "Não foi possível abrir o aplicativo de email",
   "Edit Bill": "Editar Conta",
   "New Bill": "Nova Conta",
   "Update details": "Atualizar detalhes",
-  "Add a new debt to track": "Adicionar uma nova dívida para rastrear",
+  "Add a new debt to track": "Adicionar uma nova dívida para acompanhar",
   "Bill Details": "Detalhes da Conta",
   "Frequency": "Frequência",
   "Reminders": "Lembretes",
@@ -258,7 +258,7 @@
   "Total": "Total",
   "Track your spending habits": "Acompanhe seus hábitos de gastos",
   "Remaining Due": "Restante a Pagar",
-  "Paid this Month": "Pago este Mês",
+  "Paid this Month": "Pago Este Mês",
   "6-Month Trend": "Tendência de 6 Meses",
   "Projected Liabilities": "Passivos Projetados",
   "PRO ESTIMATE": "ESTIMATIVA PRO",
@@ -278,8 +278,8 @@
   "Download CSV": "Baixar CSV",
   "Update": "Atualizar",
   "Failed to export data": "Falha ao exportar dados",
-  "TermsText": "Última Atualização: Dezembro de 2025\n\n1. Acordo com os Termos\nAo acessar ou usar este aplicativo, você concorda em estar vinculado a estes Termos de Uso. Este aplicativo é operado pela Dunn-Carabali, LLC. Se você discordar de qualquer parte destes termos, você não poderá acessar o serviço.\n\n2. Propriedade Intelectual\nO serviço e seu conteúdo original, recursos e funcionalidade são e permanecerão propriedade exclusiva da Dunn-Carabali, LLC e seus licenciadores.\n\n3. Responsabilidades do Usuário\nVocê concorda em não usar o aplicativo para qualquer propósito ilegal ou para solicitar que outros realizem ou participem de quaisquer atos ilegais.\n\n4. Isenção de Responsabilidade\nSeu uso do serviço é por sua conta e risco. O serviço é fornecido 'COMO ESTÁ' e 'CONFORME DISPONÍVEL'. A Dunn-Carabali, LLC se isenta expressamente de todas as garantias de qualquer tipo.\n\n5. Limitação de Responsabilidade\nEm nenhuma circunstância a Dunn-Carabali, LLC, nem seus diretores, funcionários, parceiros, agentes, fornecedores ou afiliados, serão responsáveis por quaisquer danos indiretos, incidentais, especiais, consequenciais ou punitivos.\n\n6. Alterações nos Termos\nReservamo-nos o direito de modificar ou substituir estes Termos a qualquer momento. Ao continuar a acessar ou usar nosso serviço após essas revisões se tornarem efetivas, você concorda em estar vinculado aos termos revisados.\n\n7. Contate-nos\nSe você tiver alguma dúvida sobre estes Termos, entre em contato com a Dunn-Carabali, LLC.",
-  "PrivacyText": "Última Atualização: Dezembro de 2025\n\n1. Introdução\nA Dunn-Carabali, LLC ('nós', 'nos' ou 'nosso') opera este aplicativo móvel. Esta página informa sobre nossas políticas em relação à coleta, uso e divulgação de dados pessoais quando você usa nosso Serviço.\n\n2. Coleta e Uso de Informações\nColetamos vários tipos diferentes de informações para diversos propósitos para fornecer e melhorar nosso Serviço a você, incluindo:\n- Dados Pessoais (ex: endereço de e-mail, nome)\n- Dados de Uso (ex: tipo de dispositivo, sistema operacional)\n\n3. Uso de Dados\nA Dunn-Carabali, LLC usa os dados coletados para fornecer e manter o Serviço, notificá-lo sobre alterações, fornecer suporte ao cliente e monitorar o uso.\n\n4. Divulgação de Dados\nPodemos divulgar seus Dados Pessoais de boa fé, acreditando que tal ação é necessária para cumprir uma obrigação legal, proteger e defender os direitos ou propriedade da Dunn-Carabali, LLC, ou proteger a segurança pessoal dos usuários.\n\n5. Segurança dos Dados\nA segurança de seus dados é importante para nós, mas lembre-se de que nenhum método de transmissão pela Internet é 100% seguro. Embora nos esforcemos para usar meios comercialmente aceitáveis para proteger seus Dados Pessoais, não podemos garantir sua segurança absoluta.\n\n6. Alterações nesta Política\nPodemos atualizar nossa Política de Privacidade de tempos em tempos. Iremos notificá-lo sobre quaisquer alterações publicando a nova Política de Privacidade nesta página.\n\n7. Contate-nos\nSe você tiver alguma dúvida sobre esta Política de Privacidade, entre em contato com a Dunn-Carabali, LLC.",
+  "TermsText": "Última Atualização: Dezembro de 2025\n\n1. Acordo com os Termos\nAo acessar ou usar este aplicativo, você concorda em estar vinculado a estes Termos de Uso. Este aplicativo é operado pela Dunn-Carabali, LLC. Se você discordar de qualquer parte destes termos, não poderá acessar o serviço.\n\n2. Propriedade Intelectual\nO serviço e seu conteúdo original, recursos e funcionalidade são e permanecerão propriedade exclusiva da Dunn-Carabali, LLC e seus licenciadores.\n\n3. Responsabilidades do Usuário\nVocê concorda em não usar o aplicativo para qualquer finalidade ilegal ou para solicitar que outros realizem ou participem de quaisquer atos ilegais.\n\n4. Isenção de Responsabilidade\nSeu uso do serviço é por sua conta e risco. O serviço é fornecido \"COMO ESTÁ\" e \"CONFORME DISPONÍVEL\". A Dunn-Carabali, LLC se isenta expressamente de todas as garantias de qualquer tipo.\n\n5. Limitação de Responsabilidade\nEm nenhum caso a Dunn-Carabali, LLC, nem seus diretores, funcionários, parceiros, agentes, fornecedores ou afiliados, serão responsáveis por quaisquer danos indiretos, incidentais, especiais, consequenciais ou punitivos.\n\n6. Alterações nos Termos\nReservamo-nos o direito de modificar ou substituir estes Termos a qualquer momento. Ao continuar a acessar ou usar nosso serviço após a entrada em vigor dessas revisões, você concorda em estar vinculado aos termos revisados.\n\n7. Entre em Contato Conosco\nSe você tiver alguma dúvida sobre estes Termos, entre em contato com a Dunn-Carabali, LLC.",
+  "PrivacyText": "Última Atualização: Dezembro de 2025\n\n1. Introdução\nA Dunn-Carabali, LLC ('nós', 'nos' ou 'nosso') opera este aplicativo móvel. Esta página informa sobre nossas políticas em relação à coleta, uso e divulgação de dados pessoais quando você usa nosso Serviço.\n\n2. Coleta e Uso de Informações\nColetamos vários tipos diferentes de informações para diversas finalidades, a fim de fornecer e melhorar nosso Serviço a você, incluindo:\n- Dados Pessoais (ex: endereço de e-mail, nome)\n- Dados de Uso (ex: tipo de dispositivo, sistema operacional)\n\n3. Uso de Dados\nA Dunn-Carabali, LLC usa os dados coletados para fornecer e manter o Serviço, notificá-lo sobre alterações, fornecer suporte ao cliente e monitorar o uso.\n\n4. Divulgação de Dados\nPodemos divulgar seus Dados Pessoais de boa fé, acreditando que tal ação é necessária para cumprir uma obrigação legal, proteger e defender os direitos ou propriedade da Dunn-Carabali, LLC, ou proteger a segurança pessoal dos usuários.\n\n5. Segurança dos Dados\nA segurança dos seus dados é importante para nós, mas lembre-se que nenhum método de transmissão pela Internet é 100% seguro. Embora nos esforcemos para usar meios comercialmente aceitáveis para proteger seus Dados Pessoais, não podemos garantir sua segurança absoluta.\n\n6. Alterações nesta Política\nPodemos atualizar nossa Política de Privacidade periodicamente. Iremos notificá-lo sobre quaisquer alterações publicando a nova Política de Privacidade nesta página.\n\n7. Entre em Contato Conosco\nSe você tiver alguma dúvida sobre esta Política de Privacidade, entre em contato com a Dunn-Carabali, LLC.",
   "Tip: Long press a bill to see more actions": "Dica: Pressione e segure uma conta para ver mais ações",
   "Bill": "Conta",
   "Bill Paid": "Conta Paga",
@@ -320,7 +320,7 @@
   "Creditors": "Credores",
   "Recurrence": "Recorrência",
   "Notes": "Notas",
-  "Total 6-Month Spend": "Gasto Total de 6 Meses",
+  "Total 6-Month Spend": "Gasto Total em 6 Meses",
   "6-Month Avg": "Média de 6 Meses",
   "Permission needed": "Permissão necessária",
   "Calendar access is required to sync bills.": "O acesso ao calendário é necessário para sincronizar contas.",
@@ -333,7 +333,7 @@
   "Delete Bill": "Excluir Conta",
   "Are you sure you want to delete this bill?": "Tem certeza de que deseja excluir esta conta?",
   "Mark {{creditor}} as paid?": "Marcar {{creditor}} como pago?",
-  "Please pick a CSV and parse some bills first.": "Por favor, selecione um CSV e analise algumas contas primeiro.",
+  "Please pick a CSV and parse some bills first.": "Por favor, escolha um CSV e analise algumas contas primeiro.",
   "Rotate Key": "Rotacionar Chave",
   "Family encryption key successfully rotated. All members will sync automatically.": "Chave de criptografia do grupo rotacionada com sucesso. Todos os membros sincronizarão automaticamente.",
   "Rotation Failed": "Falha na Rotação",
@@ -346,7 +346,7 @@
   "General Feedback": "Feedback Geral",
   "Remove": "Remover",
   "(You)": "(Você)",
-  "You will leave this group and take your data with you. We will re-encrypt your data with a new key.": "Você sairá deste grupo e levará seus dados com você. Re-criptografaremos seus dados com uma nova chave.",
+  "You will leave this group and take your data with you. We will re-encrypt your data with a new key.": "Você sairá deste grupo e levará seus dados consigo. Re-criptografaremos seus dados com uma nova chave.",
   "Leave & Secure Data": "Sair e Proteger Dados",
   "You have left the family and your data has been re-secured.": "Você saiu do grupo e seus dados foram re-protegidos.",
   "Failed to leave family securely.": "Falha ao sair do grupo com segurança.",
@@ -363,13 +363,13 @@
   "Waiting for an admin to approve your request.": "Aguardando um administrador aprovar sua solicitação.",
   "Approval Pending": "Aprovação Pendente",
   "Check Status": "Verificar Status",
-  "You requested to join family": "Você solicitou para entrar no grupo",
+  "You requested to join family": "Você solicitou entrar no grupo",
   "Payment Method": "Método de Pagamento",
   "rotation_title": "Rotação da Chave de Criptografia",
   "rotation_description": "Use esta função se um membro do grupo não conseguir acessar contas criptografadas após uma nova instalação do dispositivo ou novo login. Este processo é seguro, mas exige que o membro faça login novamente.",
   "rotation_button": "Rotacionar Chave de Criptografia do Grupo",
   "rotation_success_title": "Rotação de Chave Bem-Sucedida",
-  "rotation_success_message": "Uma nova chave foi gerada e compartilhada com todos os membros. Membros afetados devem reiniciar o aplicativo para sincronizar.",
+  "rotation_success_message": "Uma nova chave foi gerada e compartilhada com todos os membros. Os membros afetados devem reiniciar o aplicativo para sincronizar.",
   "rotation_error": "Falha ao rotacionar a chave. Por favor, tente novamente ou entre em contato com o suporte.",
   "This will generate a new encryption key for your family. All members must be able to sync to continue accessing data. Proceed?": "Isso gerará uma nova chave de criptografia para seu grupo. Todos os membros devem ser capazes de sincronizar para continuar acessando os dados. Prosseguir?",
   "rotaion_key": "Rotacionando Chave...",
@@ -380,7 +380,7 @@
   "members_remove_button": "Remover",
   "members_remove_confirm_title": "Remover Membro?",
   "members_remove_confirm_message": "Tem certeza de que deseja remover {name} do grupo?",
-  "members_remove_success": "{name} foi removido(a).",
+  "members_remove_success": "{name} foi removido.",
   "members_remove_error": "Falha ao remover membro.",
   "members_leave_button": "Sair do Grupo",
   "members_leave_confirm_title": "Sair do Grupo?",
@@ -399,9 +399,9 @@
   "visit_on_computer_subtitle": "Faça o upload do seu CSV via portal web para um gerenciamento mais fácil.",
   "download_template": "Baixar Modelo",
   "download_template_subtitle": "Obtenha o modelo CSV para garantir a formatação correta.",
-  "template_sample_row": "Netflix,15.99,2023-12-25,Plano Família,mensal,0,débito_automático",
-  "portal_alert_msg": "Abra o portal em seu navegador ou compartilhe o link para seu computador.",
-  "portal_share_msg": "Acesse o Portal Web BillBell para fazer o upload de suas contas:",
+  "template_sample_row": "Netflix,15.99,2023-12-25,Plano Família,mensal,0,auto_pay",
+  "portal_alert_msg": "Abra o portal no seu navegador ou compartilhe o link para o seu computador.",
+  "portal_share_msg": "Acesse o Portal Web BillBell para fazer o upload das suas contas:",
   "open": "Abrir",
   "Pay": "Pagar",
   "share_link": "Compartilhar Link",
@@ -409,7 +409,7 @@
   "step_2_title": "Passo 2: Selecionar Arquivo",
   "step_2_share_id_hint": "Você precisará do seu ID de Compartilhamento e de um Código de Importação Gerado.",
   "enter_code_placeholder": "Inserir Código de Importação",
-  "generate_code_hint": "Gere um código de Importação em seu Perfil.",
+  "generate_code_hint": "Gere um código de importação em seu Perfil.",
   "step_3_title": "Passo 3: Autorização",
   "Policies": "Políticas",
   "Data": "Gerenciamento de Dados",
@@ -428,17 +428,32 @@
   "Next Week": "Próxima Semana",
   "This Week": "Esta Semana",
   "Spending Habits": "Hábitos de Gastos",
+  "Scan Recovery Kit": "Escanear Kit de Recuperação",
   "Search bills...": "Buscar contas...",
-  "No bills found matching '{{query}}'": "Nenhuma conta encontrada correspondente a '{{query}}'",
+  "No bills found matching '{{query}}'": "Nenhuma conta encontrada correspondendo a '{{query}}'",
   "Creditor (e.g. Netflix)": "Credor (ex: Netflix)",
-  "Scan Successful": "Digitalização Bem-Sucedida",
+  "Scan Successful": "Escaneamento Bem-Sucedido",
   "We found an amount of ${{amt}}. Please verify the details.": "Encontramos um valor de ${{amt}}. Por favor, verifique os detalhes.",
   "Spending Insights": "Insights de Gastos",
+  "Verify Backup": "Verificar Backup",
   "6 Month Trend": "Tendência de 6 Meses",
   "Top Categories": "Principais Categorias",
-  "Highest Bill": "Conta Mais Alta",
+  "Import Recovery Key": "Importar Chave de Recuperação",
+  "Highest Bill": "Maior Conta",
   "Active Bills": "Contas Ativas",
-  "Scan Failed": "Falha na Digitalização",
+  "Scan Failed": "Falha no Escaneamento",
+  "Restore Account?": "Restaurar Conta?",
+  "This key does not match your current device. Would you like to restore this key to recover your encrypted data?": "Esta chave não corresponde ao seu dispositivo atual. Gostaria de restaurar esta chave para recuperar seus dados criptografados?",
+  "Restore Identity": "Restaurar Identidade",
+  "Your encryption key has been restored. The app will now reload to apply changes.": "Sua chave de criptografia foi restaurada. O aplicativo será recarregado para aplicar as alterações.",
+  "Great! This Recovery Kit matches your current device.": "Ótimo! Este Kit de Recuperação corresponde ao seu dispositivo atual.",
+  "Could not validate key.": "Não foi possível validar a chave.",
+  "Verified": "Verificado",
+  "Mismatch": "Incompatibilidade",
+  "Invalid Key Format. Please scan a valid BillBell Recovery Kit.": "Formato de Chave Inválido. Por favor, escaneie um Kit de Recuperação BillBell válido.",
+  "Failed to process the recovery key. It may be corrupted.": "Falha ao processar a chave de recuperação. Pode estar corrompida.",
+  "The scanned key does not match this device. It may be for a different account.": "A chave escaneada não corresponde a este dispositivo. Pode ser para uma conta diferente.",
+  "This Recovery Kit is valid and matches your current device key.": "Este Kit de Recuperação é válido e corresponde à chave do seu dispositivo atual.",
   "Could not read bill. Please try again.": "Não foi possível ler a conta. Por favor, tente novamente.",
   "Generate PDF": "Gerar PDF",
   "Failed to generate Recovery Kit": "Falha ao gerar Kit de Recuperação",
@@ -458,7 +473,7 @@
   "Confirm Key Rotation": "Confirmar Rotação de Chave",
   "Request Sent": "Solicitação Enviada",
   "Still Pending": "Ainda Pendente",
-  "Only use this if a member cannot sync bills or receives a decryption error after using a new device.": "Use isso apenas se um membro não conseguir sincronizar contas ou receber um erro de descriptografia após usar um novo dispositivo.",
+  "Only use this if a member cannot sync bills or receives a decryption error after using a new device.": "Use isto apenas se um membro não conseguir sincronizar contas ou receber um erro de descriptografia após usar um novo dispositivo.",
   "Show Overdue on Lock Screen": "Mostrar Atrasados na Tela de Bloqueio",
   "Your request has not been approved yet.": "Sua solicitação ainda não foi aprovada.",
   "The family admin has denied your request to join.": "O administrador do grupo negou sua solicitação para entrar.",
@@ -473,7 +488,7 @@
       "items": [
         {
           "q": "Como adiciono uma dívida?",
-          "a": "Vá para a tela de Dívidas e toque no botão '+ Adicionar'. Insira o credor, valor e data de vencimento para salvar."
+          "a": "Vá para a tela de Dívidas e toque no botão '+ Adicionar'. Insira o credor, o valor e a data de vencimento para salvar."
         },
         {
           "q": "Como edito ou atualizo uma dívida?",
@@ -481,11 +496,11 @@
         },
         {
           "q": "Como excluo uma dívida?",
-          "a": "Selecione uma dívida, então toque no botão 'Excluir' para removê-la permanentemente."
+          "a": "Selecione uma dívida e toque no botão 'Excluir' para removê-la permanentemente."
         },
         {
           "q": "O que acontece quando marco uma dívida como paga?",
-          "a": "Ela se move para a seção de Pagas e os lembretes futuros para essa dívida param automaticamente."
+          "a": "Ela é movida para a seção Pagas e os lembretes futuros para essa dívida param automaticamente."
         }
       ]
     },
@@ -494,14 +509,14 @@
       "items": [
         {
           "q": "Quando receberei lembretes?",
-          "a": "Você receberá um lembrete no dia anterior ao vencimento de uma dívida. As configurações do seu grupo podem ajustar esta janela de lembrete."
+          "a": "Você receberá um lembrete um dia antes do vencimento de uma dívida. As configurações do seu grupo podem ajustar esta janela de lembrete."
         },
         {
           "q": "Por que não estou recebendo notificações?",
-          "a": "Certifique-se de que as notificações estão ativadas para o aplicativo nas configurações do seu dispositivo. Confirme também que você está logado e faz parte de um Grupo."
+          "a": "Certifique-se de que as notificações estão ativadas para o aplicativo nas configurações do seu dispositivo. Confirme também se você está logado e faz parte de um Grupo."
         },
         {
-          "q": "Os lembretes sincronizarão em todos os dispositivos?",
+          "q": "Os lembretes serão sincronizados em todos os dispositivos?",
           "a": "Sim. Todos os membros do grupo conectados recebem lembretes para dívidas compartilhadas."
         }
       ]
@@ -515,7 +530,7 @@
         },
         {
           "q": "Como convido alguém para o meu grupo?",
-          "a": "Vá para sua tela de Perfil ou Grupo para encontrar seu ID de Compartilhamento. Dê este ID a alguém de sua confiança para que possam entrar."
+          "a": "Vá para a tela do seu Perfil ou Grupo para encontrar seu ID de Compartilhamento. Dê este ID a alguém de sua confiança para que possa entrar."
         },
         {
           "q": "Várias pessoas podem gerenciar as mesmas dívidas?",
@@ -532,11 +547,11 @@
       "items": [
         {
           "q": "Como funciona o Código de Importação?",
-          "a": "Administradores do grupo podem gerar um código de importação único. Use-o na tela de Upload em Massa para importar dívidas de forma segura de um arquivo CSV."
+          "a": "Administradores de grupo podem gerar um código de importação único. Use-o na tela de Upload em Massa para importar dívidas de forma segura a partir de um arquivo CSV."
         },
         {
           "q": "Que tipo de arquivo posso importar?",
-          "a": "Você pode importar arquivos CSV contendo os campos: nome, valor, data_de_vencimento, notas, débito_automático."
+          "a": "Você pode importar arquivos CSV contendo os campos: nome, valor, data_vencimento, notas, pagamento_automatico."
         },
         {
           "q": "Posso importar várias dívidas de uma vez?",
@@ -544,7 +559,7 @@
         },
         {
           "q": "Por que minha importação falhou?",
-          "a": "Verifique se seu CSV usa formatação válida e se seu Código de Importação não expirou ou já foi usado."
+          "a": "Verifique se o seu CSV usa formatação válida e se o seu Código de Importação não expirou ou já foi usado."
         }
       ]
     },
@@ -552,33 +567,33 @@
       "title": "Conta, Login e Segurança",
       "items": [
         {
-          "q": "Como faço login?",
-          "a": "Você pode fazer login usando o Apple Sign-In ou Google Sign-In dependendo do seu dispositivo."
+          "q": "Como faço para entrar?",
+          "a": "Você pode entrar usando o Apple Sign-In ou Google Sign-In, dependendo do seu dispositivo."
         },
         {
           "q": "Meus dados estão seguros?",
           "a": "Sim. Seus dados são protegidos com tokens de autenticação criptografados e armazenados de forma segura no servidor."
         },
         {
-          "q": "Meus dados sincronizarão entre dispositivos?",
-          "a": "Sim. Desde que você faça login com a mesma conta Apple ou Google, seus dados sincronizam automaticamente."
+          "q": "Meus dados serão sincronizados entre dispositivos?",
+          "a": "Sim. Desde que você entre com a mesma conta Apple ou Google, seus dados são sincronizados automaticamente."
         },
         {
           "q": "Se eu importar contas via CSV, elas são criptografadas imediatamente?",
-          "a": "Para garantir a máxima privacidade, o BillBell usa 'Criptografia de Ponta a Ponta'. Isso significa que a chave de criptografia reside apenas no seu dispositivo, não em nossos servidores. Quando você faz o upload de um arquivo CSV para importação em massa, nosso servidor o processa para criar as contas. Como nosso servidor não possui (e não deve possuir) sua chave de criptografia privada, ele não pode criptografar os dados dessas contas importadas. Elas são armazenadas como texto simples inicialmente. Como protegê-las: Depois que você abrir o aplicativo e seu telefone baixar as novas contas importadas, elas funcionarão normalmente. Se você editar e salvar uma conta importada, o aplicativo a criptografará automaticamente usando a chave em seu dispositivo, protegendo-a a partir desse ponto."
+          "a": "Para garantir a máxima privacidade, o BillBell usa 'Criptografia de Ponta a Ponta'. Isso significa que a chave de criptografia reside apenas no seu dispositivo, não em nossos servidores. Quando você faz o upload de um arquivo CSV para importação em massa, nosso servidor o processa para criar as contas. Como nosso servidor não possui (e não deve possuir) sua chave de criptografia privada, ele não pode criptografar os dados dessas contas importadas. Elas são armazenadas como texto simples inicialmente. Como protegê-las: Assim que você abrir o aplicativo e seu telefone baixar as novas contas importadas, elas funcionarão normalmente. Se você editar e salvar uma conta importada, o aplicativo a criptografará automaticamente usando a chave em seu dispositivo, protegendo-a a partir desse momento."
         },
         {
           "q": "Por que não consigo mais ver minhas contas (Falha na Descriptografia)?",
-          "a": "Este problema geralmente ocorre em um novo dispositivo ou imediatamente após reinstalar o aplicativo, onde seu dispositivo não possui a Chave de Criptografia do Grupo atual armazenada. O aplicativo usa um conjunto único de chaves criptográficas para proteger os dados do seu Grupo. Se a Chave Pública do seu novo dispositivo não foi sincronizada com o servidor antes que a chave mais recente fosse gerada, o aplicativo não pode descriptografar a Chave do Grupo."
+          "a": "Este problema geralmente ocorre em um novo dispositivo ou imediatamente após reinstalar o aplicativo, onde seu dispositivo não possui a Chave de Criptografia do Grupo atual armazenada. O aplicativo usa um conjunto exclusivo de chaves criptográficas para proteger os dados do seu Grupo. Se a Chave Pública do seu novo dispositivo não foi sincronizada com o servidor antes que a chave mais recente fosse gerada, o aplicativo não pode descriptografar a Chave do Grupo."
         },
         {
           "q": "Como Corrigir a Falha na Descriptografia",
-          "a": "O problema só pode ser resolvido por um Administrador do Grupo executando uma Rotação de Chave: Ação do Administrador: Um usuário com função de Administrador deve ir para Configurações do Grupo e selecionar 'Rotacionar Chave de Criptografia do Grupo'. O que a Rotação Faz: Este processo gera uma chave totalmente nova e re-criptografa essa chave especificamente para cada membro usando sua Chave Pública mais recente em arquivo. Sua Ação: Depois que o Administrador concluir a rotação, feche completamente e reinicie o aplicativo em seu dispositivo problemático. O aplicativo baixará a nova chave e suas contas reaparecerão. Nota: Se o problema persistir depois que o Administrador rotacionar a chave, você pode precisar Sair e Entrar novamente para forçar uma redefinição completa das chaves do seu dispositivo local."
+          "a": "O problema só pode ser resolvido por um Administrador do Grupo executando uma Rotação de Chave: Ação do Administrador: Um usuário com função de Administrador deve ir para as Configurações do Grupo e selecionar 'Rotacionar Chave de Criptografia do Grupo'. O que a Rotação Faz: Este processo gera uma chave totalmente nova e re-criptografa essa chave especificamente para cada membro usando sua Chave Pública mais recente registrada. Sua Ação: Após o Administrador concluir a rotação, feche completamente e reinicie o aplicativo em seu dispositivo problemático. O aplicativo baixará a nova chave e suas contas reaparecerão. Nota: Se o problema persistir após o Administrador rotacionar a chave, pode ser necessário Sair e Entrar novamente para forçar uma redefinição completa das chaves do seu dispositivo local."
         }
       ]
     },
     {
-      "title": "Configurações e Personalização do Aplicativo",
+      "title": "Configurações e Personalização do App",
       "items": [
         {
           "q": "O aplicativo suporta Modo Escuro?",
@@ -586,7 +601,7 @@
         },
         {
           "q": "Posso alterar minhas configurações de lembrete?",
-          "a": "Administradores do grupo podem atualizar os horários padrão de lembrete nas Configurações do Grupo."
+          "a": "Administradores de grupo podem atualizar os horários de lembrete padrão nas Configurações do Grupo."
         },
         {
           "q": "Posso alterar meu ID de Compartilhamento?",
@@ -599,10 +614,10 @@
       "items": [
         {
           "q": "Como devo inserir os valores?",
-          "a": "Insira o valor total sem símbolos. Por exemplo, '150.25' se torna $150.25."
+          "a": "Insira o valor total sem símbolos. Por exemplo, '150.25' se torna R$150,25."
         },
         {
-          "q": "Posso rastrear contas com débito automático?",
+          "q": "Posso acompanhar contas de débito automático?",
           "a": "Sim. Você pode marcar dívidas como débito automático ao criá-las ou editá-las."
         }
       ]
