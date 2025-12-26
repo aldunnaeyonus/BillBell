@@ -1,0 +1,20 @@
+<plist version="1.0">
+  <dict>
+    <key>overdue_bills_plural</key>
+    <dict>
+      <key>NSStringLocalizedFormatKey</key>
+      <string>%#@num_bills@</string>
+      <key>num_bills</key>
+      <dict>
+        <key>NSStringFormatSpecifierQuoted</key>
+        <string>d</string>
+        <key>NSStringFormatValueTypeKey</key>
+        <string>d</string>
+        <key>one</key>
+        <string>1 bill overdue</string>
+        <key>other</key>
+        <string>%d bills overdue</string>
+      </dict>
+    </dict>
+  </dict>
+</plist>
