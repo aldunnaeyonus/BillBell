@@ -121,18 +121,6 @@ export default function Family() {
 
       if (!isMounted.current) return;
 
-      if (res && res.success) {
-        setPendingCode(null);
-        await AsyncStorage.removeItem("billbell_pending_family_code");
-        
-        Alert.alert(
-            t("Success"), 
-            t("You have successfully joined the family!"),
-            [{ text: "OK", onPress: () => router.replace("/(app)/bills") }]
-        );
-        return;
-      }
-
       if (res && res.status === "rejected") {
         await AsyncStorage.removeItem("billbell_pending_family_code");
         setPendingCode(null);
@@ -154,6 +142,18 @@ export default function Family() {
         return;
       }
 
+      if (res && res.success) {
+        setPendingCode(null);
+        await AsyncStorage.removeItem("billbell_pending_family_code");
+        
+        Alert.alert(
+            t("Success"), 
+            t("You have successfully joined the family!"),
+            [{ text: "OK", onPress: () => router.replace("/(app)/bills") }]
+        );
+        return;
+      }
+      
       console.warn("Unknown status from server:", res);
       Alert.alert(t("Error"), t("Unknown server status"));
 
