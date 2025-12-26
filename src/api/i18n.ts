@@ -21,6 +21,8 @@ import zh from "../locales/zh.json";
 import zhCN from "../locales/zh-CN.json";
 import esMX from "../locales/es-MX.json";
 import esES from "../locales/es-MX.json";
+import es149 from "../locales/es-149.json";
+import ko from "../locales/ko-KR.json";
 
 // --- 1. Define Language -> Currency Map ---
 const CURRENCY_MAP: Record<string, string> = {
@@ -67,10 +69,13 @@ const resources: Resource = {
   "es-ES": { translation: esES },
   "es-MX": { translation: esMX },
   "es-US": { translation: es },
-  "es-AR": { translation: es },
-  "es-CO": { translation: es },
-  "es-CL": { translation: es },
-  "es-PE": { translation: es },
+  "es-AR": { translation: es149 },
+  "es-CO": { translation: es149 },
+  "es-CL": { translation: es149 },
+  "es-PE": { translation: es149 },
+
+  ko: { translation: ko },
+  "ko-KR": { translation: ko },
 
   de: { translation: de },
   "de-DE": { translation: de },

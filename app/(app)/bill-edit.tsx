@@ -160,8 +160,7 @@ export default function BillEdit() {
           if (isoDate) setDueDate(isoDate);
         }
         if (params.scannedText) {
-          setNotes((prev) => prev ? prev + "\n\nScanned Data:\n" + params.scannedText : "Scanned Data:\n" + params.scannedText);
-        }
+        setNotes((prev) => prev ? prev + "\n\n" + t("Scanned Data") + ":\n" + params.scannedText : t("Scanned Data") + ":\n" + params.scannedText);        }
         Alert.alert(t("Scan Successful"), t("We found an amount of ${{amt}}. Please verify the details.", { amt: params.scannedAmount }));
       }
       try {

@@ -342,6 +342,7 @@ export default function Profile() {
     { code: "pt-PT", label: "Português (PT)" },
     { code: "zh-Hant", label: "繁體中文" },
     { code: "zh-Hans", label: "简体中文" },
+    { code: "ko-KR", label: "한국인" },
     { code: "ja", label: "日本語" },
   ];
   const loadData = useCallback(async () => {

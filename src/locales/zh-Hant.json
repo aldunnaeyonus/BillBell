@@ -12,6 +12,7 @@
   "Top 3 subscriptions": "前 3 名訂閱",
   "category_entertainment": "娛樂",
   "category_utilities": "水電費與網路",
+  "Status:": "狀態：",
   "category_housing": "住房",
   "category_insurance": "保險",
   "category_finance": "金融與銀行",
@@ -73,7 +74,7 @@
   "Import code copied to clipboard.": "匯入碼已複製到剪貼簿。",
   "Copy Code": "複製代碼",
   "Import Code Generated": "匯入碼已產生",
-  "Bulk Upload (CSV/XLSX)": "批量上傳 (CSV/XLSX)",
+  "Bulk Upload (CSV/XLSX)": "批量上傳（CSV/XLSX）",
   "Import Codes": "匯入碼",
   "Settings": "設定",
   "Members": "共享成員",
@@ -102,12 +103,12 @@
   "Import code (Generated in Profile)": "匯入碼（在個人資料中產生）",
   "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time": "債權人、金額、到期日、循環、提醒偏移天數、提醒時間",
   "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:": "貼上您產生（或收到）的匯入碼，然後選擇一個包含您帳單的 CSV 檔案。上傳一個包含以下標題的 CSV 或 XLSX 檔案：",
-  "Pick another or XLSX": "選擇另一個 CSV 或 XLSX 檔案",
+  "Pick another  or XLSX": "選擇另一個 CSV 或 XLSX 檔案",
   "Pick CSV or XLSX file": "選擇一個 CSV 或 XLSX 檔案",
   "Selected:": "已選擇：",
-  "Parsed": "已解析 {{bills}} 張帳單",
-  "ParsedCSV": "已從檔案解析 {{bills}} 張帳單。",
-  "Importing...": "正在匯入...",
+  "Parsed": "已解析 {{bills}} 筆帳單",
+  "ParsedCSV": "已從檔案解析 {{bills}} 筆帳單。",
+  "Importing...": "匯入中...",
   "Same day": "當天",
   "1 day before": "提前 1 天",
   "2 day before": "提前 2 天",
@@ -117,16 +118,16 @@
   "Get Started": "開始使用",
   "Next": "下一步",
   "Track Your Bills": "追蹤您的帳單",
-  "Keep all your subscriptions, utilities, and debts in one organized list.": "將所有訂閱、水電費和債務整理在一個列表中。",
-  "Never Miss a Date": "絕不錯過到期日",
+  "Keep all your subscriptions, utilities, and debts in one organized list.": "將所有訂閱、水電費和債務整理在一個清單中。",
+  "Never Miss a Date": "永不錯過到期日",
   "Receive timely reminders before bills are due so you can avoid late fees.": "在帳單到期前收到及時提醒，避免滯納金。",
   "Share with Family": "與家人共享",
   "Create a Shared Group to manage household expenses and bills together.": "建立一個共享群組，共同管理家庭開支和帳單。",
   "Skip": "跳過",
-  "Visualize your spending habits and see exactly where your money goes.": "視覺化您的消費習慣，清楚了解您的錢花到哪裡。",
+  "Visualize your spending habits and see exactly where your money goes.": "視覺化您的消費習慣，清楚了解您的錢花到哪裡去了。",
   "Secure & Private": "安全與私密",
   "Your data is encrypted and stored locally on your device.": "您的資料已加密並儲存在您的裝置上。",
-  "Only a admin can change shared settings.": "只有管理員才能更改共享設定。",
+  "Only a admin can change shared settings.": "只有管理員可以更改共享設定。",
   "Time must be HH:MM or HH:MM:SS": "時間必須是 HH:MM 或 HH:MM:SS",
   "Offset must be 0, 1, 2, or 3": "偏移量必須是 0、1、2 或 3",
   "Saved": "已儲存",
@@ -136,11 +137,11 @@
   "Share defaults updated.": "共享預設值已更新。",
   "Share Settings": "共享設定",
   "Shared reminder defaults for the whole group.": "整個群組的共享提醒預設值。",
-  "Default offset": "預設偏移量",
+  "Default offset": "預設偏移",
   "Default time (local)": "預設提醒時間",
   "Ask a family admin to change these.": "請群組管理員更改這些設定。",
   "Family created": "帳戶已建立",
-  "`Your Family ID": "您的共享 ID: {{family_code}}",
+  "`Your Family ID": "您的共享 ID：{{family_code}}",
   "Create a new Family": "建立新群組",
   "Or join with Family ID": "或使用共享 ID 加入",
   "Join Family": "加入共享帳戶",
@@ -167,7 +168,7 @@
   "Sort by": "排序方式",
   "Export CSV": "匯出 CSV",
   "No Data": "無資料",
-  "There are no bills to export.": "沒有可匯出的帳單。",
+  "There are no bills to export.": "沒有帳單可匯出。",
   "Export Bills CSV": "匯出帳單 CSV",
   "Name": "名稱",
   "Please authenticate to continue": "請驗證以繼續",
@@ -194,7 +195,7 @@
   "Management": "管理",
   "Support": "支援",
   "Import via CSV/XLSX": "透過 CSV/XLSX 匯入",
-  "Active": "活躍",
+  "Active": "啟用中",
   "Create secure code for upload": "建立安全上傳碼",
   "Share ID copied to clipboard.": "共享 ID 已複製到剪貼簿。",
   "Code": "代碼",
@@ -216,10 +217,10 @@
   "Delete Account": "刪除帳戶",
   "DeleteAccountConfirm": "您確定要刪除您的帳戶嗎？此操作無法撤銷。",
   "Account deleted successfully.": "帳戶已成功刪除。",
-  "Privacy Policy": "隱私權政策",
+  "Privacy Policy": "隱私政策",
   "Terms of Use": "使用條款",
   "Legal": "法律",
-  "Import multiple bills via CSV": "透過 CSV 匯入多張帳單",
+  "Import multiple bills via CSV": "透過 CSV 匯入多筆帳單",
   "Step 1: Preparation": "步驟 1：準備",
   "Download Template": "下載範本",
   "Get the CSV template to ensure correct formatting.": "取得 CSV 範本以確保格式正確。",
@@ -240,8 +241,8 @@
   "ContactLabel": "聯絡方式（可選）",
   "ContactPlaceholder": "電子郵件或 @帳號（如果您希望收到回覆）",
   "Send": "發送",
-  "Opening mail…": "正在開啟郵件…",
-  "MailAppDisclaimer": "這將會開啟您的電子郵件應用程式，並預填訊息。",
+  "Opening mail…": "正在開啟郵件...",
+  "MailAppDisclaimer": "這將開啟您的電子郵件應用程式並預填訊息。",
   "Missing info": "缺少資訊",
   "Please add a title and description first.": "請先新增標題和描述。",
   "Unable to open mail app": "無法開啟郵件應用程式",
@@ -276,17 +277,18 @@
   "OR": "或",
   "Export Data": "匯出資料",
   "Download CSV": "下載 CSV",
+  "Due:": "到期：",
   "Update": "更新",
   "Failed to export data": "匯出資料失敗",
-  "TermsText": "上次更新：2025 年 12 月\n\n1. 同意條款\n透過存取或使用本應用程式，即表示您同意受這些使用條款的約束。本應用程式由 Dunn-Carabali, LLC 營運。如果您不同意這些條款的任何部分，您可能無法存取服務。\n\n2. 智慧財產權\n服務及其原始內容、功能和功能是且將仍然是 Dunn-Carabali, LLC 及其授權人的專有財產。\n\n3. 使用者責任\n您同意不將本應用程式用於任何非法目的，或煽動他人執行或參與任何非法行為。\n\n4. 免責聲明\n您使用本服務的風險由您自行承擔。本服務按「現狀」和「可用」基礎提供。Dunn-Carabali, LLC 明確否認任何形式的所有保證。\n\n5. 責任限制\n在任何情況下，Dunn-Carabali, LLC 及其董事、員工、合作夥伴、代理人、供應商或附屬公司均不對任何間接、偶然、特殊、後果性或懲罰性損害負責。\n\n6. 條款變更\n我們保留隨時修改或替換這些條款的權利。在這些修訂生效後，如果您繼續存取或使用我們的服務，即表示您同意受修訂條款的約束。\n\n7. 聯絡我們\n如果您對這些條款有任何疑問，請聯絡 Dunn-Carabali, LLC。",
-  "PrivacyText": "上次更新：2025 年 12 月\n\n1. 簡介\nDunn-Carabali, LLC（「我們」、「我們的」）營運此行動應用程式。本頁面旨在告知您我們在使用我們的服務時，關於個人資料的收集、使用和披露政策。\n\n2. 資訊收集與使用\n我們出於各種目的收集多種類型的資訊，以向您提供和改進我們的服務，包括：\n- 個人資料（例如：電子郵件地址、姓名）\n- 使用資料（例如：裝置類型、作業系統）\n\n3. 資料使用\nDunn-Carabali, LLC 使用收集到的資料來提供和維護服務、通知您變更、提供客戶支援以及監控使用情況。\n\n4. 資料披露\n我們可能會在真誠相信此類行動對於遵守法律義務、保護和捍衛 Dunn-Carabali, LLC 的權利或財產，或保護使用者的個人安全是必要的情況下，披露您的個人資料。\n\n5. 資料安全\n您的資料安全對我們很重要，但請記住，任何透過網際網路傳輸的方法都不是 100% 安全的。儘管我們努力使用商業上可接受的方式來保護您的個人資料，但我們無法保證其絕對安全。\n\n6. 本政策的變更\n我們可能會不時更新我們的隱私權政策。我們將透過在此頁面上發布新的隱私權政策來通知您任何變更。\n\n7. 聯絡我們\n如果您對本隱私權政策有任何疑問，請聯絡 Dunn-Carabali, LLC。",
-  "Tip: Long press a bill to see more actions": "提示：長按帳單以查看更多操作",
+  "TermsText": "上次更新：2025 年 12 月\n\n1. 同意條款\n透過存取或使用本應用程式，即表示您同意受這些使用條款的約束。本應用程式由 Dunn-Carabali, LLC 營運。如果您不同意這些條款的任何部分，您可能無法存取服務。\n\n2. 智慧財產權\n本服務及其原始內容、功能和功能是且將仍然是 Dunn-Carabali, LLC 及其授權人的專有財產。\n\n3. 使用者責任\n您同意不將本應用程式用於任何非法目的，或唆使他人執行或參與任何非法行為。\n\n4. 免責聲明\n您使用本服務的風險由您自行承擔。本服務按「現狀」和「可用」基礎提供。Dunn-Carabali, LLC 明確否認任何形式的所有保證。\n\n5. 責任限制\n在任何情況下，Dunn-Carabali, LLC 及其董事、員工、合作夥伴、代理人、供應商或附屬公司均不對任何間接、附帶、特殊、後果性或懲罰性損害負責。\n\n6. 條款變更\n我們保留隨時修改或替換這些條款的權利。在這些修訂生效後，如果您繼續存取或使用我們的服務，即表示您同意受修訂條款的約束。\n\n7. 聯絡我們\n如果您對這些條款有任何疑問，請聯絡 Dunn-Carabali, LLC。",
+  "PrivacyText": "上次更新：2025 年 12 月\n\n1. 簡介\nDunn-Carabali, LLC（「我們」或「我們的」）營運此行動應用程式。本頁面旨在告知您我們在使用本服務時，關於個人資料的收集、使用和披露政策。\n\n2. 資訊收集與使用\n我們出於各種目的收集多種類型的資訊，以向您提供和改進我們的服務，包括：\n- 個人資料（例如：電子郵件地址、姓名）\n- 使用資料（例如：裝置類型、作業系統）\n\n3. 資料使用\nDunn-Carabali, LLC 使用收集到的資料來提供和維護服務、通知您變更、提供客戶支援以及監控使用情況。\n\n4. 資料披露\n我們可能會在真誠相信此類行為對於遵守法律義務、保護和捍衛 Dunn-Carabali, LLC 的權利或財產，或保護使用者的個人安全是必要的情況下，披露您的個人資料。\n\n5. 資料安全\n您的資料安全對我們很重要，但請記住，任何透過網際網路傳輸的方法都不是 100% 安全的。儘管我們努力使用商業上可接受的方式來保護您的個人資料，但我們無法保證其絕對安全。\n\n6. 本政策的變更\n我們可能會不時更新我們的隱私政策。我們將透過在此頁面上發布新的隱私政策來通知您任何變更。\n\n7. 聯絡我們\n如果您對本隱私政策有任何疑問，請聯絡 Dunn-Carabali, LLC。",
+  "Tip: Long press a bill to see more actions": "提示：長按帳單可查看更多操作",
   "Bill": "帳單",
   "Bill Paid": "帳單已支付",
   "OVERDUE: {{creditor}} - ${{amount}} was due {{date}}": "逾期：{{creditor}} - ${{amount}} 已於 {{date}} 到期",
   "Since this bill is recurring, we went ahead and recreated it for the next period.": "由於此帳單是循環的，我們已為下一個週期重新建立它。",
   "Pending (This Month)": "待處理（本月）",
-  "Exporting...": "正在匯出...",
+  "Exporting...": "匯出中...",
   "Overdue": "逾期",
   "This Month": "本月",
   "Next Month": "下個月",
@@ -300,12 +302,12 @@
   "Select Chart": "選擇圖表",
   "View": "檢視",
   "Clear": "清除",
-  "Total Pending": "總待處理",
+  "Total Pending": "待處理總計",
   "Avg Bill Amount": "平均帳單金額",
   "Top Creditor": "主要債權人",
   "Visualize your spending trends": "視覺化您的消費趨勢",
-  "Nothing overdue": "沒有逾期",
-  "{{count}} overdue": "{{count}} 筆逾期",
+  "Nothing overdue": "沒有逾期項目",
+  "{{count}} overdue": "{{count}} 個逾期項目",
   "No requests found.": "找不到請求。",
   "Creditor Breakdown": "債權人明細",
   "Decryption Failed": "[解密失敗]",
@@ -326,7 +328,7 @@
   "Calendar access is required to sync bills.": "同步帳單需要日曆存取權限。",
   "Bill added to your calendar!": "帳單已新增到您的日曆！",
   "Calendar Error": "日曆錯誤",
-  "No data to display in this category.": "此類別中沒有資料可顯示。",
+  "No data to display in this category.": "此類別中沒有可顯示的資料。",
   "Loading and decrypting bills...": "正在載入和解密帳單...",
   "N/A": "不適用",
   "All Bills": "所有帳單",
@@ -349,7 +351,7 @@
   "You will leave this group and take your data with you. We will re-encrypt your data with a new key.": "您將離開此群組並帶走您的資料。我們將使用新金鑰重新加密您的資料。",
   "Leave & Secure Data": "離開並保護資料",
   "You have left the family and your data has been re-secured.": "您已離開群組，您的資料已重新保護。",
-  "Failed to leave family securely.": "未能安全地離開群組。",
+  "Failed to leave family securely.": "未能安全離開群組。",
   "Securing your data...": "正在保護您的資料...",
   "Search questions...": "搜尋問題...",
   "title": "群組設定",
@@ -369,9 +371,9 @@
   "rotation_description": "如果群組成員在新裝置安裝或重新登入後無法存取加密帳單，請使用此功能。此過程是安全的，但需要成員重新登入。",
   "rotation_button": "輪換群組加密金鑰",
   "rotation_success_title": "金鑰輪換成功",
-  "rotation_success_message": "已產生新金鑰並與所有成員共享。受影響的成員必須重新啟動應用程式以同步。",
+  "rotation_success_message": "已產生新金鑰並與所有成員共享。受影響的成員必須重新啟動應用程式才能同步。",
   "rotation_error": "金鑰輪換失敗。請再試一次或聯絡支援。",
-  "This will generate a new encryption key for your family. All members must be able to sync to continue accessing data. Proceed?": "這將為您的群組產生一個新的加密金鑰。所有成員必須能夠同步才能繼續存取資料。是否繼續？",
+  "This will generate a new encryption key for your family. All members must be able to sync to continue accessing data. Proceed?": "這將為您的群組產生一個新的加密金鑰。所有成員都必須能夠同步才能繼續存取資料。是否繼續？",
   "rotaion_key": "正在輪換金鑰...",
   "Rotating Key": "正在輪換金鑰",
   "members_admin": "管理員",
@@ -384,9 +386,9 @@
   "members_remove_error": "移除成員失敗。",
   "members_leave_button": "離開群組",
   "members_leave_confirm_title": "離開群組？",
-  "members_leave_confirm_message": "您確定要離開此群組嗎？您將失去所有共享帳單的存取權。",
+  "members_leave_confirm_message": "您確定要離開群組嗎？您將失去所有共享帳單的存取權。",
   "members_leave_success": "您已離開群組。",
-  "reminders_offset_label": "預設提醒偏移量（天）",
+  "reminders_offset_label": "預設提醒偏移（天）",
   "reminders_offset_description": "在到期日前多少天發送提醒？",
   "reminders_time_label": "預設提醒時間",
   "reminders_time_description": "發送提醒通知的時間（當地時間）。",
@@ -422,7 +424,7 @@
   "Join Requests": "加入請求",
   "You": "您",
   "Smart Budgets": "智慧預算",
-  "Tap a category to set a monthly limit.": "點擊一個類別以設定每月限額。",
+  "Tap a category to set a monthly limit.": "點擊類別以設定每月限額。",
   "Set Limit for {{category}}": "設定 {{category}} 的限額",
   "Set Budget": "設定預算",
   "Next Week": "下週",
@@ -430,37 +432,51 @@
   "Spending Habits": "消費習慣",
   "Scan Recovery Kit": "掃描恢復套件",
   "Search bills...": "搜尋帳單...",
-  "No bills found matching '{{query}}'": "找不到符合 '{{query}}' 的帳單",
+  "No bills found matching '{{query}}'": "找不到與 '{{query}}' 匹配的帳單",
   "Creditor (e.g. Netflix)": "債權人（例如：Netflix）",
   "Scan Successful": "掃描成功",
-  "We found an amount of ${{amt}}. Please verify the details.": "我們找到金額 ${{amt}}。請驗證詳細資訊。",
+  "We found an amount of ${{amt}}. Please verify the details.": "我們找到了 ${{amt}} 的金額。請驗證詳細資訊。",
   "Spending Insights": "消費洞察",
   "Verify Backup": "驗證備份",
   "6 Month Trend": "6 個月趨勢",
   "Top Categories": "熱門類別",
   "Import Recovery Key": "匯入恢復金鑰",
   "Highest Bill": "最高帳單",
-  "Active Bills": "活躍帳單",
+  "Active Bills": "啟用中帳單",
   "Scan Failed": "掃描失敗",
   "Restore Account?": "恢復帳戶？",
+  "Hi! I'm Bill Bell. Ask me about your finances.": "嗨！我是 Bill Bell。向我詢問您的財務狀況。",
+  "Network error.": "網路錯誤。",
+  "Ask about your bills...": "詢問您的帳單...",
+  "No End Date (Indefinite)": "無結束日期（無限期）",
+  "Biometric Unlock": "生物識別解鎖",
+  "Manage Bill": "管理帳單",
+  "Actions for": "操作對象：",
+  "Request Pending": "請求待處理",
+  "Code: ": "代碼：",
+  "Bill Bell AI": "Bill Bell AI",
+  "The user has no bills.": "使用者沒有帳單。",
+  "Unpaid": "未支付",
+  "Download Bill Export": "下載帳單匯出",
+  "Scanned Data": "掃描資料",
   "This key does not match your current device. Would you like to restore this key to recover your encrypted data?": "此金鑰與您目前的裝置不符。您想恢復此金鑰以恢復您的加密資料嗎？",
   "Restore Identity": "恢復身份",
-  "Your encryption key has been restored. The app will now reload to apply changes.": "您的加密金鑰已恢復。應用程式現在將重新載入以應用變更。",
-  "Great! This Recovery Kit matches your current device.": "太棒了！此恢復套件與您目前的裝置相符。",
+  "Your encryption key has been restored. The app will now reload to apply changes.": "您的加密金鑰已恢復。應用程式將重新載入以應用變更。",
+  "Great! This Recovery Kit matches your current device.": "太棒了！此恢復套件與您目前的裝置匹配。",
   "Could not validate key.": "無法驗證金鑰。",
   "Verified": "已驗證",
   "Mismatch": "不匹配",
   "Invalid Key Format. Please scan a valid BillBell Recovery Kit.": "無效的金鑰格式。請掃描有效的 BillBell 恢復套件。",
   "Failed to process the recovery key. It may be corrupted.": "處理恢復金鑰失敗。它可能已損壞。",
   "The scanned key does not match this device. It may be for a different account.": "掃描的金鑰與此裝置不符。它可能屬於不同的帳戶。",
-  "This Recovery Kit is valid and matches your current device key.": "此恢復套件有效並與您目前的裝置金鑰相符。",
+  "This Recovery Kit is valid and matches your current device key.": "此恢復套件有效並與您目前的裝置金鑰匹配。",
   "Could not read bill. Please try again.": "無法讀取帳單。請再試一次。",
   "Generate PDF": "產生 PDF",
   "Failed to generate Recovery Kit": "產生恢復套件失敗",
   "Save Recovery Kit": "儲存恢復套件",
   "Snooze 1 Hr": "貪睡 1 小時",
   "Bill marked as paid.": "帳單已標記為已支付。",
-  "Your data is end-to-end encrypted. If you lose this device, you will need your Recovery Kit to restore your bills. We do not store your private key.": "您的資料是端到端加密的。如果您遺失此裝置，您將需要您的恢復套件來恢復您的帳單。我們不儲存您的私鑰。",
+  "Your data is end-to-end encrypted. If you lose this device, you will need your Recovery Kit to restore your bills. We do not store your private key.": "您的資料是端對端加密的。如果您遺失此裝置，您將需要您的恢復套件來恢復您的帳單。我們不儲存您的私鑰。",
   "Report Crash": "報告崩潰",
   "BillBell Crash Report": "BillBell 崩潰報告",
   "Restart App": "重新啟動應用程式",
@@ -474,7 +490,7 @@
   "Request Sent": "請求已發送",
   "Still Pending": "仍在待處理",
   "Only use this if a member cannot sync bills or receives a decryption error after using a new device.": "僅當成員無法同步帳單或在新裝置上使用後收到解密錯誤時才使用此功能。",
-  "Show Overdue on Lock Screen": "在鎖定螢幕上顯示逾期",
+  "Show Overdue on Lock Screen": "在鎖定螢幕上顯示逾期帳單",
   "Your request has not been approved yet.": "您的請求尚未獲批准。",
   "The family admin has denied your request to join.": "管理員已拒絕您的加入請求。",
   "Your request has been sent to the family admin for approval.": "您的請求已發送給管理員以待批准。",
@@ -488,11 +504,11 @@
       "items": [
         {
           "q": "如何新增債務？",
-          "a": "前往「債務」畫面並點擊「+ 新增」按鈕。輸入債權人、金額和到期日以儲存。"
+          "a": "前往「債務」畫面，點擊「+ 新增」按鈕。輸入債權人、金額和到期日以儲存。"
         },
         {
           "q": "如何編輯或更新債務？",
-          "a": "點擊列表中的任何債務以開啟編輯畫面，您可以在其中更新其詳細資訊。"
+          "a": "點擊清單中的任何債務以開啟編輯畫面，您可以在其中更新其詳細資訊。"
         },
         {
           "q": "如何刪除債務？",
@@ -530,7 +546,7 @@
         },
         {
           "q": "如何邀請某人加入我的群組？",
-          "a": "前往您的個人資料或群組畫面以找到您的共享 ID。將此 ID 提供給您信任的人，以便他們加入。"
+          "a": "前往您的「個人資料」或「群組」畫面以找到您的共享 ID。將此 ID 提供給您信任的人，以便他們加入。"
         },
         {
           "q": "多人可以管理相同的債務嗎？",
@@ -538,7 +554,7 @@
         },
         {
           "q": "我可以離開群組嗎？",
-          "a": "是的。您可以從群組設定畫面離開。如果您是唯一的管理員，您必須先指派一位新的管理員。"
+          "a": "是的。您可以從群組「設定」畫面離開。如果您是唯一的管理員，您必須先指定一位新的管理員。"
         }
       ]
     },
@@ -547,7 +563,7 @@
       "items": [
         {
           "q": "匯入碼如何運作？",
-          "a": "群組管理員可以產生一次性匯入碼。在「批量上傳」畫面中使用它，從 CSV 檔案安全地匯入債務。"
+          "a": "群組管理員可以產生一次性匯入碼。在「批量上傳」畫面中使用它，以安全地從 CSV 檔案匯入債務。"
         },
         {
           "q": "我可以匯入什麼檔案類型？",
@@ -555,11 +571,11 @@
         },
         {
           "q": "我可以一次匯入多筆債務嗎？",
-          "a": "是的。使用「批量上傳」功能，一步從試算表匯入多筆債務。"
+          "a": "是的。使用「批量上傳」功能，可以一次性從試算表匯入多筆債務。"
         },
         {
           "q": "為什麼我的匯入失敗了？",
-          "a": "檢查您的 CSV 是否使用有效格式，並且您的匯入碼尚未過期或已被使用。"
+          "a": "請檢查您的 CSV 格式是否正確，以及您的匯入碼是否已過期或已被使用。"
         }
       ]
     },
@@ -580,15 +596,15 @@
         },
         {
           "q": "如果我透過 CSV 匯入帳單，它們會立即加密嗎？",
-          "a": "為確保最大程度的隱私，BillBell 使用「端到端加密」。這表示加密金鑰僅存在於您的裝置上，而非我們的伺服器上。當您上傳 CSV 檔案進行批量匯入時，我們的伺服器會處理它以建立帳單。由於我們的伺服器沒有（也不應該有）您的私有加密金鑰，因此它無法加密這些匯入帳單的資料。它們最初以純文字形式儲存。如何保護它們：一旦您開啟應用程式並且您的手機下載了新的匯入帳單，它們將正常運作。如果您編輯並儲存匯入的帳單，應用程式將自動使用您裝置上的金鑰對其進行加密，從那時起保護它。"
+          "a": "為確保最大隱私，BillBell 使用「端對端加密」。這表示加密金鑰僅存在於您的裝置上，而非我們的伺服器。當您上傳 CSV 檔案進行批量匯入時，我們的伺服器會處理它以建立帳單。由於我們的伺服器沒有（也不應該有）您的私有加密金鑰，因此它無法加密這些匯入帳單的資料。它們最初以純文字形式儲存。如何保護它們：一旦您開啟應用程式且您的手機下載了新匯入的帳單，它們將正常運作。如果您編輯並儲存匯入的帳單，應用程式將自動使用您裝置上的金鑰對其進行加密，從那時起保護它。"
         },
         {
           "q": "為什麼我再也看不到我的帳單了（解密失敗）？",
-          "a": "此問題通常發生在新裝置上或重新安裝應用程式後，您的裝置沒有儲存目前的群組加密金鑰。應用程式使用一組獨特的加密金鑰來保護您的群組資料。如果您的新裝置的公開金鑰在最新金鑰產生之前未與伺服器同步，應用程式將無法解密群組金鑰。"
+          "a": "此問題通常發生在新裝置上或重新安裝應用程式後立即發生，此時您的裝置沒有儲存目前的群組加密金鑰。應用程式使用一組獨特的加密金鑰來保護您群組的資料。如果您的新裝置的公開金鑰在最新金鑰產生之前未與伺服器同步，應用程式將無法解密群組金鑰。"
         },
         {
           "q": "如何修復解密失敗",
-          "a": "此問題只能由執行金鑰輪換的群組管理員解決：管理員操作：具有管理員角色的使用者必須前往「群組設定」並選擇「輪換群組加密金鑰」。金鑰輪換的作用：此過程會產生一個全新的金鑰，並使用每個成員最新的公開金鑰專門為他們重新加密該金鑰。您的操作：在管理員完成輪換後，完全關閉並重新啟動您有問題的裝置上的應用程式。應用程式將下載新金鑰，您的帳單將重新出現。注意：如果管理員輪換金鑰後問題仍然存在，您可能需要登出並再次登入以強制完全重置您的本機裝置金鑰。"
+          "a": "此問題只能由群組管理員執行金鑰輪換來解決：管理員操作：具有管理員角色的使用者必須前往「群組設定」並選擇「輪換群組加密金鑰」。輪換的作用：此過程會產生一個全新的金鑰，並使用每個成員檔案中最新的公開金鑰專門為他們重新加密該金鑰。您的操作：在管理員完成輪換後，完全關閉並重新啟動您有問題裝置上的應用程式。應用程式將下載新金鑰，您的帳單將重新出現。注意：如果管理員輪換金鑰後問題仍然存在，您可能需要登出並重新登入以強制完全重置您的本機裝置金鑰。"
         }
       ]
     },
@@ -605,7 +621,7 @@
         },
         {
           "q": "我可以更改我的共享 ID 嗎？",
-          "a": "不能。共享 ID 是系統產生的唯一識別碼，無法更改。"
+          "a": "不能。共享 ID 是系統生成的唯一識別碼，無法更改。"
         }
       ]
     },
@@ -614,7 +630,7 @@
       "items": [
         {
           "q": "我應該如何輸入金額？",
-          "a": "輸入完整金額，不含符號。例如，「150.25」會變成 $150.25。"
+          "a": "輸入完整金額，不帶符號。例如，「150.25」會變成 $150.25。"
         },
         {
           "q": "我可以追蹤自動支付帳單嗎？",
@@ -626,8 +642,8 @@
       "title": "故障排除",
       "items": [
         {
-          "q": "我的帳單在另一台裝置上沒有更新。我該怎麼辦？",
-          "a": "確保兩台裝置都登入到同一個群組。在「債務」畫面下拉以重新整理。"
+          "q": "我的帳單在其他裝置上沒有更新。我該怎麼辦？",
+          "a": "請確保兩台裝置都登入到同一個群組。在「債務」畫面下拉以重新整理。"
         },
         {
           "q": "我不小心刪除了一筆債務。我可以恢復它嗎？",

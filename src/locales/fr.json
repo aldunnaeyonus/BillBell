@@ -2,7 +2,7 @@
 {
   "markedPaid": "Facture marquée comme payée ! ✅",
   "Camera permission is required to scan bills.": "L'autorisation de la caméra est requise pour scanner les factures.",
-  "Grant Permission": "Accorder l'autorisation",
+  "Grant Permission": "Accorder la permission",
   "Failed to mark paid from notification": "Échec du marquage comme payé depuis la notification :",
   "Error marking bill as paid": "Erreur lors du marquage de la facture comme payée.",
   "Align invoice within frame": "Aligner la facture dans le cadre",
@@ -12,12 +12,13 @@
   "Top 3 subscriptions": "Top 3 des abonnements",
   "category_entertainment": "Divertissement",
   "category_utilities": "Services publics et Internet",
+  "Status:": "Statut :",
   "category_housing": "Logement",
   "category_insurance": "Assurance",
   "category_finance": "Finance et Banque",
   "category_debt": "Dettes et Prêts",
   "category_transport": "Automobile et Transport",
-  "category_travel": "Voyage",
+  "category_travel": "Voyages",
   "category_shopping": "Achats",
   "category_food": "Alimentation et Épicerie",
   "category_health": "Santé et Bien-être",
@@ -62,7 +63,7 @@
   "Bi-Weekly": "Bi-hebdomadaire",
   "Monthly": "Mensuel",
   "Annually": "Annuel",
-  "Semi-Annually": "Semestriel",
+  "Semi-Annually": "Semi-annuel",
   "Semi-Monthly": "Bimensuel",
   "Quarterly": "Trimestriel",
   "Logout": "Se déconnecter",
@@ -94,15 +95,15 @@
   "Import error": "Erreur d'importation",
   "Failed to read CSV": "Échec de la lecture du CSV",
   "Please enter an import code.": "Veuillez entrer un code d'importation.",
-  "Please pick a CSV otr XLSX and parse some bills first.": "Veuillez choisir un fichier CSV ou XLSX et analyser quelques factures d'abord.",
+  "Please pick a CSV otr XLSX and parse some bills first.": "Veuillez d'abord choisir un fichier CSV ou XLSX et analyser quelques factures.",
   "Bills imported successfully!": "Factures importées avec succès !",
   "Unknown error": "Erreur inconnue",
   "Import failed": "Échec de l'importation",
   "Import Bills": "Importer des factures",
   "Import code (Generated in Profile)": "Code d'importation (Généré dans le profil)",
   "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time": "Créancier, Montant, Date d'échéance, Fréquence, Jours de décalage du rappel, Heure du rappel",
-  "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:": "Collez le code d'importation que vous avez généré (ou reçu), puis choisissez un fichier CSV avec vos factures. Téléchargez un fichier CSV ou XLSX avec les en-têtes suivants :",
-  "Pick another or XLSX": "Choisir un autre fichier CSV ou XLSX",
+  "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:": "Collez le code d'importation que vous avez généré (ou reçu), puis choisissez un fichier CSV avec vos factures. Téléchargez un CSV ou XLSX avec les en-têtes suivants :",
+  "Pick another  or XLSX": "Choisir un autre fichier CSV ou XLSX",
   "Pick CSV or XLSX file": "Choisir un fichier CSV ou XLSX",
   "Selected:": "Sélectionné : ",
   "Parsed": "{{bills}} facture(s) analysée(s)",
@@ -167,7 +168,7 @@
   "Sort by": "Trier par",
   "Export CSV": "Exporter en CSV",
   "No Data": "Aucune donnée",
-  "There are no bills to export.": "Il n'y a aucune facture à exporter.",
+  "There are no bills to export.": "Il n'y a pas de factures à exporter.",
   "Export Bills CSV": "Exporter les factures en CSV",
   "Name": "Nom",
   "Please authenticate to continue": "Veuillez vous authentifier pour continuer",
@@ -184,7 +185,7 @@
   "Please save the bill before syncing to calendar.": "Veuillez enregistrer la facture avant de la synchroniser avec le calendrier.",
   "Add to Device Calendar": "Ajouter au calendrier de l'appareil",
   "Notes (Optional)": "Notes (Facultatif)",
-  "e.g. Account #12345": "ex. Compte #12345",
+  "e.g. Account #12345": "ex. Compte n°12345",
   "FAQ & Help": "FAQ et Aide",
   "Financial Insights": "Statistiques financières",
   "Family setup": "Configuration du compte de groupe",
@@ -198,19 +199,19 @@
   "Create secure code for upload": "Créer un code sécurisé pour le téléchargement",
   "Share ID copied to clipboard.": "ID de partage copié dans le presse-papiers.",
   "Code": "Code",
-  "Expires": "Expire le",
+  "Expires": "Expire",
   "Language": "Langue",
   "Select Language": "Sélectionner la langue",
   "Are you sure?": "Êtes-vous sûr ?",
   "Version": "Version",
-  "Remove Member": "Supprimer le membre",
+  "Remove Member": "Supprimer un membre",
   "Are you sure you want to remove {{name}}?": "Êtes-vous sûr de vouloir supprimer {{name}} ?",
   "Success": "Succès",
   "Member removed.": "Membre supprimé.",
   "Failed to remove member.": "Échec de la suppression du membre.",
   "Long press to remove member": "Appuyez longuement pour supprimer un membre",
   "Leave Family": "Quitter le groupe",
-  "LeaveFamilyConfirm": "Êtes-vous sûr de vouloir quitter ce groupe ? Vous commencerez un nouveau groupe avec vos factures existantes.",
+  "LeaveFamilyConfirm": "Êtes-vous sûr de vouloir quitter ce groupe ? Vous démarrerez un nouveau groupe avec vos factures existantes.",
   "You have left the family.": "Vous avez quitté le groupe.",
   "Start new family with your data": "Démarrer un nouveau groupe avec vos données",
   "Delete Account": "Supprimer le compte",
@@ -226,21 +227,21 @@
   "Step 2: Select File": "Étape 2 : Sélectionner le fichier",
   "Step 3: Authorization": "Étape 3 : Autorisation",
   "Enter Import Code": "Entrer le code d'importation",
-  "Generate this in your Profile": "Générez ceci dans votre profil",
+  "Generate this in your Profile": "Générez-le dans votre profil",
   "Start Import": "Démarrer l'importation",
   "Tap to select CSV/XLSX": "Appuyez pour sélectionner CSV/XLSX",
   "Failed to download template": "Échec du téléchargement du modèle",
   "FeedbackTitle": "Commentaires et bugs",
   "FeedbackSubtitle": "Vous avez repéré un bug ou avez une idée ? Faites-le nous savoir.",
   "Title": "Titre",
-  "TitlePlaceholder": "Bref résumé (ex. 'Planté lors de l'ajout d'une facture')",
+  "TitlePlaceholder": "Bref résumé (ex. 'Plantages lors de l'ajout d'une facture')",
   "Details": "Détails",
   "DetailsPlaceholderFeedback": "Partagez vos réflexions, idées ou suggestions.",
   "DetailsPlaceholderBug": "Que s'est-il passé ? Étapes pour reproduire ?",
   "ContactLabel": "Contact (Facultatif)",
   "ContactPlaceholder": "E-mail ou @pseudo si vous souhaitez une réponse",
   "Send": "Envoyer",
-  "Opening mail…": "Ouverture de l'e-mail...",
+  "Opening mail…": "Ouverture de l'e-mail…",
   "MailAppDisclaimer": "Ceci ouvrira votre application de messagerie avec un message pré-rempli.",
   "Missing info": "Informations manquantes",
   "Please add a title and description first.": "Veuillez d'abord ajouter un titre et une description.",
@@ -276,6 +277,7 @@
   "OR": "OU",
   "Export Data": "Exporter les données",
   "Download CSV": "Télécharger le CSV",
+  "Due:": "Dû :",
   "Update": "Mettre à jour",
   "Failed to export data": "Échec de l'exportation des données",
   "TermsText": "Dernière mise à jour : Décembre 2025\n\n1. Acceptation des conditions\nEn accédant ou en utilisant cette application, vous acceptez d'être lié par les présentes Conditions d'utilisation. Cette application est exploitée par Dunn-Carabali, LLC. Si vous n'êtes pas d'accord avec une partie de ces conditions, vous ne pouvez pas accéder au service.\n\n2. Propriété intellectuelle\nLe service et son contenu original, ses fonctionnalités et ses fonctionnalités sont et resteront la propriété exclusive de Dunn-Carabali, LLC et de ses concédants de licence.\n\n3. Responsabilités de l'utilisateur\nVous acceptez de ne pas utiliser l'application à des fins illégales ou de solliciter d'autres personnes pour commettre ou participer à des actes illégaux.\n\n4. Clause de non-responsabilité\nVotre utilisation du service est à vos risques et périls. Le service est fourni « TEL QUEL » et « SELON LA DISPONIBILITÉ ». Dunn-Carabali, LLC décline expressément toute garantie de quelque nature que ce soit.\n\n5. Limitation de responsabilité\nEn aucun cas Dunn-Carabali, LLC, ni ses administrateurs, employés, partenaires, agents, fournisseurs ou affiliés, ne seront responsables des dommages indirects, accessoires, spéciaux, consécutifs ou punitifs.\n\n6. Modifications des conditions\nNous nous réservons le droit de modifier ou de remplacer ces Conditions à tout moment. En continuant à accéder ou à utiliser notre service après l'entrée en vigueur de ces révisions, vous acceptez d'être lié par les conditions révisées.\n\n7. Nous contacter\nSi vous avez des questions concernant ces Conditions, veuillez contacter Dunn-Carabali, LLC.",
@@ -284,7 +286,7 @@
   "Bill": "Facture",
   "Bill Paid": "Facture payée",
   "OVERDUE: {{creditor}} - ${{amount}} was due {{date}}": "EN RETARD : {{creditor}} - ${{amount}} était dû le {{date}}",
-  "Since this bill is recurring, we went ahead and recreated it for the next period.": "Puisque cette facture est récurrente, nous l'avons recréée pour la prochaine période.",
+  "Since this bill is recurring, we went ahead and recreated it for the next period.": "Comme cette facture est récurrente, nous l'avons recréée pour la période suivante.",
   "Pending (This Month)": "En attente (ce mois-ci)",
   "Exporting...": "Exportation...",
   "Overdue": "En retard",
@@ -322,7 +324,7 @@
   "Notes": "Notes",
   "Total 6-Month Spend": "Dépenses totales sur 6 mois",
   "6-Month Avg": "Moyenne sur 6 mois",
-  "Permission needed": "Autorisation nécessaire",
+  "Permission needed": "Permission requise",
   "Calendar access is required to sync bills.": "L'accès au calendrier est requis pour synchroniser les factures.",
   "Bill added to your calendar!": "Facture ajoutée à votre calendrier !",
   "Calendar Error": "Erreur de calendrier",
@@ -333,7 +335,7 @@
   "Delete Bill": "Supprimer la facture",
   "Are you sure you want to delete this bill?": "Êtes-vous sûr de vouloir supprimer cette facture ?",
   "Mark {{creditor}} as paid?": "Marquer {{creditor}} comme payé ?",
-  "Please pick a CSV and parse some bills first.": "Veuillez choisir un fichier CSV et analyser quelques factures d'abord.",
+  "Please pick a CSV and parse some bills first.": "Veuillez d'abord choisir un fichier CSV et analyser quelques factures.",
   "Rotate Key": "Faire pivoter la clé",
   "Family encryption key successfully rotated. All members will sync automatically.": "Clé de chiffrement du groupe pivotée avec succès. Tous les membres se synchroniseront automatiquement.",
   "Rotation Failed": "Échec de la rotation",
@@ -348,7 +350,7 @@
   "(You)": "(Vous)",
   "You will leave this group and take your data with you. We will re-encrypt your data with a new key.": "Vous quitterez ce groupe et emporterez vos données avec vous. Nous re-chiffrerons vos données avec une nouvelle clé.",
   "Leave & Secure Data": "Quitter et sécuriser les données",
-  "You have left the family and your data has been re-secured.": "Vous avez quitté le groupe et vos données ont été sécurisées à nouveau.",
+  "You have left the family and your data has been re-secured.": "Vous avez quitté le groupe et vos données ont été re-sécurisées.",
   "Failed to leave family securely.": "Échec de la sortie sécurisée du groupe.",
   "Securing your data...": "Sécurisation de vos données...",
   "Search questions...": "Rechercher des questions...",
@@ -368,13 +370,13 @@
   "rotation_title": "Rotation de la clé de chiffrement",
   "rotation_description": "Utilisez cette fonction si un membre du groupe ne peut pas accéder aux factures chiffrées après l'installation d'un nouvel appareil ou une nouvelle connexion. Ce processus est sécurisé mais nécessite que le membre se reconnecte.",
   "rotation_button": "Faire pivoter la clé de chiffrement du groupe",
-  "rotation_success_title": "Rotation de clé réussie",
+  "rotation_success_title": "Rotation de la clé réussie",
   "rotation_success_message": "Une nouvelle clé a été générée et partagée avec tous les membres. Les membres concernés doivent relancer l'application pour synchroniser.",
   "rotation_error": "Échec de la rotation de la clé. Veuillez réessayer ou contacter le support.",
   "This will generate a new encryption key for your family. All members must be able to sync to continue accessing data. Proceed?": "Ceci générera une nouvelle clé de chiffrement pour votre groupe. Tous les membres doivent pouvoir se synchroniser pour continuer à accéder aux données. Continuer ?",
   "rotaion_key": "Rotation de la clé...",
   "Rotating Key": "Rotation de la clé",
-  "members_admin": "Administrateur",
+  "members_admin": "Admin",
   "members_member": "Membre",
   "members_current_user": "(Vous)",
   "members_remove_button": "Supprimer",
@@ -423,7 +425,7 @@
   "You": "Vous",
   "Smart Budgets": "Budgets intelligents",
   "Tap a category to set a monthly limit.": "Appuyez sur une catégorie pour définir une limite mensuelle.",
-  "Set Limit for {{category}}": "Définir la limite pour {{category}}",
+  "Set Limit for {{category}}": "Définir une limite pour {{category}}",
   "Set Budget": "Définir le budget",
   "Next Week": "La semaine prochaine",
   "This Week": "Cette semaine",
@@ -443,6 +445,20 @@
   "Active Bills": "Factures actives",
   "Scan Failed": "Échec du scan",
   "Restore Account?": "Restaurer le compte ?",
+  "Hi! I'm Bill Bell. Ask me about your finances.": "Salut ! Je suis Bill Bell. Posez-moi des questions sur vos finances.",
+  "Network error.": "Erreur réseau.",
+  "Ask about your bills...": "Posez des questions sur vos factures...",
+  "No End Date (Indefinite)": "Pas de date de fin (Indéfini)",
+  "Biometric Unlock": "Déverrouillage biométrique",
+  "Manage Bill": "Gérer la facture",
+  "Actions for": "Actions pour",
+  "Request Pending": "Demande en attente",
+  "Code: ": "Code : ",
+  "Bill Bell AI": "IA Bill Bell",
+  "The user has no bills.": "L'utilisateur n'a pas de factures.",
+  "Unpaid": "Non payé",
+  "Download Bill Export": "Télécharger l'exportation des factures",
+  "Scanned Data": "Données scannées",
   "This key does not match your current device. Would you like to restore this key to recover your encrypted data?": "Cette clé ne correspond pas à votre appareil actuel. Souhaitez-vous restaurer cette clé pour récupérer vos données chiffrées ?",
   "Restore Identity": "Restaurer l'identité",
   "Your encryption key has been restored. The app will now reload to apply changes.": "Votre clé de chiffrement a été restaurée. L'application va maintenant se recharger pour appliquer les modifications.",
@@ -458,7 +474,7 @@
   "Generate PDF": "Générer un PDF",
   "Failed to generate Recovery Kit": "Échec de la génération du kit de récupération",
   "Save Recovery Kit": "Enregistrer le kit de récupération",
-  "Snooze 1 Hr": "Répéter 1 heure",
+  "Snooze 1 Hr": "Répéter 1h",
   "Bill marked as paid.": "Facture marquée comme payée.",
   "Your data is end-to-end encrypted. If you lose this device, you will need your Recovery Kit to restore your bills. We do not store your private key.": "Vos données sont chiffrées de bout en bout. Si vous perdez cet appareil, vous aurez besoin de votre kit de récupération pour restaurer vos factures. Nous ne stockons pas votre clé privée.",
   "Report Crash": "Signaler un crash",
@@ -500,7 +516,7 @@
         },
         {
           "q": "Que se passe-t-il lorsque je marque une dette comme payée ?",
-          "a": "Elle est déplacée vers la section Payé et les futurs rappels pour cette dette s'arrêtent automatiquement."
+          "a": "Elle est déplacée vers la section Payées et les futurs rappels pour cette dette s'arrêtent automatiquement."
         }
       ]
     },
@@ -522,7 +538,7 @@
       ]
     },
     {
-      "title": "Familles et partage",
+      "title": "Groupes et partage",
       "items": [
         {
           "q": "Puis-je partager mon compte avec quelqu'un d'autre ?",
@@ -530,7 +546,7 @@
         },
         {
           "q": "Comment inviter quelqu'un à mon groupe ?",
-          "a": "Allez à votre écran Profil ou Groupe pour trouver votre ID de partage. Donnez cet ID à quelqu'un en qui vous avez confiance afin qu'il puisse rejoindre."
+          "a": "Allez à votre écran Profil ou Groupe pour trouver votre ID de partage. Donnez cet ID à une personne de confiance afin qu'elle puisse rejoindre."
         },
         {
           "q": "Plusieurs personnes peuvent-elles gérer les mêmes dettes ?",
@@ -551,7 +567,7 @@
         },
         {
           "q": "Quel type de fichier puis-je importer ?",
-          "a": "Vous pouvez importer des fichiers CSV contenant les champs : nom, montant, date_d_echeance, notes, prélèvement_automatique."
+          "a": "Vous pouvez importer des fichiers CSV contenant les champs : nom, montant, date_échéance, notes, prélèvement_automatique."
         },
         {
           "q": "Puis-je importer plusieurs dettes à la fois ?",
@@ -568,7 +584,7 @@
       "items": [
         {
           "q": "Comment me connecter ?",
-          "a": "Vous pouvez vous connecter en utilisant la connexion Apple ou la connexion Google selon votre appareil."
+          "a": "Vous pouvez vous connecter en utilisant la connexion Apple ou Google selon votre appareil."
         },
         {
           "q": "Mes données sont-elles sécurisées ?",
@@ -587,8 +603,8 @@
           "a": "Ce problème survient généralement sur un nouvel appareil ou immédiatement après la réinstallation de l'application, lorsque votre appareil ne dispose pas de la clé de chiffrement de groupe actuelle. L'application utilise un ensemble unique de clés cryptographiques pour protéger les données de votre groupe. Si la clé publique de votre nouvel appareil n'a pas été synchronisée avec le serveur avant la génération de la dernière clé, l'application ne peut pas déchiffrer la clé de groupe."
         },
         {
-          "q": "Comment réparer l'échec du déchiffrement",
-          "a": "Le problème ne peut être résolu que par un administrateur de groupe effectuant une rotation de clé : Action de l'administrateur : Un utilisateur ayant un rôle d'administrateur doit aller dans les paramètres du groupe et sélectionner 'Faire pivoter la clé de chiffrement du groupe'. Ce que fait la rotation : Ce processus génère une toute nouvelle clé et re-chiffre cette clé spécifiquement pour chaque membre en utilisant leur dernière clé publique enregistrée. Votre action : Une fois que l'administrateur a terminé la rotation, fermez complètement et relancez l'application sur votre appareil problématique. L'application téléchargera la nouvelle clé et vos factures réapparaîtront. Remarque : Si le problème persiste après que l'administrateur a fait pivoter la clé, vous devrez peut-être vous déconnecter et vous reconnecter pour forcer une réinitialisation complète des clés de votre appareil local."
+          "q": "Comment résoudre l'échec du déchiffrement",
+          "a": "Le problème ne peut être résolu que par un administrateur de groupe effectuant une rotation de clé : Action de l'administrateur : Un utilisateur ayant un rôle d'administrateur doit aller dans les Paramètres du groupe et sélectionner 'Faire pivoter la clé de chiffrement du groupe'. Ce que fait la rotation : Ce processus génère une toute nouvelle clé et re-chiffre cette clé spécifiquement pour chaque membre en utilisant sa dernière clé publique enregistrée. Votre action : Une fois que l'administrateur a terminé la rotation, fermez complètement et relancez l'application sur votre appareil problématique. L'application téléchargera la nouvelle clé et vos factures réapparaîtront. Remarque : Si le problème persiste après que l'administrateur a fait pivoter la clé, vous devrez peut-être vous déconnecter et vous reconnecter pour forcer une réinitialisation complète de vos clés d'appareil locales."
         }
       ]
     },
@@ -601,7 +617,7 @@
         },
         {
           "q": "Puis-je modifier mes paramètres de rappel ?",
-          "a": "Les administrateurs de groupe peuvent mettre à jour les heures de rappel par défaut dans les paramètres du groupe."
+          "a": "Les administrateurs de groupe peuvent mettre à jour les heures de rappel par défaut dans les Paramètres du groupe."
         },
         {
           "q": "Puis-je modifier mon ID de partage ?",
@@ -614,7 +630,7 @@
       "items": [
         {
           "q": "Comment dois-je saisir les montants ?",
-          "a": "Entrez le montant complet sans symboles. Par exemple, '150.25' devient 150,25 $."
+          "a": "Saisissez le montant complet sans symboles. Par exemple, '150.25' devient 150,25 $."
         },
         {
           "q": "Puis-je suivre les factures à prélèvement automatique ?",

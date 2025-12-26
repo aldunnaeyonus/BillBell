@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Platform, Animated, TouchableOpacity, Alert } f
 import { Swipeable } from 'react-native-gesture-handler'; // Standard export
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from "react-i18next";
 
 // Use standard Animated for simplicity, or Reanimated if you prefer
 // This uses standard Animated for maximum compatibility
@@ -14,6 +15,7 @@ interface BillItemProps {
 export const SwipeableBillItem = ({ item, onPay }: BillItemProps) => {
   const swipeableRef = useRef<Swipeable>(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { t } = useTranslation();
 
   // --- Animations on Mount ---
   useEffect(() => {
@@ -55,9 +57,9 @@ export const SwipeableBillItem = ({ item, onPay }: BillItemProps) => {
 
   const handleLongPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    Alert.alert("Manage Bill", `Actions for ${item.merchant}`, [
-        { text: "Mark as Paid", onPress: handlePayPress },
-        { text: "Cancel", style: "cancel" }
+    Alert.alert(t("Manage Bill"), t(`Actions for ${item.merchant}`), [
+        { text: t("Mark as Paid"), onPress: handlePayPress },
+        { text: t("Cancel"), style: "cancel" }
     ]);
   };
 
@@ -74,7 +76,7 @@ export const SwipeableBillItem = ({ item, onPay }: BillItemProps) => {
         <Animated.View style={[styles.payButton, { transform: [{ translateX: trans }] }]}>
           <TouchableOpacity onPress={handlePayPress} style={styles.payButtonInner}>
             <Ionicons name="checkmark-circle" size={24} color="white" />
-            <Text style={styles.payText}>Pay</Text>
+            <Text style={styles.payText}>{t("Pay")}</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>

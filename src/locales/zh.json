@@ -3,15 +3,15 @@
   "markedPaid": "账单已标记为已支付！✅",
   "Camera permission is required to scan bills.": "扫描账单需要相机权限。",
   "Grant Permission": "授予权限",
-  "Failed to mark paid from notification": "未能从通知中标记为已支付：",
+  "Failed to mark paid from notification": "未能通过通知标记为已支付：",
   "Error marking bill as paid": "标记账单为已支付时出错。",
   "Align invoice within frame": "将发票对齐到框内",
-  "Processing...": "处理中...",
+  "Processing...": "正在处理...",
   "Ends": "结束",
   "End Date (Optional)": "结束日期（可选）",
   "Top 3 subscriptions": "前3个订阅",
   "category_entertainment": "娱乐",
-  "category_utilities": "水电费和网络",
+  "category_utilities": "水电费与网络",
   "Status:": "状态：",
   "category_housing": "住房",
   "category_insurance": "保险",
@@ -21,7 +21,7 @@
   "category_travel": "旅行",
   "category_shopping": "购物",
   "category_food": "餐饮与杂货",
-  "category_health": "健康与保健",
+  "category_health": "健康与养生",
   "category_software": "软件与科技",
   "category_education": "教育",
   "category_other": "其他",
@@ -36,19 +36,19 @@
   "Profile": "个人资料",
   "Shared Settings": "共享设置",
   "Import Code": "导入代码（CSV和XLSX批量导入安全码）",
-  "CodeExpires": "代码：{{code}}（{{expiresAt}}到期）",
+  "CodeExpires": "代码：{{code}}（{{expiresAt}}过期）",
   "Mark as Paid": "标记为已支付",
   "Bill reminder": "账单提醒：",
   "Can't open link": "无法打开链接",
   "Login failed": "登录失败",
-  "Notification vibes.": "通知振动。",
+  "Notification vibes.": "通知震动。",
   "Never miss a due date again.": "再也不会错过到期日。",
-  "Apple sign-in": "Apple 登录",
-  "Continue with Apple": "使用 Apple 登录",
-  "Continue with Google": "使用 Google 登录",
+  "Apple sign-in": "Apple登录",
+  "Continue with Apple": "继续使用Apple",
+  "Continue with Google": "继续使用Google",
   "Cancelled": "已取消",
   "Validation": "验证",
-  "Creditor is required": "债权人是必需的",
+  "Creditor is required": "债权人是必填项",
   "Amount must be > 0": "金额必须大于0",
   "Error": "错误",
   "Add Debts": "添加债务",
@@ -66,7 +66,7 @@
   "Semi-Annually": "每半年",
   "Semi-Monthly": "每半月",
   "Quarterly": "每季度",
-  "Logout": "退出",
+  "Logout": "注销",
   "Generate Import Code": "生成导入代码",
   "OK": "确定",
   "Open Upload Page": "打开上传页面",
@@ -74,17 +74,17 @@
   "Import code copied to clipboard.": "导入代码已复制到剪贴板。",
   "Copy Code": "复制代码",
   "Import Code Generated": "导入代码已生成",
-  "Bulk Upload (CSV/XLSX)": "批量上传 (CSV/XLSX)",
+  "Bulk Upload (CSV/XLSX)": "批量上传（CSV/XLSX）",
   "Import Codes": "导入代码",
   "Settings": "设置",
   "Members": "共享成员",
-  "Import Codes & Epiration Date": "导入安全码和到期日",
+  "Import Codes & Epiration Date": "导入安全码及有效期",
   "Touch Generate Import Code": "点击下方的“生成导入代码”按钮以生成代码。",
   "Share ID": "我的共享ID",
   "+ Add": "添加",
   "Pending": "待处理",
   "Paid": "已支付",
-  "No pending debts": "没有待处理的债务 🎉",
+  "No pending debts": "没有待处理的债务🎉",
   "No paid debts.": "没有已支付的债务。",
   "Due": "到期",
   "Edit": "编辑",
@@ -95,7 +95,7 @@
   "Import error": "导入错误",
   "Failed to read CSV": "读取CSV失败",
   "Please enter an import code.": "请输入导入代码。",
-  "Please pick a CSV otr XLSX and parse some bills first.": "请先选择一个CSV或XLSX文件并解析一些账单。",
+  "Please pick a CSV otr XLSX and parse some bills first.": "请先选择一个CSV或XLSX文件并解析账单。",
   "Bills imported successfully!": "账单导入成功！",
   "Unknown error": "未知错误",
   "Import failed": "导入失败",
@@ -103,12 +103,12 @@
   "Import code (Generated in Profile)": "导入代码（在个人资料中生成）",
   "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time": "债权人、金额、到期日、循环、提醒偏移天数、提醒时间",
   "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:": "粘贴您生成（或收到）的导入代码，然后选择包含账单的CSV文件。上传包含以下标题的CSV或XLSX文件：",
-  "Pick another  or XLSX": "选择另一个CSV或XLSX文件",
+  "Pick another or XLSX": "选择另一个CSV或XLSX文件",
   "Pick CSV or XLSX file": "选择CSV或XLSX文件",
   "Selected:": "已选择：",
-  "Parsed": "已解析 {{bills}} 笔账单",
-  "ParsedCSV": "已从文件中解析 {{bills}} 笔账单。",
-  "Importing...": "导入中...",
+  "Parsed": "已解析{{bills}}张账单",
+  "ParsedCSV": "已从文件中解析{{bills}}张账单。",
+  "Importing...": "正在导入...",
   "Same day": "当天",
   "1 day before": "提前1天",
   "2 day before": "提前2天",
@@ -118,18 +118,18 @@
   "Get Started": "开始使用",
   "Next": "下一步",
   "Track Your Bills": "追踪您的账单",
-  "Keep all your subscriptions, utilities, and debts in one organized list.": "将所有订阅、水电费和债务整理到一个列表中。",
+  "Keep all your subscriptions, utilities, and debts in one organized list.": "将您的所有订阅、水电费和债务整理到一个列表中。",
   "Never Miss a Date": "永不错过日期",
   "Receive timely reminders before bills are due so you can avoid late fees.": "在账单到期前及时收到提醒，避免滞纳金。",
   "Share with Family": "与家人共享",
   "Create a Shared Group to manage household expenses and bills together.": "创建一个共享群组，共同管理家庭开支和账单。",
   "Skip": "跳过",
-  "Visualize your spending habits and see exactly where your money goes.": "可视化您的消费习惯，清楚了解您的钱花在哪里。",
+  "Visualize your spending habits and see exactly where your money goes.": "可视化您的消费习惯，清楚了解您的资金去向。",
   "Secure & Private": "安全与隐私",
-  "Your data is encrypted and stored locally on your device.": "您的数据已加密并本地存储在您的设备上。",
+  "Your data is encrypted and stored locally on your device.": "您的数据已加密并存储在您的设备本地。",
   "Only a admin can change shared settings.": "只有管理员才能更改共享设置。",
-  "Time must be HH:MM or HH:MM:SS": "时间必须是 HH:MM 或 HH:MM:SS",
-  "Offset must be 0, 1, 2, or 3": "偏移量必须是 0、1、2 或 3",
+  "Time must be HH:MM or HH:MM:SS": "时间必须是HH:MM或HH:MM:SS格式",
+  "Offset must be 0, 1, 2, or 3": "偏移量必须是0、1、2或3",
   "Saved": "已保存",
   "Unlock App": "解锁应用",
   "Unlock": "解锁",
@@ -139,7 +139,7 @@
   "Shared reminder defaults for the whole group.": "整个群组的共享提醒默认设置。",
   "Default offset": "默认偏移量",
   "Default time (local)": "默认提醒时间",
-  "Ask a family admin to change these.": "请群组管理员更改这些设置。",
+  "Ask a family admin to change these.": "请联系群组管理员更改这些设置。",
   "Family created": "账户已创建",
   "`Your Family ID": "您的共享ID：{{family_code}}",
   "Create a new Family": "创建新群组",
@@ -159,7 +159,7 @@
   "How can we improve the app?": "我们如何改进应用？",
   "Submit": "提交",
   "Thank You!": "谢谢！",
-  "We appreciate you catching that bug. We will look into it.": "感谢您发现这个错误。我们会进行调查。",
+  "We appreciate you catching that bug. We will look into it.": "感谢您发现这个错误。我们将进行调查。",
   "Thanks for the feedback! We read every message.": "感谢您的反馈！我们阅读每一条消息。",
   "Please enter some details first.": "请先输入一些详细信息。",
   "Failed to send feedback. Please try again later.": "发送反馈失败。请稍后再试。",
@@ -194,18 +194,18 @@
   "Copy": "复制",
   "Management": "管理",
   "Support": "支持",
-  "Import via CSV/XLSX": "通过 CSV/XLSX 导入",
+  "Import via CSV/XLSX": "通过CSV/XLSX导入",
   "Active": "活跃",
-  "Create secure code for upload": "创建上传安全码",
+  "Create secure code for upload": "创建安全的上传代码",
   "Share ID copied to clipboard.": "共享ID已复制到剪贴板。",
   "Code": "代码",
-  "Expires": "到期",
+  "Expires": "过期",
   "Language": "语言",
   "Select Language": "选择语言",
   "Are you sure?": "您确定吗？",
   "Version": "版本",
   "Remove Member": "移除成员",
-  "Are you sure you want to remove {{name}}?": "您确定要移除 {{name}} 吗？",
+  "Are you sure you want to remove {{name}}?": "您确定要移除{{name}}吗？",
   "Success": "成功",
   "Member removed.": "成员已移除。",
   "Failed to remove member.": "移除成员失败。",
@@ -220,16 +220,16 @@
   "Privacy Policy": "隐私政策",
   "Terms of Use": "使用条款",
   "Legal": "法律",
-  "Import multiple bills via CSV": "通过 CSV 导入多个账单",
+  "Import multiple bills via CSV": "通过CSV导入多张账单",
   "Step 1: Preparation": "步骤1：准备",
   "Download Template": "下载模板",
-  "Get the CSV template to ensure correct formatting.": "获取 CSV 模板以确保格式正确。",
+  "Get the CSV template to ensure correct formatting.": "获取CSV模板以确保格式正确。",
   "Step 2: Select File": "步骤2：选择文件",
   "Step 3: Authorization": "步骤3：授权",
   "Enter Import Code": "输入导入代码",
   "Generate this in your Profile": "在您的个人资料中生成此代码",
   "Start Import": "开始导入",
-  "Tap to select CSV/XLSX": "点击选择 CSV/XLSX",
+  "Tap to select CSV/XLSX": "点击选择CSV/XLSX",
   "Failed to download template": "下载模板失败",
   "FeedbackTitle": "反馈与错误",
   "FeedbackSubtitle": "发现错误或有想法？请告诉我们。",
@@ -239,11 +239,11 @@
   "DetailsPlaceholderFeedback": "分享您的想法、主意或建议。",
   "DetailsPlaceholderBug": "发生了什么？重现步骤？",
   "ContactLabel": "联系方式（可选）",
-  "ContactPlaceholder": "如果您希望收到回复，请留下电子邮件或@句柄",
+  "ContactPlaceholder": "电子邮件或@句柄（如果您希望收到回复）",
   "Send": "发送",
   "Opening mail…": "正在打开邮件...",
-  "MailAppDisclaimer": "这将打开您的电子邮件应用并预填消息。",
-  "Missing info": "信息缺失",
+  "MailAppDisclaimer": "这将打开您的电子邮件应用并预填充消息。",
+  "Missing info": "缺少信息",
   "Please add a title and description first.": "请先添加标题和描述。",
   "Unable to open mail app": "无法打开邮件应用",
   "Edit Bill": "编辑账单",
@@ -253,7 +253,7 @@
   "Bill Details": "账单详情",
   "Frequency": "频率",
   "Reminders": "提醒",
-  "{{days}} day(s) before": "提前 {{days}} 天",
+  "{{days}} day(s) before": "提前{{days}}天",
   "Alert Time": "提醒时间",
   "Save Bill": "保存账单",
   "Total": "总计",
@@ -263,9 +263,9 @@
   "6-Month Trend": "6个月趋势",
   "Projected Liabilities": "预计负债",
   "PRO ESTIMATE": "专业估算",
-  "Based on your recurring bills, next month's minimum:": "根据您的循环账单，下个月的最低金额：",
+  "Based on your recurring bills, next month's minimum:": "根据您的循环账单，下个月的最低金额为：",
   "Payment Ratio": "支付比例",
-  "You have paid {{percent}}% of this month's obligations.": "您已支付本月义务的 {{percent}}%。",
+  "You have paid {{percent}}% of this month's obligations.": "您已支付本月义务的{{percent}}%。",
   "Family Setup": "群组设置",
   "Sync bills with your family or housemates.": "与您的群组或室友同步账单。",
   "Join a Group": "加入群组",
@@ -280,15 +280,15 @@
   "Due:": "到期：",
   "Update": "更新",
   "Failed to export data": "导出数据失败",
-  "TermsText": "最后更新：2025年12月\n\n1. 同意条款\n访问或使用本应用程序即表示您同意受本使用条款的约束。本应用程序由 Dunn-Carabali, LLC 运营。如果您不同意这些条款的任何部分，您可能无法访问服务。\n\n2. 知识产权\n服务及其原始内容、功能和功能是并将始终是 Dunn-Carabali, LLC 及其许可方的独家财产。\n\n3. 用户责任\n您同意不将本应用程序用于任何非法目的，或唆使他人从事或参与任何非法行为。\n\n4. 免责声明\n您使用本服务的风险由您自行承担。本服务按“原样”和“可用”基础提供。Dunn-Carabali, LLC 明确否认任何形式的所有保证。\n\n5. 责任限制\n在任何情况下，Dunn-Carabali, LLC 及其董事、员工、合作伙伴、代理、供应商或关联公司均不对任何间接、附带、特殊、后果性或惩罚性损害负责。\n\n6. 条款变更\n我们保留随时修改或替换这些条款的权利。在这些修订生效后继续访问或使用我们的服务，即表示您同意受修订条款的约束。\n\n7. 联系我们\n如果您对这些条款有任何疑问，请联系 Dunn-Carabali, LLC。",
-  "PrivacyText": "最后更新：2025年12月\n\n1. 引言\nDunn-Carabali, LLC（“我们”或“我们的”）运营此移动应用程序。本页面旨在告知您我们在您使用我们的服务时关于个人数据收集、使用和披露的政策。\n\n2. 信息收集和使用\n我们出于各种目的收集几种不同类型的信息，以向您提供和改进我们的服务，包括：\n- 个人数据（例如，电子邮件地址、姓名）\n- 使用数据（例如，设备类型、操作系统）\n\n3. 数据使用\nDunn-Carabali, LLC 使用收集到的数据来提供和维护服务，通知您更改，提供客户支持，并监控使用情况。\n\n4. 数据披露\n我们可能会出于善意认为此类行动对于遵守法律义务、保护和捍卫 Dunn-Carabali, LLC 的权利或财产，或保护用户的人身安全是必要的，而披露您的个人数据。\n\n5. 数据安全\n您的数据安全对我们很重要，但请记住，互联网上的任何传输方法都不是100%安全的。虽然我们努力使用商业上可接受的方法来保护您的个人数据，但我们无法保证其绝对安全。\n\n6. 本政策的变更\n我们可能会不时更新我们的隐私政策。我们将通过在此页面上发布新的隐私政策来通知您任何更改。\n\n7. 联系我们\n如果您对本隐私政策有任何疑问，请联系 Dunn-Carabali, LLC。",
+  "TermsText": "最后更新：2025年12月\n\n1. 同意条款\n访问或使用本应用程序，即表示您同意受本使用条款的约束。本应用程序由Dunn-Carabali, LLC运营。如果您不同意这些条款的任何部分，您可能无法访问服务。\n\n2. 知识产权\n服务及其原始内容、功能和特性是并将始终是Dunn-Carabali, LLC及其许可方的独家财产。\n\n3. 用户责任\n您同意不将本应用程序用于任何非法目的，或唆使他人进行或参与任何非法行为。\n\n4. 免责声明\n您使用本服务的风险由您自行承担。本服务按“原样”和“可用”基础提供。Dunn-Carabali, LLC明确否认任何形式的所有保证。\n\n5. 责任限制\n在任何情况下，Dunn-Carabali, LLC及其董事、员工、合作伙伴、代理、供应商或关联公司均不对任何间接、附带、特殊、后果性或惩罚性损害承担责任。\n\n6. 条款变更\n我们保留随时修改或替换这些条款的权利。在这些修订生效后继续访问或使用我们的服务，即表示您同意受修订条款的约束。\n\n7. 联系我们\n如果您对这些条款有任何疑问，请联系Dunn-Carabali, LLC。",
+  "PrivacyText": "最后更新：2025年12月\n\n1. 引言\nDunn-Carabali, LLC（“我们”或“我们的”）运营此移动应用程序。本页面旨在告知您在使用我们的服务时，我们关于个人数据收集、使用和披露的政策。\n\n2. 信息收集与使用\n我们出于多种目的收集不同类型的信息，以向您提供和改进我们的服务，包括：\n- 个人数据（例如，电子邮件地址、姓名）\n- 使用数据（例如，设备类型、操作系统）\n\n3. 数据使用\nDunn-Carabali, LLC使用收集到的数据来提供和维护服务，通知您变更，提供客户支持，并监控使用情况。\n\n4. 数据披露\n我们可能会出于善意认为有必要披露您的个人数据，以遵守法律义务，保护和捍卫Dunn-Carabali, LLC的权利或财产，或保护用户的个人安全。\n\n5. 数据安全\n您的数据安全对我们很重要，但请记住，互联网上的任何传输方法都不是100%安全的。虽然我们努力使用商业上可接受的方法来保护您的个人数据，但我们无法保证其绝对安全。\n\n6. 本政策的变更\n我们可能会不时更新我们的隐私政策。我们将通过在此页面上发布新的隐私政策来通知您任何变更。\n\n7. 联系我们\n如果您对本隐私政策有任何疑问，请联系Dunn-Carabali, LLC。",
   "Tip: Long press a bill to see more actions": "提示：长按账单可查看更多操作",
   "Bill": "账单",
   "Bill Paid": "账单已支付",
-  "OVERDUE: {{creditor}} - ${{amount}} was due {{date}}": "逾期：{{creditor}} - ${{amount}} 已于 {{date}} 到期",
+  "OVERDUE: {{creditor}} - ${{amount}} was due {{date}}": "逾期：{{creditor}} - ${{amount}}已于{{date}}到期",
   "Since this bill is recurring, we went ahead and recreated it for the next period.": "由于此账单是循环的，我们已为您重新创建了下一期的账单。",
   "Pending (This Month)": "待处理（本月）",
-  "Exporting...": "导出中...",
+  "Exporting...": "正在导出...",
   "Overdue": "逾期",
   "This Month": "本月",
   "Next Month": "下个月",
@@ -307,15 +307,15 @@
   "Top Creditor": "主要债权人",
   "Visualize your spending trends": "可视化您的消费趋势",
   "Nothing overdue": "无逾期",
-  "{{count}} overdue": "{{count}} 笔逾期",
+  "{{count}} overdue": "{{count}}逾期",
   "No requests found.": "未找到请求。",
   "Creditor Breakdown": "债权人明细",
   "Decryption Failed": "[解密失败]",
   "Decryption Error": "[错误：{{error}}]",
-  "Key Rotation Required": "无法加载群组数据。需要群组管理员进行密钥轮换以恢复此设备的访问权限。",
-  "Local Key Missing": "本地加密密钥缺失。请退出并重新登录。",
-  "Security Key Missing Create": "安全密钥缺失：应用无法在本地找到创建账单所需的加密密钥。请退出并重新登录。",
-  "Security Key Missing Update": "安全密钥缺失：应用无法在本地找到更新账单所需的加密密钥。请退出并重新登录。",
+  "Key Rotation Required": "无法加载群组数据。需要群组管理员进行密钥轮换以在此设备上恢复访问权限。",
+  "Local Key Missing": "本地加密密钥缺失。请注销并重新登录。",
+  "Security Key Missing Create": "安全密钥缺失：应用程序无法在本地找到创建账单所需的加密密钥。请注销并重新登录。",
+  "Security Key Missing Update": "安全密钥缺失：应用程序无法在本地找到更新账单所需的加密密钥。请注销并重新登录。",
   "Monthly Spending Trend": "月度消费趋势",
   "Recurrence Frequency": "循环频率",
   "Total Bills Amount": "账单总金额",
@@ -334,12 +334,12 @@
   "All Bills": "所有账单",
   "Delete Bill": "删除账单",
   "Are you sure you want to delete this bill?": "您确定要删除此账单吗？",
-  "Mark {{creditor}} as paid?": "将 {{creditor}} 标记为已支付吗？",
+  "Mark {{creditor}} as paid?": "将{{creditor}}标记为已支付？",
   "Please pick a CSV and parse some bills first.": "请先选择一个CSV文件并解析一些账单。",
   "Rotate Key": "轮换密钥",
   "Family encryption key successfully rotated. All members will sync automatically.": "群组加密密钥已成功轮换。所有成员将自动同步。",
   "Rotation Failed": "轮换失败",
-  "An unknown error occurred during key rotation. Check console for details.": "密钥轮换期间发生未知错误。请查看控制台获取详细信息。",
+  "An unknown error occurred during key rotation. Check console for details.": "密钥轮换期间发生未知错误。请查看控制台获取详情。",
   "Rotating Key...": "正在轮换密钥...",
   "Are you sure you want to cancel your join request?": "您确定要取消您的加入请求吗？",
   "No": "否",
@@ -350,7 +350,7 @@
   "(You)": "（您）",
   "You will leave this group and take your data with you. We will re-encrypt your data with a new key.": "您将离开此群组并带走您的数据。我们将使用新密钥重新加密您的数据。",
   "Leave & Secure Data": "离开并保护数据",
-  "You have left the family and your data has been re-secured.": "您已离开群组，您的数据已重新保护。",
+  "You have left the family and your data has been re-secured.": "您已离开群组，并且您的数据已重新保护。",
   "Failed to leave family securely.": "未能安全离开群组。",
   "Securing your data...": "正在保护您的数据...",
   "Search questions...": "搜索问题...",
@@ -360,7 +360,7 @@
   "section_reminders": "默认提醒",
   "Denied on": "拒绝于",
   "Cancel Request": "取消请求",
-  "Auto Draft": "自动扣款",
+  "Auto Draft": "自动草稿",
   "Manual": "手动",
   "Waiting for an admin to approve your request.": "正在等待管理员批准您的请求。",
   "Approval Pending": "待批准",
@@ -368,12 +368,12 @@
   "You requested to join family": "您请求加入群组",
   "Payment Method": "支付方式",
   "rotation_title": "加密密钥轮换",
-  "rotation_description": "如果群组成员在新设备安装或重新登录后无法访问加密账单，请使用此功能。此过程是安全的，但需要成员重新登录。",
+  "rotation_description": "如果群组成员在新设备安装或重新登录后无法访问加密账单，请使用此功能。此过程是安全的，但需要成员再次登录。",
   "rotation_button": "轮换群组加密密钥",
   "rotation_success_title": "密钥轮换成功",
-  "rotation_success_message": "已生成新密钥并与所有成员共享。受影响的成员必须重新启动应用才能同步。",
-  "rotation_error": "未能轮换密钥。请重试或联系支持。",
-  "This will generate a new encryption key for your family. All members must be able to sync to continue accessing data. Proceed?": "这将为您的群组生成一个新的加密密钥。所有成员必须能够同步才能继续访问数据。是否继续？",
+  "rotation_success_message": "已生成新密钥并与所有成员共享。受影响的成员必须重新启动应用程序才能同步。",
+  "rotation_error": "轮换密钥失败。请重试或联系支持。",
+  "This will generate a new encryption key for your family. All members must be able to sync to continue accessing data. Proceed?": "这将为您的群组生成一个新的加密密钥。所有成员都必须能够同步才能继续访问数据。是否继续？",
   "rotaion_key": "正在轮换密钥...",
   "Rotating Key": "正在轮换密钥",
   "members_admin": "管理员",
@@ -381,17 +381,17 @@
   "members_current_user": "（您）",
   "members_remove_button": "移除",
   "members_remove_confirm_title": "移除成员？",
-  "members_remove_confirm_message": "您确定要将 {name} 从群组中移除吗？",
-  "members_remove_success": "{name} 已被移除。",
+  "members_remove_confirm_message": "您确定要将{name}从群组中移除吗？",
+  "members_remove_success": "{name}已被移除。",
   "members_remove_error": "移除成员失败。",
   "members_leave_button": "离开群组",
   "members_leave_confirm_title": "离开群组？",
-  "members_leave_confirm_message": "您确定要离开群组吗？您将失去对所有共享账单的访问权限。",
+  "members_leave_confirm_message": "您确定要离开此群组吗？您将失去对所有共享账单的访问权限。",
   "members_leave_success": "您已离开群组。",
   "reminders_offset_label": "默认提醒偏移量（天）",
-  "reminders_offset_description": "在到期日前多少天发送提醒？",
+  "reminders_offset_description": "在到期日之前多少天发送提醒？",
   "reminders_time_label": "默认提醒时间",
-  "reminders_time_description": "发送提醒通知的时间（本地时间）。",
+  "reminders_time_description": "发送提醒通知的时间（当地时间）。",
   "reminders_save_button": "保存设置",
   "reminders_save_success": "设置更新成功。",
   "reminders_save_error": "保存设置失败。",
@@ -403,7 +403,7 @@
   "download_template_subtitle": "获取CSV模板以确保格式正确。",
   "template_sample_row": "Netflix,15.99,2023-12-25,家庭套餐,每月,0,自动支付",
   "portal_alert_msg": "在浏览器中打开门户或将链接分享到您的电脑。",
-  "portal_share_msg": "访问 BillBell 网页门户上传您的账单：",
+  "portal_share_msg": "访问BillBell网页门户上传您的账单：",
   "open": "打开",
   "Pay": "支付",
   "share_link": "分享链接",
@@ -417,25 +417,25 @@
   "Data": "数据管理",
   "Invite Members": "邀请成员",
   "Invite to Group": "邀请加入群组",
-  "Join my family on BillBell to sync our bills!": "加入我的 BillBell 群组以同步我们的账单！",
+  "Join my family on BillBell to sync our bills!": "在BillBell上加入我的群组以同步我们的账单！",
   "Click to join or download": "点击加入或下载",
   "Use Code": "使用代码",
-  "Family ID not found.": "群组ID未找到。",
+  "Family ID not found.": "未找到群组ID。",
   "Join Requests": "加入请求",
   "You": "您",
   "Smart Budgets": "智能预算",
   "Tap a category to set a monthly limit.": "点击一个类别以设置每月限额。",
-  "Set Limit for {{category}}": "为 {{category}} 设置限额",
+  "Set Limit for {{category}}": "为{{category}}设置限额",
   "Set Budget": "设置预算",
   "Next Week": "下周",
   "This Week": "本周",
   "Spending Habits": "消费习惯",
   "Scan Recovery Kit": "扫描恢复工具包",
   "Search bills...": "搜索账单...",
-  "No bills found matching '{{query}}'": "未找到与 '{{query}}' 匹配的账单",
+  "No bills found matching '{{query}}'": "未找到与“{{query}}”匹配的账单",
   "Creditor (e.g. Netflix)": "债权人（例如：Netflix）",
   "Scan Successful": "扫描成功",
-  "We found an amount of ${{amt}}. Please verify the details.": "我们找到了金额 ${{amt}}。请验证详细信息。",
+  "We found an amount of ${{amt}}. Please verify the details.": "我们找到了金额${{amt}}。请验证详情。",
   "Spending Insights": "消费洞察",
   "Verify Backup": "验证备份",
   "6 Month Trend": "6个月趋势",
@@ -445,7 +445,7 @@
   "Active Bills": "活跃账单",
   "Scan Failed": "扫描失败",
   "Restore Account?": "恢复账户？",
-  "Hi! I'm Bill Bell. Ask me about your finances.": "嗨！我是 Bill Bell。向我询问您的财务状况。",
+  "Hi! I'm Bill Bell. Ask me about your finances.": "您好！我是Bill Bell。请向我咨询您的财务问题。",
   "Network error.": "网络错误。",
   "Ask about your bills...": "询问您的账单...",
   "No End Date (Indefinite)": "无结束日期（无限期）",
@@ -461,12 +461,12 @@
   "Scanned Data": "扫描数据",
   "This key does not match your current device. Would you like to restore this key to recover your encrypted data?": "此密钥与您当前设备不匹配。您想恢复此密钥以恢复您的加密数据吗？",
   "Restore Identity": "恢复身份",
-  "Your encryption key has been restored. The app will now reload to apply changes.": "您的加密密钥已恢复。应用现在将重新加载以应用更改。",
+  "Your encryption key has been restored. The app will now reload to apply changes.": "您的加密密钥已恢复。应用程序将重新加载以应用更改。",
   "Great! This Recovery Kit matches your current device.": "太棒了！此恢复工具包与您当前设备匹配。",
   "Could not validate key.": "无法验证密钥。",
   "Verified": "已验证",
   "Mismatch": "不匹配",
-  "Invalid Key Format. Please scan a valid BillBell Recovery Kit.": "无效的密钥格式。请扫描有效的 BillBell 恢复工具包。",
+  "Invalid Key Format. Please scan a valid BillBell Recovery Kit.": "无效的密钥格式。请扫描有效的BillBell恢复工具包。",
   "Failed to process the recovery key. It may be corrupted.": "处理恢复密钥失败。它可能已损坏。",
   "The scanned key does not match this device. It may be for a different account.": "扫描的密钥与此设备不匹配。它可能属于不同的账户。",
   "This Recovery Kit is valid and matches your current device key.": "此恢复工具包有效并与您当前设备密钥匹配。",
@@ -478,19 +478,19 @@
   "Bill marked as paid.": "账单已标记为已支付。",
   "Your data is end-to-end encrypted. If you lose this device, you will need your Recovery Kit to restore your bills. We do not store your private key.": "您的数据是端到端加密的。如果您丢失此设备，您将需要您的恢复工具包来恢复您的账单。我们不存储您的私钥。",
   "Report Crash": "报告崩溃",
-  "BillBell Crash Report": "BillBell 崩溃报告",
+  "BillBell Crash Report": "BillBell崩溃报告",
   "Restart App": "重启应用",
   "Report Issue": "报告问题",
   "Oops! Something went wrong.": "哎呀！出错了。",
   "We have encountered an unexpected error. Your data is safe.": "我们遇到了一个意外错误。您的数据是安全的。",
-  "View Join Requests from family or friends": "查看来自他人（群组或朋友）的加入请求",
+  "View Join Requests from family or friends": "查看来自其他人的加入请求",
   "No pending requests.": "没有待处理的请求。",
   "Request Denied": "请求已拒绝",
   "Confirm Key Rotation": "确认密钥轮换",
   "Request Sent": "请求已发送",
   "Still Pending": "仍在待处理",
   "Only use this if a member cannot sync bills or receives a decryption error after using a new device.": "仅当成员无法同步账单或在新设备上使用后收到解密错误时才使用此功能。",
-  "Show Overdue on Lock Screen": "在锁屏上显示逾期账单",
+  "Show Overdue on Lock Screen": "在锁屏上显示逾期",
   "Your request has not been approved yet.": "您的请求尚未获得批准。",
   "The family admin has denied your request to join.": "管理员已拒绝您的加入请求。",
   "Your request has been sent to the family admin for approval.": "您的请求已发送给管理员等待批准。",
@@ -500,7 +500,7 @@
   "Application": "应用程序",
   "faqSections": [
     {
-      "title": "添加和管理债务",
+      "title": "添加与管理债务",
       "items": [
         {
           "q": "如何添加债务？",
@@ -508,7 +508,7 @@
         },
         {
           "q": "如何编辑或更新债务？",
-          "a": "点击列表中的任何债务即可打开编辑屏幕，您可以在其中更新其详细信息。"
+          "a": "点击列表中的任何债务以打开编辑屏幕，您可以在其中更新其详细信息。"
         },
         {
           "q": "如何删除债务？",
@@ -516,7 +516,7 @@
         },
         {
           "q": "当我将债务标记为已支付时会发生什么？",
-          "a": "它会移至“已支付”部分，并且该债务的未来提醒会自动停止。"
+          "a": "它会移动到“已支付”部分，并且该债务的未来提醒将自动停止。"
         }
       ]
     },
@@ -529,7 +529,7 @@
         },
         {
           "q": "为什么我没有收到通知？",
-          "a": "请确保在您的设备设置中为应用启用了通知。同时确认您已登录并属于某个群组。"
+          "a": "请确保在您的设备设置中为应用程序启用了通知。同时确认您已登录并属于一个群组。"
         },
         {
           "q": "提醒会在所有设备上同步吗？",
@@ -554,7 +554,7 @@
         },
         {
           "q": "我可以离开群组吗？",
-          "a": "是的。您可以从群组设置屏幕离开。如果您是唯一的管理员，则必须先指定新的管理员。"
+          "a": "是的。您可以从群组设置屏幕离开。如果您是唯一的管理员，您必须首先指定一位新的管理员。"
         }
       ]
     },
@@ -563,7 +563,7 @@
       "items": [
         {
           "q": "导入代码如何工作？",
-          "a": "群组管理员可以生成一次性导入代码。在批量上传屏幕中使用它，可以安全地从CSV文件导入债务。"
+          "a": "群组管理员可以生成一次性导入代码。在批量上传屏幕中使用它，从CSV文件安全导入债务。"
         },
         {
           "q": "我可以导入什么文件类型？",
@@ -571,11 +571,11 @@
         },
         {
           "q": "我可以一次导入多个债务吗？",
-          "a": "是的。使用批量上传功能可以一步从电子表格中导入多个债务。"
+          "a": "是的。使用批量上传功能，一步从电子表格中导入多个债务。"
         },
         {
           "q": "为什么我的导入失败了？",
-          "a": "请检查您的CSV是否使用有效格式，以及您的导入代码是否未过期或已被使用。"
+          "a": "请检查您的CSV文件格式是否有效，并且您的导入代码是否未过期或已被使用。"
         }
       ]
     },
@@ -584,27 +584,27 @@
       "items": [
         {
           "q": "如何登录？",
-          "a": "您可以根据您的设备使用 Apple 登录或 Google 登录。"
+          "a": "您可以根据您的设备使用Apple登录或Google登录。"
         },
         {
           "q": "我的数据安全吗？",
-          "a": "是的。您的数据通过加密的身份验证令牌保护，并安全地存储在服务器上。"
+          "a": "是的。您的数据通过加密的身份验证令牌进行保护，并安全地存储在服务器上。"
         },
         {
           "q": "我的数据会在设备之间同步吗？",
-          "a": "是的。只要您使用相同的 Apple 或 Google 账户登录，您的数据就会自动同步。"
+          "a": "是的。只要您使用相同的Apple或Google账户登录，您的数据就会自动同步。"
         },
         {
-          "q": "如果我通过 CSV 导入账单，它们会立即加密吗？",
-          "a": "为确保最大程度的隐私，BillBell 使用“端到端加密”。这意味着加密密钥仅存在于您的设备上，而不存在于我们的服务器上。当您上传 CSV 文件进行批量导入时，我们的服务器会对其进行处理以创建账单。由于我们的服务器没有（也不应该有）您的私有加密密钥，因此它无法加密这些导入账单的数据。它们最初以纯文本形式存储。如何保护它们：一旦您打开应用程序并且您的手机下载了新导入的账单，它们将正常工作。如果您编辑并保存导入的账单，应用程序将使用您设备上的密钥自动对其进行加密，从而从那时起保护它。"
+          "q": "如果我通过CSV导入账单，它们会立即加密吗？",
+          "a": "为确保最大程度的隐私，BillBell使用“端到端加密”。这意味着加密密钥仅存在于您的设备上，而非我们的服务器上。当您上传CSV文件进行批量导入时，我们的服务器会处理它以创建账单。由于我们的服务器没有（也不应该有）您的私有加密密钥，因此它无法加密这些导入账单的数据。它们最初以纯文本形式存储。如何保护它们：一旦您打开应用程序并且您的手机下载了新的导入账单，它们将正常工作。如果您编辑并保存导入的账单，应用程序将自动使用您设备上的密钥对其进行加密，从而从那时起保护它。"
         },
         {
           "q": "为什么我再也看不到我的账单了（解密失败）？",
-          "a": "此问题通常发生在新设备上或重新安装应用程序后，您的设备没有存储当前的群组加密密钥。应用程序使用一组独特的加密密钥来保护您群组的数据。如果您的新设备的公钥在生成最新密钥之前未与服务器同步，则应用程序无法解密群组密钥。"
+          "a": "此问题通常发生在新设备上或重新安装应用程序后，此时您的设备未存储当前的群组加密密钥。应用程序使用一组独特的加密密钥来保护您群组的数据。如果您的新设备的公钥在最新密钥生成之前未与服务器同步，则应用程序无法解密群组密钥。"
         },
         {
           "q": "如何修复解密失败",
-          "a": "此问题只能由群组管理员运行密钥轮换来解决：管理员操作：具有管理员角色的用户必须前往群组设置并选择“轮换群组加密密钥”。轮换的作用：此过程会生成一个全新的密钥，并使用每个成员文件中的最新公钥专门为他们重新加密该密钥。您的操作：管理员完成轮换后，请完全关闭并在您出现问题的设备上重新启动应用程序。应用程序将下载新密钥，您的账单将重新出现。注意：如果管理员轮换密钥后问题仍然存在，您可能需要退出并重新登录以强制完全重置您的本地设备密钥。"
+          "a": "此问题只能通过群组管理员执行密钥轮换来解决：管理员操作：具有管理员角色的用户必须前往“群组设置”并选择“轮换群组加密密钥”。轮换的作用：此过程会生成一个全新的密钥，并使用每个成员最新的公钥重新加密该密钥。您的操作：管理员完成轮换后，在您出现问题的设备上完全关闭并重新启动应用程序。应用程序将下载新密钥，您的账单将重新出现。注意：如果管理员轮换密钥后问题仍然存在，您可能需要注销并再次登录以强制完全重置您的本地设备密钥。"
         }
       ]
     },
@@ -613,11 +613,11 @@
       "items": [
         {
           "q": "应用支持深色模式吗？",
-          "a": "是的。应用会自动适应您设备的显示设置。"
+          "a": "是的。应用程序会自动适应您设备的显示设置。"
         },
         {
           "q": "我可以更改我的提醒设置吗？",
-          "a": "群组管理员可以在群组设置中更新默认提醒时间。"
+          "a": "群组管理员可以在“群组设置”中更新默认提醒时间。"
         },
         {
           "q": "我可以更改我的共享ID吗？",
@@ -630,7 +630,7 @@
       "items": [
         {
           "q": "我应该如何输入金额？",
-          "a": "输入完整金额，不带符号。例如，“150.25”变为 $150.25。"
+          "a": "输入完整金额，不带符号。例如，“150.25”表示$150.25。"
         },
         {
           "q": "我可以追踪自动支付的账单吗？",
@@ -647,7 +647,7 @@
         },
         {
           "q": "我不小心删除了一个债务。我可以恢复它吗？",
-          "a": "不能。已删除的债务无法恢复，因此请谨慎删除。"
+          "a": "不能。已删除的债务无法恢复，请谨慎删除。"
         }
       ]
     }

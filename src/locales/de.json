@@ -6,12 +6,13 @@
   "Failed to mark paid from notification": "Fehler beim Markieren als bezahlt aus der Benachrichtigung:",
   "Error marking bill as paid": "Fehler beim Markieren der Rechnung als bezahlt.",
   "Align invoice within frame": "Rechnung im Rahmen ausrichten",
-  "Processing...": "Verarbeitung läuft...",
+  "Processing...": "Verarbeite...",
   "Ends": "Endet",
   "End Date (Optional)": "Enddatum (Optional)",
   "Top 3 subscriptions": "Top 3 Abonnements",
   "category_entertainment": "Unterhaltung",
   "category_utilities": "Nebenkosten & Internet",
+  "Status:": "Status:",
   "category_housing": "Wohnen",
   "category_insurance": "Versicherung",
   "category_finance": "Finanzen & Bankwesen",
@@ -34,8 +35,8 @@
   "Edit Debts": "Schulden bearbeiten",
   "Profile": "Profil",
   "Shared Settings": "Geteilte Einstellungen",
-  "Import Code": "Importcode (Sicherheitscode für CSV- & XLXS-Massenimport)",
-  "CodeExpires": "Code: {{code}} (läuft ab am {{expiresAt}})",
+  "Import Code": "Importcode (Sicherheitscode für CSV- & XLSX-Massenimport)",
+  "CodeExpires": "Code: {{code}} (läuft ab {{expiresAt}})",
   "Mark as Paid": "Als bezahlt markieren",
   "Bill reminder": "Rechnungserinnerung: ",
   "Can't open link": "Link kann nicht geöffnet werden",
@@ -78,9 +79,9 @@
   "Settings": "Einstellungen",
   "Members": "Geteilte Mitglieder",
   "Import Codes & Epiration Date": "Import-Sicherheitscode & Ablaufdatum",
-  "Touch Generate Import Code": "Berühren Sie die Schaltfläche „Importcode generieren“ unten, um einen Code zu generieren.",
+  "Touch Generate Import Code": "Tippen Sie unten auf die Schaltfläche „Importcode generieren“, um einen Code zu erstellen.",
   "Share ID": "Meine Freigabe-ID",
-  "+ Add": "+ Hinzufügen",
+  "+ Add": "Hinzufügen",
   "Pending": "Ausstehend",
   "Paid": "Bezahlt",
   "No pending debts": "Keine ausstehenden Schulden 🎉",
@@ -90,7 +91,7 @@
   "Mark Paid": "Als bezahlt markieren",
   "Delete": "Löschen",
   "Import": "Importieren",
-  "No valid rows found in CSV.": "Keine gültigen Zeilen in CSV gefunden.",
+  "No valid rows found in CSV.": "Keine gültigen Zeilen in der CSV-Datei gefunden.",
   "Import error": "Importfehler",
   "Failed to read CSV": "Fehler beim Lesen der CSV-Datei",
   "Please enter an import code.": "Bitte geben Sie einen Importcode ein.",
@@ -100,9 +101,9 @@
   "Import failed": "Import fehlgeschlagen",
   "Import Bills": "Rechnungen importieren",
   "Import code (Generated in Profile)": "Importcode (im Profil generiert)",
-  "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time": "Gläubiger, Betrag, Fälligkeitsdatum, Wiederholung, Erinnerungs-Offset-Tage, Erinnerungszeit",
+  "Creditor, Amount, Due Date. Recurrence, Reminder Offset Days, Reminder Time": "Gläubiger, Betrag, Fälligkeitsdatum, Wiederholung, Erinnerungsversatz (Tage), Erinnerungszeit",
   "Paste the import code you generated (or received), then pick a CSV file with your bills. Upload a CSV or XLSX with columns:": "Fügen Sie den von Ihnen generierten (oder erhaltenen) Importcode ein und wählen Sie dann eine CSV-Datei mit Ihren Rechnungen aus. Laden Sie eine CSV- oder XLSX-Datei mit den folgenden Headern hoch:",
-  "Pick another  or XLSX": "Eine andere CSV- oder XLSX-Datei auswählen",
+  "Pick another or XLSX": "Eine andere CSV- oder XLSX-Datei auswählen",
   "Pick CSV or XLSX file": "CSV- oder XLSX-Datei auswählen",
   "Selected:": "Ausgewählt: ",
   "Parsed": "{{bills}} Rechnung(en) analysiert",
@@ -118,25 +119,25 @@
   "Next": "Weiter",
   "Track Your Bills": "Verfolgen Sie Ihre Rechnungen",
   "Keep all your subscriptions, utilities, and debts in one organized list.": "Halten Sie alle Ihre Abonnements, Nebenkosten und Schulden in einer organisierten Liste.",
-  "Never Miss a Date": "Verpassen Sie kein Datum mehr",
-  "Receive timely reminders before bills are due so you can avoid late fees.": "Erhalten Sie rechtzeitig Erinnerungen, bevor Rechnungen fällig werden, um Mahngebühren zu vermeiden.",
-  "Share with Family": "Mit der Familie teilen",
+  "Never Miss a Date": "Verpassen Sie kein Datum",
+  "Receive timely reminders before bills are due so you can avoid late fees.": "Erhalten Sie rechtzeitig Erinnerungen, bevor Rechnungen fällig sind, um Mahngebühren zu vermeiden.",
+  "Share with Family": "Mit der Gruppe teilen",
   "Create a Shared Group to manage household expenses and bills together.": "Erstellen Sie eine geteilte Gruppe, um Haushaltsausgaben und Rechnungen gemeinsam zu verwalten.",
   "Skip": "Überspringen",
-  "Visualize your spending habits and see exactly where your money goes.": "Visualisieren Sie Ihre Ausgabengewohnheiten und sehen Sie genau, wohin Ihr Geld fließt.",
+  "Visualize your spending habits and see exactly where your money goes.": "Visualisieren Sie Ihre Ausgabegewohnheiten und sehen Sie genau, wohin Ihr Geld fließt.",
   "Secure & Private": "Sicher & Privat",
   "Your data is encrypted and stored locally on your device.": "Ihre Daten werden verschlüsselt und lokal auf Ihrem Gerät gespeichert.",
   "Only a admin can change shared settings.": "Nur ein Administrator kann geteilte Einstellungen ändern.",
-  "Time must be HH:MM or HH:MM:SS": "Die Zeit muss im Format HH:MM oder HH:MM:SS sein",
-  "Offset must be 0, 1, 2, or 3": "Offset muss 0, 1, 2 oder 3 sein",
+  "Time must be HH:MM or HH:MM:SS": "Zeit muss HH:MM oder HH:MM:SS sein",
+  "Offset must be 0, 1, 2, or 3": "Versatz muss 0, 1, 2 oder 3 sein",
   "Saved": "Gespeichert",
   "Unlock App": "App entsperren",
   "Unlock": "Entsperren",
   "Use Passcode": "Passcode verwenden",
   "Share defaults updated.": "Freigabe-Standardeinstellungen aktualisiert.",
   "Share Settings": "Freigabe-Einstellungen",
-  "Shared reminder defaults for the whole group.": "Geteilte Erinnerungs-Standardeinstellungen für die gesamte Gruppe.",
-  "Default offset": "Standard-Offset",
+  "Shared reminder defaults for the whole group.": "Geteilte Standard-Erinnerungen für die gesamte Gruppe.",
+  "Default offset": "Standard-Versatz",
   "Default time (local)": "Standard-Benachrichtigungszeit",
   "Ask a family admin to change these.": "Bitten Sie einen Gruppenadministrator, diese zu ändern.",
   "Family created": "Konto erstellt",
@@ -144,7 +145,7 @@
   "Create a new Family": "Neue Gruppe erstellen",
   "Or join with Family ID": "Oder mit Freigabe-ID beitreten",
   "Join Family": "Geteiltem Konto beitreten",
-  "FAQ": "FAQs",
+  "FAQ": "Häufig gestellte Fragen",
   "Frequently Asked Questions": "Häufig gestellte Fragen",
   "Feedback & Bugs": "Feedback & Fehler",
   "Found a bug or have a suggestion? Let us know!": "Einen Fehler gefunden oder einen Vorschlag? Lassen Sie es uns wissen!",
@@ -171,7 +172,7 @@
   "Export Bills CSV": "Rechnungen als CSV exportieren",
   "Name": "Name",
   "Please authenticate to continue": "Bitte authentifizieren Sie sich, um fortzufahren",
-  "Paid Date": "Zahlungsdatum",
+  "Paid Date": "Bezahlt am",
   "All caught up!": "Alles erledigt!",
   "No paid history": "Keine Zahlungshistorie",
   "You have no pending bills. Enjoy the freedom!": "Sie haben keine ausstehenden Rechnungen. Genießen Sie die Freiheit!",
@@ -185,7 +186,7 @@
   "Add to Device Calendar": "Zum Gerätekalender hinzufügen",
   "Notes (Optional)": "Notizen (Optional)",
   "e.g. Account #12345": "z.B. Konto Nr. 12345",
-  "FAQ & Help": "FAQ & Hilfe",
+  "FAQ & Help": "Häufig gestellte Fragen & Hilfe",
   "Financial Insights": "Finanzielle Einblicke",
   "Family setup": "Gruppenkonto-Einrichtung",
   "e.g. K7P3D9": "z.B. K7P3D9",
@@ -195,7 +196,7 @@
   "Support": "Support",
   "Import via CSV/XLSX": "Import via CSV/XLSX",
   "Active": "Aktiv",
-  "Create secure code for upload": "Sicheren Code für Upload erstellen",
+  "Create secure code for upload": "Sicheren Code für den Upload erstellen",
   "Share ID copied to clipboard.": "Freigabe-ID in die Zwischenablage kopiert.",
   "Code": "Code",
   "Expires": "Läuft ab",
@@ -226,7 +227,7 @@
   "Step 2: Select File": "Schritt 2: Datei auswählen",
   "Step 3: Authorization": "Schritt 3: Autorisierung",
   "Enter Import Code": "Importcode eingeben",
-  "Generate this in your Profile": "Diesen in Ihrem Profil generieren",
+  "Generate this in your Profile": "Dies in Ihrem Profil generieren",
   "Start Import": "Import starten",
   "Tap to select CSV/XLSX": "Tippen, um CSV/XLSX auszuwählen",
   "Failed to download template": "Fehler beim Herunterladen der Vorlage",
@@ -235,10 +236,10 @@
   "Title": "Titel",
   "TitlePlaceholder": "Kurze Zusammenfassung (z.B. 'Absturz beim Hinzufügen einer Rechnung')",
   "Details": "Details",
-  "DetailsPlaceholderFeedback": "Teilen Sie Ihre Gedanken, Ideen oder Vorschläge mit.",
+  "DetailsPlaceholderFeedback": "Teilen Sie Ihre Gedanken, Ideen oder Vorschläge.",
   "DetailsPlaceholderBug": "Was ist passiert? Schritte zur Reproduktion?",
   "ContactLabel": "Kontakt (Optional)",
-  "ContactPlaceholder": "E-Mail oder @Handle, wenn Sie eine Antwort wünschen",
+  "ContactPlaceholder": "E-Mail oder @Benutzername, wenn Sie eine Antwort wünschen",
   "Send": "Senden",
   "Opening mail…": "E-Mail wird geöffnet…",
   "MailAppDisclaimer": "Dies öffnet Ihre E-Mail-App mit einer vorausgefüllten Nachricht.",
@@ -256,12 +257,12 @@
   "Alert Time": "Benachrichtigungszeit",
   "Save Bill": "Rechnung speichern",
   "Total": "Gesamt",
-  "Track your spending habits": "Verfolgen Sie Ihre Ausgabengewohnheiten",
+  "Track your spending habits": "Verfolgen Sie Ihre Ausgabegewohnheiten",
   "Remaining Due": "Restbetrag fällig",
   "Paid this Month": "Diesen Monat bezahlt",
   "6-Month Trend": "6-Monats-Trend",
   "Projected Liabilities": "Prognostizierte Verbindlichkeiten",
-  "PRO ESTIMATE": "PRO SCHÄTZUNG",
+  "PRO ESTIMATE": "PRO-SCHÄTZUNG",
   "Based on your recurring bills, next month's minimum:": "Basierend auf Ihren wiederkehrenden Rechnungen, das Minimum des nächsten Monats:",
   "Payment Ratio": "Zahlungsverhältnis",
   "You have paid {{percent}}% of this month's obligations.": "Sie haben {{percent}}% der Verpflichtungen dieses Monats bezahlt.",
@@ -276,11 +277,12 @@
   "OR": "ODER",
   "Export Data": "Daten exportieren",
   "Download CSV": "CSV herunterladen",
+  "Due:": "Fällig:",
   "Update": "Aktualisieren",
   "Failed to export data": "Fehler beim Exportieren der Daten",
-  "TermsText": "Zuletzt aktualisiert: Dezember 2025\n\n1. Zustimmung zu den Bedingungen\nDurch den Zugriff auf oder die Nutzung dieser Anwendung erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Diese Anwendung wird von Dunn-Carabali, LLC betrieben. Wenn Sie mit einem Teil dieser Bedingungen nicht einverstanden sind, dürfen Sie den Dienst nicht nutzen.\n\n2. Geistiges Eigentum\nDer Dienst und seine ursprünglichen Inhalte, Funktionen und Funktionalitäten sind und bleiben das ausschließliche Eigentum von Dunn-Carabali, LLC und seinen Lizenzgebern.\n\n3. Benutzerpflichten\nSie erklären sich damit einverstanden, die Anwendung nicht für rechtswidrige Zwecke zu nutzen oder andere dazu aufzufordern, rechtswidrige Handlungen durchzuführen oder daran teilzunehmen.\n\n4. Haftungsausschluss\nIhre Nutzung des Dienstes erfolgt auf Ihr eigenes Risiko. Der Dienst wird 'WIE BESEHEN' und 'WIE VERFÜGBAR' bereitgestellt. Dunn-Carabali, LLC lehnt ausdrücklich alle Gewährleistungen jeglicher Art ab.\n\n5. Haftungsbeschränkung\nIn keinem Fall haften Dunn-Carabali, LLC, noch seine Direktoren, Mitarbeiter, Partner, Vertreter, Lieferanten oder verbundenen Unternehmen für indirekte, zufällige, besondere, Folge- oder Strafschäden.\n\n6. Änderungen der Bedingungen\nWir behalten uns das Recht vor, diese Bedingungen jederzeit zu ändern oder zu ersetzen. Indem Sie nach Inkrafttreten dieser Änderungen weiterhin auf unseren Dienst zugreifen oder ihn nutzen, erklären Sie sich mit den überarbeiteten Bedingungen einverstanden.\n\n7. Kontaktieren Sie uns\nWenn Sie Fragen zu diesen Bedingungen haben, wenden Sie sich bitte an Dunn-Carabali, LLC.",
-  "PrivacyText": "Zuletzt aktualisiert: Dezember 2025\n\n1. Einführung\nDunn-Carabali, LLC ('wir', 'uns' oder 'unser') betreibt diese mobile Anwendung. Diese Seite informiert Sie über unsere Richtlinien bezüglich der Erfassung, Nutzung und Offenlegung personenbezogener Daten, wenn Sie unseren Dienst nutzen.\n\n2. Erfassung und Nutzung von Informationen\nWir erfassen verschiedene Arten von Informationen für verschiedene Zwecke, um Ihnen unseren Dienst bereitzustellen und zu verbessern, einschließlich:\n- Persönliche Daten (z.B. E-Mail-Adresse, Name)\n- Nutzungsdaten (z.B. Gerätetyp, Betriebssystem)\n\n3. Nutzung von Daten\nDunn-Carabali, LLC verwendet die erfassten Daten, um den Dienst bereitzustellen und zu warten, Sie über Änderungen zu informieren, Kundensupport zu leisten und die Nutzung zu überwachen.\n\n4. Offenlegung von Daten\nWir können Ihre persönlichen Daten in gutem Glauben offenlegen, dass eine solche Maßnahme notwendig ist, um einer gesetzlichen Verpflichtung nachzukommen, die Rechte oder das Eigentum von Dunn-Carabali, LLC zu schützen und zu verteidigen oder die persönliche Sicherheit der Benutzer zu schützen.\n\n5. Datensicherheit\nDie Sicherheit Ihrer Daten ist uns wichtig, aber denken Sie daran, dass keine Methode der Übertragung über das Internet zu 100% sicher ist. Obwohl wir uns bemühen, kommerziell akzeptable Mittel zum Schutz Ihrer persönlichen Daten zu verwenden, können wir deren absolute Sicherheit nicht garantieren.\n\n6. Änderungen dieser Richtlinie\nWir können unsere Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wir werden Sie über Änderungen informieren, indem wir die neue Datenschutzrichtlinie auf dieser Seite veröffentlichen.\n\n7. Kontaktieren Sie uns\nWenn Sie Fragen zu dieser Datenschutzrichtlinie haben, wenden Sie sich bitte an Dunn-Carabali, LLC.",
-  "Tip: Long press a bill to see more actions": "Tipp: Drücken Sie lange auf eine Rechnung, um weitere Aktionen anzuzeigen",
+  "TermsText": "Zuletzt aktualisiert: Dezember 2025\n\n1. Zustimmung zu den Bedingungen\nDurch den Zugriff auf oder die Nutzung dieser Anwendung erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Diese Anwendung wird von Dunn-Carabali, LLC betrieben. Wenn Sie mit einem Teil dieser Bedingungen nicht einverstanden sind, dürfen Sie den Dienst nicht nutzen.\n\n2. Geistiges Eigentum\nDer Dienst und seine ursprünglichen Inhalte, Funktionen und Merkmale sind und bleiben das ausschließliche Eigentum von Dunn-Carabali, LLC und seinen Lizenzgebern.\n\n3. Verantwortlichkeiten des Benutzers\nSie stimmen zu, die Anwendung nicht für rechtswidrige Zwecke zu verwenden oder andere dazu aufzufordern, rechtswidrige Handlungen auszuführen oder daran teilzunehmen.\n\n4. Haftungsausschluss\nDie Nutzung des Dienstes erfolgt auf Ihr eigenes Risiko. Der Dienst wird 'WIE BESEHEN' und 'WIE VERFÜGBAR' bereitgestellt. Dunn-Carabali, LLC lehnt ausdrücklich alle Garantien jeglicher Art ab.\n\n5. Haftungsbeschränkung\nIn keinem Fall haften Dunn-Carabali, LLC, noch seine Direktoren, Mitarbeiter, Partner, Vertreter, Lieferanten oder verbundenen Unternehmen für indirekte, zufällige, besondere, Folge- oder Strafschäden.\n\n6. Änderungen der Bedingungen\nWir behalten uns das Recht vor, diese Bedingungen jederzeit zu ändern oder zu ersetzen. Indem Sie nach Inkrafttreten dieser Änderungen weiterhin auf unseren Dienst zugreifen oder ihn nutzen, erklären Sie sich mit den überarbeiteten Bedingungen einverstanden.\n\n7. Kontaktieren Sie uns\nWenn Sie Fragen zu diesen Bedingungen haben, wenden Sie sich bitte an Dunn-Carabali, LLC.",
+  "PrivacyText": "Zuletzt aktualisiert: Dezember 2025\n\n1. Einführung\nDunn-Carabali, LLC ('wir', 'uns' oder 'unser') betreibt diese mobile Anwendung. Diese Seite informiert Sie über unsere Richtlinien bezüglich der Erfassung, Nutzung und Offenlegung personenbezogener Daten, wenn Sie unseren Dienst nutzen.\n\n2. Informationserfassung und -nutzung\nWir erfassen verschiedene Arten von Informationen für verschiedene Zwecke, um Ihnen unseren Dienst bereitzustellen und zu verbessern, einschließlich:\n- Persönliche Daten (z.B. E-Mail-Adresse, Name)\n- Nutzungsdaten (z.B. Gerätetyp, Betriebssystem)\n\n3. Datennutzung\nDunn-Carabali, LLC verwendet die erfassten Daten, um den Dienst bereitzustellen und zu warten, Sie über Änderungen zu informieren, Kundensupport zu leisten und die Nutzung zu überwachen.\n\n4. Offenlegung von Daten\nWir können Ihre personenbezogenen Daten in gutem Glauben offenlegen, dass eine solche Maßnahme notwendig ist, um einer gesetzlichen Verpflichtung nachzukommen, die Rechte oder das Eigentum von Dunn-Carabali, LLC zu schützen und zu verteidigen oder die persönliche Sicherheit der Benutzer zu schützen.\n\n5. Datensicherheit\nDie Sicherheit Ihrer Daten ist uns wichtig, aber denken Sie daran, dass keine Methode der Übertragung über das Internet 100% sicher ist. Obwohl wir uns bemühen, kommerziell akzeptable Mittel zum Schutz Ihrer personenbezogenen Daten zu verwenden, können wir deren absolute Sicherheit nicht garantieren.\n\n6. Änderungen dieser Richtlinie\nWir können unsere Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wir werden Sie über Änderungen informieren, indem wir die neue Datenschutzrichtlinie auf dieser Seite veröffentlichen.\n\n7. Kontaktieren Sie uns\nWenn Sie Fragen zu dieser Datenschutzrichtlinie haben, wenden Sie sich bitte an Dunn-Carabali, LLC.",
+  "Tip: Long press a bill to see more actions": "Tipp: Drücken Sie lange auf eine Rechnung, um weitere Aktionen anzuzeigen.",
   "Bill": "Rechnung",
   "Bill Paid": "Rechnung bezahlt",
   "OVERDUE: {{creditor}} - ${{amount}} was due {{date}}": "ÜBERFÄLLIG: {{creditor}} - ${{amount}} war fällig am {{date}}",
@@ -310,10 +312,10 @@
   "Creditor Breakdown": "Gläubiger-Aufschlüsselung",
   "Decryption Failed": "[ENTSCHLÜSSELUNG FEHLGESCHLAGEN]",
   "Decryption Error": "[FEHLER: {{error}}]",
-  "Key Rotation Required": "Familiendaten können nicht geladen werden. Eine Schlüsselrotation durch einen Familienadministrator ist erforderlich, um den Zugriff auf diesem Gerät wiederherzustellen.",
-  "Local Key Missing": "Lokaler Verschlüsselungsschlüssel fehlt. Bitte abmelden und erneut anmelden.",
-  "Security Key Missing Create": "Sicherheitsschlüssel fehlt: Die App konnte den erforderlichen Verschlüsselungsschlüssel lokal nicht finden, um die Rechnung zu erstellen. Bitte abmelden und erneut anmelden.",
-  "Security Key Missing Update": "Sicherheitsschlüssel fehlt: Die App konnte den erforderlichen Verschlüsselungsschlüssel lokal nicht finden, um die Rechnung zu aktualisieren. Bitte abmelden und erneut anmelden.",
+  "Key Rotation Required": "Gruppendaten können nicht geladen werden. Eine Schlüsselrotation durch einen Gruppenadministrator ist erforderlich, um den Zugriff auf diesem Gerät wiederherzustellen.",
+  "Local Key Missing": "Lokaler Verschlüsselungsschlüssel fehlt. Bitte melden Sie sich ab und wieder an.",
+  "Security Key Missing Create": "Sicherheitsschlüssel fehlt: Die App konnte den erforderlichen Verschlüsselungsschlüssel lokal nicht finden, um die Rechnung zu erstellen. Bitte melden Sie sich ab und wieder an.",
+  "Security Key Missing Update": "Sicherheitsschlüssel fehlt: Die App konnte den erforderlichen Verschlüsselungsschlüssel lokal nicht finden, um die Rechnung zu aktualisieren. Bitte melden Sie sich ab und wieder an.",
   "Monthly Spending Trend": "Monatlicher Ausgabentrend",
   "Recurrence Frequency": "Wiederholungshäufigkeit",
   "Total Bills Amount": "Gesamtbetrag der Rechnungen",
@@ -335,7 +337,7 @@
   "Mark {{creditor}} as paid?": "{{creditor}} als bezahlt markieren?",
   "Please pick a CSV and parse some bills first.": "Bitte wählen Sie zuerst eine CSV-Datei aus und analysieren Sie einige Rechnungen.",
   "Rotate Key": "Schlüssel rotieren",
-  "Family encryption key successfully rotated. All members will sync automatically.": "Familiärer Verschlüsselungsschlüssel erfolgreich rotiert. Alle Mitglieder werden automatisch synchronisiert.",
+  "Family encryption key successfully rotated. All members will sync automatically.": "Gruppen-Verschlüsselungsschlüssel erfolgreich rotiert. Alle Mitglieder werden automatisch synchronisiert.",
   "Rotation Failed": "Rotation fehlgeschlagen",
   "An unknown error occurred during key rotation. Check console for details.": "Ein unbekannter Fehler ist während der Schlüsselrotation aufgetreten. Überprüfen Sie die Konsole für Details.",
   "Rotating Key...": "Schlüssel wird rotiert...",
@@ -348,8 +350,8 @@
   "(You)": "(Sie)",
   "You will leave this group and take your data with you. We will re-encrypt your data with a new key.": "Sie werden diese Gruppe verlassen und Ihre Daten mitnehmen. Wir werden Ihre Daten mit einem neuen Schlüssel neu verschlüsseln.",
   "Leave & Secure Data": "Verlassen & Daten sichern",
-  "You have left the family and your data has been re-secured.": "Sie haben die Familie verlassen und Ihre Daten wurden neu gesichert.",
-  "Failed to leave family securely.": "Fehler beim sicheren Verlassen der Familie.",
+  "You have left the family and your data has been re-secured.": "Sie haben die Gruppe verlassen und Ihre Daten wurden neu gesichert.",
+  "Failed to leave family securely.": "Fehler beim sicheren Verlassen der Gruppe.",
   "Securing your data...": "Ihre Daten werden gesichert...",
   "Search questions...": "Fragen suchen...",
   "title": "Gruppeneinstellungen",
@@ -357,7 +359,7 @@
   "section_members": "Gruppenmitglieder",
   "section_reminders": "Standard-Erinnerungen",
   "Denied on": "Abgelehnt am",
-  "Cancel Request": "Anfrage abbrechen",
+  "Cancel Request": "Anfrage stornieren",
   "Auto Draft": "Automatische Abbuchung",
   "Manual": "Manuell",
   "Waiting for an admin to approve your request.": "Warten auf die Genehmigung Ihrer Anfrage durch einen Administrator.",
@@ -366,15 +368,15 @@
   "You requested to join family": "Sie haben angefragt, der Gruppe beizutreten",
   "Payment Method": "Zahlungsmethode",
   "rotation_title": "Verschlüsselungsschlüssel-Rotation",
-  "rotation_description": "Verwenden Sie diese Funktion, wenn ein Gruppenmitglied nach einer Neuinstallation oder erneuten Anmeldung auf einem neuen Gerät nicht auf verschlüsselte Rechnungen zugreifen kann. Dieser Vorgang ist sicher, erfordert jedoch, dass sich das Mitglied erneut anmeldet.",
+  "rotation_description": "Verwenden Sie diese Funktion, wenn ein Gruppenmitglied nach einer Neuinstallation des Geräts oder einer erneuten Anmeldung nicht auf verschlüsselte Rechnungen zugreifen kann. Dieser Vorgang ist sicher, erfordert jedoch, dass sich das Mitglied erneut anmeldet.",
   "rotation_button": "Gruppen-Verschlüsselungsschlüssel rotieren",
   "rotation_success_title": "Schlüsselrotation erfolgreich",
   "rotation_success_message": "Ein neuer Schlüssel wurde generiert und mit allen Mitgliedern geteilt. Betroffene Mitglieder müssen die App neu starten, um zu synchronisieren.",
   "rotation_error": "Fehler beim Rotieren des Schlüssels. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.",
-  "This will generate a new encryption key for your family. All members must be able to sync to continue accessing data. Proceed?": "Dies generiert einen neuen Verschlüsselungsschlüssel für Ihre Familie. Alle Mitglieder müssen synchronisieren können, um weiterhin auf Daten zugreifen zu können. Fortfahren?",
+  "This will generate a new encryption key for your family. All members must be able to sync to continue accessing data. Proceed?": "Dies generiert einen neuen Verschlüsselungsschlüssel für Ihre Gruppe. Alle Mitglieder müssen synchronisieren können, um weiterhin auf Daten zugreifen zu können. Fortfahren?",
   "rotaion_key": "Schlüssel wird rotiert...",
   "Rotating Key": "Schlüssel wird rotiert",
-  "members_admin": "Admin",
+  "members_admin": "Administrator",
   "members_member": "Mitglied",
   "members_current_user": "(Sie)",
   "members_remove_button": "Entfernen",
@@ -386,7 +388,7 @@
   "members_leave_confirm_title": "Gruppe verlassen?",
   "members_leave_confirm_message": "Sind Sie sicher, dass Sie die Gruppe verlassen möchten? Sie verlieren den Zugriff auf alle geteilten Rechnungen.",
   "members_leave_success": "Sie haben die Gruppe verlassen.",
-  "reminders_offset_label": "Standard-Erinnerungs-Offset (Tage)",
+  "reminders_offset_label": "Standard-Erinnerungsversatz (Tage)",
   "reminders_offset_description": "Wie viele Tage vor dem Fälligkeitsdatum soll die Erinnerung gesendet werden?",
   "reminders_time_label": "Standard-Erinnerungszeit",
   "reminders_time_description": "Die Tageszeit, zu der die Erinnerungsbenachrichtigung gesendet werden soll (lokale Zeit).",
@@ -399,7 +401,7 @@
   "visit_on_computer_subtitle": "Laden Sie Ihre CSV-Datei über das Webportal hoch, um die Verwaltung zu erleichtern.",
   "download_template": "Vorlage herunterladen",
   "download_template_subtitle": "Holen Sie sich die CSV-Vorlage, um die korrekte Formatierung sicherzustellen.",
-  "template_sample_row": "Netflix,15.99,2023-12-25,Family Plan,monthly,0,auto_pay",
+  "template_sample_row": "Netflix,15.99,2023-12-25,Familienplan,monatlich,0,automatische_zahlung",
   "portal_alert_msg": "Öffnen Sie das Portal in Ihrem Browser oder teilen Sie den Link mit Ihrem Computer.",
   "portal_share_msg": "Greifen Sie auf das BillBell Webportal zu, um Ihre Rechnungen hochzuladen:",
   "open": "Öffnen",
@@ -416,7 +418,7 @@
   "Invite Members": "Mitglieder einladen",
   "Invite to Group": "Zur Gruppe einladen",
   "Join my family on BillBell to sync our bills!": "Treten Sie meiner Gruppe auf BillBell bei, um unsere Rechnungen zu synchronisieren!",
-  "Click to join or download": "Klicken Sie zum Beitreten oder Herunterladen",
+  "Click to join or download": "Klicken zum Beitreten oder Herunterladen",
   "Use Code": "Code verwenden",
   "Family ID not found.": "Gruppen-ID nicht gefunden.",
   "Join Requests": "Beitrittsanfragen",
@@ -427,7 +429,7 @@
   "Set Budget": "Budget festlegen",
   "Next Week": "Nächste Woche",
   "This Week": "Diese Woche",
-  "Spending Habits": "Ausgabengewohnheiten",
+  "Spending Habits": "Ausgabegewohnheiten",
   "Scan Recovery Kit": "Wiederherstellungskit scannen",
   "Search bills...": "Rechnungen suchen...",
   "No bills found matching '{{query}}'": "Keine Rechnungen gefunden, die '{{query}}' entsprechen",
@@ -443,10 +445,24 @@
   "Active Bills": "Aktive Rechnungen",
   "Scan Failed": "Scan fehlgeschlagen",
   "Restore Account?": "Konto wiederherstellen?",
+  "Hi! I'm Bill Bell. Ask me about your finances.": "Hallo! Ich bin Bill Bell. Fragen Sie mich nach Ihren Finanzen.",
+  "Network error.": "Netzwerkfehler.",
+  "Ask about your bills...": "Fragen Sie nach Ihren Rechnungen...",
+  "No End Date (Indefinite)": "Kein Enddatum (Unbefristet)",
+  "Biometric Unlock": "Biometrische Entsperrung",
+  "Manage Bill": "Rechnung verwalten",
+  "Actions for": "Aktionen für",
+  "Request Pending": "Anfrage ausstehend",
+  "Code: ": "Code: ",
+  "Bill Bell AI": "Bill Bell KI",
+  "The user has no bills.": "Der Benutzer hat keine Rechnungen.",
+  "Unpaid": "Unbezahlt",
+  "Download Bill Export": "Rechnungsexport herunterladen",
+  "Scanned Data": "Gescannte Daten",
   "This key does not match your current device. Would you like to restore this key to recover your encrypted data?": "Dieser Schlüssel stimmt nicht mit Ihrem aktuellen Gerät überein. Möchten Sie diesen Schlüssel wiederherstellen, um Ihre verschlüsselten Daten wiederherzustellen?",
   "Restore Identity": "Identität wiederherstellen",
-  "Your encryption key has been restored. The app will now reload to apply changes.": "Ihr Verschlüsselungsschlüssel wurde wiederhergestellt. Die App wird nun neu geladen, um die Änderungen anzuwenden.",
-  "Great! This Recovery Kit matches your current device.": "Großartig! Dieses Wiederherstellungskit stimmt mit Ihrem aktuellen Gerät überein.",
+  "Your encryption key has been restored. The app will now reload to apply changes.": "Ihr Verschlüsselungsschlüssel wurde wiederhergestellt. Die App wird nun neu geladen, um die Änderungen zu übernehmen.",
+  "Great! This Recovery Kit matches your current device.": "Großartig! Dieses Wiederherstellungskit passt zu Ihrem aktuellen Gerät.",
   "Could not validate key.": "Schlüssel konnte nicht validiert werden.",
   "Verified": "Verifiziert",
   "Mismatch": "Nichtübereinstimmung",
@@ -458,7 +474,7 @@
   "Generate PDF": "PDF generieren",
   "Failed to generate Recovery Kit": "Fehler beim Generieren des Wiederherstellungskits",
   "Save Recovery Kit": "Wiederherstellungskit speichern",
-  "Snooze 1 Hr": "1 Std. snoozen",
+  "Snooze 1 Hr": "1 Std. Schlummern",
   "Bill marked as paid.": "Rechnung als bezahlt markiert.",
   "Your data is end-to-end encrypted. If you lose this device, you will need your Recovery Kit to restore your bills. We do not store your private key.": "Ihre Daten sind Ende-zu-Ende verschlüsselt. Wenn Sie dieses Gerät verlieren, benötigen Sie Ihr Wiederherstellungskit, um Ihre Rechnungen wiederherzustellen. Wir speichern Ihren privaten Schlüssel nicht.",
   "Report Crash": "Absturz melden",
@@ -467,12 +483,12 @@
   "Report Issue": "Problem melden",
   "Oops! Something went wrong.": "Hoppla! Etwas ist schiefgelaufen.",
   "We have encountered an unexpected error. Your data is safe.": "Es ist ein unerwarteter Fehler aufgetreten. Ihre Daten sind sicher.",
-  "View Join Requests from family or friends": "Beitrittsanfragen von anderen ansehen",
+  "View Join Requests from family or friends": "Beitrittsanfragen von anderen anzeigen",
   "No pending requests.": "Keine ausstehenden Anfragen.",
   "Request Denied": "Anfrage abgelehnt",
   "Confirm Key Rotation": "Schlüsselrotation bestätigen",
   "Request Sent": "Anfrage gesendet",
-  "Still Pending": "Immer noch ausstehend",
+  "Still Pending": "Noch ausstehend",
   "Only use this if a member cannot sync bills or receives a decryption error after using a new device.": "Verwenden Sie dies nur, wenn ein Mitglied Rechnungen nicht synchronisieren kann oder nach der Verwendung eines neuen Geräts einen Entschlüsselungsfehler erhält.",
   "Show Overdue on Lock Screen": "Überfällige Rechnungen auf dem Sperrbildschirm anzeigen",
   "Your request has not been approved yet.": "Ihre Anfrage wurde noch nicht genehmigt.",
@@ -484,7 +500,7 @@
   "Application": "Anwendung",
   "faqSections": [
     {
-      "title": "Hinzufügen & Verwalten von Schulden",
+      "title": "Schulden hinzufügen & verwalten",
       "items": [
         {
           "q": "Wie füge ich eine Schuld hinzu?",
@@ -500,7 +516,7 @@
         },
         {
           "q": "Was passiert, wenn ich eine Schuld als bezahlt markiere?",
-          "a": "Sie wird in den Bereich 'Bezahlt' verschoben und zukünftige Erinnerungen für diese Schuld werden automatisch beendet."
+          "a": "Sie wird in den Bereich 'Bezahlt' verschoben und zukünftige Erinnerungen für diese Schuld werden automatisch gestoppt."
         }
       ]
     },
@@ -530,7 +546,7 @@
         },
         {
           "q": "Wie lade ich jemanden in meine Gruppe ein?",
-          "a": "Gehen Sie zu Ihrem Profil- oder Gruppenbildschirm, um Ihre Freigabe-ID zu finden. Geben Sie diese ID einer Person, der Sie vertrauen, damit sie beitreten kann."
+          "a": "Gehen Sie zu Ihrem Profil- oder Gruppenbildschirm, um Ihre Freigabe-ID zu finden. Geben Sie diese ID einer vertrauenswürdigen Person, damit diese beitreten kann."
         },
         {
           "q": "Können mehrere Personen dieselben Schulden verwalten?",
@@ -547,19 +563,19 @@
       "items": [
         {
           "q": "Wie funktioniert der Importcode?",
-          "a": "Gruppenadministratoren können einen einmaligen Importcode generieren. Verwenden Sie ihn im Bildschirm 'Massen-Upload', um Schulden sicher aus einer CSV-Datei zu importieren."
+          "a": "Gruppenadministratoren können einen einmaligen Importcode generieren. Verwenden Sie diesen im Bildschirm 'Massen-Upload', um Schulden sicher aus einer CSV-Datei zu importieren."
         },
         {
           "q": "Welchen Dateityp kann ich importieren?",
-          "a": "Sie können CSV-Dateien importieren, die die Felder enthalten: Name, Betrag, Fälligkeitsdatum, Notizen, Autopay."
+          "a": "Sie können CSV-Dateien importieren, die die Felder enthalten: Name, Betrag, Fälligkeitsdatum, Notizen, automatische Zahlung."
         },
         {
           "q": "Kann ich mehrere Schulden gleichzeitig importieren?",
-          "a": "Ja. Verwenden Sie die Funktion 'Massen-Upload', um viele Schulden aus einer Tabelle in einem Schritt zu importieren."
+          "a": "Ja. Verwenden Sie die Massen-Upload-Funktion, um viele Schulden aus einer Tabelle in einem Schritt zu importieren."
         },
         {
           "q": "Warum ist mein Import fehlgeschlagen?",
-          "a": "Überprüfen Sie, ob Ihre CSV-Datei ein gültiges Format verwendet und ob Ihr Importcode nicht abgelaufen ist oder bereits verwendet wurde."
+          "a": "Überprüfen Sie, ob Ihre CSV-Datei ein gültiges Format verwendet und dass Ihr Importcode nicht abgelaufen oder bereits verwendet wurde."
         }
       ]
     },
@@ -579,16 +595,16 @@
           "a": "Ja. Solange Sie sich mit demselben Apple- oder Google-Konto anmelden, werden Ihre Daten automatisch synchronisiert."
         },
         {
-          "q": "Werden meine Rechnungen, die ich über CSV importiere, sofort verschlüsselt?",
-          "a": "Um maximale Privatsphäre zu gewährleisten, verwendet BillBell 'End-to-End-Verschlüsselung'. Das bedeutet, der Verschlüsselungsschlüssel befindet sich nur auf Ihrem Gerät, nicht auf unseren Servern. Wenn Sie eine CSV-Datei für den Massenimport hochladen, verarbeitet unser Server diese, um die Rechnungen zu erstellen. Da unser Server Ihren privaten Verschlüsselungsschlüssel nicht besitzt (und auch nicht besitzen sollte), kann er die Daten dieser importierten Rechnungen nicht verschlüsseln. Sie werden zunächst als Klartext gespeichert. So sichern Sie sie: Sobald Sie die App öffnen und Ihr Telefon die neu importierten Rechnungen herunterlädt, funktionieren sie normal. Wenn Sie eine importierte Rechnung bearbeiten und speichern, verschlüsselt die App sie automatisch mit dem Schlüssel auf Ihrem Gerät und sichert sie von diesem Zeitpunkt an."
+          "q": "Wenn ich Rechnungen via CSV importiere, werden sie sofort verschlüsselt?",
+          "a": "Um maximale Privatsphäre zu gewährleisten, verwendet BillBell 'End-to-End-Verschlüsselung'. Das bedeutet, der Verschlüsselungsschlüssel befindet sich nur auf Ihrem Gerät, nicht auf unseren Servern. Wenn Sie eine CSV-Datei für den Massenimport hochladen, verarbeitet unser Server diese, um die Rechnungen zu erstellen. Da unser Server Ihren privaten Verschlüsselungsschlüssel nicht besitzt (und auch nicht besitzen sollte), kann er die Daten dieser importierten Rechnungen nicht verschlüsseln. Sie werden zunächst als Klartext gespeichert. So sichern Sie sie: Sobald Sie die App öffnen und Ihr Telefon die neu importierten Rechnungen herunterlädt, funktionieren diese normal. Wenn Sie eine importierte Rechnung bearbeiten und speichern, verschlüsselt die App diese automatisch mit dem Schlüssel auf Ihrem Gerät und sichert sie von diesem Zeitpunkt an."
         },
         {
           "q": "Warum kann ich meine Rechnungen nicht mehr sehen (Entschlüsselung fehlgeschlagen)?",
           "a": "Dieses Problem tritt normalerweise auf einem neuen Gerät oder unmittelbar nach der Neuinstallation der App auf, wenn Ihr Gerät den aktuellen Gruppen-Verschlüsselungsschlüssel nicht gespeichert hat. Die App verwendet einen einzigartigen Satz kryptografischer Schlüssel, um die Daten Ihrer Gruppe zu schützen. Wenn der öffentliche Schlüssel Ihres neuen Geräts nicht mit dem Server synchronisiert wurde, bevor der neueste Schlüssel generiert wurde, kann die App den Gruppenschlüssel nicht entschlüsseln."
         },
         {
-          "q": "Wie behebe ich einen Entschlüsselungsfehler?",
-          "a": "Das Problem kann nur von einem Gruppenadministrator durch eine Schlüsselrotation behoben werden: Administratoraktion: Ein Benutzer mit Administratorrolle muss zu den Gruppeneinstellungen gehen und 'Gruppen-Verschlüsselungsschlüssel rotieren' auswählen. Was die Rotation bewirkt: Dieser Prozess generiert einen brandneuen Schlüssel und verschlüsselt diesen Schlüssel speziell für jedes Mitglied unter Verwendung seines neuesten öffentlichen Schlüssels in der Datei. Ihre Aktion: Nachdem der Administrator die Rotation abgeschlossen hat, schließen Sie die App auf Ihrem problematischen Gerät vollständig und starten Sie sie neu. Die App lädt den neuen Schlüssel herunter und Ihre Rechnungen werden wieder angezeigt. Hinweis: Wenn das Problem nach der Schlüsselrotation durch den Administrator weiterhin besteht, müssen Sie sich möglicherweise abmelden und erneut anmelden, um einen vollständigen Reset Ihrer lokalen Geräteschlüssel zu erzwingen."
+          "q": "Wie man Entschlüsselungsfehler behebt",
+          "a": "Das Problem kann nur von einem Gruppenadministrator durch eine Schlüsselrotation behoben werden: Administrator-Aktion: Ein Benutzer mit Administratorrolle muss zu den Gruppeneinstellungen gehen und 'Gruppen-Verschlüsselungsschlüssel rotieren' auswählen. Was die Rotation bewirkt: Dieser Prozess generiert einen brandneuen Schlüssel und verschlüsselt diesen Schlüssel speziell für jedes Mitglied unter Verwendung seines neuesten öffentlichen Schlüssels in der Datei neu. Ihre Aktion: Nachdem der Administrator die Rotation abgeschlossen hat, schließen Sie die App vollständig und starten Sie sie auf Ihrem problematischen Gerät neu. Die App lädt den neuen Schlüssel herunter und Ihre Rechnungen werden wieder angezeigt. Hinweis: Wenn das Problem nach der Schlüsselrotation durch den Administrator weiterhin besteht, müssen Sie sich möglicherweise abmelden und erneut anmelden, um einen vollständigen Reset Ihrer lokalen Geräteschlüssel zu erzwingen."
         }
       ]
     },
@@ -597,7 +613,7 @@
       "items": [
         {
           "q": "Unterstützt die App den Dunkelmodus?",
-          "a": "Ja. Die App passt sich automatisch den Erscheinungseinstellungen Ihres Geräts an."
+          "a": "Ja. Die App passt sich automatisch den Darstellungseinstellungen Ihres Geräts an."
         },
         {
           "q": "Kann ich meine Erinnerungseinstellungen ändern?",
@@ -605,19 +621,19 @@
         },
         {
           "q": "Kann ich meine Freigabe-ID ändern?",
-          "a": "Nein. Freigabe-IDs sind eindeutige, systemgenerierte Identifikatoren und können nicht geändert werden."
+          "a": "Nein. Freigabe-IDs sind eindeutige, vom System generierte Identifikatoren und können nicht geändert werden."
         }
       ]
     },
     {
-      "title": "Abrechnung & Beträge",
+      "title": "Rechnungsstellung & Beträge",
       "items": [
         {
           "q": "Wie soll ich Beträge eingeben?",
           "a": "Geben Sie den vollen Betrag ohne Symbole ein. Zum Beispiel wird '150.25' zu $150.25."
         },
         {
-          "q": "Kann ich automatisch bezahlte Rechnungen verfolgen?",
+          "q": "Kann ich Rechnungen mit automatischer Zahlung verfolgen?",
           "a": "Ja. Sie können Schulden beim Erstellen oder Bearbeiten als automatisch bezahlt markieren."
         }
       ]
@@ -627,7 +643,7 @@
       "items": [
         {
           "q": "Meine Rechnungen werden auf einem anderen Gerät nicht aktualisiert. Was soll ich tun?",
-          "a": "Stellen Sie sicher, dass beide Geräte in derselben Gruppe angemeldet sind. Ziehen Sie auf dem Bildschirm 'Schulden' nach unten, um zu aktualisieren."
+          "a": "Stellen Sie sicher, dass beide Geräte in derselben Gruppe angemeldet sind. Ziehen Sie auf dem Schuldenbildschirm nach unten, um zu aktualisieren."
         },
         {
           "q": "Ich habe versehentlich eine Schuld gelöscht. Kann ich sie wiederherstellen?",

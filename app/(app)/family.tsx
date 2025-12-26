@@ -202,15 +202,15 @@ export default function Family() {
       <View style={[styles.container, { backgroundColor: theme.colors.bg, justifyContent:'center', alignItems:'center', padding: 20 }]}>
          <View style={{ width: '100%', maxWidth: 400, alignItems: 'center' }}>
              <Ionicons name="time-outline" size={64} color={theme.colors.primary} style={{marginBottom: 20}} />
-             <Text style={{color: theme.colors.text, fontSize: 18, marginBottom: 8, fontWeight: '700'}}>Request Pending</Text>
-             <Text style={{color: theme.colors.subtext, fontSize: 14, marginBottom: 30}}>Code: {pendingCode}</Text>
+             <Text style={{color: theme.colors.text, fontSize: 18, marginBottom: 8, fontWeight: '700'}}>{t("Request Pending")}</Text>
+             <Text style={{color: theme.colors.subtext, fontSize: 14, marginBottom: 30}}>{t("Code:")} {pendingCode}</Text>
              
              <Pressable onPress={() => handleJoin(pendingCode)} style={{paddingVertical: 12, paddingHorizontal: 24, backgroundColor: theme.colors.primary, borderRadius: 12, marginBottom: 16, width: '100%', alignItems: 'center'}}>
-                <Text style={{color: '#FFF', fontWeight: '700'}}>Check Status</Text>
+                <Text style={{color: '#FFF', fontWeight: '700'}}>{t("Check Status")}</Text>
              </Pressable>
              
              <Pressable onPress={handleCancel} style={{padding: 10}}>
-                <Text style={{color: theme.colors.danger}}>Cancel Request</Text>
+                <Text style={{color: theme.colors.danger}}>{t("Cancel Request")}</Text>
              </Pressable>
          </View>
       </View>

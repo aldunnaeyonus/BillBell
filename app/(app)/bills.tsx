@@ -164,13 +164,13 @@ const jsonToCSV = (data: any[]): string => {
 };
 
 // --- HELPER FOR CHAT CONTEXT ---
-const generateBillContext = (bills: any[], currencySymbol: string) => {
-  if (!bills || bills.length === 0) return "The user has no bills.";
+const generateBillContext = (bills: any[], currencySymbol: string, t: any) => {
+  if (!bills || bills.length === 0) return t("The user has no bills.");
   
   return bills.map(b => {
     const amt = (b.amount_cents || 0) / 100;
-    const status = b.paid_at || b.status === 'paid' ? "Paid" : "Unpaid";
-    return `- ${b.creditor}: ${currencySymbol}${amt.toFixed(2)} (Due: ${b.due_date}, Status: ${status})`;
+    const status = b.paid_at || b.status === 'paid' ? t("Paid") : t("Unpaid");
+     return `- ${b.creditor}: ${currencySymbol}${amt.toFixed(2)} (${t("Due")}: ${b.due_date}, ${t("Status")}: ${status})`;
   }).join("\n");
 };
 
@@ -1101,7 +1101,7 @@ const filteredBills = useMemo(() => {
         url: templateFile.uri,
         type: "text/csv",
         filename: "bills_export",
-        title: "Download Bill Export",
+        title: t("Download Bill Export"),
       });
     } catch (error) {
       console.error("Export failed:", error);
@@ -1142,7 +1142,7 @@ const filteredBills = useMemo(() => {
 
     // 1. GENERATE CONTEXT FROM DECRYPTED DATA
     // safeBills is the array you already use for the FlatList
-    const contextString = generateBillContext(safeBills, "$"); 
+    const contextString = generateBillContext(safeBills, "$", t); 
 
     try {
       // 2. SEND CONTEXT + MESSAGE
@@ -1480,7 +1480,7 @@ const filteredBills = useMemo(() => {
             keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
         >
             <View style={[styles.chatHeader, { borderBottomColor: theme.colors.border }]}>
-                <Text style={[styles.chatTitle, { color: theme.colors.text }]}>Bill Bell AI</Text>
+                <Text style={[styles.chatTitle, { color: theme.colors.text }]}>{t("Bill Bell AI")}</Text>
                 <TouchableOpacity onPress={() => setChatVisible(false)}>
                     <Ionicons name="close" size={24} color={theme.colors.text} />
                 </TouchableOpacity>
