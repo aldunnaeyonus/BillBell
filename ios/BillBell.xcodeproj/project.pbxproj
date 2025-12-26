@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 73;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,27 +14,35 @@
 		8581F6562EF9FFA8007AC3AE /* google-services.json in Resources */ = {isa = PBXBuildFile; fileRef = 8581F6542EF9FFA8007AC3AE /* google-services.json */; };
 		8581F6572EF9FFA8007AC3AE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8581F6552EF9FFA8007AC3AE /* GoogleService-Info.plist */; };
 		8581F65A2EFA00EE007AC3AE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8581F6582EFA00EE007AC3AE /* Localizable.strings */; };
-		8581F65F2EFA0601007AC3AE /* LiveActivityModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65B2EFA0601007AC3AE /* LiveActivityModule.m */; };
-		8581F6602EFA0601007AC3AE /* MarkBillPaidIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65D2EFA0601007AC3AE /* MarkBillPaidIntent.swift */; };
-		8581F6612EFA0601007AC3AE /* LiveActivityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65C2EFA0601007AC3AE /* LiveActivityModule.swift */; };
-		8581F6622EFA0601007AC3AE /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65E2EFA0601007AC3AE /* SharedData.swift */; };
-		8581F6692EFA061A007AC3AE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8581F6682EFA061A007AC3AE /* WidgetKit.framework */; };
-		8581F66B2EFA061A007AC3AE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8581F66A2EFA061A007AC3AE /* SwiftUI.framework */; };
-		8581F6782EFA061B007AC3AE /* BillBellWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8581F6672EFA061A007AC3AE /* BillBellWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		8581F67E2EFA066D007AC3AE /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65E2EFA0601007AC3AE /* SharedData.swift */; };
-		8581F67F2EFA066D007AC3AE /* MarkBillPaidIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8581F65D2EFA0601007AC3AE /* MarkBillPaidIntent.swift */; };
+		858E70412EFF4CEC00F7D50C /* LiveActivityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858E703E2EFF4CEC00F7D50C /* LiveActivityModule.swift */; };
+		858E70422EFF4CEC00F7D50C /* MarkBillPaidIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858E703F2EFF4CEC00F7D50C /* MarkBillPaidIntent.swift */; };
+		858E70432EFF4CEC00F7D50C /* LiveActivityModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 858E703D2EFF4CEC00F7D50C /* LiveActivityModule.m */; };
+		858E70442EFF4CEC00F7D50C /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858E70402EFF4CEC00F7D50C /* SharedData.swift */; };
+		858E704A2EFF4CFC00F7D50C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8581F6682EFA061A007AC3AE /* WidgetKit.framework */; };
+		858E704B2EFF4CFC00F7D50C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8581F66A2EFA061A007AC3AE /* SwiftUI.framework */; };
+		858E70582EFF4CFD00F7D50C /* BillBellWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 858E70492EFF4CFC00F7D50C /* BillBellWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		858E70892EFF4D0900F7D50C /* MarkBillPaidIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858E703F2EFF4CEC00F7D50C /* MarkBillPaidIntent.swift */; };
+		858E708A2EFF4D0900F7D50C /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858E70402EFF4CEC00F7D50C /* SharedData.swift */; };
+		858E71E52EFF526700F7D50C /* BillBellWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 858E71DB2EFF526500F7D50C /* BillBellWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		CA23C6B48AA9F498D207F306 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7732A334DE632CEDDD3C61CF /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		8581F6762EFA061B007AC3AE /* PBXContainerItemProxy */ = {
+		858E70562EFF4CFD00F7D50C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 8581F6662EFA061A007AC3AE;
+			remoteGlobalIDString = 858E70482EFF4CFC00F7D50C;
 			remoteInfo = BillBellWidgetExtension;
+		};
+		858E71E32EFF526700F7D50C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 858E71DA2EFF526500F7D50C;
+			remoteInfo = "BillBellWatch Watch App";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -45,9 +53,20 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				8581F6782EFA061B007AC3AE /* BillBellWidgetExtension.appex in Embed Foundation Extensions */,
+				858E70582EFF4CFD00F7D50C /* BillBellWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		858E6FFF2EFF4AD700F7D50C /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				858E71E52EFF526700F7D50C /* BillBellWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -63,11 +82,6 @@
 		8581F6542EF9FFA8007AC3AE /* google-services.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "google-services.json"; sourceTree = "<group>"; };
 		8581F6552EF9FFA8007AC3AE /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8581F6592EFA00EE007AC3AE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		8581F65B2EFA0601007AC3AE /* LiveActivityModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LiveActivityModule.m; sourceTree = "<group>"; };
-		8581F65C2EFA0601007AC3AE /* LiveActivityModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityModule.swift; sourceTree = "<group>"; };
-		8581F65D2EFA0601007AC3AE /* MarkBillPaidIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkBillPaidIntent.swift; sourceTree = "<group>"; };
-		8581F65E2EFA0601007AC3AE /* SharedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedData.swift; sourceTree = "<group>"; };
-		8581F6672EFA061A007AC3AE /* BillBellWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BillBellWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		8581F6682EFA061A007AC3AE /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		8581F66A2EFA061A007AC3AE /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		8581F6882EFA06B8007AC3AE /* zh-HK */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-HK"; path = "zh-HK.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -87,6 +101,12 @@
 		8581F6B22EFA06FE007AC3AE /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		8581F6B52EFA0707007AC3AE /* pt-PT */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-PT"; path = "pt-PT.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		8581F6B82EFA070C007AC3AE /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		858E703D2EFF4CEC00F7D50C /* LiveActivityModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LiveActivityModule.m; sourceTree = "<group>"; };
+		858E703E2EFF4CEC00F7D50C /* LiveActivityModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityModule.swift; sourceTree = "<group>"; };
+		858E703F2EFF4CEC00F7D50C /* MarkBillPaidIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkBillPaidIntent.swift; sourceTree = "<group>"; };
+		858E70402EFF4CEC00F7D50C /* SharedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedData.swift; sourceTree = "<group>"; };
+		858E70492EFF4CFC00F7D50C /* BillBellWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BillBellWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		858E71DB2EFF526500F7D50C /* BillBellWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BillBellWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D9D6B55BB1A741ECE6BCDF8 /* Pods-BillBell.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BillBell.debug.xcconfig"; path = "Target Support Files/Pods-BillBell/Pods-BillBell.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = BillBell/SplashScreen.storyboard; sourceTree = "<group>"; };
 		B30C9AAEFCA6C61A309ADB87 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = BillBell/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -97,14 +117,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		8581F6792EFA061B007AC3AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		858E70592EFF4CFD00F7D50C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 8581F6662EFA061A007AC3AE /* BillBellWidgetExtension */;
+			target = 858E70482EFF4CFC00F7D50C /* BillBellWidgetExtension */;
 		};
-		8581F6C02EFA0ADA007AC3AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		858E708C2EFF4D1000F7D50C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				BillBellWidgetAttributes.swift,
@@ -113,8 +133,22 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		858E71EC2EFF52A700F7D50C /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 858E71D92EFF526500F7D50C /* Resources */;
+			membershipExceptions = (
+				Bill.swift,
+				BillDetailView.swift,
+				BillRow.swift,
+				ConnectivityProvider.swift,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		8581F66C2EFA061A007AC3AE /* BillBellWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (8581F6C02EFA0ADA007AC3AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 8581F6792EFA061B007AC3AE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = BillBellWidget; sourceTree = "<group>"; };
+		858E704C2EFF4CFC00F7D50C /* BillBellWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (858E708C2EFF4D1000F7D50C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 858E70592EFF4CFD00F7D50C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = BillBellWidget; sourceTree = "<group>"; };
+		858E71DC2EFF526500F7D50C /* BillBellWatch Watch App */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (858E71EC2EFF52A700F7D50C /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "BillBellWatch Watch App"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,12 +160,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		8581F6642EFA061A007AC3AE /* Frameworks */ = {
+		858E70462EFF4CFC00F7D50C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8581F66B2EFA061A007AC3AE /* SwiftUI.framework in Frameworks */,
-				8581F6692EFA061A007AC3AE /* WidgetKit.framework in Frameworks */,
+				858E704B2EFF4CFC00F7D50C /* SwiftUI.framework in Frameworks */,
+				858E704A2EFF4CFC00F7D50C /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		858E71D82EFF526500F7D50C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,10 +190,10 @@
 		13B07FAE1A68108700A75B9A /* BillBell */ = {
 			isa = PBXGroup;
 			children = (
-				8581F65B2EFA0601007AC3AE /* LiveActivityModule.m */,
-				8581F65C2EFA0601007AC3AE /* LiveActivityModule.swift */,
-				8581F65D2EFA0601007AC3AE /* MarkBillPaidIntent.swift */,
-				8581F65E2EFA0601007AC3AE /* SharedData.swift */,
+				858E703D2EFF4CEC00F7D50C /* LiveActivityModule.m */,
+				858E703E2EFF4CEC00F7D50C /* LiveActivityModule.swift */,
+				858E703F2EFF4CEC00F7D50C /* MarkBillPaidIntent.swift */,
+				858E70402EFF4CEC00F7D50C /* SharedData.swift */,
 				8581F6582EFA00EE007AC3AE /* Localizable.strings */,
 				8581F6542EF9FFA8007AC3AE /* google-services.json */,
 				8581F6552EF9FFA8007AC3AE /* GoogleService-Info.plist */,
@@ -207,7 +248,8 @@
 			children = (
 				13B07FAE1A68108700A75B9A /* BillBell */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
-				8581F66C2EFA061A007AC3AE /* BillBellWidget */,
+				858E704C2EFF4CFC00F7D50C /* BillBellWidget */,
+				858E71DC2EFF526500F7D50C /* BillBellWatch Watch App */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				3271D14072A06B714F3C1601 /* Pods */,
@@ -222,7 +264,8 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* BillBell.app */,
-				8581F6672EFA061A007AC3AE /* BillBellWidgetExtension.appex */,
+				858E70492EFF4CFC00F7D50C /* BillBellWidgetExtension.appex */,
+				858E71DB2EFF526500F7D50C /* BillBellWatch Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -252,38 +295,61 @@
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
 				11314E71FC047F7D29EA4908 /* [CP] Embed Pods Frameworks */,
 				8581F67D2EFA061B007AC3AE /* Embed Foundation Extensions */,
+				858E6FFF2EFF4AD700F7D50C /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				8581F6772EFA061B007AC3AE /* PBXTargetDependency */,
+				858E70572EFF4CFD00F7D50C /* PBXTargetDependency */,
+				858E71E42EFF526700F7D50C /* PBXTargetDependency */,
 			);
 			name = BillBell;
 			productName = BillBell;
 			productReference = 13B07F961A680F5B00A75B9A /* BillBell.app */;
 			productType = "com.apple.product-type.application";
 		};
-		8581F6662EFA061A007AC3AE /* BillBellWidgetExtension */ = {
+		858E70482EFF4CFC00F7D50C /* BillBellWidgetExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8581F67A2EFA061B007AC3AE /* Build configuration list for PBXNativeTarget "BillBellWidgetExtension" */;
+			buildConfigurationList = 858E705A2EFF4CFD00F7D50C /* Build configuration list for PBXNativeTarget "BillBellWidgetExtension" */;
 			buildPhases = (
-				8581F6632EFA061A007AC3AE /* Sources */,
-				8581F6642EFA061A007AC3AE /* Frameworks */,
-				8581F6652EFA061A007AC3AE /* Resources */,
+				930B1344971F92321D654CEF /* [Expo] Configure project */,
+				858E70452EFF4CFC00F7D50C /* Sources */,
+				858E70462EFF4CFC00F7D50C /* Frameworks */,
+				858E70472EFF4CFC00F7D50C /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				8581F66C2EFA061A007AC3AE /* BillBellWidget */,
+				858E704C2EFF4CFC00F7D50C /* BillBellWidget */,
 			);
 			name = BillBellWidgetExtension;
+			productName = BillBellWidgetExtension;
+			productReference = 858E70492EFF4CFC00F7D50C /* BillBellWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		858E71DA2EFF526500F7D50C /* BillBellWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 858E71E82EFF526700F7D50C /* Build configuration list for PBXNativeTarget "BillBellWatch Watch App" */;
+			buildPhases = (
+				858E71D72EFF526500F7D50C /* Sources */,
+				858E71D82EFF526500F7D50C /* Frameworks */,
+				858E71D92EFF526500F7D50C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				858E71DC2EFF526500F7D50C /* BillBellWatch Watch App */,
+			);
+			name = "BillBellWatch Watch App";
 			packageProductDependencies = (
 			);
-			productName = BillBellWidgetExtension;
-			productReference = 8581F6672EFA061A007AC3AE /* BillBellWidgetExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
+			productName = "BillBellWatch Watch App";
+			productReference = 858E71DB2EFF526500F7D50C /* BillBellWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -291,19 +357,22 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 2620;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
 					};
-					8581F6662EFA061A007AC3AE = {
+					858E70482EFF4CFC00F7D50C = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					858E71DA2EFF526500F7D50C = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
 			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "BillBell" */;
-			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -329,12 +398,14 @@
 				ko,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
+			preferredProjectObjectVersion = 46;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* BillBell */,
-				8581F6662EFA061A007AC3AE /* BillBellWidgetExtension */,
+				858E70482EFF4CFC00F7D50C /* BillBellWidgetExtension */,
+				858E71DA2EFF526500F7D50C /* BillBellWatch Watch App */,
 			);
 		};
 /* End PBXProject section */
@@ -354,7 +425,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		8581F6652EFA061A007AC3AE /* Resources */ = {
+		858E70472EFF4CFC00F7D50C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		858E71D92EFF526500F7D50C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -410,7 +488,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-BillBell/Pods-BillBell-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/QuickCrypto/OpenSSL.framework/OpenSSL",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OpenSSL-Universal/OpenSSL.framework/OpenSSL",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
@@ -503,6 +581,29 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BillBell/Pods-BillBell-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		930B1344971F92321D654CEF /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-BillBell-BillBellWidgetExtension/expo-configure-project.sh",
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Pods/Target Support Files/Pods-BillBell-BillBellWidgetExtension/ExpoModulesProvider.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-BillBell-BillBellWidgetExtension/expo-configure-project.sh\"\n";
+		};
 		E8EB7DE66A9D8BF0B9759830 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -535,30 +636,42 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
+				858E70412EFF4CEC00F7D50C /* LiveActivityModule.swift in Sources */,
+				858E70422EFF4CEC00F7D50C /* MarkBillPaidIntent.swift in Sources */,
+				858E70432EFF4CEC00F7D50C /* LiveActivityModule.m in Sources */,
+				858E70442EFF4CEC00F7D50C /* SharedData.swift in Sources */,
 				CA23C6B48AA9F498D207F306 /* ExpoModulesProvider.swift in Sources */,
-				8581F65F2EFA0601007AC3AE /* LiveActivityModule.m in Sources */,
-				8581F6602EFA0601007AC3AE /* MarkBillPaidIntent.swift in Sources */,
-				8581F6612EFA0601007AC3AE /* LiveActivityModule.swift in Sources */,
-				8581F6622EFA0601007AC3AE /* SharedData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		8581F6632EFA061A007AC3AE /* Sources */ = {
+		858E70452EFF4CFC00F7D50C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8581F67E2EFA066D007AC3AE /* SharedData.swift in Sources */,
-				8581F67F2EFA066D007AC3AE /* MarkBillPaidIntent.swift in Sources */,
+				858E70892EFF4D0900F7D50C /* MarkBillPaidIntent.swift in Sources */,
+				858E708A2EFF4D0900F7D50C /* SharedData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		858E71D72EFF526500F7D50C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		8581F6772EFA061B007AC3AE /* PBXTargetDependency */ = {
+		858E70572EFF4CFD00F7D50C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 8581F6662EFA061A007AC3AE /* BillBellWidgetExtension */;
-			targetProxy = 8581F6762EFA061B007AC3AE /* PBXContainerItemProxy */;
+			target = 858E70482EFF4CFC00F7D50C /* BillBellWidgetExtension */;
+			targetProxy = 858E70562EFF4CFD00F7D50C /* PBXContainerItemProxy */;
+		};
+		858E71E42EFF526700F7D50C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 858E71DA2EFF526500F7D50C /* BillBellWatch Watch App */;
+			targetProxy = 858E71E32EFF526700F7D50C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -600,7 +713,6 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BillBell/BillBell.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2899NRK28S;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -639,7 +751,6 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BillBell/BillBell.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2899NRK28S;
 				INFOPLIST_FILE = BillBell/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = BillBell;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -687,6 +798,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -694,6 +806,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = 2899NRK28S;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -721,6 +834,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				USE_HERMES = true;
@@ -750,6 +864,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -757,6 +872,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
+				DEVELOPMENT_TEAM = 2899NRK28S;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -776,13 +892,15 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		8581F67B2EFA061B007AC3AE /* Debug */ = {
+		858E705B2EFF4CFD00F7D50C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -798,7 +916,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 2899NRK28S;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -815,6 +932,7 @@
 				MARKETING_VERSION = 26.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.dunn.carabali.billbell.BillBellWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -829,7 +947,7 @@
 			};
 			name = Debug;
 		};
-		8581F67C2EFA061B007AC3AE /* Release */ = {
+		858E705C2EFF4CFD00F7D50C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -846,7 +964,6 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 2899NRK28S;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -862,6 +979,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 26.1;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.dunn.carabali.billbell.BillBellWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -872,6 +990,98 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		858E71E62EFF526700F7D50C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = BillBellWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.dunn.carabali.billbell;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dunn.carabali.billbell.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Debug;
+		};
+		858E71E72EFF526700F7D50C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = BillBellWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.dunn.carabali.billbell;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dunn.carabali.billbell.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Release;
 		};
@@ -896,11 +1106,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8581F67A2EFA061B007AC3AE /* Build configuration list for PBXNativeTarget "BillBellWidgetExtension" */ = {
+		858E705A2EFF4CFD00F7D50C /* Build configuration list for PBXNativeTarget "BillBellWidgetExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				8581F67B2EFA061B007AC3AE /* Debug */,
-				8581F67C2EFA061B007AC3AE /* Release */,
+				858E705B2EFF4CFD00F7D50C /* Debug */,
+				858E705C2EFF4CFD00F7D50C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		858E71E82EFF526700F7D50C /* Build configuration list for PBXNativeTarget "BillBellWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				858E71E62EFF526700F7D50C /* Debug */,
+				858E71E72EFF526700F7D50C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

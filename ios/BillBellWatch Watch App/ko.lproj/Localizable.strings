@@ -5,3 +5,11 @@
   Created by Andrew Dunn on 12/26/25.
   
 */
+"row_due %@" = "마감: %@";
+"detail_pay_to" = "받는 사람:";
+"detail_due_date" = "마감일:";
+"action_mark_paid" = "납부 완료로 표시";
+"list_empty" = "다가오는 청구서가 없습니다! 🎉";
+"list_section_upcoming" = "다가오는 청구서";
+"status_ready" = "준비됨";
+"status_synced_count" = "%d개의 청구서 동기화됨";

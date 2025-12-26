@@ -5,3 +5,11 @@
   Created by Andrew Dunn on 12/26/25.
   
 */
+"row_due %@" = "Due %@";
+"detail_pay_to" = "Pay To:";
+"detail_due_date" = "Due Date:";
+"action_mark_paid" = "Mark as Paid";
+"list_empty" = "No upcoming bills! 🎉";
+"list_section_upcoming" = "Upcoming";
+"status_ready" = "Ready";
+"status_synced_count" = "Synced %d bills";

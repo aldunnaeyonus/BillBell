@@ -44,6 +44,7 @@ import hotUpdate from "react-native-ota-hot-update";
 import ReactNativeBlobUtil from "react-native-blob-util";
 import { storage } from "../src/storage/storage"; // Added: Storage for tracking permissions
 import { serverURL } from "@/data/vendors";
+import { useWatchConnectivity } from "../src/hooks/useWatchConnectivity"; // <--- Import
 
 (globalThis as any).Buffer = (globalThis as any).Buffer ?? Buffer;
 
@@ -397,6 +398,7 @@ Notifications.setNotificationHandler({
 });
 
 export default function RootLayout() {
+  useWatchConnectivity();
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {

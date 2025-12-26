@@ -288,6 +288,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - OpenSSL-Universal (3.3.3001)
   - PromisesObjC (2.4.0)
   - QuickCrypto (1.0.6):
     - hermes-engine
@@ -2436,6 +2437,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - RNWatch (1.1.0):
+    - React
   - RNWorklets (0.5.1):
     - hermes-engine
     - RCTRequired
@@ -2554,6 +2557,7 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - NitroMmkv (from `../node_modules/react-native-mmkv`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
+  - OpenSSL-Universal
   - QuickCrypto (from `../node_modules/react-native-quick-crypto`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
@@ -2638,6 +2642,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - RNWatch (from `../node_modules/react-native-watch-connectivity`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2663,6 +2668,7 @@ SPEC REPOS:
     - MLKitVision
     - MMKVCore
     - nanopb
+    - OpenSSL-Universal
     - PromisesObjC
     - ReachabilitySwift
     - SSZipArchive
@@ -2912,6 +2918,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  RNWatch:
+    :path: "../node_modules/react-native-watch-connectivity"
   RNWorklets:
     :path: "../node_modules/react-native-worklets"
   Yoga:
@@ -2976,6 +2984,7 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   NitroMmkv: 4af10c70043b4c3cded3f16547627c7d9d8e3b8b
   NitroModules: a71a5ab2911caf79e45170e6e12475b5260a12d0
+  OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   QuickCrypto: af5772620d9059c3b6265c62b8c255c7bb303c87
   RCTDeprecation: 943572d4be82d480a48f4884f670135ae30bf990
@@ -3061,11 +3070,12 @@ SPEC CHECKSUMS:
   RNScreens: d8d6f1792f6e7ac12b0190d33d8d390efc0c1845
   RNShare: 0e600372fb35783fe30d413efd28d11de2bf6cf0
   RNSVG: 31d6639663c249b7d5abc9728dde2041eb2a3c34
+  RNWatch: 28fe1f5e0c6410d45fd20925f4796fce05522e3f
   RNWorklets: 76fce72926e28e304afb44f0da23b2d24f2c1fa0
   SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
   Yoga: 5934998fbeaef7845dbf698f698518695ab4cd1a
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 36f8f15853364ec0b280b57ee89286aa2cc626f5
+PODFILE CHECKSUM: f961c020ca9915897736eada708e41716a002475
 
 COCOAPODS: 1.16.2

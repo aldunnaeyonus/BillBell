@@ -5,3 +5,11 @@
   Created by Andrew Dunn on 12/26/25.
   
 */
+"row_due %@" = "Scadenza: %@";
+"detail_pay_to" = "Pagare a:";
+"detail_due_date" = "Data di scadenza:";
+"action_mark_paid" = "Segna come pagato";
+"list_empty" = "Nessuna fattura in arrivo! 🎉";
+"list_section_upcoming" = "In arrivo";
+"status_ready" = "Pronto";
+"status_synced_count" = "%d fatture sincronizzate";

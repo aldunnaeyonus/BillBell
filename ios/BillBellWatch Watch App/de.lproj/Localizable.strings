@@ -5,3 +5,11 @@
   Created by Andrew Dunn on 12/26/25.
   
 */
+"row_due %@" = "Fällig am %@";
+"detail_pay_to" = "Zahlen an:";
+"detail_due_date" = "Fälligkeitsdatum:";
+"action_mark_paid" = "Als bezahlt markieren";
+"list_empty" = "Keine anstehenden Rechnungen! 🎉";
+"list_section_upcoming" = "Anstehend";
+"status_ready" = "Bereit";
+"status_synced_count" = "%d Rechnungen synchronisiert";

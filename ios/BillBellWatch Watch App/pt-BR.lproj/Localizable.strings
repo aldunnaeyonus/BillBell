@@ -5,3 +5,11 @@
   Created by Andrew Dunn on 12/26/25.
   
 */
+"row_due %@" = "Vence em %@";
+"detail_pay_to" = "Pagar a:";
+"detail_due_date" = "Data de vencimento:";
+"action_mark_paid" = "Marcar como pago";
+"list_empty" = "Nenhuma fatura pendente! 🎉";
+"list_section_upcoming" = "Próximas";
+"status_ready" = "Pronto";
+"status_synced_count" = "%d faturas sincronizadas";

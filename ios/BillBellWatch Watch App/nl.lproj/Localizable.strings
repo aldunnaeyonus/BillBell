@@ -5,3 +5,11 @@
   Created by Andrew Dunn on 12/26/25.
   
 */
+"row_due %@" = "Vervalt op %@";
+"detail_pay_to" = "Betalen aan:";
+"detail_due_date" = "Vervaldatum:";
+"action_mark_paid" = "Markeren als betaald";
+"list_empty" = "Geen aankomende facturen! 🎉";
+"list_section_upcoming" = "Binnenkort";
+"status_ready" = "Klaar";
+"status_synced_count" = "%d facturen gesynchroniseerd";

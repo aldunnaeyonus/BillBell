@@ -20,6 +20,7 @@ platform :ios, podfile_properties['ios.deploymentTarget'] || '18.6'
 
 prepare_react_native_project!
 
+
 target 'BillBell' do
   use_expo_modules!
 
@@ -36,6 +37,7 @@ target 'BillBell' do
     ]
   end
 
+	pod 'OpenSSL-Universal'
   config = use_native_modules!(config_command)
 
   use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']

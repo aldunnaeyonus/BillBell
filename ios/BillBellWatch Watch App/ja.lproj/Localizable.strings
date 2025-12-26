@@ -5,3 +5,11 @@
   Created by Andrew Dunn on 12/26/25.
   
 */
+"row_due %@" = "期限: %@";
+"detail_pay_to" = "支払先:";
+"detail_due_date" = "支払期限:";
+"action_mark_paid" = "支払済みにする";
+"list_empty" = "予定されている請求はありません！ 🎉";
+"list_section_upcoming" = "今後の予定";
+"status_ready" = "準備完了";
+"status_synced_count" = "%d 件同期しました";
