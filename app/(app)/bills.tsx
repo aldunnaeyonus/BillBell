@@ -66,6 +66,7 @@ import { Skeleton } from "../../src/ui/Skeleton";
 import { MAX_CONTENT_WIDTH } from "../../src/ui/styles";
 // --- CHAT IMPORT ---
 import { sendMessageToBillBell } from "../../src/api/chat";
+import { useBadges } from "../../src/hooks/useBadges";
 
 const getWidgetModule = () => {
   try {
@@ -727,7 +728,7 @@ export default function Bills() {
   const [isExporting, setIsExporting] = useState(false);
   const syncedBillsHash = useRef("");
   const confettiRef = useRef<ConfettiCannon>(null);
-
+const { checkPaymentBadges, checkAddBillBadges, checkStatusBadges } = useBadges();
   // --- CHAT STATE ---
   const [isChatVisible, setChatVisible] = useState(false);
   const [messages, setMessages] = useState<{role: 'user'|'bot', text: string}[]>([
@@ -755,6 +756,14 @@ const filteredBills = useMemo(() => {
       return creditorMatch || amountMatch;
     });
   }, [safeBills, searchQuery, currency]);
+
+  useEffect(() => {
+  if (safeBills.length > 0) {
+    checkAddBillBadges(safeBills.length);
+    const overdue = safeBills.filter((b: any) => isOverdue(b));
+    checkStatusBadges(overdue);
+  }
+}, [safeBills]);
 
   // Effects & Logic...
   useEffect(() => {
@@ -1000,6 +1009,7 @@ const filteredBills = useMemo(() => {
       if ((await StoreReview.hasAction()) && Math.random() > 0.8)
         setTimeout(() => StoreReview.requestReview(), 2000);
       markPaidMutation.mutate(item.id);
+      checkPaymentBadges(item);
       await cancelBillReminderLocal(item.id);
     } catch (e: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);

@@ -326,6 +326,7 @@ function AppStack() {
             name="(app)/bulk-import"
             options={{ title: t("Bulk Upload") }}
           />
+          <Stack.Screen name="(app)/achievements" options={{ title: t("Achievements") }} />
           <Stack.Screen name="index" options={{ title: t("Debts") }} />
           <Stack.Screen
             name="(auth)/login"

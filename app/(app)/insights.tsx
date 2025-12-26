@@ -22,6 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import LinearGradient from "react-native-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { startOfMonth, addMonths, format, parseISO, isSameMonth } from "date-fns";
+import { useBadges } from "../../src/hooks/useBadges";
 
 import { useTheme, Theme } from "../../src/ui/useTheme";
 import { api } from "../../src/api/client";
@@ -340,7 +341,7 @@ function ChartRenderer({ bills, activeChart, theme, t }: { bills: any[], activeC
 export default function Insights() {
   const theme = useTheme();
   const { t } = useTranslation();
-  
+  const { checkBudgetBadges } = useBadges();
   const [bills, setBills] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -428,6 +429,7 @@ export default function Insights() {
     if (selectedCategory) {
       const limit = parseInt(newLimit.replace(/[^0-9]/g, ''), 10) || 0;
       userSettings.setCategoryBudget(selectedCategory, limit);
+      checkBudgetBadges();
       setBudgets(prev => ({ ...prev, [selectedCategory]: limit }));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
@@ -491,7 +493,7 @@ export default function Insights() {
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                           <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: cat.color }} />
-                          <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.primaryText }}>{cat.label}</Text>
+                          <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.primaryText }}>{t(cat.label)}</Text>
                         </View>
                         <View style={{ alignItems: 'flex-end' }}>
                           <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.primaryText }}>
@@ -521,7 +523,7 @@ export default function Insights() {
       <Modal animationType="fade" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.modalTitle, { color: theme.colors.primaryText }]}>{t("Set Limit for {{category}}", { category: selectedCategory })}</Text>
+            <Text style={[styles.modalTitle, { color: theme.colors.primaryText }]}>{t("Set Limit for {{category}}", { category: selectedCategory ? t(selectedCategory) : '' })}</Text>
             <View style={[styles.inputContainer, { backgroundColor: theme.colors.bg }]}>
               <Text style={{ fontSize: 20, color: theme.colors.primaryText, fontWeight: '700' }}>$</Text>
               <TextInput autoFocus keyboardType="numeric" value={newLimit} onChangeText={setNewLimit} placeholder="0" placeholderTextColor={theme.colors.subtext} style={[styles.input, { color: theme.colors.primaryText }]} />

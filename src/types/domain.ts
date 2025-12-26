@@ -32,3 +32,26 @@ export interface FamilyRequest {
 export interface BillListResponse {
   bills: Bill[];
 }
+
+export type BadgeId = 
+  | 'rookie' 
+  | 'debt_destroyer' 
+  | 'early_bird' 
+  | 'clean_slate' 
+  | 'budget_boss' 
+  | 'subscription_savvy'
+  | 'centurion'
+  | 'pro_user';
+
+export interface Badge {
+  id: BadgeId;
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+}
+
+export interface UserAchievements {
+  unlockedBadges: BadgeId[];
+  totalPaidCount: number; // To track progress for "Debt Destroyer"
+}

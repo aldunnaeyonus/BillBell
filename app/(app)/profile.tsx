@@ -733,209 +733,217 @@ export default function Profile() {
                 />
               </View>
             )}
-            <View style={styles.section}>
-              <SectionTitle title={t("Spending Habits")} theme={theme} />
-              <View
-                style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-              >
-                <ActionRow
-                  icon="infinite-outline"
-                  label={t("Subscriptions")}
-                  subLabel={t("View recurring monthly costs")}
-                  theme={theme}
-                  onPress={() => router.push("/(app)/subscriptions")}
-                  isLast
-                />
-              </View>
-            </View>
-            {/* APPLICATION SETTINGS */}
-            <View style={styles.section}>
-              <SectionTitle title={t("Application")} theme={theme} />
-              <View
-                style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-              >
-                {Platform.OS === "ios" && (
-                  <SwitchRow
-                    icon="notifications-outline"
-                    label={t("Show Overdue on Lock Screen")}
-                    value={liveActivityEnabled}
-                    onValueChange={handleToggleLiveActivity}
-                    theme={theme}
-                  />
-                )}
-                <SwitchRow
-                  icon="finger-print-outline"
-                  label={t("Biometric Unlock")}
-                  value={biometricsEnabled}
-                  onValueChange={handleToggleBiometrics}
-                  theme={theme}
-                />
-                <ActionRow
-                  icon="globe-outline"
-                  label={t("Language")}
-                  subLabel={i18n.language.toUpperCase()}
-                  theme={theme}
-                  onPress={handleChangeLanguage}
-                />
-                <ActionRow
-                  icon="cash-outline"
-                  label={t("Currency")}
-                  subLabel={currency}
-                  theme={theme}
-                  onPress={() => setShowCurrencyModal(true)}
-                  isLast
-                />
-              </View>
-            </View>
-
-            {/* SECURITY & DATA */}
-            <View style={styles.section}>
-              <SectionTitle title={t("Security & Data")} theme={theme} />
-              <View
-                style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-              >
-                <ActionRow
-                  icon="cloud-upload-outline"
-                  label={t("Bulk Upload")}
-                  subLabel={t("Import via CSV/XLSX")}
-                  theme={theme}
-                  onPress={() => router.push("/(app)/bulk-import")}
-                />
-                <ActionRow
-                  icon="download-outline"
-                  label={t("Export Data")}
-                  subLabel={t("Download CSV")}
-                  theme={theme}
-                  onPress={handleExportData}
-                />
-                <ActionRow
-                  icon="key-outline"
-                  label={t("Generate Import Code")}
-                  subLabel={
-                    importInfo
-                      ? `${t("Active")}: ${importInfo.code}`
-                      : t("Create secure code for upload")
-                  }
-                  theme={theme}
-                  onPress={handleGenerateCode}
-                />
-                <ActionRow
-                  icon="shield-checkmark-outline"
-                  label={t("Recovery Kit")}
-                  subLabel={t("Backup your encryption key")}
-                  theme={theme}
-                  onPress={() => router.push("/(app)/recovery-kit")}
-                  isLast
-                />
-              </View>
-            </View>
-
-            {/* FAMILY MANAGEMENT */}
-            <View style={styles.section}>
-              <SectionTitle title={t("Management")} theme={theme} />
-              <View
-                style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-              >
-                <ActionRow
-                  icon="settings-outline"
-                  label={t("Shared Settings")}
-                  theme={theme}
-                  onPress={() => router.push("/(app)/family-settings")}
-                />
-                <ActionRow
-                  icon="person-add-outline"
-                  label={t("Invite Members")}
-                  theme={theme}
-                  onPress={() => shareInvite(data.family_code)}
-                />
-                <ActionRow
-                  icon="git-pull-request-outline"
-                  label={t("Join Requests")}
-                  subLabel={t("View Join Requests")}
-                  theme={theme}
-                  onPress={() => router.push("/(app)/family-requests")}
-                  isLast
-                />
-              </View>
-            </View>
-
-            {/* SUPPORT */}
-            <View style={styles.section}>
-              <SectionTitle title={t("Support")} theme={theme} />
-              <View
-                style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-              >
-                <ActionRow
-                  icon="help-circle-outline"
-                  label={t("FAQ & Help")}
-                  theme={theme}
-                  onPress={() => router.push("/(app)/faq")}
-                />
-                <ActionRow
-                  icon="bug-outline"
-                  label={t("Feedback & Bugs")}
-                  theme={theme}
-                  onPress={() => router.push("/(app)/feedback")}
-                />
-                <ActionRow
-                  icon="shield-checkmark-outline"
-                  label={t("Privacy Policy")}
-                  theme={theme}
-                  onPress={() => router.push("/(app)/privacy")}
-                />
-                <ActionRow
-                  icon="document-text-outline"
-                  label={t("Terms of Use")}
-                  theme={theme}
-                  onPress={() => router.push("/(app)/terms")}
-                  isLast
-                />
-              </View>
-            </View>
-
-            {/* LOGOUT & DELETE */}
-            <View style={[styles.section, { marginTop: 20 }]}>
-              <View
-                style={[styles.cardGroup, { borderColor: theme.colors.border }]}
-              >
-                {data.members.length > 1 && (
-                  <ActionRow
-                    icon="exit-outline"
-                    label={t("Leave Family")}
-                    subLabel={t("Start new family with your data")}
-                    theme={theme}
-                    onPress={handleLeaveFamily}
-                  />
-                )}
-                <ActionRow
-                  icon="log-out-outline"
-                  label={t("Logout")}
-                  theme={theme}
-                  danger
-                  onPress={handleLogout}
-                />
-                <ActionRow
-                  icon="trash-outline"
-                  label={t("Delete Account")}
-                  theme={theme}
-                  danger
-                  onPress={handleDeleteAccount}
-                  isLast
-                />
-              </View>
-              <Text
-                style={{
-                  textAlign: "center",
-                  color: theme.colors.subtext,
-                  marginTop: 16,
-                  fontSize: 12,
-                }}
-              >
-                {t("Version")} {version} {appName}, Dunn-Carabali, LLC
-              </Text>
+<View style={styles.section}>
+            {/* 1. SPENDING HABITS (High Engagement) */}
+            <SectionTitle title={t("Spending Habits")} theme={theme} />
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
+              <ActionRow
+                icon="trophy-outline" 
+                label={t("Achievements")}
+                subLabel={t("Celebrate your financial wins.")}
+                theme={theme}
+                onPress={() => router.push("/(app)/achievements")}
+              />
+              <ActionRow
+                icon="infinite-outline"
+                label={t("Subscriptions")}
+                subLabel={t("View recurring monthly costs")}
+                theme={theme}
+                onPress={() => router.push("/(app)/subscriptions")}
+                isLast
+              />
             </View>
           </View>
-        </View>
+
+          {/* 2. FAMILY MANAGEMENT (Core Context) */}
+          <View style={styles.section}>
+            <SectionTitle title={t("Group Management")} theme={theme} />
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
+              <ActionRow
+                icon="settings-outline"
+                label={t("Shared Settings")}
+                theme={theme}
+                onPress={() => router.push("/(app)/family-settings")}
+              />
+              <ActionRow
+                icon="person-add-outline"
+                label={t("Invite Members")}
+                theme={theme}
+                onPress={() => shareInvite(data.family_code)}
+              />
+              <ActionRow
+                icon="git-pull-request-outline"
+                label={t("Join Requests")}
+                subLabel={t("View Join Requests")}
+                theme={theme}
+                onPress={() => router.push("/(app)/family-requests")}
+                isLast
+              />
+            </View>
+          </View>
+
+          {/* 3. APPLICATION SETTINGS (Preferences) */}
+          <View style={styles.section}>
+            <SectionTitle title={t("Application")} theme={theme} />
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
+              {Platform.OS === "ios" && (
+                <SwitchRow
+                  icon="notifications-outline"
+                  label={t("Show Overdue on Lock Screen")}
+                  value={liveActivityEnabled}
+                  onValueChange={handleToggleLiveActivity}
+                  theme={theme}
+                />
+              )}
+              <SwitchRow
+                icon="finger-print-outline"
+                label={t("Biometric Unlock")}
+                value={biometricsEnabled}
+                onValueChange={handleToggleBiometrics}
+                theme={theme}
+              />
+              <ActionRow
+                icon="globe-outline"
+                label={t("Language")}
+                subLabel={i18n.language.toUpperCase()}
+                theme={theme}
+                onPress={handleChangeLanguage}
+              />
+              <ActionRow
+                icon="cash-outline"
+                label={t("Currency")}
+                subLabel={currency}
+                theme={theme}
+                onPress={() => setShowCurrencyModal(true)}
+                isLast
+              />
+            </View>
+          </View>
+
+          {/* 4. SECURITY & DATA (Tools) */}
+          <View style={styles.section}>
+            <SectionTitle title={t("Security & Data")} theme={theme} />
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
+              <ActionRow
+                icon="shield-checkmark-outline"
+                label={t("Recovery Kit")}
+                subLabel={t("Backup your encryption key")}
+                theme={theme}
+                onPress={() => router.push("/(app)/recovery-kit")}
+              />
+               <ActionRow
+                icon="download-outline"
+                label={t("Export Data")}
+                subLabel={t("Download CSV")}
+                theme={theme}
+                onPress={handleExportData}
+              />
+              <ActionRow
+                icon="cloud-upload-outline"
+                label={t("Bulk Upload")}
+                subLabel={t("Import via CSV/XLSX")}
+                theme={theme}
+                onPress={() => router.push("/(app)/bulk-import")}
+              />
+              <ActionRow
+                icon="key-outline"
+                label={t("Generate Import Code")}
+                subLabel={
+                  importInfo
+                    ? `${t("Active")}: ${importInfo.code}`
+                    : t("Create secure code for upload")
+                }
+                theme={theme}
+                onPress={handleGenerateCode}
+                isLast
+              />
+            </View>
+          </View>
+
+          {/* 5. SUPPORT (Info) */}
+          <View style={styles.section}>
+            <SectionTitle title={t("Support")} theme={theme} />
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
+              <ActionRow
+                icon="help-circle-outline"
+                label={t("FAQ & Help")}
+                theme={theme}
+                onPress={() => router.push("/(app)/faq")}
+              />
+              <ActionRow
+                icon="bug-outline"
+                label={t("Feedback & Bugs")}
+                theme={theme}
+                onPress={() => router.push("/(app)/feedback")}
+              />
+              <ActionRow
+                icon="shield-checkmark-outline"
+                label={t("Privacy Policy")}
+                theme={theme}
+                onPress={() => router.push("/(app)/privacy")}
+              />
+              <ActionRow
+                icon="document-text-outline"
+                label={t("Terms of Use")}
+                theme={theme}
+                onPress={() => router.push("/(app)/terms")}
+                isLast
+              />
+            </View>
+          </View>
+
+          {/* 6. LOGOUT & DELETE (Exit) */}
+          <View style={[styles.section, { marginTop: 20 }]}>
+            <View
+              style={[styles.cardGroup, { borderColor: theme.colors.border }]}
+            >
+              {data.members.length > 1 && (
+                <ActionRow
+                  icon="exit-outline"
+                  label={t("Leave Family")}
+                  subLabel={t("Start new family with your data")}
+                  theme={theme}
+                  onPress={handleLeaveFamily}
+                />
+              )}
+              <ActionRow
+                icon="log-out-outline"
+                label={t("Logout")}
+                theme={theme}
+                danger
+                onPress={handleLogout}
+              />
+              <ActionRow
+                icon="trash-outline"
+                label={t("Delete Account")}
+                theme={theme}
+                danger
+                onPress={handleDeleteAccount}
+                isLast
+              />
+            </View>
+            <Text
+              style={{
+                textAlign: "center",
+                color: theme.colors.subtext,
+                marginTop: 16,
+                fontSize: 12,
+              }}
+            >
+              {t("Version")} {version} {appName}, Dunn-Carabali, LLC
+            </Text>
+          </View>
+        </View></View>
       </ScrollView>
 
       {/* Loading Overlay */}
