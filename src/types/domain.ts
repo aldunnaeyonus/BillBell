@@ -20,6 +20,12 @@ export interface User {
   name?: string;
 }
 
+export interface WatchMessage {
+  action: string;
+  id?: string;
+  [key: string]: any; // <--- REQUIRED: Allows this to pass as a generic object
+}
+
 export interface FamilyRequest {
   id: number;
   requester_id: number;

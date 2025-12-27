@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -118,14 +118,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		858E70592EFF4CFD00F7D50C /* Exceptions for "BillBellWidget" folder in "BillBellWidgetExtension" target */ = {
+		858E70592EFF4CFD00F7D50C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 858E70482EFF4CFC00F7D50C /* BillBellWidgetExtension */;
 		};
-		858E708C2EFF4D1000F7D50C /* Exceptions for "BillBellWidget" folder in "BillBell" target */ = {
+		858E708C2EFF4D1000F7D50C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				BillBellWidgetAttributes.swift,
@@ -135,30 +135,8 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		858E704C2EFF4CFC00F7D50C /* BillBellWidget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				858E708C2EFF4D1000F7D50C /* Exceptions for "BillBellWidget" folder in "BillBell" target */,
-				858E70592EFF4CFD00F7D50C /* Exceptions for "BillBellWidget" folder in "BillBellWidgetExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = BillBellWidget;
-			sourceTree = "<group>";
-		};
-		858E71DC2EFF526500F7D50C /* BillBellWatch Watch App */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = "BillBellWatch Watch App";
-			sourceTree = "<group>";
-		};
+		858E704C2EFF4CFC00F7D50C /* BillBellWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (858E708C2EFF4D1000F7D50C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 858E70592EFF4CFD00F7D50C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = BillBellWidget; sourceTree = "<group>"; };
+		858E71DC2EFF526500F7D50C /* BillBellWatch Watch App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "BillBellWatch Watch App"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -997,7 +975,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = BillBellWatch;
+				INFOPLIST_KEY_CFBundleDisplayName = BillBell;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.dunn.carabali.billbell;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1046,7 +1024,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = BillBellWatch;
+				INFOPLIST_KEY_CFBundleDisplayName = BillBell;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.dunn.carabali.billbell;
 				LD_RUNPATH_SEARCH_PATHS = (

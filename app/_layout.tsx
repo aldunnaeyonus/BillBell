@@ -70,7 +70,7 @@ function AppStack() {
   const [progress, setProgress] = useState(0);
   const [version, setVersion] = useState("0");
   const [_, requestCameraPermission] = useCameraPermissions(); // Hook for camera
-  const apiVersion = serverURL+"/ota/update.json";
+  const apiVersion = serverURL + "/ota/update.json";
 
   useEffect(() => {
     configureGoogle();
@@ -86,18 +86,18 @@ function AppStack() {
         try {
           // 1. Request Notifications (for due date alerts)
           await Notifications.requestPermissionsAsync();
-          
+
           // 2. Request Camera (for bill scanning)
           await requestCameraPermission();
 
           // 3. Request Calendar (for syncing bills)
           //await Calendar.requestCalendarPermissionsAsync();
-          
+
           // 4. Request Reminders (iOS specific requirement for full calendar access)
           // if (Platform.OS === 'ios') {
           //   await Calendar.requestRemindersPermissionsAsync();
           // }
-          
+
           // Mark as requested so it doesn't run again on next boot
           storage.set(PERMISSION_KEY, true);
         } catch (error) {
@@ -295,7 +295,7 @@ function AppStack() {
               headerShown: false,
               headerBackVisible: false,
               title: "",
-              
+
             }}
           />
           <Stack.Screen
@@ -360,7 +360,7 @@ function AppStack() {
             options={{ title: t("Subscriptions") }}
           />
         </Stack>
-        
+
       </BiometricAuth>
 
       {isBlurred && (
@@ -397,23 +397,34 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export default function RootLayout() {
-  useWatchConnectivity();
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 2,
-        staleTime: 1000 * 60 * 5,
-        gcTime: 1000 * 60 * 60 * 24,
-      },
+// FIX 2: Initialize QueryClient OUTSIDE the component to prevent cache resets
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 60 * 24,
     },
-  });
+  },
+});
+
+// FIX 1: Create a headless component for the hook
+function WatchSync() {
+  useWatchConnectivity();
+  return null;
+}
+
+export default function RootLayout() {
+  // REMOVED: useWatchConnectivity() from here
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <I18nextProvider i18n={i18n}>
         <ErrorBoundary>
           <QueryClientProvider client={queryClient}>
+            {/* FIX 1: Place the sync component INSIDE the provider */}
+            <WatchSync />
+            
             <OfflineBanner />
             <AppStack />
           </QueryClientProvider>
