@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, FlatList, LayoutAnimation, Platform, UIManager, TouchableOpacity } from "react-native";
+import { View, Text, Alert, Linking, StyleSheet, FlatList, LayoutAnimation, Platform, UIManager, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -21,10 +21,22 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// --- WORLDWIDE SUBSCRIPTION DATABASE ---
-// Add more patterns here as needed.
+const handleCancelSubscription = async (url?: string, name?: string, t?: any) => {
+  if (!url) {
+    Alert.alert(
+      t("No Direct Link"),
+      t("We don't have a direct cancellation link for {{name}} yet. You may need to visit their website manually.", { name })
+    );
+    return;
+  }
 
-
+  const supported = await Linking.canOpenURL(url);
+  if (supported) {
+    await Linking.openURL(url);
+  } else {
+    Alert.alert(t("Error"), t("Could not open the cancellation page."));
+  }
+};
 // Helper to match raw creditor string to known brand
 function enrichSubscription(creditorRaw: string, theme: any) {
   const match = KNOWN_SUBSCRIPTIONS.find(sub => 
@@ -43,6 +55,7 @@ function enrichSubscription(creditorRaw: string, theme: any) {
       icon: match.icon,
       color: iconColor,
       type: match.type,
+      cancelUrl: match.cancelUrl,
       isKnown: true
     };
   }
@@ -77,15 +90,24 @@ export default function Subscriptions() {
   // Filter for "Subscriptions"
   const subs = useMemo(() => {
     if (!bills) return [];
-    return bills.filter(
-      (b: { status: string; payment_method: string; recurrence: string; }) =>
-        b.status === "active" &&
-        (b.payment_method === "auto" || (b.recurrence && b.recurrence !== "none"))
-    ).sort((a: { amount_cents: number; }, b: { amount_cents: number; }) => b.amount_cents - a.amount_cents); 
-  }, [bills]);
+
+    return bills.filter((b: any) => {
+        // 1. Must be Active AND (Auto-Pay OR Recurring)
+        const isActiveRecurring = 
+          b.status === "active" &&
+          (b.payment_method === "auto" || (b.recurrence && b.recurrence !== "none"));
+        
+        if (!isActiveRecurring) return false;
+
+        // 2. CRITICAL: Check if it is a "Known" vendor (Netflix, Spotify, etc.)
+        const details = enrichSubscription(b.creditor, theme);
+        return details.isKnown; 
+      })
+      .sort((a: any, b: any) => b.amount_cents - a.amount_cents); 
+  }, [bills, theme]); // Added 'theme' to deps as enrichSubscription uses it
 
   const totalMonthly = useMemo(() => {
-    return subs.reduce((sum: any, b: { amount_cents: any; }) => sum + b.amount_cents, 0);
+    return subs.reduce((sum: any, b: { amount_cents: any; }) => sum + parseInt(b.amount_cents), 0);
   }, [subs]);
 
   const toggleExpand = (id: string) => {
@@ -188,12 +210,23 @@ export default function Subscriptions() {
             ))}
 
             <View style={styles.actionRow}>
+              
               <TouchableOpacity 
                 style={[styles.actionButton, { backgroundColor: theme.colors.bg }]}
                 onPress={() => router.push({ pathname: "/(app)/bill-edit", params: { id: String(item.id) } })}
               >
                 <Text style={{ color: theme.colors.primaryText, fontWeight: "600" }}>{t("Edit Bill Details")}</Text>
               </TouchableOpacity>
+              {details.cancelUrl && (
+        <TouchableOpacity 
+          style={[styles.actionButton, { backgroundColor: theme.colors.danger + '15', marginRight: 8 }]}
+          onPress={() => handleCancelSubscription(details.cancelUrl, details.displayName, t)}
+        >
+          <Text style={{ color: theme.colors.danger, fontWeight: "700", fontSize: 13 }}>
+            {t("Cancel Subscription")}
+          </Text>
+        </TouchableOpacity>
+      )}
             </View>
           </View>
         )}
@@ -220,7 +253,7 @@ export default function Subscriptions() {
         data={subs}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{ padding: 16, gap: 12 }}
-        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View>
             <Header title={t("Subscriptions")} subtitle={t("")} theme={theme} />
@@ -275,9 +308,18 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 12, fontWeight: "600", textTransform: 'uppercase', marginBottom: 4 },
   historyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  actionRow: { flexDirection: 'row', marginTop: 8, justifyContent: 'flex-end' },
-  actionButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
-
+  actionRow: { 
+    flexDirection: 'row', 
+    marginTop: 12, 
+    justifyContent: 'flex-end', // Aligns buttons to the right
+    alignItems: 'center'
+  },
+  actionButton: { 
+    paddingHorizontal: 16, 
+    paddingVertical: 10, 
+    borderRadius: 12,
+    // Add minWidth if you want them consistent
+  },
   // Icon & Text Styles
   iconBox: { width: 48, height: 48, borderRadius: 12, justifyContent: "center", alignItems: "center" },
   name: { fontSize: 16, fontWeight: "700" },

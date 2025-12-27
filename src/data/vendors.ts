@@ -13,6 +13,7 @@ export interface VendorInfo {
   color: string;
   isKnown: boolean;
   categoryKey: string; // Translation key, e.g., 'category_entertainment'
+  cancelUrl?: string; // <--- NEW FIELD
 }
 
 export const bulkURL = "https://tinyurl.com/billMVP";
@@ -1104,199 +1105,591 @@ export const BILL_ICON_MAP: {
 // ============================================================================
 export const KNOWN_SUBSCRIPTIONS = [
   // ==========================================
-  // 1. STREAMING & ENTERTAINMENT (Global)
+  // 1. STREAMING: VIDEO & MUSIC
   // ==========================================
-  { id: 'netflix', name: 'Netflix', patterns: [/netflix/i], color: '#E50914', icon: 'netflix', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'spotify', name: 'Spotify', patterns: [/spotify/i], color: '#1DB954', icon: 'spotify', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'youtube', name: 'YouTube Premium', patterns: [/youtube/i, /google.*yt/i], color: '#FF0000', icon: 'youtube', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'hulu', name: 'Hulu', patterns: [/hulu/i], color: '#1CE783', icon: 'hulu', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'hbo', name: 'HBO / Max', patterns: [/hbo/i, /hbomax/i, /wb.*discovery/i], color: '#560FD1', icon: 'movie-roll', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'disney', name: 'Disney+', patterns: [/disney/i], color: '#113CCF', icon: 'creation', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'prime_video', name: 'Prime Video', patterns: [/prime video/i], color: '#00A8E1', icon: 'amazon', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'apple_tv', name: 'Apple TV+', patterns: [/apple.*tv/i], color: '#000000', icon: 'apple', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'paramount', name: 'Paramount+', patterns: [/paramount/i], color: '#0064FF', icon: 'movie', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'peacock', name: 'Peacock', patterns: [/peacock.*tv/i], color: '#000000', icon: 'feather', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'dazn', name: 'DAZN', patterns: [/dazn/i], color: '#F5EB00', icon: 'soccer', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' }, // Huge in EU/Japan
-  { id: 'sky', name: 'Sky', patterns: [/sky.*digital/i, /sky.*tv/i, /now tv/i], color: '#E71409', icon: 'satellite-uplink', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' }, // UK/EU
-  { id: 'canal', name: 'Canal+', patterns: [/canal\+/i, /canal plus/i], color: '#000000', icon: 'television-classic', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' }, // France
-
-  { id: 'rocket_mortgage', name: 'Rocket Mortgage', patterns: [/rocket\s?mortgage/i, /quicken\s?loans/i], color: '#D42E12', icon: 'home-lightning-bolt', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
-  { id: 'mr_cooper', name: 'Mr. Cooper', patterns: [/mr\.?\s?cooper/i], color: '#163868', icon: 'home-account', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
-  { id: 'freedom_mortgage', name: 'Freedom Mortgage', patterns: [/freedom\s?mortgage/i], color: '#002F6C', icon: 'flag-checkered', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
-  { id: 'loandepot', name: 'LoanDepot', patterns: [/loandepot/i], color: '#F7561B', icon: 'home-analytics', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
-  { id: 'navient', name: 'Navient', patterns: [/navient/i], color: '#00467F', icon: 'school', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'nelnet', name: 'Nelnet', patterns: [/nelnet/i], color: '#88C740', icon: 'school-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'mohela', name: 'MOHELA', patterns: [/mohela/i], color: '#00583D', icon: 'book-education', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-
-  // ==========================================
-  // STUDENT LOANS
-  // ==========================================
-  { id: 'navient', name: 'Navient', patterns: [/navient/i], color: '#00467F', icon: 'school', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'nelnet', name: 'Nelnet', patterns: [/nelnet/i], color: '#88C740', icon: 'school-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'mohela', name: 'MOHELA', patterns: [/mohela/i], color: '#00583D', icon: 'book-education', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'aidvantage', name: 'Aidvantage', patterns: [/aidvantage/i], color: '#002C5F', icon: 'account-school', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-{ id: 'edfinancial', name: 'EdFinancial', patterns: [/edfinancial/i], color: '#00529B', icon: 'school', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'ecsi', name: 'Heartland ECSI', patterns: [/heartland\s?ecsi/i, /ecsi/i], color: '#D1202F', icon: 'book-account', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'sofi_loan', name: 'SoFi Student Loan', patterns: [/sofi.*mohela/i, /sofi.*loan/i], color: '#00D588', icon: 'bank-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'college_ave', name: 'College Ave', patterns: [/college\s?ave/i], color: '#FFC72C', icon: 'school-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'laurel_road', name: 'Laurel Road', patterns: [/laurel\s?road/i], color: '#004F71', icon: 'doctor', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  // ==========================================
-  // HOUSEHOLD SERVICES
-  // ==========================================
-  { id: 'public_storage', name: 'Public Storage', patterns: [/public\s?storage/i], color: '#F37021', icon: 'warehouse', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
-  { id: 'extra_space', name: 'Extra Space', patterns: [/extra\s?space/i], color: '#006633', icon: 'locker-multiple', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
-  { id: 'sunrun', name: 'Sunrun', patterns: [/sunrun/i], color: '#FDB913', icon: 'solar-power', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'terminix', name: 'Terminix', patterns: [/terminix/i], color: '#68BC45', icon: 'bug', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
-{ id: 'temu', name: 'Temu', patterns: [/temu/i], color: '#FB7701', icon: 'shopping', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
-  { id: 'shein', name: 'Shein', patterns: [/shein/i], color: '#000000', icon: 'tshirt-crew', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
-  { id: 'aliexpress', name: 'AliExpress', patterns: [/aliexpress/i, /alibaba/i], color: '#FF4747', icon: 'shopping', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
-
-  // ==========================================
-  // TRAVEL & NOMAD
-  // ==========================================
-  { id: 'airalo', name: 'Airalo', patterns: [/airalo/i], color: '#333333', icon: 'sim', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'safetywing', name: 'SafetyWing', patterns: [/safetywing/i], color: '#2C3E50', icon: 'shield-airplane', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
-  { id: 'emirates', name: 'Emirates', patterns: [/emirates/i], color: '#D71A21', icon: 'airplane', type: 'MaterialCommunityIcons', categoryKey: 'category_travel' },
-  // ==========================================
-  // FINANCING & STORE CARDS
-  // ==========================================
-  { id: 'synchrony', name: 'Synchrony Bank', patterns: [/synchrony/i, /syncb/i], color: '#F5B31B', icon: 'bank', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'comenity', name: 'Comenity Bank', patterns: [/comenity/i], color: '#E31837', icon: 'credit-card-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-  { id: 'carecredit', name: 'CareCredit', patterns: [/carecredit/i], color: '#00788A', icon: 'medical-bag', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
-
-  // ==========================================
-  // AUTO FINANCE
-  // ==========================================
-  { id: 'toyota_fs', name: 'Toyota Financial', patterns: [/toyota/i, /lexus/i], color: '#EB0A1E', icon: 'car', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  { id: 'honda_fs', name: 'Honda Financial', patterns: [/honda/i, /acura/i], color: '#CC0000', icon: 'car-hatchback', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  { id: 'ford_credit', name: 'Ford Credit', patterns: [/ford\s?credit/i, /lincoln/i], color: '#003478', icon: 'car-pickup', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  { id: 'gm_financial', name: 'GM Financial', patterns: [/gm\s?financial/i, /chevrolet/i, /cadillac/i], color: '#005595', icon: 'car-estate', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  { id: 'bmw_fs', name: 'BMW Financial', patterns: [/bmw/i, /mini\s?financial/i], color: '#1C69D4', icon: 'car-sports', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  { id: 'santander_consumer', name: 'Santander Consumer', patterns: [/santander\s?consumer/i], color: '#EC0000', icon: 'car-key', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  // ==========================================
-  // 2. TELECOM & INTERNET (High Value)
-  // ==========================================
-  // USA / Canada
-  { id: 'att', name: 'AT&T', patterns: [/at&t/i, /att\*bill/i], color: '#00A8E0', icon: 'phone', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'verizon', name: 'Verizon', patterns: [/verizon/i, /vzw/i], color: '#CD040B', icon: 'check', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'tmobile', name: 'T-Mobile', patterns: [/t-mobile/i, /tmobile/i], color: '#E20074', icon: 'signal', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'xfinity', name: 'Xfinity / Comcast', patterns: [/comcast/i, /xfinity/i], color: '#FF0000', icon: 'router-wireless', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'rogers', name: 'Rogers', patterns: [/rogers/i], color: '#FF0000', icon: 'cellphone', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'telus', name: 'Telus', patterns: [/telus/i], color: '#4B286D', icon: 'leaf', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  // Europe / Global
-  { id: 'vodafone', name: 'Vodafone', patterns: [/vodafone/i], color: '#E60000', icon: 'sim', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'orange', name: 'Orange', patterns: [/orange/i], color: '#FF7900', icon: 'access-point', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'deutsche_telekom', name: 'Telekom', patterns: [/telekom/i], color: '#E20074', icon: 'network', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'telefonica', name: 'O2 / Telefónica', patterns: [/telefonica/i, /o2/i], color: '#032D56', icon: 'molecule', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'bt', name: 'BT Group', patterns: [/bt group/i, /british telecom/i], color: '#5514B4', icon: 'phone-classic', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-{ id: 'rakuten', name: 'Rakuten', patterns: [/rakuten/i], color: '#BF0000', icon: 'shopping', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
-  { id: 'coupang', name: 'Coupang', patterns: [/coupang/i], color: '#333333', icon: 'rocket', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
-  { id: 'grab', name: 'Grab', patterns: [/grab/i], color: '#00B140', icon: 'car', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  { id: 'dstv', name: 'DStv', patterns: [/dstv/i, /multichoice/i], color: '#0072C6', icon: 'satellite-variant', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
-  { id: 'careem', name: 'Careem', patterns: [/careem/i], color: '#47A23F', icon: 'map-marker-path', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  // ==========================================
-  // UK SPECIFIC
-  // ==========================================
-  { id: 'council_tax', name: 'Council Tax', patterns: [/council\s?tax/i], color: '#000000', icon: 'city', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
-  { id: 'tv_licence', name: 'TV Licence', patterns: [/tv\s?licen[cs]e/i], color: '#D20042', icon: 'television-classic', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'octopus_energy', name: 'Octopus Energy', patterns: [/octopus\s?energy/i], color: '#FF00A3', icon: 'lightning-bolt', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'british_gas', name: 'British Gas', patterns: [/british\s?gas/i], color: '#0099FF', icon: 'fire', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'tesco_mobile', name: 'Tesco Mobile', patterns: [/tesco\s?mobile/i], color: '#00539F', icon: 'cellphone', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-{ id: 'starlink', name: 'Starlink', patterns: [/starlink/i, /spacex/i], color: '#101214', icon: 'satellite-uplink', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'google_fiber', name: 'Google Fiber', patterns: [/google\s?fiber/i], color: '#4285F4', icon: 'speedometer', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'hughesnet', name: 'HughesNet', patterns: [/hughesnet/i], color: '#005596', icon: 'satellite-variant', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  // ==========================================
-  // CANADA SPECIFIC
-  // ==========================================
-  { id: 'hydro_one', name: 'Hydro One', patterns: [/hydro\s?one/i], color: '#DA291C', icon: 'lightning-bolt', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'icbc', name: 'ICBC', patterns: [/icbc/i], color: '#003366', icon: 'car-info', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
-  { id: 'shoppers', name: 'Shoppers Drug Mart', patterns: [/shoppers\s?drug/i, /shoppers/i], color: '#004F88', icon: 'pill', type: 'MaterialCommunityIcons', categoryKey: 'category_health' },
-
-  // ==========================================
-  // AUSTRALIA SPECIFIC
-  // ==========================================
-  { id: 'woolworths', name: 'Woolworths', patterns: [/woolworths/i], color: '#178841', icon: 'food-apple', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
-  { id: 'coles', name: 'Coles', patterns: [/coles/i], color: '#DA291C', icon: 'cart', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
-  { id: 'medibank', name: 'Medibank', patterns: [/medibank/i], color: '#D41031', icon: 'hospital-box', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
-  { id: 'linkt', name: 'Linkt', patterns: [/linkt/i], color: '#5C2D91', icon: 'highway', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-
-  // ==========================================
-  // GERMANY (DACH) SPECIFIC
-  // ==========================================
-  { id: 'rundfunk', name: 'Rundfunkbeitrag', patterns: [/rundfunk/i, /ard\s?zdf/i], color: '#00529A', icon: 'radio-tower', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'db', name: 'Deutsche Bahn', patterns: [/deutsche\s?bahn/i, /db\s?vertrieb/i], color: '#FF0000', icon: 'train', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  { id: 'tk', name: 'Techniker Krankenkasse', patterns: [/techniker/i, /tk\s?beitrag/i], color: '#009FD6', icon: 'medical-bag', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
-
-  // ==========================================
-  // FRANCE SPECIFIC
-  // ==========================================
-  { id: 'edf', name: 'EDF', patterns: [/edf/i], color: '#FE5800', icon: 'lightning-bolt', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'sncf', name: 'SNCF', patterns: [/sncf/i, /ouigo/i], color: '#88258C', icon: 'train', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  { id: 'caf', name: 'CAF', patterns: [/caf/i], color: '#27348B', icon: 'bank-transfer', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
+  { 
+    id: 'netflix', 
+    name: 'Netflix', 
+    patterns: [/netflix/i], 
+    color: '#E50914', 
+    icon: 'netflix', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.netflix.com/cancelplan' 
+  },
+  { 
+    id: 'spotify', 
+    name: 'Spotify', 
+    patterns: [/spotify/i], 
+    color: '#1DB954', 
+    icon: 'spotify', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.spotify.com/account/subscription' 
+  },
+  { 
+    id: 'youtube', 
+    name: 'YouTube Premium', 
+    patterns: [/youtube/i, /google.*yt/i], 
+    color: '#FF0000', 
+    icon: 'youtube', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.youtube.com/paid_memberships'
+  },
+  { 
+    id: 'hulu', 
+    name: 'Hulu', 
+    patterns: [/hulu/i], 
+    color: '#1CE783', 
+    icon: 'hulu', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://secure.hulu.com/account'
+  },
+  { 
+    id: 'hbo', 
+    name: 'HBO / Max', 
+    patterns: [/hbo/i, /hbomax/i, /wb.*discovery/i], 
+    color: '#560FD1', 
+    icon: 'movie-roll', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://auth.max.com/subscription'
+  },
+  { 
+    id: 'disney', 
+    name: 'Disney+', 
+    patterns: [/disney/i], 
+    color: '#113CCF', 
+    icon: 'creation', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.disneyplus.com/account/subscription'
+  },
+  { 
+    id: 'prime_video', 
+    name: 'Prime Video', 
+    patterns: [/prime video/i], 
+    color: '#00A8E1', 
+    icon: 'amazon', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.amazon.com/gp/video/settings'
+  },
+  { 
+    id: 'apple_tv', 
+    name: 'Apple TV+', 
+    patterns: [/apple.*tv/i], 
+    color: '#000000', 
+    icon: 'apple', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://apps.apple.com/account/subscriptions'
+  },
+  { 
+    id: 'paramount', 
+    name: 'Paramount+', 
+    patterns: [/paramount/i], 
+    color: '#0064FF', 
+    icon: 'movie', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.paramountplus.com/account'
+  },
+  { 
+    id: 'peacock', 
+    name: 'Peacock', 
+    patterns: [/peacock.*tv/i], 
+    color: '#000000', 
+    icon: 'feather', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.peacocktv.com/account/plans'
+  },
+  { 
+    id: 'audible', 
+    name: 'Audible', 
+    patterns: [/audible/i, /amazon.*audio/i], 
+    color: '#F8991C', 
+    icon: 'book-open-page-variant', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.audible.com/account/overview'
+  },
+  { 
+    id: 'siriusxm', 
+    name: 'SiriusXM', 
+    patterns: [/siriusxm/i, /sirius\s?xm/i], 
+    color: '#0000A0', 
+    icon: 'radio', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://care.siriusxm.com/account/subscriptions'
+  },
 
   // ==========================================
-  // INDIA SPECIFIC
+  // 2. NEWS & JOURNALISM (High Churn)
   // ==========================================
-  { id: 'jio', name: 'Jio', patterns: [/jio/i], color: '#0F3CC9', icon: 'access-point', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-  { id: 'lic', name: 'LIC India', patterns: [/lic\s?india/i, /life\s?insurance\s?corp/i], color: '#F1C40F', icon: 'shield-account', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
-  { id: 'paytm', name: 'Paytm', patterns: [/paytm/i], color: '#002E6E', icon: 'cellphone-check', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
-  { id: 'zomato', name: 'Zomato', patterns: [/zomato/i], color: '#E23744', icon: 'moped', type: 'MaterialCommunityIcons', categoryKey: 'category_food' },
+  { 
+    id: 'nyt', 
+    name: 'NY Times', 
+    patterns: [/new\s?york\s?times/i, /ny\s?times/i, /nyt\s?sub/i], 
+    color: '#000000', 
+    icon: 'newspaper', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.nytimes.com/myaccount/subscription/manage'
+  },
+  { 
+    id: 'wsj', 
+    name: 'Wall Street Journal', 
+    patterns: [/wall\s?street\s?journal/i, /wsj/i], 
+    color: '#000000', 
+    icon: 'newspaper-variant', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://customercenter.wsj.com/manage-subscriptions'
+  },
+  { 
+    id: 'washington_post', 
+    name: 'Washington Post', 
+    patterns: [/washington\s?post/i, /wash\s?post/i], 
+    color: '#000000', 
+    icon: 'newspaper', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://subscribe.washingtonpost.com/myaccount/profile'
+  },
+  { 
+    id: 'economist', 
+    name: 'The Economist', 
+    patterns: [/economist/i], 
+    color: '#E3120B', 
+    icon: 'earth', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://myaccount.economist.com/s/manage-subscription'
+  },
+  { 
+    id: 'medium', 
+    name: 'Medium', 
+    patterns: [/medium/i], 
+    color: '#000000', 
+    icon: 'book-open', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://medium.com/me/settings/membership'
+  },
 
   // ==========================================
-  // GLOBAL FINTECH & CRYPTO
+  // 3. LEARNING & SELF-IMPROVEMENT
   // ==========================================
-  { id: 'revolut', name: 'Revolut', patterns: [/revolut/i], color: '#0075EB', icon: 'bank-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
-  { id: 'wise', name: 'Wise', patterns: [/wise.*transfer/i, /transferwise/i], color: '#9FE870', icon: 'earth', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
-  { id: 'binance', name: 'Binance', patterns: [/binance/i], color: '#F3BA2F', icon: 'bitcoin', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
-  { id: 'crypto_com', name: 'Crypto.com', patterns: [/crypto\.com/i], color: '#002D74', icon: 'bitcoin', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
+  { 
+    id: 'duolingo', 
+    name: 'Duolingo', 
+    patterns: [/duolingo/i], 
+    color: '#58CC02', 
+    icon: 'owl', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.duolingo.com/settings/plus'
+  },
+  { 
+    id: 'masterclass', 
+    name: 'MasterClass', 
+    patterns: [/masterclass/i], 
+    color: '#000000', 
+    icon: 'school', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.masterclass.com/account/edit'
+  },
+  { 
+    id: 'skillshare', 
+    name: 'Skillshare', 
+    patterns: [/skillshare/i], 
+    color: '#00FF84', 
+    icon: 'school-outline', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.skillshare.com/settings/payments'
+  },
+  { 
+    id: 'coursera', 
+    name: 'Coursera', 
+    patterns: [/coursera/i], 
+    color: '#0056D2', 
+    icon: 'certificate', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.coursera.org/my-purchases'
+  },
+  { 
+    id: 'audible', 
+    name: 'Audible', 
+    patterns: [/audible/i], 
+    color: '#F8991C', 
+    icon: 'book-open-page-variant', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.audible.com/account/overview'
+  },
+  { 
+    id: 'blinkist', 
+    name: 'Blinkist', 
+    patterns: [/blinkist/i], 
+    color: '#2CE080', 
+    icon: 'book-open', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.blinkist.com/nc/settings/account'
+  },
 
   // ==========================================
-  // 3. CLOUD, HOSTING & SOFTWARE (Tech)
+  // 4. CREATIVE ASSETS (Music, Video, Design)
   // ==========================================
-  { id: 'aws', name: 'AWS', patterns: [/aws/i, /amazon web/i], color: '#FF9900', icon: 'aws', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'google_cloud', name: 'Google Cloud', patterns: [/google.*cloud/i, /gcp/i], color: '#4285F4', icon: 'cloud', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'azure', name: 'Azure', patterns: [/azure/i, /msft.*azure/i], color: '#0078D4', icon: 'microsoft-azure', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'digitalocean', name: 'DigitalOcean', patterns: [/digitalocean/i, /digital ocean/i], color: '#0080FF', icon: 'water', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'heroku', name: 'Heroku', patterns: [/heroku/i], color: '#430098', icon: 'code-braces', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'godaddy', name: 'GoDaddy', patterns: [/godaddy/i], color: '#1BDBDB', icon: 'domain', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'namecheap', name: 'Namecheap', patterns: [/namecheap/i], color: '#DE3723', icon: 'tag-text', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'github', name: 'GitHub', patterns: [/github/i], color: '#181717', icon: 'github', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'vercel', name: 'Vercel', patterns: [/vercel/i], color: '#000000', icon: 'triangle', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
+  { 
+    id: 'adobe', 
+    name: 'Adobe Creative', 
+    patterns: [/adobe/i], 
+    color: '#FF0000', 
+    icon: 'pencil-ruler', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://account.adobe.com/plans'
+  },
+  { 
+    id: 'canva', 
+    name: 'Canva', 
+    patterns: [/canva/i], 
+    color: '#00C4CC', 
+    icon: 'palette', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.canva.com/settings/billing'
+  },
+  { 
+    id: 'epidemic_sound', 
+    name: 'Epidemic Sound', 
+    patterns: [/epidemic\s?sound/i], 
+    color: '#000000', 
+    icon: 'music-note', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://epidemicsound.com/account/subscription'
+  },
+  { 
+    id: 'artlist', 
+    name: 'Artlist', 
+    patterns: [/artlist/i], 
+    color: '#FFB800', 
+    icon: 'music-clef-treble', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://artlist.io/account/billing'
+  },
+  { 
+    id: 'shutterstock', 
+    name: 'Shutterstock', 
+    patterns: [/shutterstock/i], 
+    color: '#F93933', 
+    icon: 'camera-image', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.shutterstock.com/account/plans'
+  },
+  { 
+    id: 'figma', 
+    name: 'Figma', 
+    patterns: [/figma/i], 
+    color: '#F24E1E', 
+    icon: 'vector-square', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.figma.com/settings/billing'
+  },
 
   // ==========================================
-  // 4. LIFESTYLE, FOOD & GYM
+  // 5. ANCESTRY & GENEALOGY (Annual Shocks)
   // ==========================================
-  { id: 'uber_one', name: 'Uber One', patterns: [/uber.*one/i, /uber.*pass/i], color: '#000000', icon: 'uber', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
-  { id: 'doordash', name: 'DoorDash', patterns: [/doordash/i, /dashpass/i], color: '#FF3008', icon: 'food', type: 'MaterialCommunityIcons', categoryKey: 'category_food' },
-  { id: 'hellofresh', name: 'HelloFresh', patterns: [/hellofresh/i], color: '#96D600', icon: 'food-apple', type: 'MaterialCommunityIcons', categoryKey: 'category_food' },
-  { id: 'peloton', name: 'Peloton', patterns: [/peloton/i], color: '#DF1C2F', icon: 'bike', type: 'MaterialCommunityIcons', categoryKey: 'category_health' },
-  { id: 'planet_fitness', name: 'Planet Fitness', patterns: [/planet fit/i], color: '#7D228F', icon: 'dumbbell', type: 'MaterialCommunityIcons', categoryKey: 'category_health' },
-  { id: 'equinox', name: 'Equinox', patterns: [/equinox/i], color: '#000000', icon: 'yoga', type: 'MaterialCommunityIcons', categoryKey: 'category_health' },
+  { 
+    id: 'ancestry', 
+    name: 'Ancestry.com', 
+    patterns: [/ancestry/i, /ancestry.*com/i], 
+    color: '#84BD00', 
+    icon: 'tree', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.ancestry.com/account/subscription'
+  },
+  { 
+    id: '23andme', 
+    name: '23andMe', 
+    patterns: [/23andme/i], 
+    color: '#FF545D', 
+    icon: 'dna', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_health',
+    cancelUrl: 'https://you.23andme.com/user/settings/'
+  },
+  { 
+    id: 'myheritage', 
+    name: 'MyHeritage', 
+    patterns: [/myheritage/i], 
+    color: '#C63628', 
+    icon: 'family-tree', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.myheritage.com/account/my-purchases'
+  },
 
   // ==========================================
-  // 5. PRODUCTIVITY & TOOLS
+  // 6. DATING & SOCIAL
   // ==========================================
-  { id: 'microsoft_365', name: 'Microsoft 365', patterns: [/microsoft.*365/i, /msft.*office/i], color: '#0078D4', icon: 'microsoft', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'adobe', name: 'Adobe', patterns: [/adobe/i], color: '#FF0000', icon: 'pencil-ruler', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'zoom', name: 'Zoom', patterns: [/zoom\.us/i], color: '#2D8CFF', icon: 'video', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'slack', name: 'Slack', patterns: [/slack/i], color: '#4A154B', icon: 'slack', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'linkedin', name: 'LinkedIn', patterns: [/linkedin/i], color: '#0077B5', icon: 'linkedin', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'dropbox', name: 'Dropbox', patterns: [/dropbox/i], color: '#0061FF', icon: 'dropbox', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'notion', name: 'Notion', patterns: [/notion/i], color: '#000000', icon: 'notebook', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
-  { id: 'chatgpt', name: 'ChatGPT', patterns: [/openai/i, /chatgpt/i], color: '#74AA9C', icon: 'robot', type: 'MaterialCommunityIcons', categoryKey: 'category_software' },
+  { 
+    id: 'tinder', 
+    name: 'Tinder', 
+    patterns: [/tinder/i], 
+    color: '#FE3C72', 
+    icon: 'fire', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_health',
+    cancelUrl: 'https://www.tinder.com/account/settings' 
+  },
+  { 
+    id: 'bumble', 
+    name: 'Bumble', 
+    patterns: [/bumble/i], 
+    color: '#FFC629', 
+    icon: 'bee', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_health',
+    cancelUrl: 'https://bumble.com/help-search?q=cancel' 
+  },
+  { 
+    id: 'hinge', 
+    name: 'Hinge', 
+    patterns: [/hinge/i], 
+    color: '#000000', 
+    icon: 'heart', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_health',
+    cancelUrl: 'https://apps.apple.com/account/subscriptions'
+  },
+  { 
+    id: 'match', 
+    name: 'Match.com', 
+    patterns: [/match\.com/i], 
+    color: '#0061E0', 
+    icon: 'heart-outline', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_health',
+    cancelUrl: 'https://www.match.com/account/subscription/manage'
+  },
 
   // ==========================================
-  // 6. INSURANCE & FINANCE (Recurring)
+  // 7. GAMING (Deep)
   // ==========================================
-  { id: 'geico', name: 'Geico', patterns: [/geico/i], color: '#004990', icon: 'car', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
-  { id: 'progressive', name: 'Progressive', patterns: [/progressive/i], color: '#00549E', icon: 'car-hatchback', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
-  { id: 'state_farm', name: 'State Farm', patterns: [/state farm/i], color: '#E00309', icon: 'home-heart', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
-  { id: 'allianz', name: 'Allianz', patterns: [/allianz/i], color: '#003781', icon: 'shield-home', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
-  { id: 'axa', name: 'AXA', patterns: [/axa/i], color: '#00008F', icon: 'hospital-box', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
-  { id: 'amex', name: 'Amex Fee', patterns: [/american express/i, /amex.*fee/i], color: '#006FCF', icon: 'credit-card', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
-  { id: 'chase', name: 'Chase Fee', patterns: [/chase.*fee/i], color: '#117ACA', icon: 'bank', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
+  { 
+    id: 'xbox', 
+    name: 'Xbox Game Pass', 
+    patterns: [/microsoft.*xbox/i, /xbox/i], 
+    color: '#107C10', 
+    icon: 'microsoft-xbox', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://account.microsoft.com/services'
+  },
+  { 
+    id: 'playstation', 
+    name: 'PlayStation Plus', 
+    patterns: [/playstation/i, /sony.*network/i, /psn/i], 
+    color: '#003791', 
+    icon: 'sony-playstation', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.playstation.com/acct/management'
+  },
+  { 
+    id: 'nintendo', 
+    name: 'Nintendo Online', 
+    patterns: [/nintendo/i], 
+    color: '#E60012', 
+    icon: 'nintendo-switch', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://ec.nintendo.com/my/membership'
+  },
+  { 
+    id: 'steam', 
+    name: 'Steam', 
+    patterns: [/steam/i, /valve/i], 
+    color: '#171A21', 
+    icon: 'steam', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://store.steampowered.com/account/subscriptions/'
+  },
+  { 
+    id: 'ea_play', 
+    name: 'EA Play', 
+    patterns: [/ea\s?play/i, /electronic\s?arts/i], 
+    color: '#FF4747', 
+    icon: 'gamepad-variant', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://myaccount.ea.com/cp-ui/subscription/index'
+  },
+  { 
+    id: 'ubisoft_plus', 
+    name: 'Ubisoft+', 
+    patterns: [/ubisoft/i], 
+    color: '#005DF4', 
+    icon: 'ubisoft', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://store.ubisoft.com/my-subscription'
+  },
+  { 
+    id: 'roblox', 
+    name: 'Roblox Premium', 
+    patterns: [/roblox/i], 
+    color: '#000000', 
+    icon: 'controller-classic', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_entertainment',
+    cancelUrl: 'https://www.roblox.com/my/account?tab=Billing'
+  },
+
+  // ==========================================
+  // 8. PRODUCTIVITY & TOOLS
+  // ==========================================
+  { 
+    id: 'evernote', 
+    name: 'Evernote', 
+    patterns: [/evernote/i], 
+    color: '#00A82D', 
+    icon: 'notebook-outline', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.evernote.com/Settings.action'
+  },
+  { 
+    id: 'notion', 
+    name: 'Notion', 
+    patterns: [/notion/i], 
+    color: '#000000', 
+    icon: 'notebook', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.notion.so/settings/billing'
+  },
+  { 
+    id: 'todoist', 
+    name: 'Todoist', 
+    patterns: [/todoist/i, /doist/i], 
+    color: '#E44332', 
+    icon: 'check-bold', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://todoist.com/app/settings/subscription'
+  },
+  { 
+    id: 'dropbox', 
+    name: 'Dropbox', 
+    patterns: [/dropbox/i], 
+    color: '#0061FF', 
+    icon: 'dropbox', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://www.dropbox.com/account/plan'
+  },
+  { 
+    id: '1password', 
+    name: '1Password', 
+    patterns: [/1password/i], 
+    color: '#0094F5', 
+    icon: 'lock-outline', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_software',
+    cancelUrl: 'https://my.1password.com/billing'
+  },
+
+  // ==========================================
+  // 9. HEALTH & LIFESTYLE
+  // ==========================================
+  { 
+    id: 'peloton', 
+    name: 'Peloton', 
+    patterns: [/peloton/i], 
+    color: '#DF1C2F', 
+    icon: 'bike', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_health',
+    cancelUrl: 'https://www.onepeloton.com/mymembership'
+  },
+  { 
+    id: 'strava', 
+    name: 'Strava', 
+    patterns: [/strava/i], 
+    color: '#FC4C02', 
+    icon: 'run', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_health',
+    cancelUrl: 'https://www.strava.com/account'
+  },
+  { 
+    id: 'calm', 
+    name: 'Calm', 
+    patterns: [/calm\.com/i], 
+    color: '#0026FF', 
+    icon: 'meditation', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_health',
+    cancelUrl: 'https://www.calm.com/profile/subscription'
+  },
+  { 
+    id: 'headspace', 
+    name: 'Headspace', 
+    patterns: [/headspace/i], 
+    color: '#F47D31', 
+    icon: 'brain', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_health',
+    cancelUrl: 'https://www.headspace.com/subscription/manage'
+  },
+  { 
+    id: 'hellofresh', 
+    name: 'HelloFresh', 
+    patterns: [/hellofresh/i], 
+    color: '#96D600', 
+    icon: 'food-apple', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_food',
+    cancelUrl: 'https://www.hellofresh.com/account-settings/plan-management'
+  },
+  { 
+    id: 'amazon_prime', 
+    name: 'Amazon Prime', 
+    patterns: [/amazon.*prime/i, /amzn.*prime/i], 
+    color: '#00A8E1', 
+    icon: 'amazon', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_shopping',
+    cancelUrl: 'https://www.amazon.com/mc/pipeline/cancellation'
+  },
+  { 
+    id: 'uber_one', 
+    name: 'Uber One', 
+    patterns: [/uber.*one/i, /uber.*pass/i], 
+    color: '#000000', 
+    icon: 'uber', 
+    type: 'MaterialCommunityIcons', 
+    categoryKey: 'category_transport',
+    cancelUrl: 'https://m.uber.com/ul/?action=viewPass'
+  },
 ];
-
 // ============================================================================
 // HELPERS & RESOLVER
 // ============================================================================

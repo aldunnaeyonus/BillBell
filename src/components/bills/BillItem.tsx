@@ -21,8 +21,6 @@ const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, o
   const isPaid = Boolean(item.paid_at || item.is_paid || item.status === "paid");
   const overdue = isOverdue(item);
 
-  // USE THEME COLOR (Fallback to standard green if 'success' is missing from your theme)
-
   const dateInfo = useMemo(() => {
     if (isPaid) {
       const d = item.paid_at || item.due_date;
@@ -54,7 +52,7 @@ const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, o
       <View style={styles.rightActionsContainer}>
         <ActionButton icon="create-outline" color="#3498DB" label={t("Edit")} onPress={() => onEdit(item)} />
         {!isPaid && (
-          <ActionButton icon="checkmark-done-circle-outline" color={theme.colors.success} label={t("Paid")} onPress={() => onMarkPaid(item)} />
+          <ActionButton icon="checkmark-done-circle-outline" color={theme.colors.success || "#2ECC71"} label={t("Paid")} onPress={() => onMarkPaid(item)} />
         )}
         <ActionButton icon="trash-outline" color="#E74C3C" label={t("Delete")} onPress={() => onDelete(item)} />
       </View>
@@ -87,85 +85,64 @@ const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, o
         </View>
 
         {/* CENTER: Details */}
-        <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <View style={{ flexShrink: 1, paddingRight: 8 }}>
-            <Text style={[styles.billCreditor, { color: theme.colors.primaryText }]} numberOfLines={1}>
-              {item.creditor}
+        <View style={{ flex: 1, paddingRight: 8 }}>
+          <Text style={[styles.billCreditor, { color: theme.colors.primaryText }]} numberOfLines={1}>
+            {item.creditor}
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+            <MaterialCommunityIcons
+              name={item.payment_method === "auto" ? "refresh-auto" : "hand-pointing-right"}
+              size={14}
+              color={item.payment_method === "auto" ? theme.colors.navy : theme.colors.subtext}
+            />
+            <Text style={{ color: item.payment_method === "auto" ? theme.colors.navy : theme.colors.subtext, fontSize: 11, fontWeight: "600", marginLeft: 4, textTransform: "uppercase" }}>
+              {item.payment_method === "auto" ? t("Auto-Draft") : t("Manual Pay")}
             </Text>
-            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
-              <MaterialCommunityIcons
-                name={item.payment_method === "auto" ? "refresh-auto" : "hand-pointing-right"}
-                size={14}
-                color={item.payment_method === "auto" ? theme.colors.navy : theme.colors.subtext}
-              />
-              <Text style={{ color: item.payment_method === "auto" ? theme.colors.navy : theme.colors.subtext, fontSize: 11, fontWeight: "600", marginLeft: 4, textTransform: "uppercase" }}>
-                {item.payment_method === "auto" ? t("Auto-Draft") : t("Manual Pay")}
-              </Text>
-            </View>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
-              <Ionicons name={isPaid ? "checkmark-circle" : "calendar-outline"} size={14} color={dateInfo.color || (isPaid ? theme.colors.accent : theme.colors.subtext)} />
-              <Text style={{ color: dateInfo.color || (isPaid ? theme.colors.accent : theme.colors.subtext), fontSize: 13, fontWeight: "500" }}>
-                {dateInfo.label}
-              </Text>
-            </View>
           </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
+            <Ionicons name={isPaid ? "checkmark-circle" : "calendar-outline"} size={14} color={dateInfo.color || (isPaid ? theme.colors.accent : theme.colors.subtext)} />
+            <Text style={{ color: dateInfo.color || (isPaid ? theme.colors.accent : theme.colors.subtext), fontSize: 13, fontWeight: "500" }}>
+              {dateInfo.label}
+            </Text>
+          </View>
+        </View>
 
-          {/* RIGHT: Amount & Action Button */}
-          <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
+        {/* RIGHT: Wrapper for Amount + Dots */}
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          
+          {/* Amount Column */}
+          <View style={{ alignItems: "flex-end", marginRight: 8 }}>
             <Text style={[styles.billAmount, { color: theme.colors.primaryText }]}>{amt}</Text>
-            
             {overdue && !isPaid && (
-              <View style={{ backgroundColor: theme.colors.danger + "20", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4, marginBottom: 4 }}>
+              <View style={{ backgroundColor: theme.colors.danger + "20", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4 }}>
                 <Text style={{ color: theme.colors.danger, fontSize: 10, fontWeight: "800" }}>{t("OVERDUE")}</Text>
               </View>
             )}
-
-            {/* --- THEMED PAID BUTTON --- */}
-            {!isPaid ? (
-               <Pressable
-               onPress={(e) => {
-                 e.stopPropagation(); 
-                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                 onMarkPaid(item);
-               }}
-               hitSlop={8}
-               style={({ pressed }) => ({
-                 marginTop: 6,
-                 opacity:0.4,
-                 backgroundColor: pressed ? theme.colors.success : `${(theme.colors.success as string)}20`, // 20% opacity of theme color
-                 borderColor: theme.colors.success,
-                 borderWidth: 1,
-                 borderRadius: 20,
-                 paddingVertical: 4,
-                 paddingHorizontal: 10,
-                 flexDirection: "row",
-                 alignItems: "center",
-                 justifyContent: "center",
-               })}
-             >
-               {({ pressed }) => (
-                 <>
-                   <Ionicons 
-                     name="checkmark" 
-                     size={12} 
-                     color={pressed ? "#FFF" : theme.colors.navy} 
-                     style={{ marginRight: 4 }}
-                   />
-                   <Text style={{ 
-                     color: pressed ? "#FFF" : theme.colors.navy, 
-                     fontSize: 11, 
-                     fontWeight: "700",
-                     textTransform: "uppercase" 
-                   }}>
-                     {t("Mark Paid")}
-                   </Text>
-                 </>
-               )}
-             </Pressable>
-            ) : null}
-            {/* -------------------------- */}
-
           </View>
+
+          {/* 3-DOT MENU BUTTON (Right Side) */}
+          <Pressable
+              onPress={(e) => {
+                e.stopPropagation(); 
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onLongPress(item); 
+              }}
+              hitSlop={12}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.5 : 1,
+                padding: 4,
+                // Optional: add a slight background to make the tap area obvious
+                // backgroundColor: theme.colors.border + '30', 
+                // borderRadius: 20
+              })}
+            >
+              <Ionicons 
+                name="ellipsis-vertical-outline" 
+                size={26} 
+                color={theme.colors.subtext} 
+              />
+          </Pressable>
+
         </View>
       </View>
     </Pressable>
