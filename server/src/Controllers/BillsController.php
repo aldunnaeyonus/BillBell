@@ -24,7 +24,6 @@ class BillsController {
   }
 
   // --- HELPER: Smart Date Addition ---
-  // Prevents the "February Bug" and handles all recurrence types consistently
   private static function addRecurrenceInterval(\DateTime $date, string $recurrence) {
     $day = (int)$date->format('j');
     $originalDay = $day;
@@ -37,7 +36,6 @@ class BillsController {
             $date->modify('+2 weeks');
             break;
         case 'semi-monthly':
-            // Logic: If before the 15th, move to 15th. If 15th or later, move to 1st of next month.
             if ($day < 15) {
                 $date->setDate((int)$date->format('Y'), (int)$date->format('n'), 15);
             } else {
@@ -46,7 +44,6 @@ class BillsController {
             break;
         case 'monthly':
             $date->modify('+1 month');
-            // Clamp to end of month if we overshot (e.g. Jan 31 -> Feb 28)
             if ((int)$date->format('j') < $originalDay) {
                 $date->modify('last day of previous month');
             }
@@ -65,7 +62,6 @@ class BillsController {
             break;
         case 'annually':
             $date->modify('+1 year');
-            // Handle Leap Year: Feb 29 + 1 year -> Feb 28
              if ((int)$date->format('j') < $originalDay) {
                 $date->modify('last day of previous month');
             }
@@ -105,7 +101,6 @@ class BillsController {
 
     $recurrence = $data["recurrence"] ?? "none";
     
-    // VALIDATION FIX: Allow all recurrence types supported by markPaid
     $allowedRecurrence = ["none","monthly","weekly","bi-weekly","quarterly","semi-monthly","semi-annually","annually"];
     if (!in_array($recurrence, $allowedRecurrence, true)) {
         Utils::json(["error" => "Invalid recurrence"], 422);
@@ -113,9 +108,15 @@ class BillsController {
     $endDate = !empty($data["end_date"]) ? $data["end_date"] : null;
     $amountEncrypted = $data["amount_encrypted"] ?? null;
 
-    $cipherVersion = self::getFamilyKeyVersion($familyId);
+    // FIX 1: Trust the client's cipher_version if provided.
+    // This ensures the metadata matches the actual key used for encryption.
+    $serverKeyVersion = self::getFamilyKeyVersion($familyId);
+    $clientCipherVersion = isset($data["cipher_version"]) ? (int)$data["cipher_version"] : 0;
+    
+    // If client sends a valid version, use it. Otherwise fall back to server current.
+    $cipherVersion = ($clientCipherVersion > 0) ? $clientCipherVersion : $serverKeyVersion;
+
     $paymentMethod = $data["payment_method"] ?? "manual";
-     
     if (!in_array($paymentMethod, ["manual", "auto"])) $paymentMethod = "manual";
      
     $stmt = $pdo->prepare("
@@ -186,6 +187,8 @@ class BillsController {
 
     $hasCipherVersion = array_key_exists("cipher_version", $data);
 
+    // If updating sensitive fields but NO version provided, default to current server version.
+    // (Ideally client should provide it, but this is a safe fallback).
     if ($touchingCiphertext && !$hasCipherVersion) {
       $current = self::getFamilyKeyVersion($familyId);
       $sets[] = "cipher_version=?";
@@ -219,63 +222,74 @@ class BillsController {
     $familyId = self::requireFamilyId($userId);
     $pdo = DB::pdo();
 
-    $pdo->beginTransaction();
+    // FIX 2: Wrap transaction in try/catch for safety
+    try {
+        $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare("SELECT * FROM bills WHERE id=? AND family_id=? LIMIT 1");
-    $stmt->execute([$id, $familyId]);
-    $bill = $stmt->fetch();
-    if (!$bill) { $pdo->rollBack(); Utils::json(["error" => "Not found"], 404); }
+        $stmt = $pdo->prepare("SELECT * FROM bills WHERE id=? AND family_id=? LIMIT 1");
+        $stmt->execute([$id, $familyId]);
+        $bill = $stmt->fetch();
+        if (!$bill) { 
+            // If not found, we must rollback before exiting (though throwing exception is cleaner)
+            throw new \Exception("Bill not found");
+        }
 
-    $upd = $pdo->prepare("UPDATE bills SET status='paid', snoozed_until=NULL, updated_by_user_id=? WHERE id=? AND family_id=?");
-    $upd->execute([$userId, $id, $familyId]);
+        $upd = $pdo->prepare("UPDATE bills SET status='paid', snoozed_until=NULL, updated_by_user_id=? WHERE id=? AND family_id=?");
+        $upd->execute([$userId, $id, $familyId]);
 
-    // --- FIX: Use robust date calculation helper ---
-    if ($bill["recurrence"] !== "none") {
-      $dt = new \DateTime($bill["due_date"]);
-      
-      // Use the helper to calculate next date safely
-      $dt = self::addRecurrenceInterval($dt, $bill["recurrence"]);
-      
-      $nextDue = $dt->format("Y-m-d");
+        if ($bill["recurrence"] !== "none") {
+            $dt = new \DateTime($bill["due_date"]);
+            $dt = self::addRecurrenceInterval($dt, $bill["recurrence"]);
+            $nextDue = $dt->format("Y-m-d");
 
-     $shouldRecur = true;
-      if (!empty($bill["end_date"]) && $nextDue > $bill["end_date"]) {
-          $shouldRecur = false;
-      }
-      
-      // Check for duplicates to prevent double-creation
-      $chk = $pdo->prepare("SELECT id FROM bills WHERE family_id=? AND creditor=? AND amount_cents=? AND due_date=? LIMIT 1");
-      $chk->execute([(int)$bill["family_id"], $bill["creditor"], (int)$bill["amount_cents"], $nextDue]);
+            $shouldRecur = true;
+            if (!empty($bill["end_date"]) && $nextDue > $bill["end_date"]) {
+                $shouldRecur = false;
+            }
+        
+            if ($shouldRecur) {
+                // Check duplicates
+                $chk = $pdo->prepare("SELECT id FROM bills WHERE family_id=? AND creditor=? AND amount_cents=? AND due_date=? LIMIT 1");
+                $chk->execute([(int)$bill["family_id"], $bill["creditor"], (int)$bill["amount_cents"], $nextDue]);
 
-      if (!$chk->fetch()) {
-        $ins = $pdo->prepare("
-          INSERT INTO bills
-          (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, end_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version, payment_method)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        ");
-        $ins->execute([
-          (int)$bill["family_id"],
-          (int)$bill["created_by_user_id"],
-          $userId,
-          $bill["creditor"],
-          (int)$bill["amount_cents"],
-          $bill["amount_encrypted"],
-          $nextDue,
-          $bill["end_date"], // Copy end_date to new bill
-          "active",
-          null,
-          $bill["recurrence"],
-          (int)$bill["reminder_offset_days"],
-          $bill["reminder_time_local"],
-          $bill["notes"],
-          (int)($bill["cipher_version"] ?? 1),
-          $bill["payment_method"]
-        ]);
-      }
+                if (!$chk->fetch()) {
+                    $ins = $pdo->prepare("
+                    INSERT INTO bills
+                    (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, end_date, status, snoozed_until, recurrence, reminder_offset_days, reminder_time_local, notes, cipher_version, payment_method)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    ");
+                    $ins->execute([
+                    (int)$bill["family_id"],
+                    (int)$bill["created_by_user_id"],
+                    $userId,
+                    $bill["creditor"],
+                    (int)$bill["amount_cents"],
+                    $bill["amount_encrypted"],
+                    $nextDue,
+                    $bill["end_date"],
+                    "active",
+                    null,
+                    $bill["recurrence"],
+                    (int)$bill["reminder_offset_days"],
+                    $bill["reminder_time_local"],
+                    $bill["notes"],
+                    (int)($bill["cipher_version"] ?? 1),
+                    $bill["payment_method"]
+                    ]);
+                }
+            }
+        }
+
+        $pdo->commit();
+        Utils::json(["ok" => true]);
+
+    } catch (\Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        $code = ($e->getMessage() === "Bill not found") ? 404 : 500;
+        Utils::json(["error" => $e->getMessage()], $code);
     }
-
-    $pdo->commit();
-    Utils::json(["ok" => true]);
   }
 
   public static function snooze(int $id) {

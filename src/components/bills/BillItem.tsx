@@ -3,27 +3,18 @@ import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import ReanimatedSwipeable, { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { RectButton } from "react-native-gesture-handler";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated from "react-native-reanimated"; // Removed FadeIn/FadeOut for performance
 import * as Haptics from "expo-haptics";
 import { parseISO } from "date-fns";
-
-import { Bill } from "../../types/domain";
 import { useTheme } from "../../ui/useTheme";
 import { useCurrency } from "../../hooks/useCurrency";
 import { formatCurrency } from "../../utils/currency";
 import { getBillIcon, getSmartDueDate, isOverdue } from "../../utils/billLogic";
+import { BillItemProps } from "../../types/domain";
 
-interface BillItemProps {
-  item: Bill;
-  t: any;
-  locale: string;
-  onLongPress: (item: Bill) => void;
-  onEdit: (item: Bill) => void;
-  onMarkPaid: (item: Bill) => void;
-  onDelete: (item: Bill) => void;
-}
 
-const BillItem = React.memo(({ item, t, locale, onLongPress, onEdit, onMarkPaid, onDelete }: BillItemProps) => {
+
+const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, onDelete }: BillItemProps) => {
   const theme = useTheme();
   const currency = useCurrency();
   const swipeableRef = useRef<SwipeableMethods>(null);
@@ -129,9 +120,10 @@ const BillItem = React.memo(({ item, t, locale, onLongPress, onEdit, onMarkPaid,
     </Pressable>
   );
 
+  // FIX: Removed FadeIn/FadeOut animations to improve "slow update" issues on large lists
   if (Platform.OS === "ios") {
     return (
-      <Animated.View exiting={FadeOut} entering={FadeIn}>
+      <Animated.View>
         <ReanimatedSwipeable ref={swipeableRef} friction={2} rightThreshold={40} renderRightActions={renderRightActions} containerStyle={{ marginVertical: 0 }}>
           {BillContent}
         </ReanimatedSwipeable>
@@ -139,8 +131,30 @@ const BillItem = React.memo(({ item, t, locale, onLongPress, onEdit, onMarkPaid,
     );
   }
 
-  return <Animated.View exiting={FadeOut} entering={FadeIn}>{BillContent}</Animated.View>;
-});
+  return <Animated.View>{BillContent}</Animated.View>;
+};
+
+// FIX: Custom equality check to prevent unneeded re-renders
+function arePropsEqual(prev: BillItemProps, next: BillItemProps) {
+  // Check strict equality for functions and simple props
+  if (prev.locale !== next.locale || prev.t !== next.t) return false;
+  
+  // Check Bill data integrity
+  const p = prev.item;
+  const n = next.item;
+  
+  return (
+    p.id === n.id &&
+    p.amount_cents === n.amount_cents &&
+    p.status === n.status &&
+    p.paid_at === n.paid_at &&
+    p.due_date === n.due_date &&
+    p.creditor === n.creditor &&
+    p.payment_method === n.payment_method
+  );
+}
+
+const BillItem = React.memo(BillItemComponent, arePropsEqual);
 
 const styles = StyleSheet.create({
   billCard: { padding: 16, borderRadius: 16, marginBottom: 12, borderWidth: 1 },

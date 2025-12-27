@@ -69,7 +69,7 @@ class KeysController {
 
     $data = Utils::bodyJson();
     // FIX 1: Require the new device_id field
-    Utils::requireFields($data, ["family_id", "target_user_id", "encrypted_key", "device_id"]); 
+     Utils::requireFields($data, ["family_id", "target_user_id", "encrypted_key", "device_id"]);
 
     $familyId = (int)$data["family_id"];
     $targetUserId = (int)$data["target_user_id"];
@@ -182,12 +182,17 @@ class KeysController {
     $stmt->execute([$familyId, $userId, $keyVersion, $deviceId]);
     $row = $stmt->fetch();
 
-    if (!$row) {
-      Utils::json([
-        "error" => "Key not found for current version",
-        "family_id" => $familyId,
-        "key_version" => $keyVersion
-      ], 404);
+if (!$row) {
+        // CHANGE: Instead of returning 404, return 200 with null key
+        // This allows the Client App to detect "key_missing" and call "storeSharedKey" to create it.
+        Utils::json([
+            "encrypted_key" => null,
+            "family_id" => $familyId,
+            "key_version" => $keyVersion,
+            "history" => $history,
+            "status" => "key_missing" // Signal for client to trigger creation
+        ]);
+        return;
     }
 
     // 2. Fetch KEY HISTORY (Fix for rotation/sync issues)

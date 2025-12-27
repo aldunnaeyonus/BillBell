@@ -1,5 +1,5 @@
 // app/(app)/bills.tsx
-import { useCallback, useMemo, useState, useEffect, useRef } from "react";
+import React, { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import {
   TextInput,
   Keyboard,
   TouchableOpacity,
-  FlatList // Import FlatList here
+  FlatList 
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import LinearGradient from "react-native-linear-gradient";
@@ -75,14 +75,14 @@ type FlatListItem =
 
 // --- SUB-COMPONENTS ---
 
-function Header({
+const Header = React.memo(({
   theme,
   title,
   onProfilePress,
   searchQuery,
   setSearchQuery,
   t,
-}: any) {
+}: any) => {
   return (
     <View style={{ backgroundColor: theme.colors.navy }}>
       <LinearGradient
@@ -136,9 +136,9 @@ function Header({
       </LinearGradient>
     </View>
   );
-}
+});
 
-function SummaryCard({ theme, items }: { theme: Theme; items: any[] }) {
+const SummaryCard = React.memo(({ theme, items }: { theme: Theme; items: any[] }) => {
   const isSingle = items.length === 1;
   const currency = useCurrency();
   return (
@@ -198,9 +198,10 @@ function SummaryCard({ theme, items }: { theme: Theme; items: any[] }) {
       </View>
     </View>
   );
-}
+});
 
-function SectionHeader({ title, special, theme }: any) {
+// FIX: Memoize SectionHeader to avoid re-renders during scroll
+const SectionHeader = React.memo(({ title, special, theme }: any) => {
   return (
     <View
       style={{
@@ -225,7 +226,7 @@ function SectionHeader({ title, special, theme }: any) {
       )}
     </View>
   );
-}
+});
 
 function BillListSkeleton() {
   const theme = useTheme();
@@ -257,7 +258,7 @@ function BillListSkeleton() {
   );
 }
 
-function BillListEmpty({ tab, searchQuery, theme, t }: { tab: string; searchQuery: string; theme: any; t: any }) {
+const BillListEmpty = React.memo(({ tab, searchQuery, theme, t }: { tab: string; searchQuery: string; theme: any; t: any }) => {
   return (
     <View style={{ alignItems: "center", paddingVertical: 60, gap: 12 }}>
       <Ionicons
@@ -274,7 +275,7 @@ function BillListEmpty({ tab, searchQuery, theme, t }: { tab: string; searchQuer
       </Text>
     </View>
   );
-}
+});
 
 // --- MAIN COMPONENT ---
 
@@ -430,10 +431,7 @@ export default function Bills() {
   // --- STATUS BAR & REFRESH ON FOCUS EFFECT ---
   useFocusEffect(
     useCallback(() => {
-      // 1. Force a refresh of the data when the user returns to this screen
       refetch();
-
-      // 2. Handle Status Bar
       StatusBar.setBarStyle("light-content");
       if (Platform.OS === "android") {
         StatusBar.setBackgroundColor("transparent");
@@ -448,7 +446,7 @@ export default function Bills() {
           StatusBar.setBackgroundColor(theme.colors.bg);
         }
       };
-    }, [theme.mode, theme.colors.bg, refetch]) // Added refetch to dependencies
+    }, [theme.mode, theme.colors.bg, refetch])
   );
 
   const pendingBills = useMemo(
@@ -578,7 +576,6 @@ export default function Bills() {
     try {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       confettiRef.current?.start();
-      // StoreReview usage
       if ((await StoreReview.hasAction()) && Math.random() > 0.8)
         setTimeout(() => StoreReview.requestReview(), 2000);
       markPaidMutation.mutate(item.id);
@@ -676,7 +673,6 @@ export default function Bills() {
           Offset: b.reminder_offset_days || "0",
         })
       );
-      // NOTE: jsonToCSV must be imported from billLogic or defined locally if not in utils
       const csvString = jsonToCSV(exportData);
       const fileName = "bills_export.csv";
       const templateFile = new File(Paths.cache, fileName);
@@ -757,23 +753,23 @@ export default function Bills() {
 
   const showSkeleton = isLoading && safeBills.length === 0;
 
-  if (isError) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: 100,
-        }}
-      >
-        <Text style={{ color: theme.colors.danger }}>Failed to load bills</Text>
-        <Text style={{ color: theme.colors.subtext }}>
-          {error?.message || "Unknown error"}
-        </Text>
-      </View>
-    );
-  }
+  // if (isError) {
+  //   return (
+  //     <View
+  //       style={{
+  //         flex: 1,
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //         marginTop: 100,
+  //       }}
+  //     >
+  //       <Text style={{ color: theme.colors.danger }}>Failed to load bills</Text>
+  //       <Text style={{ color: theme.colors.subtext }}>
+  //         {error?.message || "Unknown error"}
+  //       </Text>
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
@@ -786,7 +782,6 @@ export default function Bills() {
         t={t}
       />
 
-      {/* Main Body Sheet */}
       <View
         style={{
           flex: 1,
@@ -824,11 +819,16 @@ export default function Bills() {
               renderItem={renderItem}
               // @ts-ignore
               getItemType={(item) => item.type}
-              // @ts-ignore
-              estimatedItemSize={100}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{ paddingBottom: 100, paddingTop: 24 }}
               showsVerticalScrollIndicator={false}
+              
+              // --- FIX: PERFORMANCE PROPS ---
+              initialNumToRender={8}
+              maxToRenderPerBatch={5}
+              windowSize={5}
+              removeClippedSubviews={true}
+
               refreshControl={
                 <RefreshControl
                   refreshing={isRefetching}

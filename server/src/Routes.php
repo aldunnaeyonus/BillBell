@@ -10,6 +10,9 @@ use App\Controllers\FamilySettingsController;
 use App\Controllers\ImportCodeController;
 use App\Controllers\ImportController;
 use App\Controllers\KeysController;
+use App\Controllers\ChatController; // <--- 1. ADD THIS IMPORT
+use App\Controllers\FeedbackController;
+
 
 class Routes {
   private static function normalizedPath(): string {
@@ -39,12 +42,13 @@ class Routes {
     if ($method === "POST" && $path === "/keys/public") { KeysController::uploadPublicKey(); return; }
 
     if ($method === "GET" && preg_match('#^/keys/public/(\d+)$#', $path, $m)) { KeysController::getUserPublicKey((int)$m[1]); return; }
-
+    if ($method === "POST" && $path === "/chat") {  ChatController::chat();  return;  }
     if ($method === "POST" && $path === "/keys/shared") { KeysController::storeSharedKey(); return; }
     if ($method === "GET"  && $path === "/keys/shared") { KeysController::getMySharedKey(); return; }
     if ($method === "POST" && $path === "/family/join") { FamilyController::join(); return; }
     if ($method === "GET"  && $path === "/family/requests") { FamilyController::listRequests(); return; }
     if ($method === "POST" && $path === "/family/requests/respond") { FamilyController::respondRequest(); return; }
+    if ($method === "POST" && $path === "/feedback") { FeedbackController::send(); return; } // <--- 2. Add Route
     // --- Account / Health ---
     if ($method === "DELETE" && $path === "/auth/user") { AuthController::delete(); return; }
     if ($method === "GET" && $path === "/health") { Utils::json(["ok" => true]); return; }

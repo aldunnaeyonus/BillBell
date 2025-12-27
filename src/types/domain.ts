@@ -14,6 +14,16 @@ export interface Bill {
   end_date?: string | null; // <--- Added this field
 }
 
+export interface BillItemProps {
+  item: Bill;
+  t: any;
+  locale: string;
+  onLongPress: (item: Bill) => void;
+  onEdit: (item: Bill) => void;
+  onMarkPaid: (item: Bill) => void;
+  onDelete: (item: Bill) => void;
+}
+
 export interface User {
   id: number;
   email: string;

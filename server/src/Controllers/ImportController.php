@@ -55,40 +55,108 @@ class ImportController {
 
       // Mapping array to handle typos and aliases
       $recurrenceMap = [
-          // Weekly
-          'weekly'    => 'weekly', 'week' => 'weekly', 'wk' => 'weekly',
-          
-          // Bi-Weekly
-          'bi-weekly' => 'bi-weekly', 'biweekly' => 'bi-weekly', 'bi weekly' => 'bi-weekly', 
-          'fortnightly'=> 'bi-weekly', '2 weeks' => 'bi-weekly',
-          
-          // Semi-Monthly
-          'semi-monthly'  => 'semi-monthly', 'semimonthly' => 'semi-monthly', 
-          'twice a month' => 'semi-monthly',
-          
-          // Monthly
-          'monthly'   => 'monthly', 'month' => 'monthly', 'mon' => 'monthly', 
-          'montly'    => 'monthly', 
-          
-          // Quarterly
-          'quarterly' => 'quarterly', 'quarter' => 'quarterly', 'qtr' => 'quarterly', 
-          'quartlery' => 'quarterly', // Specific typo handled
-          
-          // Semi-Annually
-          'semi-annually' => 'semi-annually', 'semiannually' => 'semi-annually', 
-          'half-yearly'   => 'semi-annually', 'biannual' => 'semi-annually',
-          
-          // Annually
-          'annually'  => 'annually', 'annual' => 'annually', 'yearly' => 'annually', 
-          'year'      => 'annually', 'yr' => 'annually',
-      ];
+    // --- English (Base) ---
+    // Weekly
+    'weekly' => 'weekly', 'week' => 'weekly', 'wk' => 'weekly', 'w' => 'weekly',
+    // Bi-Weekly
+    'bi-weekly' => 'bi-weekly', 'biweekly' => 'bi-weekly', 'bi weekly' => 'bi-weekly',
+    'fortnightly'=> 'bi-weekly', '2 weeks' => 'bi-weekly', 'bi-w' => 'bi-weekly',
+    // Semi-Monthly
+    'semi-monthly'  => 'semi-monthly', 'semimonthly' => 'semi-monthly',
+    'twice a month' => 'semi-monthly','semi month' => 'semi-monthly','semi monthly'  => 'semi-monthly',
+    // Monthly
+    'monthly'    => 'monthly', 'month' => 'monthly', 'mon' => 'monthly',
+    'montly'     => 'monthly', 'monthy'     => 'monthly', 'mth'    => 'monthly', 'm'    => 'monthly',
+    // Quarterly
+    'quarterly' => 'quarterly', 'quarter' => 'quarterly', 'qtr' => 'quarterly',
+    'quartlery' => 'quarterly',
+    // Semi-Annually
+    'semi-annually' => 'semi-annually', 'semiannually' => 'semi-annually',
+    'half-yearly'   => 'semi-annually', 'biannual' => 'semi-annually', 'semi annually' => 'semi-annually',
+    // Annually
+    'annually'  => 'annually', 'annual' => 'annually', 'yearly' => 'annually',
+    'year'      => 'annually', 'yr' => 'annually',
+
+    // --- Spanish (es) ---
+    'semanal' => 'weekly', 'semana' => 'weekly', 'sem' => 'weekly',
+    'quincenal' => 'bi-weekly', 'bisemanal' => 'bi-weekly', 'dos semanas' => 'bi-weekly',
+    'bimensual' => 'semi-monthly', 'semimensual' => 'semi-monthly', 'dos veces al mes' => 'semi-monthly',
+    'mensual' => 'monthly', 'mes' => 'monthly',
+    'trimestral' => 'quarterly', 'trimestre' => 'quarterly',
+    'semestral' => 'semi-annually', 'medio año' => 'semi-annually',
+    'anual' => 'annually', 'año' => 'annually', 'anualmente' => 'annually',
+
+    // --- Portuguese (pt) ---
+    // 'semanal' handled in Spanish overlap
+    'quinzenal' => 'bi-weekly', 'duas semanas' => 'bi-weekly',
+    'bimestral' => 'semi-monthly', // careful: bimestral in PT usually means every 2 months, but sometimes used loosely.
+    'semi-mensal' => 'semi-monthly',
+    // 'mensal' handled by Spanish 'mensual' proximity? No, explicit:
+    'mensal' => 'monthly',
+    // 'trimestral' handled in Spanish overlap
+    'semestral' => 'semi-annually', 'meio ano' => 'semi-annually',
+    // 'anual' handled in Spanish overlap
+
+    // --- French (fr) ---
+    'hebdomadaire' => 'weekly', 'hebdo' => 'weekly', 'semaine' => 'weekly',
+    'bi-hebdomadaire' => 'bi-weekly', 'quinzaine' => 'bi-weekly', 'deux semaines' => 'bi-weekly',
+    'bimensuel' => 'semi-monthly', 'mi-mensuel' => 'semi-monthly', 'deux fois par mois' => 'semi-monthly',
+    'mensuel' => 'monthly', 'mois' => 'monthly',
+    'trimestriel' => 'quarterly', 'trimestre' => 'quarterly',
+    'semestriel' => 'semi-annually', 'mi-annuel' => 'semi-annually',
+    'annuel' => 'annually', 'an' => 'annually', 'année' => 'annually',
+
+    // --- Italian (it) ---
+    'settimanale' => 'weekly', 'settimana' => 'weekly', 'sett' => 'weekly',
+    'bisettimanale' => 'bi-weekly', 'due settimane' => 'bi-weekly',
+    'bimensile' => 'semi-monthly', 'semimensile' => 'semi-monthly',
+    'mensile' => 'monthly', 'mese' => 'monthly',
+    'trimestrale' => 'quarterly',
+    'semestrale' => 'semi-annually', 'metà anno' => 'semi-annually',
+    'annuale' => 'annually', 'anno' => 'annually',
+
+    // --- German (de) ---
+    'wöchentlich' => 'weekly', 'woche' => 'weekly',
+    'zweiwöchentlich' => 'bi-weekly', 'alle zwei wochen' => 'bi-weekly', '14-tägig' => 'bi-weekly',
+    'halbmonatlich' => 'semi-monthly', 'zweimal im monat' => 'semi-monthly',
+    'monatlich' => 'monthly', 'monat' => 'monthly',
+    'vierteljährlich' => 'quarterly', 'quartal' => 'quarterly',
+    'halbjährlich' => 'semi-annually',
+    'jährlich' => 'annually', 'jahr' => 'annually',
+
+    // --- Dutch (nl) ---
+    'wekelijks' => 'weekly', 'week' => 'weekly',
+    'tweewekelijks' => 'bi-weekly', 'om de week' => 'bi-weekly', '14 dagen' => 'bi-weekly',
+    'halfmaandelijks' => 'semi-monthly', 'twee keer per maand' => 'semi-monthly',
+    'maandelijks' => 'monthly', 'maand' => 'monthly',
+    'driemaandelijks' => 'quarterly', 'kwartaal' => 'quarterly',
+    'halfjaarlijks' => 'semi-annually',
+    'jaarlijks' => 'annually', 'jaar' => 'annually',
+
+    // --- Chinese (zh - Simplified) ---
+    '每周' => 'weekly', '周' => 'weekly', '每星期' => 'weekly',
+    '每两周' => 'bi-weekly', '双周' => 'bi-weekly',
+    '半月' => 'semi-monthly', '每月两次' => 'semi-monthly',
+    '每月' => 'monthly', '月' => 'monthly',
+    '每季度' => 'quarterly', '季度' => 'quarterly', '季' => 'quarterly',
+    '每半年' => 'semi-annually', '半年' => 'semi-annually',
+    '每年' => 'annually', '年' => 'annually', '年度' => 'annually',
+
+    // --- Japanese (ja) ---
+    '毎週' => 'weekly', '週' => 'weekly',
+    '隔週' => 'bi-weekly', '2週間ごと' => 'bi-weekly',
+    '月2回' => 'semi-monthly', '半月ごと' => 'semi-monthly',
+    '毎月' => 'monthly', '月' => 'monthly', '月次' => 'monthly',
+    '四半期ごと' => 'quarterly', '四半期' => 'quarterly', '3ヶ月ごと' => 'quarterly',
+    '半年ごと' => 'semi-annually', '半期' => 'semi-annually',
+    '毎年' => 'annually', '年' => 'annually', '年次' => 'annually',
+];
 
       $pdo->beginTransaction();
       
       // Mark code as used
       $pdo->prepare("UPDATE import_codes SET used_at=NOW() WHERE id=?")->execute([$codeRow["id"]]);
 
-      // FIX: Added payment_method to INSERT query
       $ins = $pdo->prepare("
         INSERT INTO bills
         (family_id, created_by_user_id, updated_by_user_id, creditor, amount_cents, amount_encrypted, due_date, notes, recurrence, reminder_offset_days, reminder_time_local, status, payment_method)
@@ -99,21 +167,73 @@ class ImportController {
         $creditor = isset($b["name"]) ? trim((string)$b["name"]) : "";
         $amountFloat = isset($b["amount"]) ? (float)$b["amount"] : 0;
         $amountCents = (int)round($amountFloat * 100);
-        $dueDate = isset($b["due_date"]) ? trim((string)$b["due_date"]) : "";
+        $rawDate = isset($b["due_date"]) ? trim((string)$b["due_date"]) : "";
         
-        if ($creditor === "" || $amountCents <= 0 || $dueDate === "") continue;
+        if ($creditor === "" || $amountCents <= 0 || $rawDate === "") continue;
+
+        // --- BACKEND DATE PARSING FALLBACK ---
+        // If frontend didn't convert to YYYY-MM-DD, try to be smart here.
+        // Check if it's already YYYY-MM-DD
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $rawDate)) {
+            $dueDate = $rawDate;
+        } else {
+            // Try robust parsing
+            $ts = strtotime($rawDate);
+            if ($ts === false) {
+                // If slashes failed, try swapping separators to dashes (common trick for EU vs US formats)
+                $ts = strtotime(str_replace('/', '-', $rawDate));
+            }
+            if ($ts === false) continue; // Skip invalid date
+            $dueDate = date('Y-m-d', $ts);
+        }
 
         // Clean recurrence input
         $inputRec = strtolower(trim($b["recurrence"] ?? "none"));
         $recurrence = $recurrenceMap[$inputRec] ?? "none";
 
         // FIX: Extract and normalize payment_method
-        // Check both 'payment_method' and 'paymentMethod' keys from CSV JSON
         $rawPayment = isset($b["payment_method"]) ? $b["payment_method"] : ($b["paymentMethod"] ?? "manual");
         $rawPayment = strtolower(trim($rawPayment));
         
-        // Map various CSV inputs to DB enum ('auto' or 'manual')
-        $paymentMethod = ($rawPayment === 'auto' || $rawPayment === 'auto_pay' || $rawPayment === 'autopay') ? 'auto' : 'manual';
+$paymentMethodMap = [
+    // --- English (Base) ---
+    'auto' => 'auto', 'autopay' => 'auto', 'auto_pay' => 'auto', 'automatic' => 'auto',
+    'manual' => 'manual',
+
+    // --- Spanish (es) ---
+    'automático' => 'auto', 'automatizado' => 'auto',
+    'manual' => 'manual',
+
+    // --- Portuguese (pt) ---
+    'automático' => 'auto',
+    'manual' => 'manual',
+
+    // --- French (fr) ---
+    'automatique' => 'auto', 'auto' => 'auto', 'prélèvement' => 'auto', // Prélèvement = Direct Debit
+    'manuel' => 'manual',
+
+    // --- Italian (it) ---
+    'automatico' => 'auto',
+    'manuale' => 'manual',
+
+    // --- German (de) ---
+    'automatisch' => 'auto', 'lastschrift' => 'auto', // Lastschrift = Direct Debit
+    'manuell' => 'manual',
+
+    // --- Dutch (nl) ---
+    'automatisch' => 'auto', 'incasso' => 'auto', // Incasso = Direct Debit
+    'handmatig' => 'manual',
+
+    // --- Chinese (zh) ---
+    '自动' => 'auto', '自动支付' => 'auto',
+    '手动' => 'manual',
+
+    // --- Japanese (ja) ---
+    '自動' => 'auto', 'オート' => 'auto', '自動支払' => 'auto',
+    '手動' => 'manual',
+];
+
+$paymentMethod = $paymentMethodMap[strtolower($rawPayment)] ?? 'manual';
 
         $ins->execute([
           $familyId,
@@ -127,7 +247,7 @@ class ImportController {
           $recurrence,
           1,
           "09:00:00",
-          $paymentMethod // FIX: Bound parameter
+          $paymentMethod 
         ]);
         $inserted++;
       }
