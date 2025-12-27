@@ -81,18 +81,39 @@ export default function FamilyRequests() {
             ? { ...r, status: action === 'reject' ? 'rejected' : 'approved', updated_at: new Date().toISOString() } 
             : r
     );
+    // If approved, remove from list. If rejected, keep visible but grayed out (based on your logic)
     const optimisticList = action === 'approve' ? requests.filter(r => r.id !== requestId) : updatedRequests;
+    
     setRequests(optimisticList);
+
     try {
+      // 1. Find the request object so we know the USER ID
+      const requestItem = requests.find(r => r.id === requestId);
+      if (!requestItem) throw new Error("Request not found");
+
+      // 2. Tell Server: "Make them a member"
       await api.familyRequestRespond(requestId, action);
+
+      // 3. IF APPROVED: Perform the Cryptographic Key Share
+      if (action === "approve") {
+          // This fixes the "Missing encrypted key" error on the other device
+          await api.shareKeyWithMember(requestItem.user_id);
+      }
+
+      // 4. Refresh list
       const res: any = await api.familyRequests();
       if(isMounted.current && res.requests) {
           setRequests(res.requests);
           setJson(CACHE_KEY, res.requests);
       }
+
+      if (action === "approve") {
+        Alert.alert(t("Success"), t("Member approved and encryption keys shared."));
+      }
+
     } catch (e: any) {
       if(isMounted.current) {
-          setRequests(originalRequests);
+          setRequests(originalRequests); // Revert on failure
           Alert.alert(t("Error"), e.message);
       }
     }

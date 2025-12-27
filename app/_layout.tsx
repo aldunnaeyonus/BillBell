@@ -210,6 +210,7 @@ function AppStack() {
   // --- INTEGRATION START ---
   useEffect(() => {
     const prepareApp = async () => {
+
       try {
         hotUpdate.getCurrentVersion().then((data) => {
           setVersion(`${data}`);

@@ -405,7 +405,63 @@ export const api = {
   authApple: (payload: any) => request("/auth/apple", { method: "POST", body: JSON.stringify(payload) }),
   authGoogle: (payload: any) => request("/auth/google", { method: "POST", body: JSON.stringify(payload) }),
   deleteAccount: () => request("/auth/user", { method: "DELETE" }),
+  shareKeyWithMember: async (targetUserId: number) => {
+    try {
+      // 1. Get context: We need the Family ID and the Current Family Key
+      // We fetch members to ensure we have the correct family_id
+      const membersRes = await apiMembers();
+      const familyId = membersRes.family_id;
 
+      // 2. Get the raw family key from this device's secure storage
+      const currentKey = await getLatestCachedRawFamilyKeyHex();
+      if (!currentKey || !currentKey.hex) {
+        throw new Error("Admin device does not have the family key loaded. Cannot share access.");
+      }
+
+      // 3. Fetch the new member's Public Keys (they may have multiple devices)
+      let pubKeyRes;
+      try {
+        pubKeyRes = await apiGetPublicKey(targetUserId);
+      } catch (e) {
+        console.warn(`User ${targetUserId} has no public keys uploaded yet.`);
+        return; // The user hasn't opened the app/setup keys yet.
+      }
+
+      // Normalize the response (handle single vs multiple devices)
+      const keysToProcess = pubKeyRes.public_keys || 
+        (pubKeyRes.public_key ? [{ 
+            public_key: pubKeyRes.public_key, 
+            device_id: pubKeyRes.device_id || '00000000-0000-0000-0000-000000000000' 
+        }] : []);
+
+      if (keysToProcess.length === 0) {
+        console.warn("No devices found for the new user.");
+        return;
+      }
+
+      // 4. Encrypt the Family Key for EACH of the new user's devices
+      const sharePromises = keysToProcess.map(async (k: any) => {
+        if (!k.public_key || !k.device_id) return;
+
+        // The Magic Step: Encrypt OUR secret key using THEIR public lock
+        const wrappedKey = wrapKeyForUser(currentKey.hex, k.public_key);
+
+        return apiShareKey({
+          family_id: familyId,
+          target_user_id: targetUserId,
+          encrypted_key: wrappedKey,
+          device_id: k.device_id
+        });
+      });
+
+      await Promise.all(sharePromises);
+      console.log(`Successfully shared keys with user ${targetUserId}`);
+
+    } catch (e: any) {
+      console.error("Failed to share key with new member:", e);
+      throw new Error(i18n.t("Failed to grant encryption access"));
+    }
+  },
   // Import / Export
   createImportCode: (ttl_minutes: number = 15) =>
     request("/import-code/create", { method: "POST", body: JSON.stringify({ ttl_minutes }) }),
