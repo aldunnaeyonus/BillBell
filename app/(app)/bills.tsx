@@ -427,9 +427,13 @@ export default function Bills() {
     syncLiveActivity();
   }, [safeBills, currency]);
 
-  // --- STATUS BAR EFFECT ---
+  // --- STATUS BAR & REFRESH ON FOCUS EFFECT ---
   useFocusEffect(
     useCallback(() => {
+      // 1. Force a refresh of the data when the user returns to this screen
+      refetch();
+
+      // 2. Handle Status Bar
       StatusBar.setBarStyle("light-content");
       if (Platform.OS === "android") {
         StatusBar.setBackgroundColor("transparent");
@@ -444,7 +448,7 @@ export default function Bills() {
           StatusBar.setBackgroundColor(theme.colors.bg);
         }
       };
-    }, [theme.mode, theme.colors.bg])
+    }, [theme.mode, theme.colors.bg, refetch]) // Added refetch to dependencies
   );
 
   const pendingBills = useMemo(
