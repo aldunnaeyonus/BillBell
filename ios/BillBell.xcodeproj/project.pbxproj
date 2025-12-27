@@ -24,6 +24,9 @@
 		858E70892EFF4D0900F7D50C /* MarkBillPaidIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858E703F2EFF4CEC00F7D50C /* MarkBillPaidIntent.swift */; };
 		858E708A2EFF4D0900F7D50C /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858E70402EFF4CEC00F7D50C /* SharedData.swift */; };
 		858E71E52EFF526700F7D50C /* BillBellWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 858E71DB2EFF526500F7D50C /* BillBellWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		858E736A2EFF645100F7D50C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 858E73692EFF645100F7D50C /* SwiftUI.framework */; };
+		858E736C2EFF646500F7D50C /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 858E736B2EFF646500F7D50C /* WatchConnectivity.framework */; };
+		858E736E2EFF647100F7D50C /* Combine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 858E736D2EFF647100F7D50C /* Combine.framework */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		CA23C6B48AA9F498D207F306 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7732A334DE632CEDDD3C61CF /* ExpoModulesProvider.swift */; };
 		D8116C9E1904B89079E64CB9 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B30C9AAEFCA6C61A309ADB87 /* PrivacyInfo.xcprivacy */; };
@@ -108,6 +111,9 @@
 		858E70402EFF4CEC00F7D50C /* SharedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedData.swift; sourceTree = "<group>"; };
 		858E70492EFF4CFC00F7D50C /* BillBellWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BillBellWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		858E71DB2EFF526500F7D50C /* BillBellWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BillBellWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		858E73692EFF645100F7D50C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS26.2.sdk/System/Library/Frameworks/SwiftUI.framework; sourceTree = DEVELOPER_DIR; };
+		858E736B2EFF646500F7D50C /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS26.2.sdk/System/Library/Frameworks/WatchConnectivity.framework; sourceTree = DEVELOPER_DIR; };
+		858E736D2EFF647100F7D50C /* Combine.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Combine.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS26.2.sdk/System/Library/Frameworks/Combine.framework; sourceTree = DEVELOPER_DIR; };
 		8D9D6B55BB1A741ECE6BCDF8 /* Pods-BillBell.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BillBell.debug.xcconfig"; path = "Target Support Files/Pods-BillBell/Pods-BillBell.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = BillBell/SplashScreen.storyboard; sourceTree = "<group>"; };
 		B30C9AAEFCA6C61A309ADB87 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = BillBell/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -161,6 +167,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				858E736E2EFF647100F7D50C /* Combine.framework in Frameworks */,
+				858E736C2EFF646500F7D50C /* WatchConnectivity.framework in Frameworks */,
+				858E736A2EFF645100F7D50C /* SwiftUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -199,6 +208,9 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				858E736D2EFF647100F7D50C /* Combine.framework */,
+				858E736B2EFF646500F7D50C /* WatchConnectivity.framework */,
+				858E73692EFF645100F7D50C /* SwiftUI.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				6BB26BE983B02D4120858254 /* libPods-BillBell.a */,
 				8581F6682EFA061A007AC3AE /* WidgetKit.framework */,

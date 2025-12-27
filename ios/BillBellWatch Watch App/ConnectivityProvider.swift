@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 import WatchConnectivity
-import SwiftUI // <--- ADD THIS LINE
+import SwiftUI
 
 class ConnectivityProvider: NSObject, ObservableObject, WCSessionDelegate {
   
