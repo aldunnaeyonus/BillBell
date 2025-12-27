@@ -87,7 +87,54 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "DAZN": "dazn.com",
   "Sky": "sky.com",
   "Canal+": "canalplus.com",
+// --- CHINA / HK / TAIWAN ---
+  "Alibaba": "alibaba.com",
+  "Tencent": "tencent.com",
+  "Baidu": "baidu.com",
+  "China Mobile": "chinamobileltd.com",
+  "China Unicom": "chinaunicom.com",
+  "China Telecom": "chinatelecom.com",
+  "State Grid": "sgcc.com.cn", // World's largest utility
+  "Huawei": "huawei.com",
+  "DJI": "dji.com",
+  "Cathay Pacific": "cathaypacific.com",
+  "HK Electric": "hkelectric.com",
+  "CLP Power": "clp.com.hk",
+  "Chunghwa Telecom": "cht.com.tw", // Taiwan
+  "TSMC": "tsmc.com",
 
+  // --- GLOBAL AIRLINES (High Recurring Spend) ---
+  "Emirates": "emirates.com",
+  "Qatar Airways": "qatarairways.com",
+  "Singapore Airlines": "singaporeair.com",
+  "ANA": "ana.co.jp", // All Nippon Airways
+  "JAL": "jal.com", // Japan Airlines
+  "Air Canada": "aircanada.com",
+  "KLM": "klm.com",
+  "Air France": "airfrance.com",
+  "Turkish Airlines": "turkishairlines.com",
+  "Qantas": "qantas.com",
+
+  // --- DIGITAL NOMAD & EXPAT TOOLS ---
+  "Airalo": "airalo.com", // eSIM
+  "Holafly": "holafly.com",
+  "SafetyWing": "safetywing.com", // Nomad Insurance
+  "World Nomads": "worldnomads.com",
+  "Deel": "deel.com",
+  "Payoneer": "payoneer.com",
+  "Remitly": "remitly.com",
+  "Preply": "preply.com", // Language tutoring
+  "Italki": "italki.com",
+
+  // --- GLOBAL RETAIL GIANTS ---
+  "Shein": "shein.com",
+  "Temu": "temu.com",
+  "AliExpress": "aliexpress.com",
+  "Zara": "zara.com",
+  "Uniqlo": "uniqlo.com",
+  "H&M": "hm.com",
+  "Decathlon": "decathlon.com",
+  "Sephora": "sephora.com",
   // --- STUDENT LOANS ---
   "Navient": "navient.com",
   "Nelnet": "nelnet.com",
@@ -190,6 +237,16 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "Desjardins": "desjardins.com",
   "Tangerine": "tangerine.ca",
   "Simplii": "simplii.com",
+
+  "Starlink": "starlink.com",
+  "HughesNet": "hughesnet.com",
+  "Viasat": "viasat.com",
+  "Rise Broadband": "risebroadband.com",
+  "Google Fiber": "fiber.google.com",
+  "Sonic": "sonic.com",
+  "Starry": "starry.com",
+  "EarthLink": "earthlink.net",
+  "Ziply Fiber": "ziplyfiber.com",
 
   // --- UK & EUROPE BANKS ---
   "HSBC": "hsbc.com",
@@ -349,7 +406,6 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "NBN": "nbnco.com.au",
   "Jio": "jio.com",
   "Airtel": "airtel.in",
-  "China Mobile": "chinamobileltd.com",
   "NTT Docomo": "docomo.ne.jp",
   "SoftBank": "softbank.jp",
   "Google Fi": "fi.google.com",
@@ -556,9 +612,6 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "Nike": "nike.com",
   "Adidas": "adidas.com",
   "Lululemon": "lululemon.com",
-  "Zara": "zara.com",
-  "H&M": "hm.com",
-  "Uniqlo": "uniqlo.com",
   "ASOS": "asos.com",
   "Apple Store": "apple.com",
   "eBay": "ebay.com",
@@ -566,7 +619,6 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "CVS": "cvs.com",
   "Walgreens": "walgreens.com",
   "Rite Aid": "riteaid.com",
-  "Sephora": "sephora.com",
   "Ulta": "ulta.com",
   "Planet Fitness": "planetfitness.com",
   "Gold's Gym": "goldsgym.com",
@@ -625,9 +677,6 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "JetBlue": "jetblue.com",
   "British Airways": "britishairways.com",
   "Lufthansa": "lufthansa.com",
-  "Air France": "airfrance.com",
-  "Emirates": "emirates.com",
-  "Qantas": "qantas.com",
   "Ryanair": "ryanair.com",
   "EasyJet": "easyjet.com",
   "Hertz": "hertz.com",
@@ -700,7 +749,56 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "LendKey": "lendkey.com",
   "Prodigy Finance": "prodigyfinance.com", // International student loans
   "MPower": "mpowerfinancing.com",
+  "Rakuten": "rakuten.co.jp",
+  "au KDDI": "au.com",
+  "Kansai Electric": "kepco.co.jp",
+  "SK Telecom": "sktelecom.com",
+  "KT Corp": "kt.com",
+  "LG U+": "uplus.co.kr",
+  "Coupang": "coupang.com",
+  "Kakao": "kakaocorp.com",
+  "Naver": "naver.com",
+  "Samsung Finance": "samsungcard.com",
+  "LINE": "line.me",
 
+  // --- SOUTHEAST ASIA (SG, ID, MY, PH, TH, VN) ---
+  "Grab": "grab.com",
+  "Gojek": "gojek.com",
+  "Shopee": "shopee.com",
+  "Lazada": "lazada.com",
+  "Singtel": "singtel.com", // Singapore
+  "StarHub": "starhub.com",
+  "M1": "m1.com.sg",
+  "PLDT": "pldt.com", // Philippines
+  "Globe Telecom": "globe.com.ph",
+  "Telkomsel": "telkomsel.com", // Indonesia
+  "Indihome": "indihome.co.id",
+  "Tenaga Nasional": "tnb.com.my", // Malaysia Power
+  "AIS": "ais.th", // Thailand
+  "TrueMove": "true.th",
+  "Viettel": "viettel.com.vn", // Vietnam
+
+  // --- MIDDLE EAST (UAE, KSA, EG) ---
+  "Etisalat": "etisalat.ae",
+  "Du": "du.ae",
+  "STC": "stc.com.sa", // Saudi Telecom
+  "Mobily": "mobily.com.sa",
+  "Ooredoo": "ooredoo.com",
+  "Careem": "careem.com",
+  "DEWA": "dewa.gov.ae", // Dubai Water/Power
+  "Noon": "noon.com",
+  "Talabat": "talabat.com",
+
+  // --- AFRICA (ZA, NG, KE) ---
+  "MTN": "mtn.com",
+  "Vodacom": "vodacom.co.za",
+  "Safaricom": "safaricom.co.ke",
+  "M-Pesa": "mpesa.in", // Financed often billed via carrier
+  "DStv": "dstv.com", // Major African Pay TV
+  "Showmax": "showmax.com",
+  "Jumia": "jumia.com.ng",
+  "Eskom": "eskom.co.za", // SA Power
+  "Telkom SA": "telkom.co.za",
 };
 
 // ============================================================================
@@ -723,6 +821,10 @@ export const BILL_ICON_MAP: {
   // Generic Dept of Education Matches
   { regex: /dept\s?of\s?ed|student\s?loan|fedloan|direct\s?loan/i, icon: "book-education", color: "#2C3E50", categoryKey: "category_debt" },
   // --- STREAMING & ENTERTAINMENT ---
+  { regex: /starlink|spacex/i, icon: "satellite-uplink", color: "#000000", categoryKey: "category_utilities" },
+  { regex: /hughesnet|viasat|satellite\s?internet/i, icon: "satellite-variant", color: "#005596", categoryKey: "category_utilities" },
+  { regex: /google\s?fiber/i, icon: "speedometer", color: "#34A853", categoryKey: "category_utilities" },
+  { regex: /sonic\s?internet|sonic\.net|ziply/i, icon: "router-wireless", color: "#D32F2F", categoryKey: "category_utilities" },
   { regex: /netflix/i, icon: "netflix", color: "#E50914", categoryKey: "category_entertainment" },
   { regex: /spotify/i, icon: "spotify", color: "#1DB954", categoryKey: "category_entertainment" },
   { regex: /hulu/i, icon: "hulu", color: "#1CE783", categoryKey: "category_entertainment" },
@@ -748,7 +850,18 @@ export const BILL_ICON_MAP: {
   { regex: /lemonade|trupanion|healthy\s?paws|embrace|petplan|nationwide\s?pet/i, icon: "paw", color: "#FF0083", categoryKey: "category_insurance" },
   { regex: /rover|wag|chewy|barkbox|petco|petsmart/i, icon: "dog", color: "#1C49C2", categoryKey: "category_shopping" },
   { regex: /vet|veterinary|animal\s?hospital/i, icon: "hospital-box", color: "#E74C3C", categoryKey: "category_health" },
+{ regex: /suica|pasmo|icoca|octopus\s?card|oyster\s?card|tfl\s?topup|presto\s?card|clipper\s?card|opal\s?card/i, icon: "smart-card", color: "#27AE60", categoryKey: "category_transport" },
 
+  // --- GLOBAL AIRLINES ---
+  { regex: /emirates|qatar\s?air|singapore\s?air|cathay\s?pacific|ana\s?air|jal|japan\s?air|klm|air\s?france|turkish\s?air/i, icon: "airplane", color: "#2980B9", categoryKey: "category_travel" },
+
+  // --- GLOBAL RETAIL ---
+  { regex: /shein|temu|aliexpress|zara|uniqlo|h&m|decathlon|sephora/i, icon: "shopping", color: "#E74C3C", categoryKey: "category_shopping" },
+
+  // --- DIGITAL NOMAD / EXPAT ---
+  { regex: /airalo|holafly|esim/i, icon: "sim", color: "#34495E", categoryKey: "category_utilities" },
+  { regex: /safetywing|world\s?nomads/i, icon: "shield-airplane", color: "#E67E22", categoryKey: "category_insurance" },
+  { regex: /remitly|payoneer|western\s?union/i, icon: "cash-multiple", color: "#27AE60", categoryKey: "category_finance" },
   // --- STORAGE ---
   { regex: /public\s?storage|extra\s?space|cubesmart|life\s?storage/i, icon: "warehouse", color: "#F39C12", categoryKey: "category_housing" },
   { regex: /u-?haul|pods|moving/i, icon: "truck", color: "#F39C12", categoryKey: "category_housing" },
@@ -822,7 +935,14 @@ export const BILL_ICON_MAP: {
   { regex: /(nordvpn|expressvpn|proton\s?vpn|mullvad|openvpn)/i, icon: "shield", color: "#2E86C1", categoryKey: "category_software" },
   { regex: /(1password|lastpass|bitwarden|dashlane)/i, icon: "key", color: "#6C5CE7", categoryKey: "category_software" },
   { regex: /(okta|auth0|duo\s?security)/i, icon: "lock", color: "#34495E", categoryKey: "category_software" },
+{ regex: /grab|gojek|uber\s?asia/i, icon: "moped", color: "#00B140", categoryKey: "category_transport" },
+  { regex: /shopee|lazada|coupang|rakuten|tmall|taobao|jd\.com/i, icon: "shopping", color: "#EE4D2D", categoryKey: "category_shopping" },
+  { regex: /alipay|wechat\s?pay|line\s?pay|paypay|kakao\s?pay|phonepe/i, icon: "qrcode-scan", color: "#1677FF", categoryKey: "category_finance" },
+  { regex: /careem|talabat|noon/i, icon: "scooter", color: "#32CD32", categoryKey: "category_food" },
 
+  // --- REGIONAL UTILITIES ---
+  { regex: /tepco|kepco|eskom|dewa|tenaga|meralco/i, icon: "lightning-bolt", color: "#F1C40F", categoryKey: "category_utilities" },
+  { regex: /docomo|au\s?kddi|softbank|sk\s?telecom|kt\s?corp|singtel|telkomsel|ais|viettel|mtn|vodacom|safaricom/i, icon: "cellphone-wireless", color: "#E67E22", categoryKey: "category_utilities" },
   // --- HR / PAYROLL ---
   { regex: /(gusto|adp|paychex|rippling|workday|paylocity|paycom|deel|remote\.com|justworks)/i, icon: "users", color: "#27AE60", categoryKey: "category_software" },
 
@@ -1026,7 +1146,16 @@ export const KNOWN_SUBSCRIPTIONS = [
   { id: 'extra_space', name: 'Extra Space', patterns: [/extra\s?space/i], color: '#006633', icon: 'locker-multiple', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
   { id: 'sunrun', name: 'Sunrun', patterns: [/sunrun/i], color: '#FDB913', icon: 'solar-power', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
   { id: 'terminix', name: 'Terminix', patterns: [/terminix/i], color: '#68BC45', icon: 'bug', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
+{ id: 'temu', name: 'Temu', patterns: [/temu/i], color: '#FB7701', icon: 'shopping', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
+  { id: 'shein', name: 'Shein', patterns: [/shein/i], color: '#000000', icon: 'tshirt-crew', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
+  { id: 'aliexpress', name: 'AliExpress', patterns: [/aliexpress/i, /alibaba/i], color: '#FF4747', icon: 'shopping', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
 
+  // ==========================================
+  // TRAVEL & NOMAD
+  // ==========================================
+  { id: 'airalo', name: 'Airalo', patterns: [/airalo/i], color: '#333333', icon: 'sim', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'safetywing', name: 'SafetyWing', patterns: [/safetywing/i], color: '#2C3E50', icon: 'shield-airplane', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
+  { id: 'emirates', name: 'Emirates', patterns: [/emirates/i], color: '#D71A21', icon: 'airplane', type: 'MaterialCommunityIcons', categoryKey: 'category_travel' },
   // ==========================================
   // FINANCING & STORE CARDS
   // ==========================================
@@ -1059,7 +1188,11 @@ export const KNOWN_SUBSCRIPTIONS = [
   { id: 'deutsche_telekom', name: 'Telekom', patterns: [/telekom/i], color: '#E20074', icon: 'network', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
   { id: 'telefonica', name: 'O2 / Telefónica', patterns: [/telefonica/i, /o2/i], color: '#032D56', icon: 'molecule', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
   { id: 'bt', name: 'BT Group', patterns: [/bt group/i, /british telecom/i], color: '#5514B4', icon: 'phone-classic', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-
+{ id: 'rakuten', name: 'Rakuten', patterns: [/rakuten/i], color: '#BF0000', icon: 'shopping', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
+  { id: 'coupang', name: 'Coupang', patterns: [/coupang/i], color: '#333333', icon: 'rocket', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
+  { id: 'grab', name: 'Grab', patterns: [/grab/i], color: '#00B140', icon: 'car', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
+  { id: 'dstv', name: 'DStv', patterns: [/dstv/i, /multichoice/i], color: '#0072C6', icon: 'satellite-variant', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' },
+  { id: 'careem', name: 'Careem', patterns: [/careem/i], color: '#47A23F', icon: 'map-marker-path', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
   // ==========================================
   // UK SPECIFIC
   // ==========================================
@@ -1068,7 +1201,9 @@ export const KNOWN_SUBSCRIPTIONS = [
   { id: 'octopus_energy', name: 'Octopus Energy', patterns: [/octopus\s?energy/i], color: '#FF00A3', icon: 'lightning-bolt', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
   { id: 'british_gas', name: 'British Gas', patterns: [/british\s?gas/i], color: '#0099FF', icon: 'fire', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
   { id: 'tesco_mobile', name: 'Tesco Mobile', patterns: [/tesco\s?mobile/i], color: '#00539F', icon: 'cellphone', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
-
+{ id: 'starlink', name: 'Starlink', patterns: [/starlink/i, /spacex/i], color: '#101214', icon: 'satellite-uplink', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'google_fiber', name: 'Google Fiber', patterns: [/google\s?fiber/i], color: '#4285F4', icon: 'speedometer', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'hughesnet', name: 'HughesNet', patterns: [/hughesnet/i], color: '#005596', icon: 'satellite-variant', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
   // ==========================================
   // CANADA SPECIFIC
   // ==========================================

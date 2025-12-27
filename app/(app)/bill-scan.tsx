@@ -51,6 +51,7 @@ export default function BillScan() {
   }
 
   const processImage = async () => {
+    
     if (scanning || !cameraRef.current) return;
     
     try {
@@ -61,12 +62,24 @@ export default function BillScan() {
       if (!photo) throw new Error("Failed to take photo");
 
       const result = await TextRecognition.recognize(photo.uri);
-      const text = result.text;
+const text = result.text;
       
-      const amountMatch = text.match(/\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/);
-      const dateMatch = text.match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/);
+const amountRegex = /[$€£¥₹]\s?(\d{1,3}(?:[,.]\d{3})*(?:[,.]\d{2})?)/;
+const amountMatch = text.match(amountRegex);
+const dateRegex = /(\d{1,2}[./-]\d{1,2}[./-]\d{2,4})|(\d{4}[./-]\d{1,2}[./-]\d{1,2})/;
+const dateMatch = text.match(dateRegex);
       
-      const detectedAmount = amountMatch ? amountMatch[1].replace(/,/g, '') : '';
+      let detectedAmount = '';
+if (amountMatch) {
+  // Remove non-numeric/non-dot/non-comma chars
+  const raw = amountMatch[1];
+  // Heuristic: If it has a comma at the end (EU), replace with dot
+  if (raw.includes(',') && raw.indexOf(',') > raw.indexOf('.')) {
+     detectedAmount = raw.replace(/\./g, '').replace(',', '.');
+  } else {
+     detectedAmount = raw.replace(/,/g, '');
+  }
+}
       const detectedDate = dateMatch ? dateMatch[0] : '';
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
