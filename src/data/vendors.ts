@@ -88,6 +88,58 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "Sky": "sky.com",
   "Canal+": "canalplus.com",
 
+  // --- STUDENT LOANS ---
+  "Navient": "navient.com",
+  "Nelnet": "nelnet.com",
+  "Sallie Mae": "salliemae.com",
+  "Mohela": "mohela.com",
+  "Aidvantage": "aidvantage.com",
+  "Great Lakes": "mygreatlakes.org",
+  "SoFi Student Loans": "sofi.com",
+  "Earnest": "earnest.com",
+  "Firstmark": "firstmarkservices.com",
+
+  // --- PET INSURANCE & SERVICES ---
+  "Lemonade": "lemonade.com",
+  "Trupanion": "trupanion.com",
+  "Healthy Paws": "healthypawspetinsurance.com",
+  "Nationwide Pet": "petinsurance.com",
+  "Embrace": "embracepetinsurance.com",
+  "Petplan": "gopetplan.com",
+  "Rover": "rover.com",
+  "Chewy": "chewy.com", // Existing, but good to group
+  "BarkBox": "barkbox.com", // Existing
+
+  // --- STORAGE & MOVING ---
+  "Public Storage": "publicstorage.com",
+  "Extra Space Storage": "extraspace.com",
+  "CubeSmart": "cubesmart.com",
+  "U-Haul": "uhaul.com",
+  "Life Storage": "lifestorage.com",
+  "Pods": "pods.com",
+
+  // --- HOME SERVICES (PEST/LAWN/SOLAR) ---
+  "Terminix": "terminix.com",
+  "Orkin": "orkin.com",
+  "TruGreen": "trugreen.com",
+  "Sunrun": "sunrun.com",
+  "SunPower": "sunpower.com",
+  "Vivint Solar": "vivint.com",
+  "Tesla Energy": "tesla.com",
+
+  // --- MEDICAL & DENTAL FINANCE ---
+  "CareCredit": "carecredit.com",
+  "Invisalign": "invisalign.com",
+  "SmileDirectClub": "smiledirectclub.com",
+  "Quest Diagnostics": "questdiagnostics.com",
+  "LabCorp": "labcorp.com",
+
+  // --- STORE CARD BANKS (White Label) ---
+  // These banks back 100s of store cards (Wayfair, Gap, etc.)
+  "Synchrony Bank": "synchrony.com",
+  "Comenity Bank": "comenity.net",
+  "Bread Financial": "breadfinancial.com",
+
   // --- US BANKS & FINANCE ---
   "Chase": "chase.com",
   "Bank of America": "bankofamerica.com",
@@ -304,6 +356,130 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "Mint Mobile": "mintmobile.com",
   "Cricket Wireless": "cricketwireless.com",
 
+  // ... existing domains ...
+
+  // ============================================================
+  // GLOBAL & REGIONAL EXPANSION
+  // ============================================================
+
+  // --- UK (Specifics) ---
+  "Octopus Energy": "octopus.energy",
+  "Bulb": "bulb.co.uk",
+  "Ovo Energy": "ovoenergy.com",
+  "TalkTalk": "talktalk.co.uk",
+  "Tesco Mobile": "tescomobile.com",
+  "Giffgaff": "giffgaff.com",
+  "Tesco": "tesco.com",
+  "Sainsbury's": "sainsburys.co.uk",
+  "Asda": "asda.com",
+  "Waitrose": "waitrose.com",
+  "Council Tax": "gov.uk", // Generic fallback
+  "TV Licencing": "tvlicensing.co.uk",
+  "Transport for London": "tfl.gov.uk",
+
+  // --- CANADA (Specifics) ---
+  "Hydro One": "hydroone.com",
+  "BC Hydro": "bchydro.com",
+  "Enbridge": "enbridge.com",
+  "FortisBC": "fortisbc.com",
+  "Hydro Quebec": "hydroquebec.com",
+  "Fido": "fido.ca",
+  "Koodo": "koodomobile.com",
+  "Freedom Mobile": "freedommobile.ca",
+  "Videotron": "videotron.com",
+  "Shaw": "shaw.ca",
+  "Canadian Tire": "canadiantire.ca",
+  "Loblaws": "loblaws.ca",
+  "Metro": "metro.ca",
+  "Sobeys": "sobeys.com",
+  "Shoppers Drug Mart": "shoppersdrugmart.ca",
+
+  // --- AUSTRALIA & NZ (Specifics) ---
+
+  "Vodafone AU": "vodafone.com.au",
+  "Woolworths": "woolworths.com.au",
+  "Coles": "coles.com.au",
+  "Aldi AU": "aldi.com.au",
+  "Bunnings": "bunnings.com.au",
+  "JB Hi-Fi": "jbhifi.com.au",
+  "Officeworks": "officeworks.com.au",
+  "Medibank": "medibank.com.au",
+  "Bupa": "bupa.com.au",
+  "Sydney Water": "sydneywater.com.au",
+  "Ergon Energy": "ergon.com.au",
+  "ATO": "ato.gov.au", // Tax
+  "Linkt": "linkt.com.au", // Tolls
+
+  // --- GERMANY (DACH) ---
+  "Vodafone DE": "vodafone.de",
+  "O2 DE": "o2online.de",
+  "1&1": "1und1.de",
+  "Vattenfall": "vattenfall.de",
+  "EnBW": "enbw.com",
+  "Deutsche Bahn": "bahn.de",
+  "BVG": "bvg.de", // Berlin Transit
+  "Techniker Krankenkasse": "tk.de",
+  "AOK": "aok.de",
+  "Barmer": "barmer.de",
+  "Allianz DE": "allianz.de",
+  "Sparkasse": "sparkasse.de",
+  "Volksbank": "volksbank.de",
+  "Comdirect": "comdirect.de",
+  "DKB": "dkb.de",
+  "N26": "n26.com",
+  "Lidl": "lidl.de",
+  "Aldi Sud": "aldi-sued.de",
+  "Rewe": "rewe.de",
+  "Edeka": "edeka.de",
+  "Rossmann": "rossmann.de",
+  "dm": "dm.de",
+  "Rundfunkbeitrag": "rundfunkbeitrag.de", // Media Tax
+
+  // --- FRANCE ---
+  "EDF": "edf.fr",
+  "TotalEnergies": "totalenergies.fr",
+  "Orange FR": "orange.fr",
+  "SFR": "sfr.fr",
+  "Bouygues": "bouyguestelecom.fr",
+  "Free Mobile": "free.fr",
+  "SNCF": "sncf.com",
+  "RATP": "ratp.fr",
+  "Carrefour": "carrefour.fr",
+  "Leclerc": "e-leclerc.com",
+  "Auchan": "auchan.fr",
+  "Intermarche": "intermarche.com",
+
+  // --- INDIA ---
+  "Vi": "myvi.in",
+  "BSNL": "bsnl.co.in",
+  "Tata Power": "tatapower.com",
+  "Adani Electricity": "adanielectricity.com",
+  "LIC": "licindia.in",
+  "HDFC Life": "hdfclife.com",
+  "SBI Card": "sbicard.com",
+  "Paytm": "paytm.com",
+  "PhonePe": "phonepe.com",
+  "Flipkart": "flipkart.com",
+  "Zomato": "zomato.com",
+  "Swiggy": "swiggy.com",
+  "Ola": "olacabs.com",
+  "Uber India": "uber.com",
+  "BigBasket": "bigbasket.com",
+
+  // --- LATAM (Brazil/Mexico) ---
+  "Nubank": "nubank.com.br",
+  "Mercado Libre": "mercadolibre.com",
+  "Rappi": "rappi.com",
+  "Claro": "claro.com.br",
+  "Vivo": "vivo.com.br",
+  "Tim": "tim.com.br",
+  "Telcel": "telcel.com",
+  "CFE": "cfe.mx", // Mexico Power
+  "Cofepris": "gob.mx",
+  "Petrobras": "petrobras.com.br",
+  "Itaú": "itau.com.br",
+  "Bradesco": "bradesco.com.br",
+
   // --- SOFTWARE & SAAS ---
   "Google": "google.com",
   "Google One": "one.google.com",
@@ -387,7 +563,6 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "Apple Store": "apple.com",
   "eBay": "ebay.com",
   "Etsy": "etsy.com",
-  "Chewy": "chewy.com",
   "CVS": "cvs.com",
   "Walgreens": "walgreens.com",
   "Rite Aid": "riteaid.com",
@@ -406,7 +581,6 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "Calm": "calm.com",
   "Duolingo": "duolingo.com",
   "MasterClass": "masterclass.com",
-  "BarkBox": "barkbox.com",
   "Dollar Shave Club": "dollarshaveclub.com",
   "Stitch Fix": "stitchfix.com",
   "FabFitFun": "fabfitfun.com",
@@ -483,6 +657,50 @@ export const VENDOR_DOMAINS: Record<string, string> = {
   "CNN": "cnn.com",
   "Medium": "medium.com",
   "Substack": "substack.com",
+
+  "Rocket Mortgage": "rocketmortgage.com",
+  "Mr. Cooper": "mrcooper.com",
+  "Freedom Mortgage": "freedommortgage.com",
+  "LoanDepot": "loandepot.com",
+  "United Wholesale Mortgage": "uwm.com",
+  "PennyMac": "pennymac.com",
+  "Better Mortgage": "better.com",
+  "Caliber Home Loans": "caliberhomeloans.com",
+  "Fairway Independent": "fairwayindependentmc.com",
+  "Guild Mortgage": "guildmortgage.com",
+  "Movement Mortgage": "movement.com",
+
+  // --- AUTO FINANCE & MANUFACTURERS ---
+  "Toyota Financial": "toyotafinancial.com",
+  "Honda Financial": "hondafinancialservices.com",
+  "Ford Credit": "ford.com",
+  "GM Financial": "gmfinancial.com",
+  "Nissan Finance": "nissanfinance.com",
+  "Hyundai Finance": "hmfusa.com",
+  "Kia Finance": "kiafinance.com",
+  "BMW Financial": "bmwusa.com",
+  "Mercedes-Benz Financial": "mbfs.com",
+  "Volkswagen Credit": "vwcredit.com",
+  "Audi Financial": "audiusa.com",
+  "Lexus Financial": "lexusfinancial.com",
+  "CarMax": "carmax.com",
+  "Carvana": "carvana.com",
+  "Santander Consumer": "santanderconsumerusa.com",
+  "Ally Auto": "ally.com",
+  "Bridgecrest": "bridgecrest.com",
+
+  "EdFinancial": "edfinancial.com",
+  "ECSI": "heartlandecsi.com", // Major servicer for Perkins/University loans
+  "College Ave": "collegeave.com",
+  "Laurel Road": "laurelroad.com", // Huge for medical/grad school refinancing
+  "Ascendium": "ascendiumeducation.org",
+  "OSLA": "osla.org", // Oklahoma Student Loan Authority
+  "Discover Student Loans": "discover.com", // Distinct from credit cards
+  "Commonbond": "commonbond.co",
+  "LendKey": "lendkey.com",
+  "Prodigy Finance": "prodigyfinance.com", // International student loans
+  "MPower": "mpowerfinancing.com",
+
 };
 
 // ============================================================================
@@ -495,6 +713,15 @@ export const BILL_ICON_MAP: {
   categoryKey: string; 
 }[] = [
   // --- ENTERTAINMENT ---
+  // --- STUDENT LOANS (Update) ---
+  // Federal & Major Servicers
+  { regex: /navient|nelnet|sallie\s?mae|mohela|aidvantage|great\s?lakes|edfinancial|osla|ascendium/i, icon: "school", color: "#005596", categoryKey: "category_debt" },
+  // Private Lenders & Refinancing
+  { regex: /sofi|earnest|firstmark|college\s?ave|laurel\s?road|lendkey|commonbond|prodigy|mpower/i, icon: "school-outline", color: "#2ECC71", categoryKey: "category_debt" },
+  // Perkins / University Held (Heartland ECSI)
+  { regex: /ecsi|heartland\s?ecsi|university\s?loan/i, icon: "book-account", color: "#8E44AD", categoryKey: "category_debt" },
+  // Generic Dept of Education Matches
+  { regex: /dept\s?of\s?ed|student\s?loan|fedloan|direct\s?loan/i, icon: "book-education", color: "#2C3E50", categoryKey: "category_debt" },
   // --- STREAMING & ENTERTAINMENT ---
   { regex: /netflix/i, icon: "netflix", color: "#E50914", categoryKey: "category_entertainment" },
   { regex: /spotify/i, icon: "spotify", color: "#1DB954", categoryKey: "category_entertainment" },
@@ -511,6 +738,57 @@ export const BILL_ICON_MAP: {
   { regex: /apple|music|itunes|icloud/i, icon: "apple", color: "#A2AAAD", categoryKey: "category_entertainment" },
   { regex: /roku|sling|fubo|directv/i, icon: "television", color: "#662D91", categoryKey: "category_entertainment" },
   { regex: /pool|poool|swiming/i, icon: "pool", color: "#0066CC", categoryKey: "category_housing" },
+
+  // --- STUDENT LOANS ---
+  { regex: /navient|nelnet|sallie\s?mae|mohela|aidvantage|great\s?lakes/i, icon: "school", color: "#005596", categoryKey: "category_debt" },
+  { regex: /earnest|firstmark|fedloan|edfinancial/i, icon: "school-outline", color: "#2ECC71", categoryKey: "category_debt" },
+  { regex: /student\s?loan|dept\s?of\s?ed/i, icon: "book-education", color: "#2C3E50", categoryKey: "category_debt" },
+
+  // --- PETS ---
+  { regex: /lemonade|trupanion|healthy\s?paws|embrace|petplan|nationwide\s?pet/i, icon: "paw", color: "#FF0083", categoryKey: "category_insurance" },
+  { regex: /rover|wag|chewy|barkbox|petco|petsmart/i, icon: "dog", color: "#1C49C2", categoryKey: "category_shopping" },
+  { regex: /vet|veterinary|animal\s?hospital/i, icon: "hospital-box", color: "#E74C3C", categoryKey: "category_health" },
+
+  // --- STORAGE ---
+  { regex: /public\s?storage|extra\s?space|cubesmart|life\s?storage/i, icon: "warehouse", color: "#F39C12", categoryKey: "category_housing" },
+  { regex: /u-?haul|pods|moving/i, icon: "truck", color: "#F39C12", categoryKey: "category_housing" },
+
+  // --- HOME SERVICES (SOLAR / PEST / LAWN) ---
+  { regex: /sunrun|sunpower|tesla\s?energy|solar/i, icon: "solar-power", color: "#F1C40F", categoryKey: "category_utilities" },
+  { regex: /terminix|orkin|pest/i, icon: "bug", color: "#27AE60", categoryKey: "category_housing" },
+  { regex: /trugreen|lawn|landscap/i, icon: "flower", color: "#27AE60", categoryKey: "category_housing" },
+
+  // --- CREDIT & MEDICAL DEBT ---
+  { regex: /carecredit|synchrony|comenity|bread\s?financial/i, icon: "credit-card-settings", color: "#5D6D7E", categoryKey: "category_debt" },
+  { regex: /quest\s?diag|labcorp|doctor|clinic|dental|ortho/i, icon: "doctor", color: "#3498DB", categoryKey: "category_health" },
+
+  // --- CHILDCARE ---
+  { regex: /daycare|preschool|tuition|kinder/i, icon: "baby-carriage", color: "#9B59B6", categoryKey: "category_education" },
+  { regex: /bright\s?horizons|kindercare/i, icon: "human-male-female-child", color: "#E67E22", categoryKey: "category_education" },
+
+  // --- MORTGAGE & HOUSING (Update/Add) ---
+  { regex: /rocket\s?mortgage|quicken\s?loans/i, icon: "home-lightning-bolt", color: "#D42E12", categoryKey: "category_housing" },
+  { regex: /mr\.?\s?cooper/i, icon: "home-account", color: "#00A3E0", categoryKey: "category_housing" },
+  { regex: /freedom\s?mortgage/i, icon: "flag", color: "#002F6C", categoryKey: "category_housing" },
+  { regex: /loandepot/i, icon: "home-analytics", color: "#F7561B", categoryKey: "category_housing" },
+  { regex: /uwm|united\s?wholesale/i, icon: "home-group", color: "#008751", categoryKey: "category_housing" },
+  { regex: /calibe?r\s?home/i, icon: "home", color: "#002C5F", categoryKey: "category_housing" },
+  // Generic Catch-alls for Housing
+  { regex: /mortgage|mtg|home\s?loan|principal/i, icon: "home-city", color: "#2C3E50", categoryKey: "category_housing" },
+
+  // --- AUTO LOANS (Update/Add) ---
+  { regex: /toyota\s?financial|tfs/i, icon: "car", color: "#EB0A1E", categoryKey: "category_transport" },
+  { regex: /honda\s?financial|hfs/i, icon: "car", color: "#CC0000", categoryKey: "category_transport" },
+  { regex: /ford\s?credit|ford\s?motor/i, icon: "car", color: "#003478", categoryKey: "category_transport" },
+  { regex: /gm\s?financial|general\s?motors/i, icon: "car", color: "#005595", categoryKey: "category_transport" },
+  { regex: /nissan|infiniti/i, icon: "car", color: "#C3002F", categoryKey: "category_transport" },
+  { regex: /bmw\s?fs|bmw\s?bank/i, icon: "car-sports", color: "#1C69D4", categoryKey: "category_transport" },
+  { regex: /mercedes|daimler/i, icon: "car-sports", color: "#000000", categoryKey: "category_transport" },
+  { regex: /hyundai|kia/i, icon: "car", color: "#002C5F", categoryKey: "category_transport" },
+  { regex: /vw\s?credit|volkswagen|audi/i, icon: "car", color: "#001E50", categoryKey: "category_transport" },
+  { regex: /lexus/i, icon: "car-luxury", color: "#5B7F95", categoryKey: "category_transport" },
+  { regex: /bridgecrest|drivetime/i, icon: "car-clock", color: "#0047BB", categoryKey: "category_transport" },
+  { regex: /carmax|carvana/i, icon: "car-side", color: "#00529A", categoryKey: "category_transport" },
 
   // --- GAMING ---
   { regex: /steam|valve/i, icon: "steam", color: "#171A21", categoryKey: "category_entertainment" },
@@ -530,6 +808,7 @@ export const BILL_ICON_MAP: {
   { regex: /openai|chatgpt|midjourney/i, icon: "robot", color: "#10A37F", categoryKey: "category_software" },
   { regex: /intuit|quickbooks|turbotax|xero|sage/i, icon: "file-chart", color: "#2CA01C", categoryKey: "category_software" },
   { regex: /mcafee|norton|kaspersky|vpn/i, icon: "shield-lock", color: "#C0392B", categoryKey: "category_software" },
+  { regex: /pennymac|penny mac|p mac/i, icon: "home", color: "#FF9900", categoryKey: "category_finance" },
 
   // --- BANKS & FINANCE (US) ---
   { regex: /chase|jpmorgan/i, icon: "bank", color: "#117ACA", categoryKey: "category_finance" },
@@ -620,6 +899,45 @@ export const BILL_ICON_MAP: {
   { regex: /jio|airtel/i, icon: "access-point", color: "#D32F2F", categoryKey: "category_utilities" },
   { regex: /go daddy|godaddy|server/i, icon: "server-outline", color: "#0E7490", categoryKey: "category_software" },
 
+  // --- HOUSING / RENT (Global) ---
+  // Rent, Miete (DE), Loyer (FR), Alquiler (ES)
+  { regex: /rent|lease|miete|loyer|alquiler|arrendamiento/i, icon: "home-city", color: "#2C3E50", categoryKey: "category_housing" },
+  // Mortgage, Hypotheke (DE), Pret Immo (FR), Hipoteca (ES)
+  { regex: /mortgage|home\s?loan|hypothe|pret\s?immo|hipoteca/i, icon: "home-analytics", color: "#2C3E50", categoryKey: "category_housing" },
+  // Council Tax / Property Tax
+  { regex: /council\s?tax|property\s?tax|grundsteuer|taxe\s?fonciere/i, icon: "bank-transfer", color: "#5D6D7E", categoryKey: "category_housing" },
+
+  // --- UTILITIES (Global) ---
+  // Electricity: Power, Strom (DE), Electricite (FR), Luz (ES)
+  { regex: /electricity|power|strom|electricit|luz|energia/i, icon: "lightning-bolt", color: "#F1C40F", categoryKey: "category_utilities" },
+  // Water: Wasser (DE), Eau (FR), Agua (ES)
+  { regex: /water|wasser|eau|agua|sewer|abwasser/i, icon: "water", color: "#3498DB", categoryKey: "category_utilities" },
+  // Gas (Universal)
+  { regex: /gas|gaz/i, icon: "fire", color: "#E74C3C", categoryKey: "category_utilities" },
+
+  // --- TELECOM (Global) ---
+  // Mobile, Handy (DE), Portable (FR), Celular (ES)
+  { regex: /mobile|cell|handy|portable|celular|movil|wireless/i, icon: "cellphone", color: "#8E44AD", categoryKey: "category_utilities" },
+  // Internet, Breitband (DE), Fibra (ES)
+  { regex: /internet|broadband|wifi|breitband|fiber|fibra/i, icon: "router-wireless", color: "#2980B9", categoryKey: "category_utilities" },
+  // TV Licence / Media Tax
+  { regex: /tv\s?licence|rundfunk|redevance/i, icon: "television-classic", color: "#2C3E50", categoryKey: "category_utilities" },
+
+  // --- TRANSPORT (Global) ---
+  // Public Transport: Transit, Bahn (DE), SNCF (FR), Tren (ES)
+  { regex: /transit|metro|tube|bahn|sncf|tren|transport|tfl/i, icon: "train", color: "#E67E22", categoryKey: "category_transport" },
+  // Tolls: EzPass, Toll, Peage (FR), Maut (DE), Peaje (ES)
+  { regex: /toll|peage|maut|peaje|linkt|fastrak/i, icon: "highway", color: "#F39C12", categoryKey: "category_transport" },
+
+  // --- GROCERIES (Global Supermarkets) ---
+  { regex: /tesco|sainsbury|asda|waitrose|lidl|aldi|rewe|edeka|carrefour|leclerc|auchan|woolworths|coles|loblaws|metro|sobeys/i, icon: "cart", color: "#27AE60", categoryKey: "category_shopping" },
+
+  // --- HEALTH (Global) ---
+  // Pharmacy: Apotheke (DE), Pharmacie (FR), Farmacia (ES)
+  { regex: /pharmacy|drug\s?store|apotheke|pharmacie|farmacia|boots|superdrug|shoppers/i, icon: "pill", color: "#E74C3C", categoryKey: "category_health" },
+  // Health Insurance: Krankenkasse (DE), Mutuelle (FR)
+  { regex: /health|medical|krankenkasse|mutuelle|seguro\s?salud/i, icon: "hospital-box", color: "#E74C3C", categoryKey: "category_insurance" },
+
   // --- UTILITIES & HOUSING ---
   { regex: /comed|con edison|pge|duke energy|edf|e\.on|british gas|agl|origin|enel/i, icon: "lightning-bolt", color: "#FBBF24", categoryKey: "category_utilities" },
   { regex: /gas|heating|propane|national grid/i, icon: "fire", color: "#E74C3C", categoryKey: "category_utilities" },
@@ -681,6 +999,50 @@ export const KNOWN_SUBSCRIPTIONS = [
   { id: 'sky', name: 'Sky', patterns: [/sky.*digital/i, /sky.*tv/i, /now tv/i], color: '#E71409', icon: 'satellite-uplink', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' }, // UK/EU
   { id: 'canal', name: 'Canal+', patterns: [/canal\+/i, /canal plus/i], color: '#000000', icon: 'television-classic', type: 'MaterialCommunityIcons', categoryKey: 'category_entertainment' }, // France
 
+  { id: 'rocket_mortgage', name: 'Rocket Mortgage', patterns: [/rocket\s?mortgage/i, /quicken\s?loans/i], color: '#D42E12', icon: 'home-lightning-bolt', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
+  { id: 'mr_cooper', name: 'Mr. Cooper', patterns: [/mr\.?\s?cooper/i], color: '#163868', icon: 'home-account', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
+  { id: 'freedom_mortgage', name: 'Freedom Mortgage', patterns: [/freedom\s?mortgage/i], color: '#002F6C', icon: 'flag-checkered', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
+  { id: 'loandepot', name: 'LoanDepot', patterns: [/loandepot/i], color: '#F7561B', icon: 'home-analytics', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
+  { id: 'navient', name: 'Navient', patterns: [/navient/i], color: '#00467F', icon: 'school', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'nelnet', name: 'Nelnet', patterns: [/nelnet/i], color: '#88C740', icon: 'school-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'mohela', name: 'MOHELA', patterns: [/mohela/i], color: '#00583D', icon: 'book-education', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+
+  // ==========================================
+  // STUDENT LOANS
+  // ==========================================
+  { id: 'navient', name: 'Navient', patterns: [/navient/i], color: '#00467F', icon: 'school', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'nelnet', name: 'Nelnet', patterns: [/nelnet/i], color: '#88C740', icon: 'school-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'mohela', name: 'MOHELA', patterns: [/mohela/i], color: '#00583D', icon: 'book-education', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'aidvantage', name: 'Aidvantage', patterns: [/aidvantage/i], color: '#002C5F', icon: 'account-school', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+{ id: 'edfinancial', name: 'EdFinancial', patterns: [/edfinancial/i], color: '#00529B', icon: 'school', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'ecsi', name: 'Heartland ECSI', patterns: [/heartland\s?ecsi/i, /ecsi/i], color: '#D1202F', icon: 'book-account', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'sofi_loan', name: 'SoFi Student Loan', patterns: [/sofi.*mohela/i, /sofi.*loan/i], color: '#00D588', icon: 'bank-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'college_ave', name: 'College Ave', patterns: [/college\s?ave/i], color: '#FFC72C', icon: 'school-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'laurel_road', name: 'Laurel Road', patterns: [/laurel\s?road/i], color: '#004F71', icon: 'doctor', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  // ==========================================
+  // HOUSEHOLD SERVICES
+  // ==========================================
+  { id: 'public_storage', name: 'Public Storage', patterns: [/public\s?storage/i], color: '#F37021', icon: 'warehouse', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
+  { id: 'extra_space', name: 'Extra Space', patterns: [/extra\s?space/i], color: '#006633', icon: 'locker-multiple', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
+  { id: 'sunrun', name: 'Sunrun', patterns: [/sunrun/i], color: '#FDB913', icon: 'solar-power', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'terminix', name: 'Terminix', patterns: [/terminix/i], color: '#68BC45', icon: 'bug', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
+
+  // ==========================================
+  // FINANCING & STORE CARDS
+  // ==========================================
+  { id: 'synchrony', name: 'Synchrony Bank', patterns: [/synchrony/i, /syncb/i], color: '#F5B31B', icon: 'bank', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'comenity', name: 'Comenity Bank', patterns: [/comenity/i], color: '#E31837', icon: 'credit-card-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+  { id: 'carecredit', name: 'CareCredit', patterns: [/carecredit/i], color: '#00788A', icon: 'medical-bag', type: 'MaterialCommunityIcons', categoryKey: 'category_debt' },
+
+  // ==========================================
+  // AUTO FINANCE
+  // ==========================================
+  { id: 'toyota_fs', name: 'Toyota Financial', patterns: [/toyota/i, /lexus/i], color: '#EB0A1E', icon: 'car', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
+  { id: 'honda_fs', name: 'Honda Financial', patterns: [/honda/i, /acura/i], color: '#CC0000', icon: 'car-hatchback', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
+  { id: 'ford_credit', name: 'Ford Credit', patterns: [/ford\s?credit/i, /lincoln/i], color: '#003478', icon: 'car-pickup', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
+  { id: 'gm_financial', name: 'GM Financial', patterns: [/gm\s?financial/i, /chevrolet/i, /cadillac/i], color: '#005595', icon: 'car-estate', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
+  { id: 'bmw_fs', name: 'BMW Financial', patterns: [/bmw/i, /mini\s?financial/i], color: '#1C69D4', icon: 'car-sports', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
+  { id: 'santander_consumer', name: 'Santander Consumer', patterns: [/santander\s?consumer/i], color: '#EC0000', icon: 'car-key', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
   // ==========================================
   // 2. TELECOM & INTERNET (High Value)
   // ==========================================
@@ -697,6 +1059,60 @@ export const KNOWN_SUBSCRIPTIONS = [
   { id: 'deutsche_telekom', name: 'Telekom', patterns: [/telekom/i], color: '#E20074', icon: 'network', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
   { id: 'telefonica', name: 'O2 / Telefónica', patterns: [/telefonica/i, /o2/i], color: '#032D56', icon: 'molecule', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
   { id: 'bt', name: 'BT Group', patterns: [/bt group/i, /british telecom/i], color: '#5514B4', icon: 'phone-classic', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+
+  // ==========================================
+  // UK SPECIFIC
+  // ==========================================
+  { id: 'council_tax', name: 'Council Tax', patterns: [/council\s?tax/i], color: '#000000', icon: 'city', type: 'MaterialCommunityIcons', categoryKey: 'category_housing' },
+  { id: 'tv_licence', name: 'TV Licence', patterns: [/tv\s?licen[cs]e/i], color: '#D20042', icon: 'television-classic', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'octopus_energy', name: 'Octopus Energy', patterns: [/octopus\s?energy/i], color: '#FF00A3', icon: 'lightning-bolt', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'british_gas', name: 'British Gas', patterns: [/british\s?gas/i], color: '#0099FF', icon: 'fire', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'tesco_mobile', name: 'Tesco Mobile', patterns: [/tesco\s?mobile/i], color: '#00539F', icon: 'cellphone', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+
+  // ==========================================
+  // CANADA SPECIFIC
+  // ==========================================
+  { id: 'hydro_one', name: 'Hydro One', patterns: [/hydro\s?one/i], color: '#DA291C', icon: 'lightning-bolt', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'icbc', name: 'ICBC', patterns: [/icbc/i], color: '#003366', icon: 'car-info', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
+  { id: 'shoppers', name: 'Shoppers Drug Mart', patterns: [/shoppers\s?drug/i, /shoppers/i], color: '#004F88', icon: 'pill', type: 'MaterialCommunityIcons', categoryKey: 'category_health' },
+
+  // ==========================================
+  // AUSTRALIA SPECIFIC
+  // ==========================================
+  { id: 'woolworths', name: 'Woolworths', patterns: [/woolworths/i], color: '#178841', icon: 'food-apple', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
+  { id: 'coles', name: 'Coles', patterns: [/coles/i], color: '#DA291C', icon: 'cart', type: 'MaterialCommunityIcons', categoryKey: 'category_shopping' },
+  { id: 'medibank', name: 'Medibank', patterns: [/medibank/i], color: '#D41031', icon: 'hospital-box', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
+  { id: 'linkt', name: 'Linkt', patterns: [/linkt/i], color: '#5C2D91', icon: 'highway', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
+
+  // ==========================================
+  // GERMANY (DACH) SPECIFIC
+  // ==========================================
+  { id: 'rundfunk', name: 'Rundfunkbeitrag', patterns: [/rundfunk/i, /ard\s?zdf/i], color: '#00529A', icon: 'radio-tower', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'db', name: 'Deutsche Bahn', patterns: [/deutsche\s?bahn/i, /db\s?vertrieb/i], color: '#FF0000', icon: 'train', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
+  { id: 'tk', name: 'Techniker Krankenkasse', patterns: [/techniker/i, /tk\s?beitrag/i], color: '#009FD6', icon: 'medical-bag', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
+
+  // ==========================================
+  // FRANCE SPECIFIC
+  // ==========================================
+  { id: 'edf', name: 'EDF', patterns: [/edf/i], color: '#FE5800', icon: 'lightning-bolt', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'sncf', name: 'SNCF', patterns: [/sncf/i, /ouigo/i], color: '#88258C', icon: 'train', type: 'MaterialCommunityIcons', categoryKey: 'category_transport' },
+  { id: 'caf', name: 'CAF', patterns: [/caf/i], color: '#27348B', icon: 'bank-transfer', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
+
+  // ==========================================
+  // INDIA SPECIFIC
+  // ==========================================
+  { id: 'jio', name: 'Jio', patterns: [/jio/i], color: '#0F3CC9', icon: 'access-point', type: 'MaterialCommunityIcons', categoryKey: 'category_utilities' },
+  { id: 'lic', name: 'LIC India', patterns: [/lic\s?india/i, /life\s?insurance\s?corp/i], color: '#F1C40F', icon: 'shield-account', type: 'MaterialCommunityIcons', categoryKey: 'category_insurance' },
+  { id: 'paytm', name: 'Paytm', patterns: [/paytm/i], color: '#002E6E', icon: 'cellphone-check', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
+  { id: 'zomato', name: 'Zomato', patterns: [/zomato/i], color: '#E23744', icon: 'moped', type: 'MaterialCommunityIcons', categoryKey: 'category_food' },
+
+  // ==========================================
+  // GLOBAL FINTECH & CRYPTO
+  // ==========================================
+  { id: 'revolut', name: 'Revolut', patterns: [/revolut/i], color: '#0075EB', icon: 'bank-outline', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
+  { id: 'wise', name: 'Wise', patterns: [/wise.*transfer/i, /transferwise/i], color: '#9FE870', icon: 'earth', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
+  { id: 'binance', name: 'Binance', patterns: [/binance/i], color: '#F3BA2F', icon: 'bitcoin', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
+  { id: 'crypto_com', name: 'Crypto.com', patterns: [/crypto\.com/i], color: '#002D74', icon: 'bitcoin', type: 'MaterialCommunityIcons', categoryKey: 'category_finance' },
 
   // ==========================================
   // 3. CLOUD, HOSTING & SOFTWARE (Tech)
