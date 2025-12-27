@@ -654,18 +654,7 @@ export default function Profile() {
     ]);
   };
 
-  if (!data && !refreshing) {
-    return (
-      <View
-        style={[
-          styles.container,
-          { backgroundColor: theme.colors.bg, justifyContent: "center" },
-        ]}
-      >
-        <ActivityIndicator color={theme.colors.primary} />
-      </View>
-    );
-  }
+  
 
   return (
     <>
@@ -892,7 +881,7 @@ export default function Profile() {
             <View
               style={[styles.cardGroup, { borderColor: theme.colors.border }]}
             >
-              {data.members.length > 1 && (
+              {data?.members?.length > 1 && (
                 <ActionRow
                   icon="exit-outline"
                   label={t("Leave Family")}

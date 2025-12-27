@@ -52,6 +52,7 @@
     "i18next": "^25.7.2",
     "install": "^0.13.0",
     "intl-pluralrules": "^2.0.1",
+    "isomorphic-git": "^1.36.1",
     "npx": "^10.2.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
