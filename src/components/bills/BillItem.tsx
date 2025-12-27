@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import ReanimatedSwipeable, { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { RectButton } from "react-native-gesture-handler";
-import Animated from "react-native-reanimated"; // Removed FadeIn/FadeOut for performance
+import Animated from "react-native-reanimated"; 
 import * as Haptics from "expo-haptics";
 import { parseISO } from "date-fns";
 import { useTheme } from "../../ui/useTheme";
@@ -11,8 +11,6 @@ import { useCurrency } from "../../hooks/useCurrency";
 import { formatCurrency } from "../../utils/currency";
 import { getBillIcon, getSmartDueDate, isOverdue } from "../../utils/billLogic";
 import { BillItemProps } from "../../types/domain";
-
-
 
 const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, onDelete }: BillItemProps) => {
   const theme = useTheme();
@@ -22,6 +20,8 @@ const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, o
   const amt = formatCurrency(item.amount_cents, currency);
   const isPaid = Boolean(item.paid_at || item.is_paid || item.status === "paid");
   const overdue = isOverdue(item);
+
+  // USE THEME COLOR (Fallback to standard green if 'success' is missing from your theme)
 
   const dateInfo = useMemo(() => {
     if (isPaid) {
@@ -54,12 +54,12 @@ const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, o
       <View style={styles.rightActionsContainer}>
         <ActionButton icon="create-outline" color="#3498DB" label={t("Edit")} onPress={() => onEdit(item)} />
         {!isPaid && (
-          <ActionButton icon="checkmark-done-circle-outline" color="#2ECC71" label={t("Paid")} onPress={() => onMarkPaid(item)} />
+          <ActionButton icon="checkmark-done-circle-outline" color={theme.colors.success} label={t("Paid")} onPress={() => onMarkPaid(item)} />
         )}
         <ActionButton icon="trash-outline" color="#E74C3C" label={t("Delete")} onPress={() => onDelete(item)} />
       </View>
     );
-  }, [isPaid, onEdit, onMarkPaid, onDelete, t, item]);
+  }, [isPaid, onEdit, onMarkPaid, onDelete, t, item, theme.colors.success]);
 
   const BillContent = (
     <Pressable
@@ -74,18 +74,21 @@ const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, o
         {
           backgroundColor: theme.colors.card,
           borderColor: overdue ? theme.colors.danger : theme.colors.border,
-          opacity: pressed ? 0.9 : 1,
+          opacity: pressed ? 0.95 : 1, 
           borderWidth: 1,
         },
       ]}
     >
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        
+        {/* LEFT: Icon */}
         <View style={[styles.iconBox, { backgroundColor: iconData.color + "20" }]}>
           <IconComponent name={iconData.name as any} size={20} color={iconData.color} />
         </View>
 
+        {/* CENTER: Details */}
         <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <View style={{ flexShrink: 1 }}>
+          <View style={{ flexShrink: 1, paddingRight: 8 }}>
             <Text style={[styles.billCreditor, { color: theme.colors.primaryText }]} numberOfLines={1}>
               {item.creditor}
             </Text>
@@ -93,9 +96,9 @@ const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, o
               <MaterialCommunityIcons
                 name={item.payment_method === "auto" ? "refresh-auto" : "hand-pointing-right"}
                 size={14}
-                color={item.payment_method === "auto" ? theme.colors.accent : theme.colors.subtext}
+                color={item.payment_method === "auto" ? theme.colors.navy : theme.colors.subtext}
               />
-              <Text style={{ color: item.payment_method === "auto" ? theme.colors.accent : theme.colors.subtext, fontSize: 11, fontWeight: "600", marginLeft: 4, textTransform: "uppercase" }}>
+              <Text style={{ color: item.payment_method === "auto" ? theme.colors.navy : theme.colors.subtext, fontSize: 11, fontWeight: "600", marginLeft: 4, textTransform: "uppercase" }}>
                 {item.payment_method === "auto" ? t("Auto-Draft") : t("Manual Pay")}
               </Text>
             </View>
@@ -107,20 +110,67 @@ const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, o
             </View>
           </View>
 
-          <View style={{ alignItems: "flex-end", marginLeft: 10, flexShrink: 0 }}>
+          {/* RIGHT: Amount & Action Button */}
+          <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
             <Text style={[styles.billAmount, { color: theme.colors.primaryText }]}>{amt}</Text>
-            {overdue && (
-              <View style={{ backgroundColor: "#FFE5E5", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4 }}>
+            
+            {overdue && !isPaid && (
+              <View style={{ backgroundColor: theme.colors.danger + "20", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4, marginBottom: 4 }}>
                 <Text style={{ color: theme.colors.danger, fontSize: 10, fontWeight: "800" }}>{t("OVERDUE")}</Text>
               </View>
             )}
+
+            {/* --- THEMED PAID BUTTON --- */}
+            {!isPaid ? (
+               <Pressable
+               onPress={(e) => {
+                 e.stopPropagation(); 
+                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                 onMarkPaid(item);
+               }}
+               hitSlop={8}
+               style={({ pressed }) => ({
+                 marginTop: 6,
+                 opacity:0.4,
+                 backgroundColor: pressed ? theme.colors.success : `${(theme.colors.success as string)}20`, // 20% opacity of theme color
+                 borderColor: theme.colors.success,
+                 borderWidth: 1,
+                 borderRadius: 20,
+                 paddingVertical: 4,
+                 paddingHorizontal: 10,
+                 flexDirection: "row",
+                 alignItems: "center",
+                 justifyContent: "center",
+               })}
+             >
+               {({ pressed }) => (
+                 <>
+                   <Ionicons 
+                     name="checkmark" 
+                     size={12} 
+                     color={pressed ? "#FFF" : theme.colors.navy} 
+                     style={{ marginRight: 4 }}
+                   />
+                   <Text style={{ 
+                     color: pressed ? "#FFF" : theme.colors.navy, 
+                     fontSize: 11, 
+                     fontWeight: "700",
+                     textTransform: "uppercase" 
+                   }}>
+                     {t("Mark Paid")}
+                   </Text>
+                 </>
+               )}
+             </Pressable>
+            ) : null}
+            {/* -------------------------- */}
+
           </View>
         </View>
       </View>
     </Pressable>
   );
 
-  // FIX: Removed FadeIn/FadeOut animations to improve "slow update" issues on large lists
   if (Platform.OS === "ios") {
     return (
       <Animated.View>
@@ -134,12 +184,9 @@ const BillItemComponent = ({ item, t, locale, onLongPress, onEdit, onMarkPaid, o
   return <Animated.View>{BillContent}</Animated.View>;
 };
 
-// FIX: Custom equality check to prevent unneeded re-renders
 function arePropsEqual(prev: BillItemProps, next: BillItemProps) {
-  // Check strict equality for functions and simple props
   if (prev.locale !== next.locale || prev.t !== next.t) return false;
   
-  // Check Bill data integrity
   const p = prev.item;
   const n = next.item;
   

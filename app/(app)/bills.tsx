@@ -1014,8 +1014,8 @@ export default function Bills() {
                           )}
                           <Text
                             style={{
-                              color: theme.colors.accent,
-                              fontWeight: "700",
+                              color: theme.colors.navy,
+                              fontWeight: "800",
                               fontSize: 13,
                             }}
                           >
